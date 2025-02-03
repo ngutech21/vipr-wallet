@@ -14,12 +14,12 @@
       <q-list>
         <q-item-label header> Federations </q-item-label>
 
-        <Federation
+        <!-- <Federation
           v-for="fedi in federations"
           :key="fedi.title"
           :title="fedi.title"
           :balance="fedi.balance"
-        />
+        /> -->
       </q-list>
     </q-drawer>
 
@@ -31,18 +31,18 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import Federation from 'components/FederationList.vue'
+//import Federation from 'components/FederationList.vue'
 
-const federations: Federation[] = [
-  {
-    title: 'Federation 1',
-    balance: 1234,
-  },
-  {
-    title: 'Federation 2',
-    balance: 5678,
-  },
-]
+// const federations: Federation[] = [
+//   {
+//     title: 'Federation 1',
+//     balance: 1234,
+//   },
+//   {
+//     title: 'Federation 2',
+//     balance: 5678,
+//   },
+// ]
 
 const leftDrawerOpen = ref(false)
 

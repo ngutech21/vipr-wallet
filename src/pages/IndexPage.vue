@@ -1,5 +1,6 @@
 <template>
   <q-page class="row items-center justify-evenly">
+    <q-btn label="Scan QR Code" color="primary" :to="'/scan'" />
     <q-dialog
       v-model="showSettingsOverlay"
       position="bottom"
