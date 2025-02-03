@@ -20,12 +20,6 @@ importers:
       register-service-worker:
         specifier: ^1.7.2
         version: 1.7.2
-      vite-plugin-top-level-await:
-        specifier: ^1.4.4
-        version: 1.4.4(rollup@2.79.2)(vite@6.0.11(@types/node@22.13.0)(sass-embedded@1.83.4)(terser@5.37.0))
-      vite-plugin-wasm:
-        specifier: ^3.4.1
-        version: 3.4.1(vite@6.0.11(@types/node@22.13.0)(sass-embedded@1.83.4)(terser@5.37.0))
       vue:
         specifier: ^3.4.18
         version: 3.5.13(typescript@5.7.3)
@@ -72,6 +66,12 @@ importers:
       vite-plugin-checker:
         specifier: ^0.8.0
         version: 0.8.0(eslint@9.19.0)(optionator@0.9.4)(typescript@5.7.3)(vite@6.0.11(@types/node@22.13.0)(sass-embedded@1.83.4)(terser@5.37.0))(vue-tsc@2.1.10(typescript@5.7.3))
+      vite-plugin-top-level-await:
+        specifier: ^1.4.4
+        version: 1.4.4(rollup@2.79.2)(vite@6.0.11(@types/node@22.13.0)(sass-embedded@1.83.4)(terser@5.37.0))
+      vite-plugin-wasm:
+        specifier: ^3.4.1
+        version: 3.4.1(vite@6.0.11(@types/node@22.13.0)(sass-embedded@1.83.4)(terser@5.37.0))
       vue-tsc:
         specifier: ^2.1.10
         version: 2.1.10(typescript@5.7.3)

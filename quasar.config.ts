@@ -45,6 +45,7 @@ export default defineConfig((/* ctx */) => {
           ],
           worker: {
             format: 'es',
+
             plugins: () => [
               wasm(),
               topLevelAwait(), // Optional
@@ -57,7 +58,7 @@ export default defineConfig((/* ctx */) => {
       },
 
       target: {
-        browser: ['es2022', 'firefox115', 'chrome115', 'safari14'],
+        browser: ['es2022', 'firefox115', 'chrome115', 'safari15'],
         node: 'node20',
       },
 
