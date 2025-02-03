@@ -1,3 +1,5 @@
+[![CI](https://github.com/ngutech21/serpnt-wallet/actions/workflows/ci.yaml/badge.svg)](https://github.com/ngutech21/serpnt-wallet/actions/workflows/ci.yaml)
+
 # Serpnt-Wallet (serpnt)
 
 A Quasar Project
