@@ -14,6 +14,11 @@
     <q-separator />
 
     <q-card-section>
+      <div class="text-subtitle1">App Version: {{ version }}</div>
+      <div class="text-subtitle1">Quasar Version: {{ quasarVersion }}</div>
+    </q-card-section>
+
+    <q-card-section>
       <q-btn label="Close" color="primary" v-close-popup />
     </q-card-section>
   </q-card>
@@ -21,6 +26,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { version } from '../../package.json'
+import { version as quasarVersion } from 'quasar/package.json'
 
 const option1 = ref('')
 const option2 = ref('')
