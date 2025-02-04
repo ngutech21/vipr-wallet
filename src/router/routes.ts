@@ -8,7 +8,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/scan',
-    component: () => import('components/ScanPage.vue'),
+    component: () => import('pages/ScanPage.vue'),
   },
 
   // Always leave this as last one,

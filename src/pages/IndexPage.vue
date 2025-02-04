@@ -1,7 +1,26 @@
 <template>
   <q-page class="row items-center justify-evenly">
-    <q-btn label="Scan QR Code" color="primary" :to="'/scan'" />
-    <q-btn label="Join" color="primary" @click="joinFedimint()" />
+    <!-- show balance in a card-->
+    <q-card
+      class="q-ma-md"
+      style="width: 300px; position: absolute; top: 10px; left: 50%; transform: translateX(-50%)"
+    >
+      <q-card-section class="text-h6">Total Balance</q-card-section>
+      <q-card-section class="text-h4">{{ totalBalance }} (Sats)</q-card-section>
+    </q-card>
+
+    <!-- show federationId as card-->
+
+    <q-card class="q-ma-md" style="width: 200px">
+      <q-card-section class="text-h6">Federation ID</q-card-section>
+      <q-card-section class="word-wrap">{{ federationId }}</q-card-section>
+    </q-card>
+
+    <q-card class="q-ma-md" style="width: 200px">
+      <q-card-section class="text-h6">Lightning Invoice</q-card-section>
+      <q-card-section class="word-wrap">{{ lightningInvoice }}</q-card-section>
+    </q-card>
+
     <q-dialog
       v-model="showSettingsOverlay"
       position="bottom"
@@ -11,6 +30,25 @@
     >
       <SettingsPage @close="showSettingsOverlay = false" />
     </q-dialog>
+
+    <div class="q-col-gutter-md q-pa-md">
+      <!-- Invite code input -->
+      <div cols="12" class="q-mb-md">
+        <q-input
+          filled
+          v-model="inviteCode"
+          label="Your Invite Code"
+          class="q-pa-md q-input-lg word-wrap"
+        />
+      </div>
+
+      <!-- Buttons row -->
+      <div cols="12" class="row items-center justify-evenly">
+        <q-btn label="Scan QR Code" color="primary" :to="'/scan'" />
+        <q-btn label="Join" color="primary" @click="joinFedimint()" />
+        <q-btn label="Mint tokens" color="primary" @click="MintTokens()" />
+      </div>
+    </div>
 
     <div class="fixed-bottom-bar row no-wrap justify-between">
       <div class="button-container">
@@ -34,31 +72,51 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import SettingsPage from 'components/SettingsPage.vue'
+import SettingsPage from 'pages/SettingsPage.vue'
 import { FedimintWallet } from '@fedimint/core-web'
 const showSettingsOverlay = ref(false)
+const inviteCode = ref(
+  'fed11qgqrgvnhwden5te0v9k8q6rp9ekh2arfdeukuet595cr2ttpd3jhq6rzve6zuer9wchxvetyd938gcewvdhk6tcqqysptkuvknc7erjgf4em3zfh90kffqf9srujn6q53d6r056e4apze5cw27h75',
+)
+
+const totalBalance = ref(0)
+const federationId = ref('')
+const lightningInvoice = ref('')
+
+const wallet = new FedimintWallet(true)
 
 async function joinFedimint() {
   // Create the Wallet client
-  const wallet = new FedimintWallet()
 
   // Open the wallet (should be called once in the application lifecycle)
+  const code = inviteCode.value
+  await wallet.initialize()
   await wallet.open()
 
   // Join a Federation (if not already open)
   if (!wallet.isOpen()) {
-    const inviteCode =
-      // mutinynet invite code
-      'fed11qgqrgvnhwden5te0v9k8q6rp9ekh2arfdeukuet595cr2ttpd3jhq6rzve6zuer9wchxvetyd938gcewvdhk6tcqqysptkuvknc7erjgf4em3zfh90kffqf9srujn6q53d6r056e4apze5cw27h75'
-    await wallet.joinFederation(inviteCode)
+    // const inviteCode =
+    //   // mutinynet invite code
+    //   'fed11qgqrgvnhwden5te0v9k8q6rp9ekh2arfdeukuet595cr2ttpd3jhq6rzve6zuer9wchxvetyd938gcewvdhk6tcqqysptkuvknc7erjgf4em3zfh90kffqf9srujn6q53d6r056e4apze5cw27h75'
+    await wallet.joinFederation(code)
   }
 
+  federationId.value = await wallet.federation.getFederationId()
+
   // Get Wallet Balance
-  const balance = await wallet.balance.getBalance()
+  const balance = (await wallet.balance.getBalance()) / 1_000
+  totalBalance.value = balance
   console.log('Wallet Balance:', balance)
-  const amount: number = 1000
+}
+
+async function MintTokens() {
+  const amount: number = 10_000
   const description: string = 'Test Invoice'
   const invoice = await wallet.lightning.createInvoice(amount, description)
+
+  // show popup with the lightning invoice
+  lightningInvoice.value = invoice.invoice
+
   console.log('Invoice:', invoice)
 }
 </script>
@@ -90,5 +148,9 @@ async function joinFedimint() {
   width: 100vw;
   max-width: 100vw;
   margin: 0;
+}
+.word-wrap {
+  word-wrap: break-word;
+  white-space: normal;
 }
 </style>
