@@ -1,0 +1,23 @@
+# Node modules and lock files
+node_modules
+pnpm-lock.yaml
+npm-debug.log
+yarn.lock
+
+# Dist or build output
+dist
+build
+node_modules
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+
+# IDE settings
+.vscode
+.idea
+
+# Git
+.git
+.gitignore
