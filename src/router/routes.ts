@@ -10,6 +10,10 @@ const routes: RouteRecordRaw[] = [
     path: '/scan',
     component: () => import('pages/ScanPage.vue'),
   },
+  {
+    path: '/receive',
+    component: () => import('pages/ReceivePage.vue'),
+  },
 
   // Always leave this as last one,
   // but you can also remove it

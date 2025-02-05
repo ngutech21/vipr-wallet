@@ -47,6 +47,7 @@
         <q-btn label="Scan QR Code" color="primary" :to="'/scan'" />
         <q-btn label="Join" color="primary" @click="joinFedimint()" />
         <q-btn label="Mint tokens" color="primary" @click="MintTokens()" />
+        <q-btn label="Receive" color="primary" :to="'/receive'" />
       </div>
     </div>
 
