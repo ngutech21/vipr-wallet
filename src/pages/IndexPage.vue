@@ -48,6 +48,7 @@
         <q-btn label="Join" color="primary" @click="joinFedimint()" />
         <q-btn label="Mint tokens" color="primary" @click="MintTokens()" />
         <q-btn label="Receive" color="primary" :to="'/receive'" />
+        <q-btn label="Send" color="primary" :to="'/send'" />
       </div>
     </div>
 
@@ -77,8 +78,11 @@ import SettingsPage from 'pages/SettingsPage.vue'
 import { useFedimintStore } from 'src/stores/fedimint'
 
 const showSettingsOverlay = ref(false)
+// const inviteCode = ref(
+//   'fed11qgqrgvnhwden5te0v9k8q6rp9ekh2arfdeukuet595cr2ttpd3jhq6rzve6zuer9wchxvetyd938gcewvdhk6tcqqysptkuvknc7erjgf4em3zfh90kffqf9srujn6q53d6r056e4apze5cw27h75',
+// )
 const inviteCode = ref(
-  'fed11qgqrgvnhwden5te0v9k8q6rp9ekh2arfdeukuet595cr2ttpd3jhq6rzve6zuer9wchxvetyd938gcewvdhk6tcqqysptkuvknc7erjgf4em3zfh90kffqf9srujn6q53d6r056e4apze5cw27h75',
+  'fed11qgqzygrhwden5te0v9cxjtnzd96xxmmfdec8y6twvd5hqmr9wvhxuet59upqzg9jzp5vsn6mzt9ylhun70jy85aa0sn7sepdp4fw5tjdeehah0hfmufvlqem',
 )
 
 const totalBalance = ref(0)

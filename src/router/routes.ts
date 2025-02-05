@@ -14,6 +14,10 @@ const routes: RouteRecordRaw[] = [
     path: '/receive',
     component: () => import('pages/ReceivePage.vue'),
   },
+  {
+    path: '/send',
+    component: () => import('pages/SendPage.vue'),
+  },
 
   // Always leave this as last one,
   // but you can also remove it
