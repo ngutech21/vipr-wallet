@@ -73,7 +73,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import SettingsPage from 'pages/SettingsPage.vue'
-import { FedimintWallet } from '@fedimint/core-web'
+import { useFedimintStore } from 'src/stores/fedimint'
+
 const showSettingsOverlay = ref(false)
 const inviteCode = ref(
   'fed11qgqrgvnhwden5te0v9k8q6rp9ekh2arfdeukuet595cr2ttpd3jhq6rzve6zuer9wchxvetyd938gcewvdhk6tcqqysptkuvknc7erjgf4em3zfh90kffqf9srujn6q53d6r056e4apze5cw27h75',
@@ -83,28 +84,29 @@ const totalBalance = ref(0)
 const federationId = ref('')
 const lightningInvoice = ref('')
 
-const wallet = new FedimintWallet(true)
+const store = useFedimintStore()
+store.initWallet()
 
 async function joinFedimint() {
   // Create the Wallet client
 
   // Open the wallet (should be called once in the application lifecycle)
   const code = inviteCode.value
-  await wallet.initialize()
-  await wallet.open()
+  await store.wallet?.initialize()
+  await store.wallet?.open()
 
   // Join a Federation (if not already open)
-  if (!wallet.isOpen()) {
+  if (!store.wallet?.isOpen()) {
     // const inviteCode =
     //   // mutinynet invite code
     //   'fed11qgqrgvnhwden5te0v9k8q6rp9ekh2arfdeukuet595cr2ttpd3jhq6rzve6zuer9wchxvetyd938gcewvdhk6tcqqysptkuvknc7erjgf4em3zfh90kffqf9srujn6q53d6r056e4apze5cw27h75'
-    await wallet.joinFederation(code)
+    await store.wallet?.joinFederation(code)
   }
 
-  federationId.value = await wallet.federation.getFederationId()
+  federationId.value = (await store.wallet?.federation.getFederationId()) ?? ''
 
   // Get Wallet Balance
-  const balance = (await wallet.balance.getBalance()) / 1_000
+  const balance = ((await store.wallet?.balance.getBalance()) ?? 0) / 1_000
   totalBalance.value = balance
   console.log('Wallet Balance:', balance)
 }
@@ -112,10 +114,12 @@ async function joinFedimint() {
 async function MintTokens() {
   const amount: number = 10_000
   const description: string = 'Test Invoice'
-  const invoice = await wallet.lightning.createInvoice(amount, description)
+  const invoice = await store.wallet?.lightning.createInvoice(amount, description)
 
   // show popup with the lightning invoice
-  lightningInvoice.value = invoice.invoice
+  if (invoice) {
+    lightningInvoice.value = invoice.invoice
+  }
 
   console.log('Invoice:', invoice)
 }
