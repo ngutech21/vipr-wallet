@@ -90,15 +90,11 @@ const federationId = ref('')
 const lightningInvoice = ref('')
 
 const store = useFedimintStore()
-store.initWallet()
 
 async function joinFedimint() {
   // Create the Wallet client
 
-  // Open the wallet (should be called once in the application lifecycle)
   const code = inviteCode.value
-  await store.wallet?.initialize()
-  await store.wallet?.open()
 
   // Join a Federation (if not already open)
   if (!store.wallet?.isOpen()) {
