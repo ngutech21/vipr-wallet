@@ -9,17 +9,20 @@
       <q-card-section class="text-h4">{{ totalBalance }} (Sats)</q-card-section>
     </q-card>
 
-    <!-- show federationId as card-->
-
     <q-card class="q-ma-md" style="width: 200px">
       <q-card-section class="text-h6">Federation ID</q-card-section>
       <q-card-section class="word-wrap">{{ federationId }}</q-card-section>
     </q-card>
 
-    <q-card class="q-ma-md" style="width: 200px">
-      <q-card-section class="text-h6">Lightning Invoice</q-card-section>
-      <q-card-section class="word-wrap">{{ lightningInvoice }}</q-card-section>
-    </q-card>
+    <div cols="12" class="q-mb-md">
+      <q-input
+        filled
+        v-model="inviteCode"
+        label="Your Invite Code"
+        class="q-pa-md q-input-lg word-wrap"
+      />
+      <q-btn label="Join" color="primary" @click="joinFedimint()" />
+    </div>
 
     <q-dialog
       v-model="showSettingsOverlay"
@@ -33,22 +36,12 @@
 
     <div class="q-col-gutter-md q-pa-md">
       <!-- Invite code input -->
-      <div cols="12" class="q-mb-md">
-        <q-input
-          filled
-          v-model="inviteCode"
-          label="Your Invite Code"
-          class="q-pa-md q-input-lg word-wrap"
-        />
-      </div>
 
       <!-- Buttons row -->
       <div cols="12" class="row items-center justify-evenly">
-        <q-btn label="Scan QR Code" color="primary" :to="'/scan'" />
-        <q-btn label="Join" color="primary" @click="joinFedimint()" />
-        <q-btn label="Mint tokens" color="primary" @click="MintTokens()" />
-        <q-btn label="Receive" color="primary" :to="'/receive'" />
-        <q-btn label="Send" color="primary" :to="'/send'" />
+        <q-btn label="Send" icon="arrow_upward" color="primary" :to="'/send'" />
+        <q-btn label="" color="primary" icon="qr_code_scanner" :to="'/scan'" />
+        <q-btn label="Receive" icon="arrow_downward" color="primary" :to="'/receive'" />
       </div>
     </div>
 
@@ -87,7 +80,6 @@ const inviteCode = ref(
 
 const totalBalance = ref(0)
 const federationId = ref('')
-const lightningInvoice = ref('')
 
 const store = useFedimintStore()
 
@@ -98,9 +90,6 @@ async function joinFedimint() {
 
   // Join a Federation (if not already open)
   if (!store.wallet?.isOpen()) {
-    // const inviteCode =
-    //   // mutinynet invite code
-    //   'fed11qgqrgvnhwden5te0v9k8q6rp9ekh2arfdeukuet595cr2ttpd3jhq6rzve6zuer9wchxvetyd938gcewvdhk6tcqqysptkuvknc7erjgf4em3zfh90kffqf9srujn6q53d6r056e4apze5cw27h75'
     await store.wallet?.joinFederation(code)
   }
 
@@ -110,19 +99,6 @@ async function joinFedimint() {
   const balance = ((await store.wallet?.balance.getBalance()) ?? 0) / 1_000
   totalBalance.value = balance
   console.log('Wallet Balance:', balance)
-}
-
-async function MintTokens() {
-  const amount: number = 10_000
-  const description: string = 'Test Invoice'
-  const invoice = await store.wallet?.lightning.createInvoice(amount, description)
-
-  // show popup with the lightning invoice
-  if (invoice) {
-    lightningInvoice.value = invoice.invoice
-  }
-
-  console.log('Invoice:', invoice)
 }
 </script>
 
