@@ -1,28 +1,13 @@
 <template>
-  <q-page class="row items-center justify-evenly">
-    <!-- show balance in a card-->
-    <q-card
-      class="q-ma-md"
-      style="width: 300px; position: absolute; top: 10px; left: 50%; transform: translateX(-50%)"
-    >
+  <q-page class="column items-center justify-evenly">
+    <q-card class="q-ma-md" style="width: 300px">
       <q-card-section class="text-h6">Total Balance</q-card-section>
       <q-card-section class="text-h4">{{ totalBalance }} (Sats)</q-card-section>
-    </q-card>
 
-    <q-card class="q-ma-md" style="width: 200px">
-      <q-card-section class="text-h6">Federation ID</q-card-section>
-      <q-card-section class="word-wrap">{{ federationId }}</q-card-section>
+      <q-card-section class="word-wrap" v-if="selectedFederation"
+        >Active Federation: {{ selectedFederation?.title }}</q-card-section
+      >
     </q-card>
-
-    <div cols="12" class="q-mb-md">
-      <q-input
-        filled
-        v-model="inviteCode"
-        label="Your Invite Code"
-        class="q-pa-md q-input-lg word-wrap"
-      />
-      <q-btn label="Join" color="primary" @click="joinFedimint()" />
-    </div>
 
     <q-dialog
       v-model="showSettingsOverlay"
@@ -35,10 +20,8 @@
     </q-dialog>
 
     <div class="q-col-gutter-md q-pa-md">
-      <!-- Invite code input -->
-
       <!-- Buttons row -->
-      <div cols="12" class="row items-center justify-evenly">
+      <div cols="12" class="row items-center justify-evenly q-gutter-md">
         <q-btn label="Send" icon="arrow_upward" color="primary" :to="'/send'" />
         <q-btn label="" color="primary" icon="qr_code_scanner" :to="'/scan'" />
         <q-btn label="Receive" icon="arrow_downward" color="primary" :to="'/receive'" />
@@ -66,50 +49,35 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import SettingsPage from 'pages/SettingsPage.vue'
+import { useFederationStore } from 'src/stores/federation'
 import { useFedimintStore } from 'src/stores/fedimint'
 
 const showSettingsOverlay = ref(false)
-// const inviteCode = ref(
-//   'fed11qgqrgvnhwden5te0v9k8q6rp9ekh2arfdeukuet595cr2ttpd3jhq6rzve6zuer9wchxvetyd938gcewvdhk6tcqqysptkuvknc7erjgf4em3zfh90kffqf9srujn6q53d6r056e4apze5cw27h75',
-// )
-const inviteCode = ref(
-  'fed11qgqzygrhwden5te0v9cxjtnzd96xxmmfdec8y6twvd5hqmr9wvhxuet59upqzg9jzp5vsn6mzt9ylhun70jy85aa0sn7sepdp4fw5tjdeehah0hfmufvlqem',
-)
 
+const federationStore = useFederationStore()
+const selectedFederation = computed(() => federationStore.selectedFederation)
+
+const fedimintStore = useFedimintStore()
 const totalBalance = ref(0)
-const federationId = ref('')
 
-const store = useFedimintStore()
-
-// const unsubscribe = wallet.balance.subscribeBalance((balance: number) => {
-//   // notwoslash
-//   console.log('Updated balance:', balance)
-// })
+const updateBalance = async () => {
+  const balance = ((await fedimintStore.wallet?.balance.getBalance()) ?? 0) / 1_000
+  totalBalance.value = balance
+  const fedi = await fedimintStore.wallet?.federation.getFederationId()
+  console.log('Balance updated:', balance, fedi)
+}
 
 onMounted(async () => {
   console.log('Joining Fedimint...')
-  await joinFedimint()
+  federationStore.loadSelectedFederation()
+  await updateBalance()
 })
 
-async function joinFedimint() {
-  // Create the Wallet client
-
-  const code = inviteCode.value
-
-  // Join a Federation (if not already open)
-  if (!store.wallet?.isOpen()) {
-    await store.wallet?.joinFederation(code)
-  }
-
-  federationId.value = (await store.wallet?.federation.getFederationId()) ?? ''
-
-  // Get Wallet Balance
-  const balance = ((await store.wallet?.balance.getBalance()) ?? 0) / 1_000
-  totalBalance.value = balance
-  console.log('Wallet Balance:', balance)
-}
+watch(selectedFederation, async () => {
+  await updateBalance()
+})
 </script>
 
 <style scoped>
