@@ -16,7 +16,9 @@
             ref="amountInput"
           />
         </div>
-        <div class="h-6 heading-text">Pay the lightning invoice to receive your ecash.</div>
+        <div v-if="qrData" class="h-6 heading-text">
+          Pay the lightning invoice to receive your ecash.
+        </div>
 
         <!-- QR Code Card -->
         <q-card v-if="qrData" class="input-width">
@@ -40,11 +42,15 @@
 import { ref, onMounted } from 'vue'
 import QrcodeVue from 'qrcode.vue'
 import { useFedimintStore } from 'src/stores/fedimint'
+import { useQuasar } from 'quasar'
+import { useRouter } from 'vue-router'
 
 const amount = ref<number>(0)
 const qrData = ref('')
 const store = useFedimintStore()
 const amountInput = ref<HTMLInputElement | null>(null)
+const $q = useQuasar()
+const router = useRouter()
 
 onMounted(() => {
   if (amountInput.value) {
@@ -65,6 +71,31 @@ async function onRequest() {
   if (invoice) {
     qrData.value = invoice.invoice
     console.log('Invoice:', invoice.invoice)
+
+    try {
+      await store.wallet?.lightning.waitForReceive(invoice.operation_id, 60_000).then((invoice) => {
+        console.log('Received invoice:', invoice)
+        // TODO show nicer notification
+        $q.notify({
+          message: 'Received payment!',
+          color: 'positive',
+          position: 'top',
+        })
+      })
+    } catch (e) {
+      let errorMessage = 'An unknown error occurred.'
+      if (e instanceof Error) {
+        errorMessage = e.message
+      } else if (typeof e === 'string') {
+        errorMessage = e
+      }
+      $q.notify({
+        message: `Error receiving payment: ${errorMessage}`,
+        color: 'negative',
+        position: 'top',
+      })
+    }
+    await router.push({ path: '/' })
   }
 }
 

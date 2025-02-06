@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import SettingsPage from 'pages/SettingsPage.vue'
 import { useFedimintStore } from 'src/stores/fedimint'
 
@@ -82,6 +82,16 @@ const totalBalance = ref(0)
 const federationId = ref('')
 
 const store = useFedimintStore()
+
+// const unsubscribe = wallet.balance.subscribeBalance((balance: number) => {
+//   // notwoslash
+//   console.log('Updated balance:', balance)
+// })
+
+onMounted(async () => {
+  console.log('Joining Fedimint...')
+  await joinFedimint()
+})
 
 async function joinFedimint() {
   // Create the Wallet client
