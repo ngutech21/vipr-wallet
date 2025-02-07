@@ -32,7 +32,7 @@ export const useWalletStore = defineStore('wallet', {
           console.log('Closing wallet isOpen=', open)
         }
 
-        if (!walletIsOpen) {
+        if (!this.wallet?.isOpen()) {
           console.log('Opening wallet')
           const walletOpened = await this.wallet?.open(selectedFederation.federationId)
           if (!walletOpened) {
