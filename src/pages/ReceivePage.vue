@@ -67,6 +67,7 @@ async function onRequest() {
 
   console.log('Requesting amount:', amount.value)
   const invoice = await store.wallet?.lightning.createInvoice(amount.value * 1_000, 'minting ecash')
+  console.log('Invoice:', invoice)
 
   if (invoice) {
     qrData.value = invoice.invoice

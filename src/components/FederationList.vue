@@ -2,14 +2,14 @@
   <q-list bordered padding>
     <q-item
       v-for="fedi in federations"
-      :key="fedi.federationId"
+      :key="fedi.inviteCode"
       clickable
       @click="selectFederation(fedi)"
-      :class="{ 'selected-federation': fedi.federationId === selectedFederation?.federationId }"
+      :class="{ 'selected-federation': fedi.inviteCode === selectedFederation?.inviteCode }"
     >
       <q-item-section>
         <q-item-label>{{ fedi.title }}</q-item-label>
-        <q-item-label caption>{{ fedi.federationId }}</q-item-label>
+        <q-item-label caption>{{ fedi.inviteCode }}</q-item-label>
       </q-item-section>
     </q-item>
   </q-list>
@@ -30,7 +30,11 @@ const federations = computed(() => store.federations)
 const selectedFederation = computed(() => store.selectedFederation)
 
 async function selectFederation(fedi: Federation) {
-  await store.selectFederation(fedi)
+  try {
+    await store.selectFederation(fedi)
+  } catch (error) {
+    console.error('Error selecting federation:', error)
+  }
 }
 </script>
 
