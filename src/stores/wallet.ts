@@ -1,7 +1,7 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { FedimintWallet } from '@fedimint/core-web'
 
-export const useFedimintStore = defineStore('fedimint', {
+export const useWalletStore = defineStore('wallet', {
   state: () => ({
     wallet: null as FedimintWallet | null,
   }),
@@ -16,5 +16,5 @@ export const useFedimintStore = defineStore('fedimint', {
 })
 
 if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useFedimintStore, import.meta.hot))
+  import.meta.hot.accept(acceptHMRUpdate(useWalletStore, import.meta.hot))
 }

@@ -41,13 +41,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import QrcodeVue from 'qrcode.vue'
-import { useFedimintStore } from 'src/stores/fedimint'
+import { useWalletStore } from 'src/stores/wallet'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 
 const amount = ref<number>(0)
 const qrData = ref('')
-const store = useFedimintStore()
+const store = useWalletStore()
 const amountInput = ref<HTMLInputElement | null>(null)
 const $q = useQuasar()
 const router = useRouter()

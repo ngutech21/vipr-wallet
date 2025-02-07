@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import type { Federation } from 'src/components/models'
 
-import { useFedimintStore } from './fedimint' // Import the wallet store
+import { useWalletStore } from './wallet' // Import the wallet store
 
 export const useFederationStore = defineStore('federation', {
   state: () => ({
@@ -39,7 +39,7 @@ export const useFederationStore = defineStore('federation', {
       this.selectedFederation = fedi
       localStorage.setItem('selectedFederation', JSON.stringify(fedi))
 
-      const walletStore = useFedimintStore()
+      const walletStore = useWalletStore()
 
       // FIXME changing wallets does not work yet
       if (!walletStore.wallet?.isOpen()) {

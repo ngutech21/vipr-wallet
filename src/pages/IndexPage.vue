@@ -52,20 +52,20 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import SettingsPage from 'pages/SettingsPage.vue'
 import { useFederationStore } from 'src/stores/federation'
-import { useFedimintStore } from 'src/stores/fedimint'
+import { useWalletStore } from 'src/stores/wallet'
 
 const showSettingsOverlay = ref(false)
 
 const federationStore = useFederationStore()
 const selectedFederation = computed(() => federationStore.selectedFederation)
 
-const fedimintStore = useFedimintStore()
+const walletStore = useWalletStore()
 const totalBalance = ref(0)
 
 const updateBalance = async () => {
-  const balance = ((await fedimintStore.wallet?.balance.getBalance()) ?? 0) / 1_000
+  const balance = ((await walletStore.wallet?.balance.getBalance()) ?? 0) / 1_000
   totalBalance.value = balance
-  const fedi = await fedimintStore.wallet?.federation.getFederationId()
+  const fedi = await walletStore.wallet?.federation.getFederationId()
   console.log('Balance updated:', balance, fedi)
 }
 

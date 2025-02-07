@@ -26,11 +26,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useFedimintStore } from 'src/stores/fedimint'
+import { useWalletStore } from 'src/stores/wallet'
 import { useQuasar } from 'quasar'
 
 const lightningInvoice = ref('')
-const store = useFedimintStore()
+const store = useWalletStore()
 const $q = useQuasar()
 
 // function validateInvoice() {
