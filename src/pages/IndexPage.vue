@@ -49,39 +49,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import SettingsPage from 'pages/SettingsPage.vue'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
-//import { FedimintWallet } from '@fedimint/core-web'
 
 const showSettingsOverlay = ref(false)
-
 const federationStore = useFederationStore()
 const selectedFederation = computed(() => federationStore.selectedFederation)
-
 const walletStore = useWalletStore()
-const totalBalance = ref(0)
+const totalBalance = computed(() => walletStore.balance)
 
-const updateBalance = async () => {
-  try {
-    const balance = ((await walletStore.wallet?.balance.getBalance()) ?? 0) / 1_000
-    totalBalance.value = balance
-    const fedi = await walletStore.wallet?.federation.getFederationId()
-    console.log('Balance updated:', balance, fedi)
-  } catch (e) {
-    console.log('Error in update balance', e)
-  }
-}
-
-onMounted(async () => {
+onMounted(() => {
   console.log('Joining Fedimint...')
   federationStore.loadSelectedFederation()
-  await updateBalance()
-})
-
-watch(selectedFederation, async () => {
-  await updateBalance()
 })
 </script>
 

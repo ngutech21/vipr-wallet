@@ -1,10 +1,12 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { FedimintWallet } from '@fedimint/core-web'
 import { useFederationStore } from './federation'
+import { ref } from 'vue'
 
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
     wallet: null as FedimintWallet | null,
+    balance: ref(0),
   }),
   actions: {
     initWallet() {
@@ -44,6 +46,9 @@ export const useWalletStore = defineStore('wallet', {
             console.log('Joined federation', joined)
           }
         }
+
+        // Update balance after opening the wallet
+        await this.updateBalance()
       }
     },
     async closeWallet() {
@@ -52,6 +57,13 @@ export const useWalletStore = defineStore('wallet', {
     },
     async handleFederationChange() {
       await this.openWallet()
+    },
+    async updateBalance() {
+      if (this.wallet) {
+        const balance = ((await this.wallet.balance.getBalance()) ?? 0) / 1_000
+        this.balance = balance
+        console.log('Balance updated:', balance)
+      }
     },
   },
 })

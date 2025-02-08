@@ -1,4 +1,3 @@
-<!-- filepath: /Users/steffen/projects/serpnt-wallet/src/pages/ReceivePage.vue -->
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-page-container>
@@ -83,6 +82,7 @@ async function onRequest() {
           position: 'top',
         })
       })
+      await store.updateBalance()
     } catch (e) {
       let errorMessage = 'An unknown error occurred.'
       if (e instanceof Error) {
