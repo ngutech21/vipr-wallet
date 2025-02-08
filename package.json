@@ -17,10 +17,12 @@
   "dependencies": {
     "@fedimint/core-web": "^0.0.10",
     "@quasar/extras": "^1.16.4",
+    "idb": "^8.0.2",
     "pinia": "^2.3.1",
     "qrcode.vue": "^3.6.0",
     "quasar": "^2.16.0",
     "register-service-worker": "^1.7.2",
+    "uuid": "^11.0.5",
     "vue": "^3.4.18",
     "vue-qrcode-reader": "^5.7.0",
     "vue-router": "^4.0.12"

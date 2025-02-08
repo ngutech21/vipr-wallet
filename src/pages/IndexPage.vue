@@ -9,6 +9,8 @@
       >
     </q-card>
 
+    <TransactionsList />
+
     <q-dialog
       v-model="showSettingsOverlay"
       position="bottom"
@@ -53,6 +55,7 @@ import { computed, onMounted, ref } from 'vue'
 import SettingsPage from 'pages/SettingsPage.vue'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
+import TransactionsList from 'src/components/TransactionsList.vue'
 
 const showSettingsOverlay = ref(false)
 const federationStore = useFederationStore()

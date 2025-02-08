@@ -43,6 +43,7 @@ import QrcodeVue from 'qrcode.vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
+import { useLightningTransactionsStore } from 'src/stores/transactions'
 
 const amount = ref<number>(0)
 const qrData = ref('')
@@ -50,6 +51,7 @@ const store = useWalletStore()
 const amountInput = ref<HTMLInputElement | null>(null)
 const $q = useQuasar()
 const router = useRouter()
+const lightningTransactionsStore = useLightningTransactionsStore()
 
 onMounted(() => {
   if (amountInput.value) {
@@ -65,7 +67,8 @@ async function onRequest() {
   }
 
   console.log('Requesting amount:', amount.value)
-  const invoice = await store.wallet?.lightning.createInvoice(amount.value * 1_000, 'minting ecash')
+  const invoiceAmount = amount.value * 1_000
+  const invoice = await store.wallet?.lightning.createInvoice(invoiceAmount, 'minting ecash')
   console.log('Invoice:', invoice)
 
   if (invoice) {
@@ -73,14 +76,22 @@ async function onRequest() {
     console.log('Invoice:', invoice.invoice)
 
     try {
-      await store.wallet?.lightning.waitForReceive(invoice.operation_id, 60_000).then((invoice) => {
-        console.log('Received invoice:', invoice)
-        // TODO show nicer notification
-        $q.notify({
-          message: 'Received payment!',
-          color: 'positive',
-          position: 'top',
+      await store.wallet?.lightning
+        .waitForReceive(invoice.operation_id, 60_000)
+        .then((lnReceiveState) => {
+          console.log('Received invoice:', lnReceiveState)
+
+          // TODO show nicer notification
+          $q.notify({
+            message: 'Received payment!',
+            color: 'positive',
+            position: 'top',
+          })
         })
+      await lightningTransactionsStore.addTransaction({
+        amountInSats: amount.value,
+        createdAt: new Date(),
+        invoice: invoice.invoice,
       })
       await store.updateBalance()
     } catch (e) {
