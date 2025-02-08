@@ -21,3 +21,6 @@ node_modules
 # Git
 .git
 .gitignore
+
+# Docker
+.DS_Store
