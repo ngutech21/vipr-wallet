@@ -1,56 +1,63 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-page-container>
-      <q-page padding>
-        <!-- Back button to go to IndexPage -->
-        <q-btn icon="arrow_back" label="Back" flat class="q-mb-lg" :to="'/'" />
+  <transition
+    appear
+    enter-active-class="animated slideInLeft"
+    leave-active-class="animated slideOutLeft"
+  >
+    <!-- Only render layout if not leaving -->
+    <q-layout v-if="!isLeaving" view="lHh Lpr lFf">
+      <q-page-container>
+        <q-page padding>
+          <!-- Back button: remove :to, call goBack -->
+          <q-btn icon="arrow_back" label="Back" flat class="q-mb-lg" @click="goBack" />
 
-        <!-- Enter amount textfield -->
-        <div class="q-mb-md" v-if="!qrData">
-          <q-input
-            filled
-            v-model.number="amount"
-            label="Amount (Sats)"
-            type="number"
-            ref="amountInput"
-          />
-        </div>
-        <div v-if="qrData" class="column items-center justify-center h-6 heading-text">
-          Pay the lightning invoice to receive your ecash
-        </div>
+          <!-- Enter amount textfield -->
+          <div class="q-mb-md" v-if="!qrData">
+            <q-input
+              filled
+              v-model.number="amount"
+              label="Amount (Sats)"
+              type="number"
+              ref="amountInput"
+            />
+          </div>
+          <div v-if="qrData" class="column items-center justify-center h-6 heading-text">
+            Pay the lightning invoice to receive your ecash
+          </div>
 
-        <!-- QR Code Card -->
-        <div class="column items-center justify-center">
-          <q-card v-if="qrData" class="input-width">
-            <q-card-section>
-              <qrcode-vue
-                :value="qrData"
-                :size="480"
-                level="M"
-                bgColor="#ffffff"
-                fgColor="#000000"
-              />
-              <q-card-section class="row">
-                <q-input v-model="qrData" readonly class="col-10" />
-                <q-btn icon="content_copy" flat @click="copyToClipboard" class="col-2" />
+          <!-- QR Code Card -->
+          <div class="column items-center justify-center">
+            <q-card v-if="qrData" class="input-width">
+              <q-card-section>
+                <qrcode-vue
+                  :value="qrData"
+                  :size="480"
+                  level="M"
+                  bgColor="#ffffff"
+                  fgColor="#000000"
+                />
+                <q-card-section class="row">
+                  <q-input v-model="qrData" readonly class="col-10" />
+                  <q-btn icon="content_copy" flat @click="copyToClipboard" class="col-2" />
+                </q-card-section>
               </q-card-section>
-            </q-card-section>
-          </q-card>
-        </div>
+            </q-card>
+          </div>
 
-        <div class="column items-center justify-center" v-if="qrData">
-          <span class="highlight">{{ formattedCountdown }}</span>
-          <span class="countdown-text"
-            >Waiting for Lightning payment ...
-            <q-spinner v-if="isWaiting" size="20px" class="q-ml-sm"
-          /></span>
-        </div>
+          <div class="column items-center justify-center" v-if="qrData">
+            <span class="highlight">{{ formattedCountdown }}</span>
+            <span class="countdown-text"
+              >Waiting for Lightning payment ...
+              <q-spinner v-if="isWaiting" size="20px" class="q-ml-sm"
+            /></span>
+          </div>
 
-        <!-- Request button -->
-        <q-btn label="Create Invoice" color="primary" @click="onRequest" v-if="!qrData" />
-      </q-page>
-    </q-page-container>
-  </q-layout>
+          <!-- Request button -->
+          <q-btn label="Create Invoice" color="primary" @click="onRequest" v-if="!qrData" />
+        </q-page>
+      </q-page-container>
+    </q-layout>
+  </transition>
 </template>
 
 <script setup lang="ts">
@@ -68,8 +75,10 @@ const amountInput = ref<HTMLInputElement | null>(null)
 const $q = useQuasar()
 const router = useRouter()
 const lightningTransactionsStore = useLightningTransactionsStore()
-const countdown = ref(60 * 2)
+const lnExpiry = 60 * 20 // 20 minutes
+const countdown = ref(lnExpiry)
 const isWaiting = ref(false)
+const isLeaving = ref(false) // New flag to control transition
 
 const formattedCountdown = computed(() => {
   const minutes = Math.floor(countdown.value / 60)
@@ -97,7 +106,7 @@ async function onRequest() {
 
   console.log('Requesting amount:', amount.value)
   const invoiceAmount = amount.value * 1_000
-  const lnExpiry = 60 * 2 // 2 minutes
+
   const invoice = await store.wallet?.lightning.createInvoice(
     invoiceAmount,
     'minting ecash',
@@ -143,7 +152,6 @@ async function onRequest() {
       })
     } finally {
       isWaiting.value = false
-      //$q.loading.hide()
     }
     await router.push({ path: '/' })
   }
@@ -151,6 +159,12 @@ async function onRequest() {
 
 async function copyToClipboard() {
   await navigator.clipboard.writeText(qrData.value)
+}
+
+async function goBack() {
+  isLeaving.value = true
+  await new Promise((resolve) => setTimeout(resolve, 500)) // delay to allow the animation to play
+  await router.push({ path: '/' })
 }
 </script>
 
@@ -172,7 +186,7 @@ async function copyToClipboard() {
 
 .highlight {
   font-size: 1.5rem;
-  color: green;
+  color: var(--q-positive);
   font-weight: bold;
   margin-top: 10px;
 }
