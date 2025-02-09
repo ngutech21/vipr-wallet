@@ -15,20 +15,36 @@
             ref="amountInput"
           />
         </div>
-        <div v-if="qrData" class="h-6 heading-text">
-          Pay the lightning invoice to receive your ecash.
+        <div v-if="qrData" class="column items-center justify-center h-6 heading-text">
+          Pay the lightning invoice to receive your ecash
         </div>
 
         <!-- QR Code Card -->
-        <q-card v-if="qrData" class="input-width">
-          <q-card-section>
-            <qrcode-vue :value="qrData" :size="480" level="M" bgColor="#ffffff" fgColor="#000000" />
-            <q-card-section class="row">
-              <q-input filled v-model="qrData" label="Lightning Invoice" readonly class="col-10" />
-              <q-btn icon="content_copy" label="Copy" flat @click="copyToClipboard" class="col-2" />
+        <div class="column items-center justify-center">
+          <q-card v-if="qrData" class="input-width">
+            <q-card-section>
+              <qrcode-vue
+                :value="qrData"
+                :size="480"
+                level="M"
+                bgColor="#ffffff"
+                fgColor="#000000"
+              />
+              <q-card-section class="row">
+                <q-input v-model="qrData" readonly class="col-10" />
+                <q-btn icon="content_copy" flat @click="copyToClipboard" class="col-2" />
+              </q-card-section>
             </q-card-section>
-          </q-card-section>
-        </q-card>
+          </q-card>
+        </div>
+
+        <div class="column items-center justify-center" v-if="qrData">
+          <span class="highlight">{{ formattedCountdown }}</span>
+          <span class="countdown-text"
+            >Waiting for Lightning payment ...
+            <q-spinner v-if="isWaiting" size="20px" class="q-ml-sm"
+          /></span>
+        </div>
 
         <!-- Request button -->
         <q-btn label="Create Invoice" color="primary" @click="onRequest" v-if="!qrData" />
@@ -38,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import QrcodeVue from 'qrcode.vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useQuasar } from 'quasar'
@@ -52,32 +68,51 @@ const amountInput = ref<HTMLInputElement | null>(null)
 const $q = useQuasar()
 const router = useRouter()
 const lightningTransactionsStore = useLightningTransactionsStore()
+const countdown = ref(60 * 2)
+const isWaiting = ref(false)
+
+const formattedCountdown = computed(() => {
+  const minutes = Math.floor(countdown.value / 60)
+  const seconds = countdown.value % 60
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`
+})
 
 onMounted(() => {
   if (amountInput.value) {
     amountInput.value.focus()
   }
+  const interval = setInterval(() => {
+    if (countdown.value > 0) {
+      countdown.value--
+    } else {
+      clearInterval(interval)
+    }
+  }, 1000)
 })
 
 async function onRequest() {
-  // Handle request logic here
-
   if (amount.value < 1) {
     return
   }
 
   console.log('Requesting amount:', amount.value)
   const invoiceAmount = amount.value * 1_000
-  const invoice = await store.wallet?.lightning.createInvoice(invoiceAmount, 'minting ecash')
+  const lnExpiry = 60 * 2 // 2 minutes
+  const invoice = await store.wallet?.lightning.createInvoice(
+    invoiceAmount,
+    'minting ecash',
+    lnExpiry,
+  )
   console.log('Invoice:', invoice)
 
   if (invoice) {
     qrData.value = invoice.invoice
+    isWaiting.value = true
     console.log('Invoice:', invoice.invoice)
 
     try {
       await store.wallet?.lightning
-        .waitForReceive(invoice.operation_id, 60_000)
+        .waitForReceive(invoice.operation_id, lnExpiry * 1_000)
         .then((lnReceiveState) => {
           console.log('Received invoice:', lnReceiveState)
 
@@ -106,6 +141,9 @@ async function onRequest() {
         color: 'negative',
         position: 'top',
       })
+    } finally {
+      isWaiting.value = false
+      //$q.loading.hide()
     }
     await router.push({ path: '/' })
   }
@@ -123,6 +161,19 @@ async function copyToClipboard() {
 }
 
 .heading-text {
-  font-size: 1.5rem; /* Adjust the font size as needed */
+  font-size: 1.25rem;
+  margin-bottom: 10px;
+}
+
+.countdown-text {
+  font-size: 1.25rem;
+  margin-top: 10px;
+}
+
+.highlight {
+  font-size: 1.5rem;
+  color: green;
+  font-weight: bold;
+  margin-top: 10px;
 }
 </style>
