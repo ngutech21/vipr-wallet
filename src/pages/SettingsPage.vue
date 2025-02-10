@@ -1,7 +1,8 @@
 <template>
-  <q-card class="q-px-md q-pt-md q-pb-xl">
-    <q-card-section>
+  <q-card class="full-width">
+    <q-card-section class="row items-center justify-between">
       <div class="text-h6">Settings</div>
+      <q-btn icon="close" flat round dense v-close-popup class="close-btn" color="primary" />
     </q-card-section>
 
     <q-separator />
@@ -16,10 +17,6 @@
     <q-card-section>
       <div class="text-subtitle1">App Version: {{ version }}</div>
       <div class="text-subtitle1">Quasar Version: {{ quasarVersion }}</div>
-    </q-card-section>
-
-    <q-card-section>
-      <q-btn label="Close" color="primary" v-close-popup />
     </q-card-section>
   </q-card>
 </template>
@@ -36,5 +33,8 @@ const option2 = ref('')
 <style scoped>
 .full-width {
   width: 100%;
+}
+.q-dialog__inner--minimized > div {
+  max-width: 100%;
 }
 </style>

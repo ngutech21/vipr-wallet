@@ -1,18 +1,28 @@
 <template>
-  <q-card class="q-px-md q-pt-md q-pb-xl">
-    <q-card-section>
+  <q-card class="full-width">
+    <q-card-section class="row items-center justify-between">
       <div class="text-h6">Add Federation</div>
+      <q-btn icon="close" flat round dense v-close-popup color="primary" />
     </q-card-section>
+
+    <q-separator />
 
     <div class="q-pa-md">
-      <q-input filled v-model="inviteCode" label="Federation invite code" />
-      <q-input filled v-model="federationName" label="Name" />
+      <q-input
+        filled
+        v-model="inviteCode"
+        label="Federation Invitecode"
+        :rules="[(val) => !!val || 'Invitecode is required']"
+      />
+      <q-input
+        filled
+        v-model="federationName"
+        label="Name"
+        class="q-mt-md"
+        :rules="[(val) => !!val || 'Name is required']"
+      />
       <q-btn label="Add Federation" color="primary" class="q-mt-md" @click="addFederation" />
     </div>
-
-    <q-card-section>
-      <q-btn label="Close" color="primary" v-close-popup />
-    </q-card-section>
   </q-card>
 </template>
 
@@ -44,5 +54,10 @@ async function addFederation() {
 </script>
 
 <style scoped>
-/* ...optional custom styles... */
+.full-width {
+  width: 100%;
+}
+.q-dialog__inner--minimized > div {
+  max-width: 100%;
+}
 </style>

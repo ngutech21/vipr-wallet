@@ -111,10 +111,11 @@ onMounted(() => {
 }
 
 .full-width-dialog .q-dialog__inner {
-  width: 100vw;
-  max-width: 100vw;
-  margin: 0;
-  border-radius: 0; /* Optional: remove rounded corners */
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
 }
 .word-wrap {
   word-wrap: break-word;
