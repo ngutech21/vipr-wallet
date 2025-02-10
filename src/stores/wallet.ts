@@ -65,6 +65,17 @@ export const useWalletStore = defineStore('wallet', {
         console.log('Balance updated:', balance)
       }
     },
+
+    async isValidInviteCode(inviteCode: string): Promise<string | undefined> {
+      const tmpWallet = new FedimintWallet()
+      if (tmpWallet) {
+        await tmpWallet.joinFederation(inviteCode, inviteCode)
+        const federationId = await tmpWallet.federation.getFederationId()
+        await tmpWallet.cleanup()
+        return federationId
+      }
+      return undefined
+    },
   },
 })
 if (import.meta.hot) {

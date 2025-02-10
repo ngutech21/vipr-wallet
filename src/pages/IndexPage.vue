@@ -21,6 +21,16 @@
       <SettingsPage @close="showSettingsOverlay = false" />
     </q-dialog>
 
+    <q-dialog
+      v-model="showAddFederationOverlay"
+      position="bottom"
+      transition-show="slide-up"
+      transition-hide="slide-down"
+      class="full-width-dialog"
+    >
+      <AddFederationPage @close="showAddFederationOverlay = false" />
+    </q-dialog>
+
     <div class="q-col-gutter-md q-pa-md">
       <!-- Buttons row -->
       <div cols="12" class="row items-center justify-evenly q-gutter-md">
@@ -35,7 +45,13 @@
         <q-btn stack icon="home" label="Home" class="small-label" />
       </div>
       <div class="button-container">
-        <q-btn stack icon="account_balance" label="Federations" class="small-label" />
+        <q-btn
+          stack
+          icon="account_balance"
+          label="Federations"
+          class="small-label"
+          @click="showAddFederationOverlay = true"
+        />
       </div>
       <div class="button-container">
         <q-btn
@@ -56,8 +72,10 @@ import SettingsPage from 'pages/SettingsPage.vue'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import TransactionsList from 'src/components/TransactionsList.vue'
+import AddFederationPage from './AddFederationPage.vue'
 
 const showSettingsOverlay = ref(false)
+const showAddFederationOverlay = ref(false)
 const federationStore = useFederationStore()
 const selectedFederation = computed(() => federationStore.selectedFederation)
 const walletStore = useWalletStore()
@@ -96,6 +114,7 @@ onMounted(() => {
   width: 100vw;
   max-width: 100vw;
   margin: 0;
+  border-radius: 0; /* Optional: remove rounded corners */
 }
 .word-wrap {
   word-wrap: break-word;

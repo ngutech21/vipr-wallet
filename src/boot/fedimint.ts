@@ -4,7 +4,7 @@ import { useWalletStore } from 'src/stores/wallet'
 import { defineBoot } from '#q-app/wrappers'
 import { useFederationStore } from 'src/stores/federation'
 export default defineBoot(async ({ app, router, store }) => {
-  console.log('FEDIMINT BOOT started')
+  await useFederationStore().loadFederations()
   useFederationStore().loadSelectedFederation()
 
   const fstore = useWalletStore()

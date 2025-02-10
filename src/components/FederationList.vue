@@ -9,7 +9,7 @@
     >
       <q-item-section>
         <q-item-label>{{ fedi.title }}</q-item-label>
-        <q-item-label caption>{{ fedi.inviteCode }}</q-item-label>
+        <q-item-label caption>{{ fedi.federationId }}</q-item-label>
       </q-item-section>
     </q-item>
   </q-list>
