@@ -1,13 +1,6 @@
 <template>
-  <q-card class="full-width">
-    <q-card-section class="row items-center justify-between">
-      <div class="text-h6">Add Federation</div>
-      <q-btn icon="close" flat round dense v-close-popup color="primary" />
-    </q-card-section>
-
-    <q-separator />
-
-    <div class="q-pa-md">
+  <ModalCard title="Add Federation">
+    <q-form ref="federationForm" class="q-pa-md">
       <q-input
         filled
         v-model="inviteCode"
@@ -21,9 +14,15 @@
         class="q-mt-md"
         :rules="[(val) => !!val || 'Name is required']"
       />
-      <q-btn label="Add Federation" color="primary" class="q-mt-md" @click="addFederation" />
-    </div>
-  </q-card>
+      <q-btn
+        type="submit"
+        label="Add Federation"
+        color="primary"
+        class="q-mt-md"
+        @click="addFederation"
+      />
+    </q-form>
+  </ModalCard>
 </template>
 
 <script setup lang="ts">
@@ -31,6 +30,7 @@ import { ref } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
 import type { Federation } from 'src/components/models'
+import ModalCard from 'src/components/ModalCard.vue'
 
 const inviteCode = ref('')
 const federationName = ref('')
@@ -53,11 +53,4 @@ async function addFederation() {
 }
 </script>
 
-<style scoped>
-.full-width {
-  width: 100%;
-}
-.q-dialog__inner--minimized > div {
-  max-width: 100%;
-}
-</style>
+<style scoped></style>

@@ -16,7 +16,6 @@
       position="bottom"
       transition-show="slide-up"
       transition-hide="slide-down"
-      class="full-width-dialog"
     >
       <SettingsPage @close="showSettingsOverlay = false" />
     </q-dialog>
@@ -26,7 +25,6 @@
       position="bottom"
       transition-show="slide-up"
       transition-hide="slide-down"
-      class="full-width-dialog"
     >
       <AddFederationPage @close="showAddFederationOverlay = false" />
     </q-dialog>
@@ -108,14 +106,6 @@ onMounted(() => {
 .q-btn.small-label .q-btn__content .q-btn__label {
   font-size: 0.75rem !important;
   text-align: center;
-}
-
-.full-width-dialog .q-dialog__inner {
-  width: 100vw !important;
-  max-width: 100vw !important;
-  margin: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
 }
 .word-wrap {
   word-wrap: break-word;
