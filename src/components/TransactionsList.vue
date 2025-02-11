@@ -1,6 +1,6 @@
 <template>
   <div class="transactions-list">
-    <ul>
+    <ul class="q-pa-xl q-ma-none">
       <li
         v-for="transaction in transactions"
         :key="String(transaction.id)"
@@ -11,7 +11,7 @@
           >Received <br />{{ new Date(transaction.createdAt).toLocaleString() }}</span
         >
         <span class="transaction-amount"
-          >+ {{ transaction.amountInSats.toLocaleString() }} sats</span
+          >+ {{ transaction.amountInSats.toLocaleString() }} Sats</span
         >
       </li>
     </ul>
