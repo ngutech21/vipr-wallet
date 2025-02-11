@@ -1,4 +1,3 @@
-<!-- filepath: /Users/steffen/projects/serpnt-wallet/src/pages/SendPage.vue -->
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-page-container>
