@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@fedimint/core-web": "^0.0.10",
-    "@quasar/extras": "^1.16.4",
+    "@quasar/extras": "^1.16.17",
     "idb": "^8.0.2",
     "pinia": "^2.3.1",
     "qrcode.vue": "^3.6.0",
