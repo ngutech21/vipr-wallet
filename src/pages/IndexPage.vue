@@ -1,10 +1,7 @@
 <template>
   <q-page class="column">
     <div class="text-white q-pa-md dark-bg" style="width: 100%">
-      <div class="text-h4 text-center">
-        {{ totalBalance }}
-        <q-icon name="fa-solid fa-bitcoin-sign" />
-      </div>
+      <div class="text-h4 text-center">{{ totalBalance.toLocaleString() }} sats</div>
 
       <div class="text-center" v-if="selectedFederation">
         <q-chip class="q-mt-sm" color="white" text-color="primary" outline>
