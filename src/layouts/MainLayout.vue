@@ -32,7 +32,14 @@
     <q-footer class="text-white">
       <q-toolbar class="dark-bg">
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
-        <q-btn stack icon="home" label="Home" class="small-label button-container" />
+        <q-btn
+          stack
+          flat
+          icon="home"
+          icon-color="primary"
+          label="Home"
+          class="small-label button-container text-primary"
+        />
 
         <q-btn
           stack
