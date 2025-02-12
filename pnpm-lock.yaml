@@ -36,8 +36,8 @@ importers:
         specifier: ^3.4.18
         version: 3.5.13(typescript@5.7.3)
       vue-qrcode-reader:
-        specifier: ^5.7.0
-        version: 5.7.0
+        specifier: ^5.7.1
+        version: 5.7.1
       vue-router:
         specifier: ^4.0.12
         version: 4.5.0(vue@3.5.13(typescript@5.7.3))
@@ -3576,8 +3576,8 @@ packages:
     peerDependencies:
       eslint: '>=6.0.0'
 
-  vue-qrcode-reader@5.7.0:
-    resolution: {integrity: sha512-NuLBK3madyMhM35n2libd0i5GH3Rcvq2d7qB1Qyf5FqdIdC6GaMEC8Wi8v0HFuv5V5aptOLhHVBfSczBpO3lvA==}
+  vue-qrcode-reader@5.7.1:
+    resolution: {integrity: sha512-7QBu3PqaPJHxobiDLqgcrp6wsjdTk9GJWhRCd4CgQYi93gBw/sIXNNWtbjeKz8d3QYj13n9dyPvcPMUcGOsBHw==}
     engines: {node: '>=18.0.0'}
 
   vue-router@4.5.0:
@@ -7417,7 +7417,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  vue-qrcode-reader@5.7.0:
+  vue-qrcode-reader@5.7.1:
     dependencies:
       barcode-detector: 2.2.2
       webrtc-adapter: 8.2.3
