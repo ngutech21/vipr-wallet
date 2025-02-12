@@ -68,7 +68,7 @@ function toggleLeftDrawer() {
 }
 </script>
 
-<style>
+<style scoped>
 .button-container {
   flex: 1;
   display: flex;

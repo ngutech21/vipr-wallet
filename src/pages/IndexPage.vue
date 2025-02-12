@@ -1,6 +1,6 @@
 <template>
   <q-page class="column">
-    <div class="bg-primary text-white q-pa-md" style="width: 100%">
+    <div class="text-white q-pa-md dark-bg" style="width: 100%">
       <div class="text-h4 text-center">
         {{ totalBalance }}
         <q-icon name="fa-solid fa-bitcoin-sign" />
@@ -55,5 +55,8 @@ onMounted(() => {
 .word-wrap {
   word-wrap: break-word;
   white-space: normal;
+}
+.dark-bg {
+  background-color: #202020;
 }
 </style>
