@@ -12,8 +12,8 @@ importers:
         specifier: ^0.0.10
         version: 0.0.10
       '@quasar/extras':
-        specifier: ^1.16.4
-        version: 1.16.16
+        specifier: ^1.16.17
+        version: 1.16.17
       idb:
         specifier: ^8.0.2
         version: 8.0.2
@@ -900,8 +900,8 @@ packages:
       workbox-build:
         optional: true
 
-  '@quasar/extras@1.16.16':
-    resolution: {integrity: sha512-aswGUbEyLvt45KB1u6hBD3s82KnOdkqTn6YVu3xX5aGgwQkCWPyqb3FMTEHG+4+gGTMp4pIcnng96RlqswQctQ==}
+  '@quasar/extras@1.16.17':
+    resolution: {integrity: sha512-4aX9XU/oj1+8O2C7LQCgywmoIw7suyUEZMPFFLWI61f21mF55VOsMdLCBhjeFgL5U4EWy079mfOR6/J8thi/ag==}
 
   '@quasar/render-ssr-error@1.0.3':
     resolution: {integrity: sha512-A8RF99q6/sOSe1Ighnh5syEIbliD3qUYEJd2HyfFyBPSMF+WYGXon5dmzg4nUoK662NgOggInevkDyBDJcZugg==}
@@ -4646,7 +4646,7 @@ snapshots:
       - tsx
       - yaml
 
-  '@quasar/extras@1.16.16': {}
+  '@quasar/extras@1.16.17': {}
 
   '@quasar/render-ssr-error@1.0.3':
     dependencies:
