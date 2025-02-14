@@ -29,7 +29,7 @@
       <router-view />
     </q-page-container>
 
-    <q-footer class="text-white">
+    <q-footer class="text-white footer-container">
       <q-toolbar class="dark-bg">
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
         <q-btn
@@ -88,7 +88,14 @@ function toggleLeftDrawer() {
   text-align: center;
 }
 
+.footer-container {
+  padding-bottom: env(safe-area-inset-bottom);
+  height: auto;
+  min-height: 56px;
+}
+
 .dark-bg {
   background-color: #202020;
+  height: 100%;
 }
 </style>

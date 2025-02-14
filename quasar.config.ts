@@ -15,6 +15,10 @@ export default defineConfig((/* ctx */) => {
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: ['fedimint'],
 
+    htmlVariables: {
+      viewport: 'width=device-width, initial-scale=1.0, viewport-fit=cover',
+    },
+
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#css
     css: ['app.scss'],
 
