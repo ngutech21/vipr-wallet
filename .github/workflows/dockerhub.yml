@@ -1,0 +1,49 @@
+name: docker-push-dockerhub
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to docker.io
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_NAME }}
+          password: ${{ secrets.DOCKER_PAT }}
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date -u '+%F-%T')"
+
+      - name: Get short SHA
+        id: sha
+        run: echo "::set-output name=sha::$(git rev-parse --short HEAD)"
+
+      - name: Build and push Docker image bullseye
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          build-args: |
+            COMMITHASH=${{ steps.sha.outputs.sha }}
+            BUILDTIME=${{ steps.date.outputs.date }}
+          tags: docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:${{ steps.sha.outputs.sha }}-alpine
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: DigitalOcean App Platform deployment
+        uses: digitalocean/app_action/deploy@v2
+        with:
+          app_name: vipr-wallet
+          token: ${{ secrets.DO_TOKEN }}
