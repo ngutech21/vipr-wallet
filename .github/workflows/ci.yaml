@@ -30,5 +30,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm exec vue-tsc --noEmit
+
       - name: Build frontend
         run: pnpm quasar build
