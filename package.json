@@ -1,8 +1,8 @@
 {
-  "name": "serpnt",
+  "name": "vipr",
   "version": "0.0.1",
-  "description": "A Quasar Project",
-  "productName": "Serpnt-Wallet",
+  "description": "vipr ecash wallet",
+  "productName": "Vipr-Wallet",
   "author": "ngutech21 <ngutech21@pm.me>",
   "type": "module",
   "private": true,

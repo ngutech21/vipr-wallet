@@ -1,15 +1,25 @@
-[![CI](https://github.com/ngutech21/serpnt-wallet/actions/workflows/ci.yaml/badge.svg)](https://github.com/ngutech21/serpnt-wallet/actions/workflows/ci.yaml)
+[![CI](https://github.com/ngutech21/vipr-wallet/actions/workflows/ci.yaml/badge.svg)](https://github.com/ngutech21/vipr-wallet/actions/workflows/ci.yaml)
 
-# Serpnt-Wallet (serpnt)
+# Vipr-Wallet
 
-A Quasar Project
+Vipr fedimint wallet
+
+## Install quasar-cli
+
+```bash
+npm i -g @quasar/cli
+```
+
+## Install pnpm
+
+```bash
+npm install -g pnpm@latest-10
+```
 
 ## Install the dependencies
 
 ```bash
-yarn
-# or
-npm install
+pnpm install
 ```
 
 ### Start the app in development mode (hot-code reloading, error reporting, etc.)
@@ -21,23 +31,19 @@ quasar dev
 ### Lint the files
 
 ```bash
-yarn lint
-# or
-npm run lint
+pnpm lint
 ```
 
 ### Format the files
 
 ```bash
-yarn format
-# or
-npm run format
+pnpm format
 ```
 
 ### Build the app for production
 
 ```bash
-quasar build
+pnpm build
 ```
 
 ### Customize the configuration
