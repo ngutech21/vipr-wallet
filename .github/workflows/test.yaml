@@ -31,11 +31,4 @@ jobs:
         run: pnpm install
 
       - name: Run Vitest
-        run: pnpm vitest run --coverage
-
-      - name: Upload coverage reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage/
-          retention-days: 7
+        run: pnpm vitest run
