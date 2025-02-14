@@ -27,7 +27,7 @@ jobs:
         id: sha
         run: echo "::set-output name=sha::$(git rev-parse --short HEAD)"
 
-      - name: Build and push Docker image bullseye
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -36,7 +36,7 @@ jobs:
           build-args: |
             COMMITHASH=${{ steps.sha.outputs.sha }}
             BUILDTIME=${{ steps.date.outputs.date }}
-          tags: docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:${{ steps.sha.outputs.sha }}-alpine
+          tags: docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:${{ steps.sha.outputs.sha }}-alpine, docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:latest
 
   deploy:
     runs-on: ubuntu-latest
