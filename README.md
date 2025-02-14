@@ -1,4 +1,5 @@
 [![CI](https://github.com/ngutech21/vipr-wallet/actions/workflows/ci.yaml/badge.svg)](https://github.com/ngutech21/vipr-wallet/actions/workflows/ci.yaml)
+[![Tests](https://github.com/ngutech21/vipr-wallet/actions/workflows/test.yaml/badge.svg)](https://github.com/ngutech21/vipr-wallet/actions/workflows/test.yaml)
 
 # Vipr-Wallet
 
