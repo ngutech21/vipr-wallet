@@ -7,7 +7,7 @@
       @click="selectFederation(fedi)"
       :class="{ 'selected-federation': fedi.inviteCode === selectedFederation?.inviteCode }"
     >
-      <q-item-section>
+      <q-item-section class="federation-item">
         <q-item-label>{{ fedi.title }}</q-item-label>
         <q-item-label caption>{{ fedi.federationId }}</q-item-label>
       </q-item-section>
