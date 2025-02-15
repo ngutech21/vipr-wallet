@@ -29,7 +29,7 @@
       <router-view />
     </q-page-container>
 
-    <q-footer class="text-white footer-container">
+    <q-footer class="text-white footer-container ios-safe-area dark-bg">
       <q-toolbar class="dark-bg">
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
         <q-btn
@@ -43,6 +43,7 @@
 
         <q-btn
           stack
+          flat
           icon="account_balance"
           label="Federations"
           class="small-label button-container"
@@ -51,6 +52,7 @@
 
         <q-btn
           stack
+          flat
           icon="settings"
           label="Settings"
           class="small-label button-container"
@@ -93,13 +95,18 @@ function toggleLeftDrawer() {
 }
 
 .footer-container {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
   height: auto;
-  min-height: 56px;
+  min-height: 60px;
+  /* Ensure content doesn't overflow into safe area */
+  margin-bottom: constant(safe-area-inset-bottom); /* iOS 11.0 */
+  margin-bottom: env(safe-area-inset-bottom); /* iOS 11.2+ */
 }
 
-.dark-bg {
-  background-color: #202020;
-  height: 100%;
+.ios-safe-area {
+  /* Ensure the entire footer respects the safe area */
+  padding-bottom: max(15px, env(safe-area-inset-bottom));
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 </style>
