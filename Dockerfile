@@ -11,7 +11,10 @@ COPY . .
 RUN npm install -g pnpm && pnpm install
 
 # Copy all remaining files
-
+ARG COMMITHASH
+ARG BUILDTIME
+ENV COMMITHASH=${COMMITHASH}
+ENV BUILDTIME=${BUILDTIME}
 
 # Build the Quasar app (adjust build command if different)
 RUN pnpm quasar build -m pwa

@@ -19,13 +19,14 @@ jobs:
           registry: docker.io
           username: ${{ secrets.DOCKER_NAME }}
           password: ${{ secrets.DOCKER_PAT }}
+
       - name: Get current date
         id: date
-        run: echo "::set-output name=date::$(date -u '+%F-%T')"
+        run: echo "date=$(date -u '+%F-%T')" >> $GITHUB_OUTPUT
 
       - name: Get short SHA
         id: sha
-        run: echo "::set-output name=sha::$(git rev-parse --short HEAD)"
+        run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -38,11 +39,7 @@ jobs:
             BUILDTIME=${{ steps.date.outputs.date }}
           tags: docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:${{ steps.sha.outputs.sha }}-alpine, docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:latest
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build-and-push
-    steps:
-      - name: DigitalOcean App Platform deployment
+      - name: Deploy to DigitalOcean
         uses: digitalocean/app_action/deploy@v2
         with:
           app_name: vipr-wallet

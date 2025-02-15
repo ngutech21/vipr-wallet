@@ -6,6 +6,8 @@ import wasm from 'vite-plugin-wasm'
 import topLevelAwait from 'vite-plugin-top-level-await'
 
 export default defineConfig((/* ctx */) => {
+  const buildTimeStamp = new Date().toISOString()
+
   return {
     // https://v2.quasar.dev/quasar-cli-vite/prefetch-feature
     // preFetch: true,
@@ -82,7 +84,11 @@ export default defineConfig((/* ctx */) => {
 
       // publicPath: '/',
       // analyze: true,
-      // env: {},
+      env: {
+        VITE_COMMIT_HASH: process.env.COMMITHASH || 'development',
+        VITE_BUILD_TIME: process.env.BUILDTIME || buildTimeStamp,
+      },
+
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,
@@ -111,6 +117,10 @@ export default defineConfig((/* ctx */) => {
     devServer: {
       // https: true,
       open: { app: { name: 'firefox' } }, // opens browser window automatically
+      env: {
+        VITE_COMMIT_HASH: 'development',
+        VITE_BUILD_TIME: buildTimeStamp,
+      },
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework

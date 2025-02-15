@@ -88,6 +88,10 @@ function toggleLeftDrawer() {
   text-align: center;
 }
 
+.dark-bg {
+  background-color: #202020;
+}
+
 .footer-container {
   padding-bottom: env(safe-area-inset-bottom);
   height: auto;
