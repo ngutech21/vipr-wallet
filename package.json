@@ -10,12 +10,13 @@
     "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "pnpm run test:unit",
-    "dev": "quasar dev",
-    "build": "quasar build",
+    "dev": "quasar dev -m pwa",
+    "build": "quasar build -m pwa",
     "postinstall": "quasar prepare",
     "test:unit:ui": "vitest --ui",
     "test:unit": "vitest",
-    "test:unit:ci": "vitest run"
+    "test:unit:ci": "vitest run",
+    "typecheck": "exec vue-tsc --noEmit"
   },
   "dependencies": {
     "@fedimint/core-web": "^0.0.10",

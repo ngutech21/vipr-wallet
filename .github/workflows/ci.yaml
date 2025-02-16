@@ -34,7 +34,7 @@ jobs:
         run: pnpm lint
 
       - name: Type check
-        run: pnpm exec vue-tsc --noEmit
+        run: pnpm typecheck
 
       - name: Build frontend
-        run: pnpm quasar build
+        run: pnpm build
