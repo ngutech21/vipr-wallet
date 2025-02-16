@@ -31,3 +31,22 @@ if (process.env.MODE !== 'ssr' || process.env.PROD) {
     }),
   )
 }
+
+// This allows the web app to trigger skipWaiting via
+// registration.waiting.postMessage({type: 'SKIP_WAITING'})
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    void self.skipWaiting()
+  }
+})
+
+// Auto-update behavior
+self.addEventListener('install', () => {
+  // Optional: automatically skip waiting
+  // void self.skipWaiting()
+})
+
+self.addEventListener('activate', () => {
+  // Take control of all clients immediately
+  clientsClaim()
+})
