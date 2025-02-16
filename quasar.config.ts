@@ -191,6 +191,10 @@ export default defineConfig((/* ctx */) => {
       sourceFilesConfig: {
         pwaServiceWorker: 'src-pwa/custom-service-worker',
       },
+      // Remove the extendInjectManifestOptions and add this instead
+      extendPWACustomSWConf(esbuildConf) {
+        esbuildConf.format = 'esm'
+      }
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova
