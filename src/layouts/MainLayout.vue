@@ -18,45 +18,40 @@
       <AddFederationPage @close="showAddFederationOverlay = false" />
     </q-dialog>
 
-    <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered>
-      <q-list>
-        <q-item-label header> Federations </q-item-label>
-        <FederationList />
-      </q-list>
-    </q-drawer>
-
     <q-page-container>
       <router-view />
     </q-page-container>
 
     <q-footer class="text-white footer-container ios-safe-area dark-bg">
       <q-toolbar class="dark-bg">
-        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
         <q-btn
           stack
           flat
           icon="home"
-          icon-color="primary"
+          :color="isHomeActive ? 'primary' : 'white'"
           label="Home"
           class="small-label button-container text-primary"
+          :to="'/'"
         />
 
         <q-btn
           stack
           flat
           icon="account_balance"
+          :color="isFederationsActive ? 'primary' : 'white'"
           label="Federations"
           class="small-label button-container"
-          @click="showAddFederationOverlay = true"
+          :to="'/federations'"
         />
 
         <q-btn
           stack
           flat
           icon="settings"
+          :color="isSettingsActive ? 'primary' : 'white'"
           label="Settings"
           class="small-label button-container"
-          @click="showSettingsOverlay = true"
+          :to="'/settings'"
         />
       </q-toolbar>
     </q-footer>
@@ -64,17 +59,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import FederationList from 'components/FederationList.vue'
+import { ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import SettingsPage from 'src/pages/SettingsPage.vue'
 import AddFederationPage from 'src/pages/AddFederationPage.vue'
 const showSettingsOverlay = ref(false)
 const showAddFederationOverlay = ref(false)
-const leftDrawerOpen = ref(false)
 
-function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value
-}
+const route = useRoute()
+
+const isHomeActive = computed(() => route.path === '/')
+const isFederationsActive = computed(() => route.path === '/federations')
+const isSettingsActive = computed(() => route.path === '/settings')
 </script>
 
 <style scoped>

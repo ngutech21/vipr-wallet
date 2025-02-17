@@ -1,5 +1,6 @@
 <template>
-  <ModalCard title="Settings">
+  <q-page class="column q-px-md">
+    <div class="text-h6 q-pt-md q-mb-md">Settings</div>
     <q-card class="full-width">
       <q-card-section>
         <div class="text-subtitle1">App Version: {{ version }}</div>
@@ -14,11 +15,10 @@
         />
       </q-card-section>
     </q-card>
-  </ModalCard>
+  </q-page>
 </template>
 
 <script setup lang="ts">
-import ModalCard from 'src/components/ModalCard.vue'
 import { version } from '../../package.json'
 import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'

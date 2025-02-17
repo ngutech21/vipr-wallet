@@ -18,6 +18,16 @@ const routes: RouteRecordRaw[] = [
     path: '/send',
     component: () => import('pages/SendPage.vue'),
   },
+  {
+    path: '/settings',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [{ path: '', component: () => import('pages/SettingsPage.vue') }],
+  },
+  {
+    path: '/federations',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [{ path: '', component: () => import('pages/FederationsPage.vue') }],
+  },
 
   // Always leave this as last one,
   // but you can also remove it
