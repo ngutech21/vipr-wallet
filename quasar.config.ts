@@ -183,18 +183,17 @@ export default defineConfig((/* ctx */) => {
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: 'InjectManifest',
+      workboxMode: 'GenerateSW',
       injectPwaMetaTags: true,
-      swFilename: 'sw.js',
       manifestFilename: 'manifest.json',
       useCredentialsForManifestTag: true,
       sourceFilesConfig: {
         pwaServiceWorker: 'src-pwa/custom-service-worker',
       },
-      // Remove the extendInjectManifestOptions and add this instead
-      extendPWACustomSWConf(esbuildConf) {
-        esbuildConf.format = 'esm'
-      }
+      extendGenerateSWOptions(cfg) {
+        cfg.skipWaiting = true
+        cfg.clientsClaim = true
+      },
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova
