@@ -1,6 +1,6 @@
 <template>
   <ModalCard title="Add Federation">
-    <q-form ref="federationForm" class="q-pa-md">
+    <q-form ref="federationForm" class="q-pa-md" @submit.prevent="addFederation">
       <q-input
         filled
         v-model="inviteCode"
@@ -14,13 +14,7 @@
         class="q-mt-md"
         :rules="[(val) => !!val || 'Name is required']"
       />
-      <q-btn
-        type="submit"
-        label="Add Federation"
-        color="primary"
-        class="q-mt-md"
-        @click="addFederation"
-      />
+      <q-btn type="submit" label="Add Federation" color="primary" class="q-mt-md" />
     </q-form>
   </ModalCard>
 </template>
