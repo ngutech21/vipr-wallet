@@ -1,5 +1,5 @@
 <template>
-  <q-list bordered padding>
+  <q-list bordered padding v-if="federations.length > 0">
     <q-item
       v-for="fedi in federations"
       :key="fedi.inviteCode"

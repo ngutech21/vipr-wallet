@@ -20,18 +20,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, defineEmits } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
 import type { Federation } from 'src/components/models'
 import ModalCard from 'src/components/ModalCard.vue'
 import { Loading, Notify } from 'quasar'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
+const emit = defineEmits<{
+  close: []
+}>()
 
 function onClose() {
-  router.back()
+  emit('close')
 }
 const inviteCode = ref('')
 const federationName = ref('')
