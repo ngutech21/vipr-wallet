@@ -22,12 +22,30 @@
 import { version } from '../../package.json'
 import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'
-import { Dialog } from 'quasar'
+import { Dialog, Loading, Notify } from 'quasar'
 
 async function checkForUpdates() {
-  if ('serviceWorker' in navigator) {
+  if (!('serviceWorker' in navigator)) {
+    Notify.create({
+      message: 'Service Worker not supported',
+      color: 'negative',
+    })
+    return
+  }
+
+  try {
+    Loading.show({ message: 'Checking for updates...' })
     const registration = await navigator.serviceWorker.getRegistration()
-    if (registration?.waiting) {
+
+    if (!registration) {
+      Notify.create({
+        message: 'Service Worker not registered',
+        color: 'warning',
+      })
+      return
+    }
+
+    if (registration.waiting) {
       Dialog.create({
         title: 'Update Available',
         message: 'A new version is available. Update now?',
@@ -39,8 +57,20 @@ async function checkForUpdates() {
         window.location.reload()
       })
     } else {
-      await registration?.update()
+      await registration.update()
+      Notify.create({
+        message: 'No updates available',
+        color: 'positive',
+      })
     }
+  } catch (error) {
+    console.error('Update check failed:', error)
+    Notify.create({
+      message: 'Failed to check for updates',
+      color: 'negative',
+    })
+  } finally {
+    Loading.hide()
   }
 }
 </script>
