@@ -1,11 +1,8 @@
 import { register } from 'register-service-worker'
-import { Notify } from 'quasar'
 
 // The ready(), registered(), cached(), updatefound() and updated()
 // events passes a ServiceWorkerRegistration instance in their arguments.
 // ServiceWorkerRegistration: https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration
-
-declare const window: Window & typeof globalThis
 
 register(process.env.SERVICE_WORKER_FILE, {
   // The registrationOptions object will be passed as the second argument
@@ -31,20 +28,7 @@ register(process.env.SERVICE_WORKER_FILE, {
   },
 
   updated(/* registration */) {
-    Notify.create({
-      message: 'Update available',
-      color: 'primary',
-      position: 'top',
-      multiLine: true,
-      actions: [
-        { label: 'Update', handler: () => window.location.reload() },
-        {
-          label: 'Dismiss',
-          color: 'white',
-          handler: () => {},
-        },
-      ],
-    })
+    // console.log('updated.')
   },
 
   offline() {
