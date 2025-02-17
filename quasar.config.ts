@@ -191,7 +191,7 @@ export default defineConfig((/* ctx */) => {
         pwaServiceWorker: 'src-pwa/custom-service-worker',
       },
       extendGenerateSWOptions(cfg) {
-        cfg.skipWaiting = true
+        cfg.skipWaiting = false
         cfg.clientsClaim = true
       },
     },
