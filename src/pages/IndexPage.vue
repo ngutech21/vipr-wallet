@@ -14,7 +14,7 @@
     <TransactionsList />
 
     <!-- Added fixed bottom buttons using q-page-sticky -->
-    <q-page-sticky position="bottom" :offset="[16, 16]">
+    <q-page-sticky position="bottom" :offset="[0, 100]">
       <div class="q-pa-md">
         <div class="row items-center justify-evenly q-gutter-md">
           <q-btn label="Send" icon="arrow_upward" color="primary" :to="'/send'" />
