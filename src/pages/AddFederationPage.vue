@@ -31,24 +31,46 @@ import { useWalletStore } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
 import type { Federation } from 'src/components/models'
 import ModalCard from 'src/components/ModalCard.vue'
+import { Loading, Notify } from 'quasar'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
+
+function onClose() {
+  router.back()
+}
 const inviteCode = ref('')
 const federationName = ref('')
 const walletStore = useWalletStore()
 const federationStore = useFederationStore()
 
 async function addFederation() {
-  console.log('Adding federation:', inviteCode.value)
-  const federationId = await walletStore.isValidInviteCode(inviteCode.value)
-  console.log('Federation ID:', federationId)
-  if (federationId) {
-    const federation: Federation = {
-      title: federationName.value,
-      federationId: federationId,
-      inviteCode: inviteCode.value,
+  Loading.show({ message: 'Adding Federation' })
+
+  try {
+    console.log('Adding federation:', inviteCode.value)
+    const federationId = await walletStore.isValidInviteCode(inviteCode.value)
+    console.log('Federation ID:', federationId)
+    if (federationId) {
+      const federation: Federation = {
+        title: federationName.value,
+        federationId: federationId,
+        inviteCode: inviteCode.value,
+      }
+      await federationStore.addFederation(federation)
+      await federationStore.selectFederation(federation)
     }
-    await federationStore.addFederation(federation)
-    await federationStore.selectFederation(federation)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    Notify.create({
+      message: 'Failed to add federation: ' + errorMessage,
+      color: 'negative',
+      icon: 'error',
+      timeout: 5000,
+    })
+  } finally {
+    Loading.hide()
+    onClose()
   }
 }
 </script>
