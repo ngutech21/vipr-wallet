@@ -10,3 +10,11 @@ export interface LightningTransaction {
   createdAt: Date
   amountInSats: number
 }
+
+export interface Bolt11Invoice {
+  paymentHash: string
+  amount: number
+  timestamp: number
+  expiry: number
+  description: string
+}

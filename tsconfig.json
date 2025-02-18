@@ -5,6 +5,14 @@
       "ES2022",
       "DOM",
       "DOM.Iterable"
+    ],
+    "paths": {
+      "@j2only/slide-unlock": [
+        "./node_modules/@j2only/slide-unlock/dist/SlideUnlock.vue.d.ts"
+      ]
+    },
+    "types": [
+      "@j2only/slide-unlock"
     ]
-  },
+  }
 }
