@@ -81,7 +81,7 @@ const isSettingsActive = computed(() => route.path === '/settings')
 }
 
 /* Added rules to ensure proper styling in Firefox */
-::v-deep .q-btn.small-label .q-btn__content .q-btn__label {
+::v-deep( .q-btn.small-label .q-btn__content .q-btn__label) {
   font-size: 0.5rem !important;
   text-align: center;
 }
