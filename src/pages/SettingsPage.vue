@@ -45,6 +45,10 @@ async function checkForUpdates() {
       return
     }
 
+    // First, check for updates and wait for it to complete
+    await registration.update()
+
+    // Then check if we have a waiting worker
     if (registration.waiting) {
       Dialog.create({
         title: 'Update Available',
@@ -57,16 +61,15 @@ async function checkForUpdates() {
         window.location.reload()
       })
     } else {
-      await registration.update()
       Notify.create({
         message: 'No updates available',
-        color: 'positive',
+        color: 'info',
       })
     }
   } catch (error) {
-    console.error('Update check failed:', error)
+    console.error('Error checking for updates:', error)
     Notify.create({
-      message: 'Failed to check for updates',
+      message: 'Error checking for updates',
       color: 'negative',
     })
   } finally {
