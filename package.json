@@ -1,7 +1,7 @@
 {
   "name": "vipr",
   "version": "0.0.1",
-  "description": "vipr ecash wallet",
+  "description": "Fedimint eCash Wallet",
   "productName": "Vipr-Wallet",
   "author": "ngutech21 <ngutech21@pm.me>",
   "type": "module",

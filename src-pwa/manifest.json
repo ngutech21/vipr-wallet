@@ -1,7 +1,17 @@
 {
+  "name": "Vipr",
+  "short_name": "Vipr",
+  "description": "Fedimint eCash Wallet",
+  "start_url": "/",
+  "display": "standalone",
   "orientation": "portrait",
   "background_color": "#202020",
   "theme_color": "#8000ff",
+  "prefer_related_applications": false,
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["finance", "bitcoin"],
+  "scope": "/",
   "icons": [
     {
       "src": "icons/icon-128x128.png",
