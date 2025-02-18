@@ -27,29 +27,33 @@
 
           <!-- QR Code Card -->
           <div class="column items-center justify-center">
-            <q-card v-if="qrData" class="input-width">
-              <q-card-section>
+            <q-card v-if="qrData" class="qr-card">
+              <q-card-section class="qr-container">
                 <qrcode-vue
                   :value="qrData"
-                  :size="480"
                   level="M"
-                  bgColor="#ffffff"
-                  fgColor="#000000"
+                  render-as="svg"
+                  :size="0"
+                  class="responsive-qr"
                 />
-                <q-card-section class="row">
-                  <q-input v-model="qrData" readonly class="col-10" />
-                  <q-btn icon="content_copy" flat @click="copyToClipboard" class="col-2" />
-                </q-card-section>
+              </q-card-section>
+              <q-separator />
+              <q-card-section>
+                <div class="row items-center q-gutter-sm">
+                  <q-input v-model="qrData" readonly class="col" />
+                  <q-btn icon="content_copy" flat @click="copyToClipboard" />
+                </div>
               </q-card-section>
             </q-card>
           </div>
 
-          <div class="column items-center justify-center" v-if="qrData">
+          <!-- Payment Status -->
+          <div v-if="qrData" class="column items-center justify-center q-mt-lg">
             <span class="highlight">{{ formattedCountdown }}</span>
-            <span class="countdown-text"
-              >Waiting for Lightning payment ...
-              <q-spinner v-if="isWaiting" size="20px" class="q-ml-sm"
-            /></span>
+            <span class="countdown-text">
+              Waiting for Lightning payment...
+              <q-spinner v-if="isWaiting" size="20px" class="q-ml-sm" />
+            </span>
           </div>
 
           <!-- Request button -->
@@ -175,7 +179,6 @@ async function goBack() {
 }
 
 .heading-text {
-  font-size: 1.25rem;
   margin-bottom: 10px;
 }
 
@@ -189,5 +192,24 @@ async function goBack() {
   color: var(--q-positive);
   font-weight: bold;
   margin-top: 10px;
+}
+
+.qr-card {
+  width: 100%;
+  max-width: 512px;
+  margin-bottom: 0;
+}
+
+.qr-container {
+  aspect-ratio: 1;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.responsive-qr {
+  width: 100%;
+  height: 100%;
 }
 </style>
