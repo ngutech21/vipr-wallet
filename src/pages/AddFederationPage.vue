@@ -44,6 +44,17 @@ async function addFederation() {
 
   try {
     console.log('Adding federation:', inviteCode.value)
+
+    if (federationStore.federations.some((f) => f.inviteCode === inviteCode.value)) {
+      Notify.create({
+        message: 'Federation already exists',
+        color: 'negative',
+        icon: 'error',
+        timeout: 5000,
+        position: 'top',
+      })
+      return
+    }
     const federationId = await walletStore.isValidInviteCode(inviteCode.value)
     console.log('Federation ID:', federationId)
     if (federationId) {
@@ -54,6 +65,9 @@ async function addFederation() {
       }
       await federationStore.addFederation(federation)
       await federationStore.selectFederation(federation)
+
+      await federationStore.addFederation(federation)
+      await federationStore.selectFederation(federation)
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
@@ -62,6 +76,7 @@ async function addFederation() {
       color: 'negative',
       icon: 'error',
       timeout: 5000,
+      position: 'top',
     })
   } finally {
     Loading.hide()
