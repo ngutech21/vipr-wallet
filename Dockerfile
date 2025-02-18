@@ -1,5 +1,5 @@
 # Stage 1: Build the Quasar PWA
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # Create app directory
 WORKDIR /app
@@ -22,9 +22,14 @@ RUN pnpm quasar build -m pwa
 # Stage 2: Serve the app using Nginx
 FROM nginx:stable-alpine
 
+# Create nginx config directory if it doesn't exist
+RUN mkdir -p /etc/nginx/conf.d
+
+# Copy nginx configuration
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+
 # Create a non-root user and group
-RUN addgroup -S app \
-  && adduser -S -D -H -G app -s /sbin/nologin app
+RUN addgroup -S app && adduser -S -D -H -G app -s /sbin/nologin app
     
 # Copy the built files from builder stage
 COPY --from=builder /app/dist/pwa /usr/share/nginx/html
