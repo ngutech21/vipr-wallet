@@ -3,18 +3,32 @@
     <q-form ref="federationForm" class="q-pa-md" @submit.prevent="addFederation">
       <q-input
         filled
-        v-model="inviteCode"
-        label="Federation Invitecode"
-        :rules="[(val) => !!val || 'Invitecode is required']"
-      />
-      <q-input
-        filled
         v-model="federationName"
-        label="Name"
+        label="Enter Federation Name"
         class="q-mt-md"
         :rules="[(val) => !!val || 'Name is required']"
       />
-      <q-btn type="submit" label="Add Federation" color="primary" class="q-mt-md" />
+      <q-input
+        filled
+        v-model="inviteCode"
+        label="Enter Fedimint Invitecode"
+        :rules="[(val) => !!val || 'Invitecode is required']"
+        type="textarea"
+      />
+
+      <div class="row justify-between full-width">
+        <q-btn flat label="Scan" icon="qr_code_scanner" color="primary" :to="'/scan'" />
+        <q-btn
+          flat
+          label="Paste"
+          icon="content_paste"
+          color="primary"
+          @click="pasteFromClipboard"
+        />
+      </div>
+      <div class="row items-center justify-evenly q-gutter-md q-mt-md">
+        <q-btn type="submit" label="Add Federation" color="primary" class="q-mt-md" />
+      </div>
     </q-form>
   </ModalCard>
 </template>
@@ -38,6 +52,13 @@ const inviteCode = ref('')
 const federationName = ref('')
 const walletStore = useWalletStore()
 const federationStore = useFederationStore()
+
+async function pasteFromClipboard() {
+  await navigator.clipboard.readText().then((text) => {
+    console.log('Pasted from clipboard:', text)
+    inviteCode.value = text
+  })
+}
 
 async function addFederation() {
   Loading.show({ message: 'Adding Federation' })
