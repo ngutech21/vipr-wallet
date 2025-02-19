@@ -94,6 +94,13 @@ onMounted(() => {
   if (amountInput.value) {
     amountInput.value.focus()
   }
+})
+
+async function onRequest() {
+  if (amount.value < 1) {
+    return
+  }
+
   const interval = setInterval(() => {
     if (countdown.value > 0) {
       countdown.value--
@@ -101,12 +108,6 @@ onMounted(() => {
       clearInterval(interval)
     }
   }, 1000)
-})
-
-async function onRequest() {
-  if (amount.value < 1) {
-    return
-  }
 
   console.log('Requesting amount:', amount.value)
   const invoiceAmount = amount.value * 1_000
