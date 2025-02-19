@@ -56,11 +56,10 @@ function onDetect(detectedCodes: DetectedBarcode[]) {
   if (code.rawValue.startsWith('fed')) {
     alert('Detected Fedimint Invitecode: ' + code.rawValue)
   } else if (code.rawValue.startsWith('lnbc')) {
-    alert('Lightning Invoice detected: ' + code.rawValue)
     router
       .push({
         name: 'send',
-        params: { invoice: code.rawValue },
+        query: { invoice: code.rawValue },
       })
       .catch(console.error)
   }

@@ -29,30 +29,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useLightningStore } from 'src/stores/lightning'
 import { useQuasar } from 'quasar'
 
 import VerifyPayment from 'components/VerifyPayment.vue'
 import type { Bolt11Invoice } from 'src/components/models'
+import { useRoute } from 'vue-router'
 
 const lightningInvoice = ref('')
 const decodedInvoice = ref<Bolt11Invoice | null>(null)
 const store = useWalletStore()
 const lightningStore = useLightningStore()
 const $q = useQuasar()
+const route = useRoute()
 
-const props = defineProps<{
-  invoice?: string
-}>()
-
-onMounted(() => {
-  if (props.invoice) {
-    lightningInvoice.value = props.invoice
-    decodeInvoice()
-  }
-})
+watch(
+  () => route.query.invoice,
+  (newInvoice) => {
+    if (typeof newInvoice === 'string') {
+      lightningInvoice.value = newInvoice
+      decodeInvoice()
+    }
+  },
+  { immediate: true },
+)
 
 function decodeInvoice() {
   try {
