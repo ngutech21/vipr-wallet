@@ -65,9 +65,6 @@ async function addFederation() {
       }
       await federationStore.addFederation(federation)
       await federationStore.selectFederation(federation)
-
-      await federationStore.addFederation(federation)
-      await federationStore.selectFederation(federation)
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
