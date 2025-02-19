@@ -46,23 +46,25 @@ const isLoading = ref(true)
 const router = useRouter()
 
 function onDetect(detectedCodes: DetectedBarcode[]) {
-  detectedCodes.forEach((code) => async () => {
-    console.log('Detected code:', code.rawValue)
-    detectedContent.value = code.rawValue
+  // Process only the first detected code
+  const code = detectedCodes[0]
+  if (!code) return
 
-    if (code.rawValue.startsWith('fed')) {
-      alert('Detected Fedimint Invitecode' + code.rawValue)
-    } else if (code.rawValue.startsWith('lnbc')) {
-      alert('Lightning Invoice detected' + code.rawValue)
-      await router.push({
+  console.log('Detected code:', code.rawValue)
+  detectedContent.value = code.rawValue
+
+  if (code.rawValue.startsWith('fed')) {
+    alert('Detected Fedimint Invitecode: ' + code.rawValue)
+  } else if (code.rawValue.startsWith('lnbc')) {
+    alert('Lightning Invoice detected: ' + code.rawValue)
+    router
+      .push({
         name: 'send',
         params: { invoice: code.rawValue },
       })
-    }
-    return
-  })
+      .catch(console.error)
+  }
 }
-
 function onInit(promise: Promise<void>) {
   promise
     .then(() => {
