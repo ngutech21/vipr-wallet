@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useLightningStore } from 'src/stores/lightning'
 import { useQuasar } from 'quasar'
@@ -42,6 +42,17 @@ const decodedInvoice = ref<Bolt11Invoice | null>(null)
 const store = useWalletStore()
 const lightningStore = useLightningStore()
 const $q = useQuasar()
+
+const props = defineProps<{
+  invoice?: string
+}>()
+
+onMounted(() => {
+  if (props.invoice) {
+    lightningInvoice.value = props.invoice
+    decodeInvoice()
+  }
+})
 
 function decodeInvoice() {
   try {

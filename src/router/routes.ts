@@ -16,7 +16,9 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/send',
+    name: 'send',
     component: () => import('pages/SendPage.vue'),
+    props: true,
   },
   {
     path: '/settings',
