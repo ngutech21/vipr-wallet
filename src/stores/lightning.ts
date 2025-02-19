@@ -15,6 +15,7 @@ export const useLightningStore = defineStore('lightning', {
       const timestampSection = decoded.sections.find((s) => s.name === 'timestamp')
 
       const bolt11Invoice: Bolt11Invoice = {
+        invoice,
         paymentHash: paymentHashSection?.value || '',
         amount: amountSection ? parseInt(amountSection.value) : 0,
         timestamp: timestampSection?.value || 0,

@@ -5,22 +5,22 @@
     <q-card flat bordered>
       <q-card-section>
         <div class="row q-mb-sm">
-          <div class="col-4 text-weight-medium">Amount:</div>
+          <div class="col-4 text-weight-medium">Amount</div>
           <div class="col">{{ decodedInvoice.amount }} sats</div>
         </div>
 
         <div class="row q-mb-sm">
-          <div class="col-4 text-weight-medium">Description:</div>
+          <div class="col-4 text-weight-medium">Description</div>
           <div class="col">{{ decodedInvoice.description }}</div>
         </div>
 
         <div class="row q-mb-sm">
-          <div class="col-4 text-weight-medium">Payment Hash:</div>
+          <div class="col-4 text-weight-medium">Payment Hash</div>
           <div class="col text-wrap">{{ decodedInvoice.paymentHash }}</div>
         </div>
 
         <div class="row q-mb-sm">
-          <div class="col-4 text-weight-medium">Expires:</div>
+          <div class="col-4 text-weight-medium">Expires</div>
           <div class="col">{{ formatExpiry }}</div>
         </div>
       </q-card-section>
@@ -67,9 +67,4 @@ const slideUnlock = ref<InstanceType<typeof SlideUnlock> | null>(null)
 }
 </style>
 
-<style>
-/* :deep(.slide-unlock) {
-  --slide-unlock-bg-color: var(--q-primary);
-  --slide-unlock-text-color: white;
-} */
-</style>
+<style></style>

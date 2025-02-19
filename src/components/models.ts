@@ -12,6 +12,7 @@ export interface LightningTransaction {
 }
 
 export interface Bolt11Invoice {
+  invoice: string
   paymentHash: string
   amount: number
   timestamp: number
