@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineEmits } from 'vue'
+import { ref } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
 import type { Federation } from 'src/components/models'

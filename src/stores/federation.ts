@@ -20,7 +20,7 @@ function openDB(): Promise<IDBDatabase> {
 export const useFederationStore = defineStore('federation', {
   state: () => ({
     federations: [] as Federation[],
-    selectedFederation: null as Federation | null,
+    selectedFederation: undefined as Federation | undefined,
   }),
   actions: {
     async addFederation(newFedi: Federation) {
@@ -43,7 +43,7 @@ export const useFederationStore = defineStore('federation', {
         const store = tx.objectStore('federations')
         const request = store.delete(federationId)
         request.onsuccess = () => {
-          this.federations = this.federations.filter((f) => f.federationId !== federationId)
+          this.federations = this.federations.filter((f: Federation) => f.federationId !== federationId)
           resolve()
         }
         request.onerror = () => reject(new Error(request.error?.message || 'Unknown error'))

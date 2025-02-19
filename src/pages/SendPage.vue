@@ -2,22 +2,27 @@
   <q-layout view="lHh Lpr lFf">
     <q-page-container>
       <q-page padding>
-        <!-- Back button to go to IndexPage -->
         <q-btn icon="arrow_back" label="Back" flat class="q-mb-lg" :to="'/'" />
 
-        <!-- Enter Lightning Invoice -->
-        <div class="q-mb-md">
-          <q-input
-            filled
-            v-model="lightningInvoice"
-            label="Enter Lightning Invoice"
-            type="textarea"
-            autogrow
-          />
-        </div>
+        <template v-if="!decodedInvoice">
+          <div class="q-mb-md">
+            <q-input
+              filled
+              v-model="lightningInvoice"
+              label="Enter Lightning Invoice"
+              type="textarea"
+              autogrow
+            />
+          </div>
+          <q-btn label="Verify Invoice" color="primary" @click="decodeInvoice" />
+        </template>
 
-        <!-- Pay button -->
-        <q-btn label="Pay Invoice" color="primary" @click="payInvoice" />
+        <VerifyPayment
+          v-else
+          :decoded-invoice="decodedInvoice"
+          @cancel="decodedInvoice = null"
+          @pay="payInvoice"
+        />
       </q-page>
     </q-page-container>
   </q-layout>
@@ -26,17 +31,29 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
+import { useLightningStore } from 'src/stores/lightning'
 import { useQuasar } from 'quasar'
 
+import VerifyPayment from 'components/VerifyPayment.vue'
+import type { Bolt11Invoice } from 'src/components/models'
+
 const lightningInvoice = ref('')
+const decodedInvoice = ref<Bolt11Invoice | null>(null)
 const store = useWalletStore()
+const lightningStore = useLightningStore()
 const $q = useQuasar()
 
-// function validateInvoice() {
-//   // Simple validation for Lightning invoice (you can improve this)
-//   //isValidInvoice.value = lightningInvoice.value.startsWith('ln')
-//   return true
-// }
+function decodeInvoice() {
+  try {
+    decodedInvoice.value = lightningStore.decodeInvoice(lightningInvoice.value)
+  } catch (error) {
+    $q.notify({
+      type: 'negative',
+      message: error instanceof Error ? error.message : 'Failed to decode invoice',
+      position: 'top',
+    })
+  }
+}
 
 async function payInvoice() {
   try {
