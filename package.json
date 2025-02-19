@@ -27,7 +27,7 @@
     "qrcode.vue": "^3.6.0",
     "quasar": "^2.16.0",
     "register-service-worker": "^1.7.2",
-    "uuid": "^11.0.5",
+    "uuid": "^11.1.0",
     "vue": "^3.4.18",
     "vue-qrcode-reader": "^5.7.1",
     "vue-router": "^4.0.12"
