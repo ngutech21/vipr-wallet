@@ -12,7 +12,7 @@
             <q-separator />
 
             <q-card-section>
-              <qrcode-stream @detect="onDetect" @init="onInit" />
+              <qrcode-stream @detect="onDetect" @init="onInit" :track="paintOutline" />
             </q-card-section>
 
             <q-card-section>
@@ -82,6 +82,23 @@ function onInit(promise: Promise<void>) {
     .finally(() => {
       isLoading.value = false
     })
+}
+
+function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingContext2D) {
+  for (const detectedCode of detectedCodes) {
+    const [firstPoint, ...otherPoints] = detectedCode.cornerPoints
+
+    ctx.strokeStyle = 'red'
+
+    ctx.beginPath()
+    ctx.moveTo(firstPoint.x, firstPoint.y)
+    for (const { x, y } of otherPoints) {
+      ctx.lineTo(x, y)
+    }
+    ctx.lineTo(firstPoint.x, firstPoint.y)
+    ctx.closePath()
+    ctx.stroke()
+  }
 }
 </script>
 
