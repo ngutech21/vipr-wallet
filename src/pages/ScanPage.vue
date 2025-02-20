@@ -40,6 +40,7 @@ import { QrcodeStream } from 'vue-qrcode-reader'
 import type { DetectedBarcode } from 'vue-qrcode-reader'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import type { SendRouteQuery } from 'src/types/vue-router'
 
 const detectedContent = ref('')
 const isLoading = ref(true)
@@ -59,7 +60,7 @@ function onDetect(detectedCodes: DetectedBarcode[]) {
     router
       .push({
         name: 'send',
-        query: { invoice: code.rawValue },
+        query: { invoice: code.rawValue } as SendRouteQuery,
       })
       .catch(console.error)
   }

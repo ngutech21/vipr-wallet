@@ -1,4 +1,4 @@
-import type { RouteRecordRaw } from 'vue-router'
+import type { RouteRecordRaw, RouteQuery } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -16,7 +16,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/send',
-    name: 'send',
+    name: 'send' as keyof RouteQuery,
     component: () => import('pages/SendPage.vue'),
     props: true,
   },

@@ -37,6 +37,7 @@ import { useQuasar } from 'quasar'
 import VerifyPayment from 'components/VerifyPayment.vue'
 import type { Bolt11Invoice } from 'src/components/models'
 import { useRoute } from 'vue-router'
+import type { SendRouteQuery } from 'src/types/vue-router'
 
 const lightningInvoice = ref('')
 const decodedInvoice = ref<Bolt11Invoice | null>(null)
@@ -44,9 +45,10 @@ const store = useWalletStore()
 const lightningStore = useLightningStore()
 const $q = useQuasar()
 const route = useRoute()
+const query = route.query as SendRouteQuery
 
 watch(
-  () => route.query.invoice,
+  () => query.invoice,
   (newInvoice) => {
     if (typeof newInvoice === 'string') {
       lightningInvoice.value = newInvoice
