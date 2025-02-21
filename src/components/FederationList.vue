@@ -3,13 +3,20 @@
     <q-item
       v-for="fedi in federations"
       :key="fedi.inviteCode"
-      clickable
       @click="selectFederation(fedi)"
       :class="{ 'selected-federation': fedi.inviteCode === selectedFederation?.inviteCode }"
     >
       <q-item-section class="federation-item">
         <q-item-label>{{ fedi.title }}</q-item-label>
-        <q-item-label caption>{{ fedi.federationId }}</q-item-label>
+      </q-item-section>
+      <q-item-section side>
+        <q-btn
+          flat
+          round
+          icon="arrow_forward"
+          :to="{ name: 'federation-details', params: { id: fedi.federationId } }"
+          @click.stop
+        />
       </q-item-section>
     </q-item>
   </q-list>

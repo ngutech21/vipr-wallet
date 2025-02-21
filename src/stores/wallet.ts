@@ -3,7 +3,7 @@ import type { JSONValue } from '@fedimint/core-web'
 import { FedimintWallet } from '@fedimint/core-web'
 import { useFederationStore } from './federation'
 import { ref } from 'vue'
-import type { Federation, FederationConfig } from 'src/components/models'
+import type { Federation, FederationConfig, FederationMeta } from 'src/components/models'
 
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
@@ -68,6 +68,21 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
+    async getMetadata(federation: Federation): Promise<FederationMeta | undefined> {
+      try {
+        const response = await fetch(federation.metaUrl)
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        const data = await response.json()
+        const metadata = Object.values(data)[0] as FederationMeta
+        return metadata
+      } catch (error) {
+        console.error('Failed to fetch metadata:', error)
+        return undefined
+      }
+    },
+
     async isValidInviteCode(inviteCode: string): Promise<Federation | undefined> {
       const tmpWallet = new FedimintWallet()
       if (tmpWallet) {
@@ -84,6 +99,7 @@ export const useWalletStore = defineStore('wallet', {
           title: fediConfig.federationName,
           inviteCode: inviteCode,
           federationId: federationId,
+          metaUrl: fediConfig.metaUrl,
         } as Federation
       }
       return undefined

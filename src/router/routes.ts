@@ -1,4 +1,4 @@
-import type { RouteRecordRaw, RouteQuery } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -16,9 +16,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/send',
-    name: 'send' as keyof RouteQuery,
     component: () => import('pages/SendPage.vue'),
-    props: true,
   },
   {
     path: '/settings',
@@ -29,6 +27,11 @@ const routes: RouteRecordRaw[] = [
     path: '/federations',
     component: () => import('layouts/MainLayout.vue'),
     children: [{ path: '', component: () => import('pages/FederationsPage.vue') }],
+  },
+  {
+    path: '/federation/:id',
+    name: 'federation-details',
+    component: () => import('pages/FederationDetailsPage.vue'),
   },
 
   // Always leave this as last one,
