@@ -4,6 +4,12 @@ export interface Federation {
   federationId: string
 }
 
+export interface FederationConfig {
+  meta: {
+    federation_name: string
+    meta_external_url: string
+  }
+}
 export interface LightningTransaction {
   id?: string
   invoice: string

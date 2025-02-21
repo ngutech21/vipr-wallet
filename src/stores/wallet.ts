@@ -1,7 +1,9 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
+import type { JSONValue } from '@fedimint/core-web'
 import { FedimintWallet } from '@fedimint/core-web'
 import { useFederationStore } from './federation'
 import { ref } from 'vue'
+import type { Federation, FederationConfig } from 'src/components/models'
 
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
@@ -66,13 +68,23 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
-    async isValidInviteCode(inviteCode: string): Promise<string | undefined> {
+    async isValidInviteCode(inviteCode: string): Promise<Federation | undefined> {
       const tmpWallet = new FedimintWallet()
       if (tmpWallet) {
         await tmpWallet.joinFederation(inviteCode, inviteCode)
         const federationId = await tmpWallet.federation.getFederationId()
+        const rawConfig = await tmpWallet.federation.getConfig()
+        if (!rawConfig) {
+          await tmpWallet.cleanup()
+          return undefined
+        }
+        const fediConfig = extractFederationInfo(rawConfig)
         await tmpWallet.cleanup()
-        return federationId
+        return {
+          title: fediConfig.federationName,
+          inviteCode: inviteCode,
+          federationId: federationId,
+        } as Federation
       }
       return undefined
     },
@@ -80,4 +92,16 @@ export const useWalletStore = defineStore('wallet', {
 })
 if (import.meta.hot) {
   import.meta.hot.accept(acceptHMRUpdate(useWalletStore, import.meta.hot))
+}
+
+function extractFederationInfo(config: JSONValue): { federationName: string; metaUrl: string } {
+  const typedConfig = config as unknown as FederationConfig
+  const {
+    meta: { federation_name, meta_external_url },
+  } = typedConfig
+
+  return {
+    federationName: federation_name,
+    metaUrl: meta_external_url,
+  }
 }

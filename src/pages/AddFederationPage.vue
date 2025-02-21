@@ -3,13 +3,6 @@
     <q-form ref="federationForm" class="q-pa-md" @submit.prevent="addFederation">
       <q-input
         filled
-        v-model="federationName"
-        label="Enter Federation Name"
-        class="q-mt-md"
-        :rules="[(val) => !!val || 'Name is required']"
-      />
-      <q-input
-        filled
         v-model="inviteCode"
         label="Enter Fedimint Invitecode"
         :rules="[(val) => !!val || 'Invitecode is required']"
@@ -37,7 +30,6 @@
 import { ref } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
-import type { Federation } from 'src/components/models'
 import ModalCard from 'src/components/ModalCard.vue'
 import { Loading, Notify } from 'quasar'
 
@@ -49,7 +41,6 @@ function onClose() {
   emit('close')
 }
 const inviteCode = ref('')
-const federationName = ref('')
 const walletStore = useWalletStore()
 const federationStore = useFederationStore()
 
@@ -76,14 +67,9 @@ async function addFederation() {
       })
       return
     }
-    const federationId = await walletStore.isValidInviteCode(inviteCode.value)
-    console.log('Federation ID:', federationId)
-    if (federationId) {
-      const federation: Federation = {
-        title: federationName.value,
-        federationId: federationId,
-        inviteCode: inviteCode.value,
-      }
+    const federation = await walletStore.isValidInviteCode(inviteCode.value)
+    console.log('Federation ID:', federation)
+    if (federation) {
       await federationStore.addFederation(federation)
       await federationStore.selectFederation(federation)
     }
