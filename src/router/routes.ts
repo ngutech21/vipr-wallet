@@ -15,15 +15,22 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/ReceivePage.vue'),
   },
   {
+    path: '/received-lightning',
+    name: 'received-lightning',
+    component: () => import('pages/ReceivedLightningPage.vue'),
+  },
+  {
     path: '/send',
     name: 'send' as keyof RouteQuery,
     component: () => import('pages/SendPage.vue'),
   },
+
   {
     path: '/settings',
     component: () => import('layouts/MainLayout.vue'),
     children: [{ path: '', component: () => import('pages/SettingsPage.vue') }],
   },
+
   {
     path: '/federations',
     component: () => import('layouts/MainLayout.vue'),

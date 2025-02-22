@@ -23,6 +23,9 @@ importers:
       idb:
         specifier: ^8.0.2
         version: 8.0.2
+      js-confetti:
+        specifier: ^0.12.0
+        version: 0.12.0
       light-bolt11-decoder:
         specifier: ^3.2.0
         version: 3.2.0
@@ -2602,6 +2605,9 @@ packages:
     resolution: {integrity: sha512-rKKGuyTxGNlyN4EQKWzNndzXpi0bOl8Gl8YQAW1as/oMz0XhD6sHJO1hTvoBDOSzKuJb9WkwoAb34FfdkKMv2A==}
     engines: {node: '>=14'}
     hasBin: true
+
+  js-confetti@0.12.0:
+    resolution: {integrity: sha512-1R0Akxn3Zn82pMqW65N1V2NwKkZJ75bvBN/VAb36Ya0YHwbaSiAJZVRr/19HBxH/O8x2x01UFAbYI18VqlDN6g==}
 
   js-cookie@3.0.5:
     resolution: {integrity: sha512-cEiJEAEoIbWfCZYKWhVwFuvPX1gETRYPw6LlaTKoxD3s2AkXzkCjnp6h0V77ozyqj0jakteJ4YqDJT830+lVGw==}
@@ -6922,6 +6928,8 @@ snapshots:
       glob: 10.4.5
       js-cookie: 3.0.5
       nopt: 8.1.0
+
+  js-confetti@0.12.0: {}
 
   js-cookie@3.0.5: {}
 

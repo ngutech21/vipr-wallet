@@ -137,24 +137,23 @@ async function onRequest() {
     console.log('Invoice:', invoice.invoice)
 
     try {
-      await store.wallet?.lightning
-        .waitForReceive(invoice.operation_id, lnExpiry * 1_000)
-        .then((lnReceiveState) => {
-          console.log('Received invoice:', lnReceiveState)
+      const lnReceiveState = await store.wallet?.lightning.waitForReceive(
+        invoice.operation_id,
+        lnExpiry * 1_000,
+      )
+      console.log('Received invoice:', lnReceiveState)
 
-          // TODO show nicer notification
-          $q.notify({
-            message: 'Received payment!',
-            color: 'positive',
-            position: 'top',
-          })
-        })
       await lightningTransactionsStore.addTransaction({
         amountInSats: amount.value,
         createdAt: new Date(),
         invoice: invoice.invoice,
       })
       await store.updateBalance()
+
+      await router.push({
+        name: 'received-lightning',
+        query: { amount: amount.value.toString() },
+      })
     } catch (e) {
       let errorMessage = 'An unknown error occurred.'
       if (e instanceof Error) {
@@ -170,7 +169,6 @@ async function onRequest() {
     } finally {
       isWaiting.value = false
     }
-    await router.push({ path: '/' })
   }
 }
 
