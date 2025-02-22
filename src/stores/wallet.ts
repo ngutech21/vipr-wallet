@@ -123,12 +123,13 @@ export const useWalletStore = defineStore('wallet', {
         const fediConfig = extractFederationInfo(rawConfig)
         await tmpWallet.cleanup()
         await this.deleteFederationData(inviteCode)
+
         return {
           title: fediConfig.federationName,
           inviteCode: inviteCode,
           federationId: federationId,
           metaUrl: fediConfig.metaUrl,
-        } as Federation
+        } satisfies Federation
       }
       return undefined
     },

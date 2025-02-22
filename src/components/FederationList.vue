@@ -6,7 +6,10 @@
       :class="{ 'selected-federation': isSelected(fedi) }"
     >
       <q-item-section class="federation-item cursor-pointer" @click="selectFederation(fedi)">
-        <q-item-label>{{ fedi.title }}</q-item-label>
+        <q-item-label class="row items-center">
+          <q-img :src="fedi.icon_url" class="federation-icon q-mr-md" no-transition />
+          <span>{{ fedi.title }}</span>
+        </q-item-label>
       </q-item-section>
       <q-item-section side>
         <q-btn
@@ -50,5 +53,10 @@ function isSelected(fedi: Federation): boolean {
 
 .cursor-pointer {
   cursor: pointer;
+}
+.federation-icon {
+  height: 32px;
+  width: 32px;
+  border-radius: 4px;
 }
 </style>

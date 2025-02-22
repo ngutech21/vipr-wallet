@@ -70,7 +70,7 @@ async function addFederation() {
     const federation = await walletStore.isValidInviteCode(inviteCode.value)
     if (federation) {
       const meta = await walletStore.getMetadata(federation)
-      console.log('Federation Meta:', meta)
+      federation.icon_url = meta?.federation_icon_url ?? ''
     }
 
     console.log('Federation ID:', federation)

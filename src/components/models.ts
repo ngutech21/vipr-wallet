@@ -4,6 +4,7 @@ export interface Federation {
   federationId: string
   // external url to get meta data from the federation like chat-url, max-balance etc.
   metaUrl: string
+  icon_url?: string
 }
 
 export interface FederationConfig {
