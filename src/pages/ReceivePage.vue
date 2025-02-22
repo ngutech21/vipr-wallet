@@ -42,6 +42,7 @@
                 <div class="row items-center q-gutter-sm">
                   <q-input v-model="qrData" readonly class="col" />
                   <q-btn icon="content_copy" flat @click="copyToClipboard" />
+                  <q-btn icon="share" flat @click="shareQrcode" v-if="isSupported" />
                 </div>
               </q-card-section>
             </q-card>
@@ -71,6 +72,7 @@ import { useWalletStore } from 'src/stores/wallet'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useLightningTransactionsStore } from 'src/stores/transactions'
+import { useShare } from '@vueuse/core'
 
 const amount = ref<number>(0)
 const qrData = ref('')
@@ -84,6 +86,8 @@ const countdown = ref(lnExpiry)
 const isWaiting = ref(false)
 const isLeaving = ref(false) // New flag to control transition
 
+const { share, isSupported } = useShare()
+
 const formattedCountdown = computed(() => {
   const minutes = Math.floor(countdown.value / 60)
   const seconds = countdown.value % 60
@@ -95,6 +99,14 @@ onMounted(() => {
     amountInput.value.focus()
   }
 })
+
+async function shareQrcode() {
+  console.log('Sharing QR code...')
+  await share({
+    title: 'Lightning Invoice for ${amount.value} sats',
+    text: qrData.value,
+  })
+}
 
 async function onRequest() {
   if (amount.value < 1) {
