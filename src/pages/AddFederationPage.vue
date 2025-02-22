@@ -75,7 +75,7 @@ async function addFederation() {
 
     console.log('Federation ID:', federation)
     if (federation) {
-      await federationStore.addFederation(federation)
+      federationStore.addFederation(federation)
       await federationStore.selectFederation(federation)
     }
   } catch (error) {

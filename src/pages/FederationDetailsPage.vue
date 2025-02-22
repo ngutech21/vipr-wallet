@@ -129,6 +129,10 @@
               </q-item>
             </q-list>
           </q-card-section>
+          <q-separator spaced inset />
+          <q-item-section class="q-mb-md q-pa-md">
+            <q-btn label="Leave Federation" color="primary" @click="leaveFederation"> </q-btn>
+          </q-item-section>
         </q-card>
 
         <div v-else class="text-center q-pa-md">
@@ -142,7 +146,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import type { FederationMeta } from 'src/components/models'
@@ -154,6 +158,17 @@ const federationStore = useFederationStore()
 const walletStore = useWalletStore()
 const metadata = ref<FederationMeta | null>(null)
 const federation = federationStore.federations.find((f) => f.federationId === route.params.id)
+const router = useRouter()
+
+async function leaveFederation() {
+  if (federation) {
+    await walletStore.closeWallet()
+    federationStore.deleteFederation(federation.federationId)
+    await walletStore.deleteFederationData(federation.federationId)
+    await federationStore.selectFederation(undefined)
+    await router.push('/federations')
+  }
+}
 
 onMounted(async () => {
   if (walletStore.wallet && federation) {

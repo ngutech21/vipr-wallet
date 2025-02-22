@@ -22,6 +22,7 @@
     "@fedimint/core-web": "^0.0.10",
     "@j2only/slide-unlock": "^0.5.11",
     "@quasar/extras": "^1.16.17",
+    "@vueuse/core": "^12.7.0",
     "idb": "^8.0.2",
     "light-bolt11-decoder": "^3.2.0",
     "qrcode.vue": "^3.6.0",

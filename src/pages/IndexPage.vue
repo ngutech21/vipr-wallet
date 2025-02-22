@@ -12,10 +12,10 @@
     <div class="text-white q-pa-md dark-bg" style="width: 100%">
       <div class="text-h4 text-center">{{ totalBalance.toLocaleString() }} sats</div>
 
-      <div class="text-center" v-if="selectedFederation">
+      <div class="text-center" v-if="federationStore.selectedFederation">
         <q-chip class="q-mt-sm" color="white" text-color="primary" outline>
           <q-icon name="account_balance" class="q-mr-sm" />
-          {{ selectedFederation?.title }}
+          {{ federationStore.selectedFederation?.title }}
         </q-chip>
       </div>
     </div>
@@ -56,22 +56,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import TransactionsList from 'src/components/TransactionsList.vue'
 import AddFederationPage from './AddFederationPage.vue'
 
 const federationStore = useFederationStore()
-const selectedFederation = computed(() => federationStore.selectedFederation)
 const walletStore = useWalletStore()
 const totalBalance = computed(() => walletStore.balance)
 const showAddFederationOverlay = ref(false)
-
-onMounted(() => {
-  console.log('Joining Fedimint...')
-  federationStore.loadSelectedFederation()
-})
 </script>
 
 <style scoped>

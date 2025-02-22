@@ -57,6 +57,33 @@ export const useWalletStore = defineStore('wallet', {
       await this.wallet?.cleanup()
       this.wallet = null
     },
+
+    async deleteFederationData(federationId: string): Promise<void> {
+      try {
+        // Close the wallet first if it's open
+        if (this.wallet?.isOpen()) {
+          await this.closeWallet()
+        }
+
+        // Delete the IndexedDB database
+        await new Promise<void>((resolve, reject) => {
+          const deleteRequest = indexedDB.deleteDatabase(federationId)
+
+          deleteRequest.onerror = () => {
+            reject(new Error(`Failed to delete database ${federationId}`))
+          }
+
+          deleteRequest.onsuccess = () => {
+            console.log(`Successfully deleted database ${federationId}`)
+            resolve()
+          }
+        })
+      } catch (error) {
+        console.error('Error deleting federation data:', error)
+        throw error
+      }
+    },
+
     async handleFederationChange() {
       await this.openWallet()
     },
@@ -95,6 +122,7 @@ export const useWalletStore = defineStore('wallet', {
         }
         const fediConfig = extractFederationInfo(rawConfig)
         await tmpWallet.cleanup()
+        await this.deleteFederationData(inviteCode)
         return {
           title: fediConfig.federationName,
           inviteCode: inviteCode,
