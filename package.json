@@ -16,7 +16,8 @@
     "test:unit:ui": "vitest --ui",
     "test:unit": "vitest",
     "test:unit:ci": "vitest run",
-    "typecheck": "exec vue-tsc --noEmit"
+    "typecheck": "exec vue-tsc --noEmit",
+    "final-check": "pnpm format && pnpm lint && pnpm typecheck && pnpm test:unit:ci"
   },
   "dependencies": {
     "@fedimint/core-web": "^0.0.10",
