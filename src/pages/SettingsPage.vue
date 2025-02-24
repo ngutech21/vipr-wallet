@@ -21,6 +21,27 @@
           <q-btn label="Delete ALL Data" color="primary" @click="deleteData" />
         </q-card-actions>
       </q-card-section>
+
+      <q-card-section>
+        <div class="text-h6">Nostr</div>
+        <q-btn
+          label="Discover Federations"
+          color="primary"
+          class="q-mt-md"
+          @click="nostr.discoverFederations"
+        />
+        <q-list bordered separator v-if="nostr.discoveredFederations.length > 0" class="q-mt-md">
+          <q-item v-for="fedi in nostr.discoveredFederations" :key="fedi.inviteCode">
+            <q-item-section>
+              <q-item-label>{{ fedi.title || fedi.federationId }}</q-item-label>
+              <q-item-label caption>{{ fedi.inviteCode }}</q-item-label>
+            </q-item-section>
+          </q-item>
+        </q-list>
+        <div v-else-if="nostr.discoveredFederations.length === 0" class="text-caption q-mt-sm">
+          No federations discovered yet
+        </div>
+      </q-card-section>
     </q-card>
   </q-page>
 </template>
@@ -30,6 +51,10 @@ import { version } from '../../package.json'
 import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'
 import { Dialog, Loading, Notify } from 'quasar'
+
+import { useNostrStore } from 'src/stores/nostr'
+
+const nostr = useNostrStore()
 
 function deleteData() {
   console.log('Deleting data...')
