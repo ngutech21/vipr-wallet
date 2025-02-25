@@ -1,13 +1,26 @@
 <template>
   <q-page>
     <q-dialog
-      v-model="showAddFederationOverlay"
+      v-model="showSelection"
       position="bottom"
       transition-show="slide-up"
       transition-hide="slide-down"
     >
-      <AddFederationPage @close="showAddFederationOverlay = false" />
+      <AddFederationSelection
+        @close="showSelection = false"
+        @show-discover="showDiscover = true"
+        @show-add="showAdd = true"
+      />
     </q-dialog>
+
+    <q-dialog v-model="showDiscover" position="bottom">
+      <DiscoverFederations @close="showDiscover = false" />
+    </q-dialog>
+
+    <q-dialog v-model="showAdd" position="bottom">
+      <AddFederation @close="showAdd = false" />
+    </q-dialog>
+
     <q-card class="full-width">
       <q-card-section class="row items-center justify-between">
         <div class="text-h6">Federations</div>
@@ -18,7 +31,7 @@
       <FederationList />
 
       <q-page-sticky position="bottom-right" :offset="[30, 30]">
-        <q-btn fab icon="add" color="primary" @click="showAddFederationOverlay = true" />
+        <q-btn fab icon="add" color="primary" @click="showSelection = true" />
       </q-page-sticky>
     </div>
   </q-page>
@@ -27,6 +40,11 @@
 <script setup lang="ts">
 import FederationList from 'src/components/FederationList.vue'
 import { ref } from 'vue'
-import AddFederationPage from './AddFederationPage.vue'
-const showAddFederationOverlay = ref(false)
+import AddFederationSelection from 'src/components/AddFederationSelection.vue'
+import DiscoverFederations from 'src/components/DiscoverFederations.vue'
+import AddFederation from 'src/components/AddFederation.vue'
+
+const showSelection = ref(false)
+const showDiscover = ref(false)
+const showAdd = ref(false)
 </script>
