@@ -101,6 +101,13 @@ async function processFederationEvent(discoveredFederations: Federation[], event
     federation.title = meta.federation_name
     federation.icon_url = meta.federation_icon_url
 
+    // Skip expired federations
+    const currentTime = Math.floor(Date.now() / 1000)
+    if (meta.federation_expiry_timestamp && meta.federation_expiry_timestamp < currentTime) {
+      console.log(`Skipping expired federation: ${federation.federationId}`)
+      return
+    }
+
     // Add if not exists
     const exists = discoveredFederations.some((f) => f.federationId === federation.federationId)
     if (!exists) {
