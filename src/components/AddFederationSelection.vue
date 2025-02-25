@@ -6,7 +6,7 @@
           <q-card class="cursor-pointer" v-ripple @click="onDiscover">
             <q-card-section class="text-center">
               <q-icon name="search" size="48px" color="primary" />
-              <div class="text-h6 q-mt-sm">Discover Federation</div>
+              <div class="text-h6 q-mt-sm">Discover Federations</div>
               <div class="text-caption text-grey-7">Find and join public federations via Nostr</div>
             </q-card-section>
           </q-card>

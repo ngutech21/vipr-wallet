@@ -50,14 +50,14 @@ export const useNostrStore = defineStore('nostr', {
     },
 
     async discoverFederations() {
-      const mintInfoFilter: NDKFilter = {
-        kinds: [Nip87Kinds.FediInfo],
-      } as unknown as NDKFilter
-
+      this.discoveredFederations = []
       if (this.ndk === null) {
         await this.initNdk()
       }
 
+      const mintInfoFilter: NDKFilter = {
+        kinds: [Nip87Kinds.FediInfo],
+      } as unknown as NDKFilter
       const sub = this.ndk?.subscribe(mintInfoFilter, { closeOnEose: false })
 
       // Process event synchronously, but handle async operations properly
@@ -100,10 +100,12 @@ async function processFederationEvent(discoveredFederations: Federation[], event
     federation.title = meta.federation_name
 
     // Add if not exists
-    const exists = discoveredFederations.some((f) => f.inviteCode === federation.inviteCode)
+    const exists = discoveredFederations.some((f) => f.federationId === federation.federationId)
     if (!exists) {
       discoveredFederations.push(federation)
-      console.log('Added federation:', federation)
+      discoveredFederations.sort((a, b) => {
+        return (a.title || '').localeCompare(b.title || '')
+      })
     }
   } catch (error) {
     console.error('Error processing federation:', error)
