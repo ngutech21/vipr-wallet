@@ -24,8 +24,8 @@
             <q-img :src="federation.icon_url" style="width: 40px; height: 40px" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>{{ federation.title || federation.federationId }}</q-item-label>
-            <q-item-label caption>{{ federation.inviteCode }}</q-item-label>
+            <q-item-label>{{ federation.title }}</q-item-label>
+            <q-item-label caption>{{ federation.federationId }}</q-item-label>
           </q-item-section>
           <q-item-section side>
             <q-btn flat round icon="add" color="primary" />
