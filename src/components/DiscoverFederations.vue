@@ -22,8 +22,13 @@
           :disable="isAdded(federation)"
         >
           <q-item-section avatar v-if="federation.icon_url">
-            <q-img :src="federation.icon_url" style="width: 40px; height: 40px" />
+            <q-img :src="federation.icon_url" class="logo" />
           </q-item-section>
+          <template v-else>
+            <q-avatar color="grey-3" text-color="grey-7" class="logo q-mr-md">
+              <q-icon name="account_balance" />
+            </q-avatar>
+          </template>
           <q-item-section>
             <q-item-label>{{ federation.title }}</q-item-label>
             <q-item-label caption class="federation-id">{{ federation.federationId }}</q-item-label>
@@ -149,5 +154,9 @@ async function addFederation(federation: Federation) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.logo {
+  width: 40px;
+  height: 40px;
 }
 </style>

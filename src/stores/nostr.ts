@@ -97,7 +97,9 @@ async function processFederationEvent(discoveredFederations: Federation[], event
 
     // Get metadata
     const meta = await getMetaData(federation.inviteCode)
+    console.log('Federation metadata:', meta)
     federation.title = meta.federation_name
+    federation.icon_url = meta.federation_icon_url
 
     // Add if not exists
     const exists = discoveredFederations.some((f) => f.federationId === federation.federationId)
