@@ -1,12 +1,24 @@
 <template>
   <q-page class="column">
     <q-dialog
-      v-model="showAddFederationOverlay"
+      v-model="showSelection"
       position="bottom"
       transition-show="slide-up"
       transition-hide="slide-down"
     >
-      <AddFederationPage @close="showAddFederationOverlay = false" />
+      <AddFederationSelection
+        @close="showSelection = false"
+        @show-discover="showDiscover = true"
+        @show-add="showAdd = true"
+      />
+    </q-dialog>
+
+    <q-dialog v-model="showDiscover" position="bottom">
+      <DiscoverFederations @close="showDiscover = false" />
+    </q-dialog>
+
+    <q-dialog v-model="showAdd" position="bottom">
+      <AddFederation @close="showAdd = false" />
     </q-dialog>
 
     <div class="text-white q-pa-md dark-bg" style="width: 100%">
@@ -34,7 +46,7 @@
         color="primary"
         class="q-mt-md"
         icon="add"
-        @click="showAddFederationOverlay = true"
+        @click="showSelection = true"
       />
     </div>
 
@@ -60,12 +72,16 @@ import { computed, ref } from 'vue'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import TransactionsList from 'src/components/TransactionsList.vue'
-import AddFederationPage from './AddFederationPage.vue'
+import AddFederationSelection from 'src/components/AddFederationSelection.vue'
+import DiscoverFederations from 'src/components/DiscoverFederations.vue'
+import AddFederation from 'src/components/AddFederation.vue'
 
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
 const totalBalance = computed(() => walletStore.balance)
-const showAddFederationOverlay = ref(false)
+const showSelection = ref(false)
+const showDiscover = ref(false)
+const showAdd = ref(false)
 </script>
 
 <style scoped>

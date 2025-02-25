@@ -15,7 +15,7 @@
       transition-show="slide-up"
       transition-hide="slide-down"
     >
-      <AddFederationPage @close="showAddFederationOverlay = false" />
+      <AddFederation @close="showAddFederationOverlay = false" />
     </q-dialog>
 
     <q-page-container>
@@ -62,7 +62,7 @@
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import SettingsPage from 'src/pages/SettingsPage.vue'
-import AddFederationPage from 'src/pages/AddFederationPage.vue'
+import AddFederation from 'src/components/AddFederation.vue'
 const showSettingsOverlay = ref(false)
 const showAddFederationOverlay = ref(false)
 
