@@ -19,16 +19,23 @@
           :key="federation.inviteCode"
           clickable
           @click="addFederation(federation)"
+          :disable="isAdded(federation)"
         >
           <q-item-section avatar v-if="federation.icon_url">
             <q-img :src="federation.icon_url" style="width: 40px; height: 40px" />
           </q-item-section>
           <q-item-section>
             <q-item-label>{{ federation.title }}</q-item-label>
-            <q-item-label caption>{{ federation.federationId }}</q-item-label>
+            <q-item-label caption class="federation-id">{{ federation.federationId }}</q-item-label>
           </q-item-section>
           <q-item-section side>
-            <q-btn flat round icon="add" color="primary" />
+            <q-btn
+              flat
+              round
+              :icon="isAdded(federation) ? 'check_circle' : 'add'"
+              :color="isAdded(federation) ? 'positive' : 'primary'"
+              :disable="isAdded(federation)"
+            />
           </q-item-section>
         </q-item>
       </q-list>
@@ -69,6 +76,11 @@ const isDiscovering = ref(false)
 onMounted(async () => {
   await discoverFederations()
 })
+
+// Add function to check if federation is already added
+function isAdded(federation: Federation): boolean {
+  return federationStore.federations.some((f) => f.federationId === federation.federationId)
+}
 
 async function discoverFederations() {
   isDiscovering.value = true
@@ -113,6 +125,7 @@ async function addFederation(federation: Federation) {
         message: 'Federation added successfully',
         color: 'positive',
         icon: 'check',
+        position: 'top',
       })
       emit('close')
     }
@@ -130,3 +143,11 @@ async function addFederation(federation: Federation) {
   }
 }
 </script>
+
+<style scoped>
+.federation-id {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
