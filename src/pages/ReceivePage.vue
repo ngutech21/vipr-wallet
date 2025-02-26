@@ -71,7 +71,7 @@ import QrcodeVue from 'qrcode.vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
-import { useLightningTransactionsStore } from 'src/stores/transactions'
+import { useTransactionsStore } from 'src/stores/transactions'
 import { useShare } from '@vueuse/core'
 
 const amount = ref<number>(0)
@@ -80,7 +80,7 @@ const store = useWalletStore()
 const amountInput = ref<HTMLInputElement | null>(null)
 const $q = useQuasar()
 const router = useRouter()
-const lightningTransactionsStore = useLightningTransactionsStore()
+const transactionsStore = useTransactionsStore()
 const lnExpiry = 60 * 20 // 20 minutes
 const countdown = ref(lnExpiry)
 const isWaiting = ref(false)
@@ -143,10 +143,11 @@ async function onRequest() {
       )
       console.log('Received invoice:', lnReceiveState)
 
-      await lightningTransactionsStore.addTransaction({
+      await transactionsStore.addReceiveTransaction({
         amountInSats: amount.value,
         createdAt: new Date(),
         invoice: invoice.invoice,
+        status: 'completed',
       })
       await store.updateBalance()
 

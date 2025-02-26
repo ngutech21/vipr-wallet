@@ -33,13 +33,6 @@ export interface FederationMeta {
   popup_countdown_message: string
 }
 
-export interface LightningTransaction {
-  id?: string
-  invoice: string
-  createdAt: Date
-  amountInSats: number
-}
-
 export interface Bolt11Invoice {
   invoice: string
   paymentHash: string
@@ -48,3 +41,27 @@ export interface Bolt11Invoice {
   expiry: number
   description: string
 }
+
+export type BaseTransaction = {
+  id: string
+  createdAt: Date
+  amountInSats: number
+}
+
+export type LightningReceiveTransaction = BaseTransaction & {
+  invoice: string
+  status: 'pending' | 'completed' | 'expired'
+  memo?: string
+}
+
+export type LightningSendTransaction = BaseTransaction & {
+  invoice: string
+  feeInMsats?: number
+  status: 'pending' | 'completed' | 'failed'
+  memo?: string
+  federationId: string
+}
+
+export type AnyTransaction =
+  | (LightningReceiveTransaction & { type: 'receive' })
+  | (LightningSendTransaction & { type: 'send' })

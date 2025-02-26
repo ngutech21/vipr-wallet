@@ -1,18 +1,29 @@
 <template>
-  <div class="transactions-list">
-    <ul class="q-gutter-md">
+  <div class="transactions-list q-ml-md q-mr-md">
+    <ul class="transaction-list-container">
       <li
-        v-for="transaction in transactions"
+        v-for="transaction in recentTransactions"
         :key="String(transaction.id)"
         class="transaction-item"
       >
-        <q-icon name="arrow_downward" class="transaction-icon" />
-        <span class="transaction-date"
-          >Received <br />{{ new Date(transaction.createdAt).toLocaleString() }}</span
+        <q-icon
+          :name="transaction.type === 'send' ? 'arrow_upward' : 'arrow_downward'"
+          class="transaction-icon"
+          :color="transaction.type === 'send' ? 'negative' : 'positive'"
+        />
+
+        <span class="transaction-date">
+          {{ transaction.type === 'send' ? 'Sent' : 'Received' }}
+          <br />{{ new Date(transaction.createdAt).toLocaleString() }}
+        </span>
+
+        <span
+          class="transaction-amount"
+          :class="transaction.type === 'send' ? 'negative' : 'positive'"
         >
-        <span class="transaction-amount"
-          >+ {{ transaction.amountInSats.toLocaleString() }} sats</span
-        >
+          {{ transaction.type === 'send' ? '- ' : '+ ' }}
+          {{ transaction.amountInSats.toLocaleString() }} sats
+        </span>
       </li>
     </ul>
   </div>
@@ -20,21 +31,27 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { useLightningTransactionsStore } from 'src/stores/transactions'
+import { useTransactionsStore } from 'src/stores/transactions'
 import { QIcon } from 'quasar'
 
-const lightningTransactionsStore = useLightningTransactionsStore()
+const transactionsStore = useTransactionsStore()
 
 onMounted(async () => {
-  await lightningTransactionsStore.loadTransactions()
+  await transactionsStore.loadAllTransactions()
 })
 
-const transactions = computed(() => lightningTransactionsStore.transactions)
+const recentTransactions = computed(() => transactionsStore.recentTransactions)
 </script>
 
 <style scoped>
 .transactions-list {
   padding: 16px;
+}
+
+.transaction-list-container {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
 }
 
 .transaction-item {

@@ -38,6 +38,8 @@ import VerifyPayment from 'components/VerifyPayment.vue'
 import type { Bolt11Invoice } from 'src/components/models'
 import { useRoute } from 'vue-router'
 import type { SendRouteQuery } from 'src/types/vue-router'
+import { useTransactionsStore } from 'src/stores/transactions'
+import { useFederationStore } from 'src/stores/federation'
 
 const lightningInvoice = ref('')
 const decodedInvoice = ref<Bolt11Invoice | null>(null)
@@ -46,6 +48,10 @@ const lightningStore = useLightningStore()
 const $q = useQuasar()
 const route = useRoute()
 const query = route.query as SendRouteQuery
+
+const transactionsStore = useTransactionsStore()
+
+const federationsStore = useFederationStore()
 
 watch(
   () => query.invoice,
@@ -73,9 +79,19 @@ function decodeInvoice() {
 async function payInvoice() {
   try {
     await store.wallet?.lightning.payInvoice(lightningInvoice.value)
+
+    await transactionsStore.addSendTransaction({
+      amountInSats: decodedInvoice.value?.amount ? decodedInvoice.value.amount / 1_000 : 0,
+      federationId: federationsStore.selectedFederation?.federationId ?? 'unknown',
+      createdAt: new Date(),
+      invoice: lightningInvoice.value,
+      status: 'completed',
+    })
+
     $q.notify({
       type: 'positive',
       message: 'Invoice paid successfully!',
+      position: 'top',
     })
     console.log('Invoice paid successfully:', lightningInvoice.value)
   } catch (error) {
@@ -87,6 +103,7 @@ async function payInvoice() {
     $q.notify({
       type: 'negative',
       message: 'Failed to pay invoice: ' + errorMessage,
+      position: 'top',
     })
   }
 }

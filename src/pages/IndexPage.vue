@@ -22,7 +22,7 @@
     </q-dialog>
 
     <div class="text-white q-pa-md dark-bg" style="width: 100%">
-      <div class="text-h4 text-center">{{ totalBalance.toLocaleString() }} sats</div>
+      <div class="text-h4 text-center">{{ Math.ceil(totalBalance).toLocaleString() }} sats</div>
 
       <div class="text-center" v-if="federationStore.selectedFederation">
         <q-chip class="q-mt-sm" color="white" text-color="primary" outline>
@@ -53,7 +53,7 @@
     <!-- Added fixed bottom buttons using q-page-sticky -->
     <q-page-sticky
       position="bottom"
-      :offset="[0, 100]"
+      :offset="[0, 50]"
       v-if="federationStore.federations.length > 0"
     >
       <div class="q-pa-md">
