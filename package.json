@@ -39,7 +39,7 @@
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@pinia/testing": "^1.0.0",
-    "@quasar/app-vite": "^2.1.0",
+    "@quasar/app-vite": "^2.1.1",
     "@quasar/quasar-app-extension-testing-unit-vitest": "^1.1.0",
     "@types/node": "^22.13.5",
     "@vitest/ui": "^3.0.5",
@@ -76,6 +76,7 @@
       "@swc/core",
       "bufferutil",
       "es5-ext",
+      "esbuild",
       "utf-8-validate"
     ]
   }
