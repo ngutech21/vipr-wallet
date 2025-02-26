@@ -11,16 +11,44 @@
           <!-- Back button: remove :to, call goBack -->
           <q-btn icon="arrow_back" label="Back" flat class="q-mb-lg" @click="goBack" />
 
-          <!-- Enter amount textfield -->
-          <div class="q-mb-md" v-if="!qrData">
-            <q-input
-              filled
-              v-model.number="amount"
-              label="Amount (Sats)"
-              type="number"
-              ref="amountInput"
-            />
+          <div class="flex flex-center full-width">
+            <div v-if="!qrData" class="amount-entry-container q-pa-lg glass-effect">
+              <div class="text-h6 q-mb-md text-center">Enter Amount</div>
+
+              <q-input
+                filled
+                v-model.number="amount"
+                label="Amount (Sats)"
+                type="number"
+                ref="amountInput"
+                class="no-spinner q-mb-lg"
+                :rules="[(val) => val > 0 || 'Enter a positive amount']"
+              />
+
+              <!-- Preset amount buttons -->
+              <div class="row q-col-gutter-sm q-mb-lg">
+                <div class="col-3" v-for="preset in [1000, 5000, 10000, 21000]" :key="preset">
+                  <q-btn
+                    outline
+                    color="primary"
+                    class="full-width"
+                    :label="`${preset.toLocaleString()}`"
+                    @click="amount = preset"
+                  />
+                </div>
+              </div>
+
+              <q-btn
+                label="Create Invoice"
+                color="primary"
+                class="full-width"
+                :disable="amount <= 0"
+                @click="onRequest"
+                icon="bolt"
+              />
+            </div>
           </div>
+
           <div v-if="qrData" class="column items-center justify-center h-6 heading-text">
             Pay the lightning invoice to receive your ecash
           </div>
@@ -58,7 +86,7 @@
           </div>
 
           <!-- Request button -->
-          <q-btn label="Create Invoice" color="primary" @click="onRequest" v-if="!qrData" />
+          <!-- <q-btn label="Create Invoice" color="primary" @click="onRequest" v-if="!qrData" /> -->
           <div class="row justify-center q-mt-lg">
             <q-btn
               v-if="qrData"
@@ -207,6 +235,11 @@ async function goBack() {
 </script>
 
 <style scoped>
+.amount-entry-container {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 16px;
+}
 .input-width {
   width: 100%;
   max-width: 512px;
