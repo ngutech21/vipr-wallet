@@ -1,14 +1,5 @@
 <template>
-  <q-layout view="hHh lpR fFf">
-    <q-dialog
-      v-model="showSettingsOverlay"
-      position="bottom"
-      transition-show="slide-up"
-      transition-hide="slide-down"
-    >
-      <SettingsPage @close="showSettingsOverlay = false" />
-    </q-dialog>
-
+  <q-layout view="hHh lpR fFf" class="dark-gradient">
     <q-dialog
       v-model="showAddFederationOverlay"
       position="bottom"
@@ -61,13 +52,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import SettingsPage from 'src/pages/SettingsPage.vue'
 import AddFederation from 'src/components/AddFederation.vue'
-const showSettingsOverlay = ref(false)
+
 const showAddFederationOverlay = ref(false)
-
 const route = useRoute()
-
 const isHomeActive = computed(() => route.path === '/')
 const isFederationsActive = computed(() => route.path === '/federations')
 const isSettingsActive = computed(() => route.path === '/settings')

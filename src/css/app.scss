@@ -1,1 +1,60 @@
 // app global css in SCSS form
+
+@use 'sass:color';
+
+// Rounded buttons
+.q-btn {
+  border-radius: 8px;
+
+  &.q-btn--round {
+    border-radius: 50%;
+  }
+
+  // Add subtle transition
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+
+  &:active:not(.disabled) {
+    transform: translateY(2px);
+  }
+}
+
+// Gradient backgrounds
+.primary-gradient {
+  background: linear-gradient(135deg, $primary, color.adjust($primary, $lightness: -15%));
+}
+
+.dark-gradient {
+  background: linear-gradient(135deg, $dark, color.adjust($dark, $lightness: 6%));
+}
+
+.text-h4,
+.text-h5,
+.text-h6 {
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(128, 0, 255, 0.3);
+  border-radius: 10px;
+}
+
+// Glass effect for special elements
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
