@@ -59,6 +59,15 @@
 
           <!-- Request button -->
           <q-btn label="Create Invoice" color="primary" @click="onRequest" v-if="!qrData" />
+          <div class="row justify-center q-mt-lg">
+            <q-btn
+              v-if="qrData"
+              label="Pay with Bitcoin Wallet"
+              color="primary"
+              icon="account_balance_wallet"
+              @click="payWithBitcoinConnect"
+            />
+          </div>
         </q-page>
       </q-page-container>
     </q-layout>
@@ -69,10 +78,11 @@
 import { ref, onMounted, computed } from 'vue'
 import QrcodeVue from 'qrcode.vue'
 import { useWalletStore } from 'src/stores/wallet'
-import { useQuasar } from 'quasar'
+import { Loading, useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useTransactionsStore } from 'src/stores/transactions'
 import { useShare } from '@vueuse/core'
+import { init, requestProvider } from '@getalby/bitcoin-connect'
 
 const amount = ref<number>(0)
 const qrData = ref('')
@@ -95,10 +105,22 @@ const formattedCountdown = computed(() => {
 })
 
 onMounted(() => {
+  init({
+    appName: 'Vipr Wallet',
+  })
+
   if (amountInput.value) {
     amountInput.value.focus()
   }
 })
+
+async function payWithBitcoinConnect() {
+  const provider = await requestProvider()
+  Loading.show({ message: 'Paying with connected Bitcoin Wallet' })
+  const { preimage } = await provider.sendPayment(qrData.value)
+  console.log('preimage:', preimage)
+  Loading.hide()
+}
 
 async function shareQrcode() {
   console.log('Sharing QR code...')

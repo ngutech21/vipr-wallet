@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@fedimint/core-web": "^0.0.10",
+    "@getalby/bitcoin-connect": "^3.6.3",
     "@j2only/slide-unlock": "^0.5.11",
     "@nostr-dev-kit/ndk": "^2.12.0",
     "@quasar/extras": "^1.16.17",
