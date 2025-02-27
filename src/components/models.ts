@@ -1,4 +1,4 @@
-export interface Federation {
+export type Federation = {
   title: string
   inviteCode: string
   federationId: string
@@ -9,14 +9,14 @@ export interface Federation {
   network?: string
 }
 
-export interface FederationConfig {
+export type FederationConfig = {
   meta: {
     federation_name: string
     meta_external_url: string
   }
 }
 
-export interface FederationMeta {
+export type FederationMeta = {
   chat_server_domain: string
   default_currency: string
   federation_icon_url: string
@@ -33,7 +33,7 @@ export interface FederationMeta {
   popup_countdown_message: string
 }
 
-export interface Bolt11Invoice {
+export type Bolt11Invoice = {
   invoice: string
   paymentHash: string
   amount: number
