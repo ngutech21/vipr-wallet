@@ -97,6 +97,7 @@ async function discoverFederations() {
       message: 'Failed to discover federations',
       color: 'negative',
       icon: 'error',
+      position: 'top',
     })
   } finally {
     isDiscovering.value = false

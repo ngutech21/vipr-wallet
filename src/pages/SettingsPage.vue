@@ -76,6 +76,7 @@ async function checkForUpdates() {
     Notify.create({
       message: 'Service Worker not supported',
       color: 'negative',
+      position: 'top',
     })
     return
   }
@@ -88,6 +89,7 @@ async function checkForUpdates() {
       Notify.create({
         message: 'Service Worker not registered',
         color: 'warning',
+        position: 'top',
       })
       return
     }
@@ -111,6 +113,7 @@ async function checkForUpdates() {
       Notify.create({
         message: 'No updates available',
         color: 'info',
+        position: 'top',
       })
     }
   } catch (error) {
@@ -118,6 +121,7 @@ async function checkForUpdates() {
     Notify.create({
       message: 'Error checking for updates',
       color: 'negative',
+      position: 'top',
     })
   } finally {
     Loading.hide()
