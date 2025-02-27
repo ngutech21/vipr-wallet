@@ -68,6 +68,7 @@ import { useWalletStore } from 'src/stores/wallet'
 import ModalCard from 'src/components/ModalCard.vue'
 import { Loading, Notify } from 'quasar'
 import type { Federation } from 'src/components/models'
+import { getErrorMessage } from 'src/utils/error'
 
 const emit = defineEmits<{
   close: []
@@ -94,7 +95,7 @@ async function discoverFederations() {
   } catch (error) {
     console.error('Failed to discover federations:', error)
     Notify.create({
-      message: 'Failed to discover federations',
+      message: `Failed to discover federations ${getErrorMessage(error)}`,
       color: 'negative',
       icon: 'error',
       position: 'top',
@@ -136,9 +137,9 @@ async function addFederation(federation: Federation) {
       emit('close')
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    console.error('Failed to add federation:', error)
     Notify.create({
-      message: 'Failed to add federation: ' + errorMessage,
+      message: `Failed to add federation: ${getErrorMessage(error)}`,
       color: 'negative',
       icon: 'error',
       timeout: 5000,

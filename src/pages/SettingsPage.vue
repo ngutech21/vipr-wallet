@@ -30,6 +30,7 @@ import { version } from '../../package.json'
 import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'
 import { Dialog, Loading, Notify } from 'quasar'
+import { getErrorMessage } from 'src/utils/error'
 
 function deleteData() {
   console.log('Deleting data...')
@@ -57,7 +58,7 @@ function deleteData() {
         console.error('Error deleting data:', error)
         Notify.create({
           type: 'negative',
-          message: 'Error deleting data',
+          message: `Error deleting data ${getErrorMessage(error)}`,
           position: 'top',
         })
       })

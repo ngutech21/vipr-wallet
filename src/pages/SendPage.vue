@@ -40,6 +40,7 @@ import { useRoute } from 'vue-router'
 import type { SendRouteQuery } from 'src/types/vue-router'
 import { useTransactionsStore } from 'src/stores/transactions'
 import { useFederationStore } from 'src/stores/federation'
+import { getErrorMessage } from 'src/utils/error'
 
 const lightningInvoice = ref('')
 const decodedInvoice = ref<Bolt11Invoice | null>(null)
@@ -70,7 +71,7 @@ function decodeInvoice() {
   } catch (error) {
     $q.notify({
       type: 'negative',
-      message: error instanceof Error ? error.message : 'Failed to decode invoice',
+      message: `Failed to decode invoice: ${getErrorMessage(error)}`,
       position: 'top',
     })
   }
@@ -96,13 +97,9 @@ async function payInvoice() {
     console.log('Invoice paid successfully:', lightningInvoice.value)
   } catch (error) {
     console.log('Error Invoice paid ', error)
-    let errorMessage = 'An unknown error occurred.'
-    if (error instanceof Error) {
-      errorMessage = error.message
-    }
     $q.notify({
       type: 'negative',
-      message: 'Failed to pay invoice: ' + errorMessage,
+      message: `Failed to pay invoice: ${getErrorMessage(error)}`,
       position: 'top',
     })
   }

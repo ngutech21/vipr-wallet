@@ -32,6 +32,7 @@ import { useWalletStore } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
 import ModalCard from 'src/components/ModalCard.vue'
 import { Loading, Notify } from 'quasar'
+import { getErrorMessage } from 'src/utils/error'
 
 const emit = defineEmits<{
   close: []
@@ -79,9 +80,8 @@ async function addFederation() {
       await federationStore.selectFederation(federation)
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
     Notify.create({
-      message: 'Failed to add federation: ' + errorMessage,
+      message: `Failed to add federation: ${getErrorMessage(error)}`,
       color: 'negative',
       icon: 'error',
       timeout: 5000,
