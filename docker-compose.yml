@@ -1,0 +1,10 @@
+---
+services:
+  vipr-wallet:
+    image: ngutech21/vipr-wallet:latest
+    container_name: vipr-wallet
+    restart: unless-stopped
+    ports:
+      - '8080:80'
+    environment:
+      - NODE_ENV=dev
