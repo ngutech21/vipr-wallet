@@ -1,24 +1,50 @@
 <template>
   <q-page class="column q-px-md">
     <div class="text-h6 q-pt-md q-mb-md">Settings</div>
-    <q-card class="full-width">
+
+    <q-card class="full-width q-mt-md">
       <q-card-section>
-        <div class="text-subtitle1">App Version: {{ version }}</div>
-        <div class="text-subtitle1">Quasar Version: {{ quasarVersion }}</div>
-        <BuildInfo />
-        <q-btn
-          label="Check for Updates"
-          icon="refresh"
-          color="primary"
-          class="q-mt-md"
-          @click="checkForUpdates"
-        />
+        <div class="text-h6 q-mb-md">Bitcoin Wallet</div>
+        <div class="row items-center q-mb-lg">
+          <div class="col-12 col-sm-6">
+            <div class="connection-status">
+              <q-icon
+                :name="connectedProvider ? 'check_circle' : 'radio_button_unchecked'"
+                :class="connectedProvider ? 'text-positive' : 'text-grey-6'"
+                size="md"
+                class="q-mr-sm"
+              />
+              <div>
+                <div class="text-subtitle1 q-mb-xs">
+                  {{ connectedProvider ? 'Connected' : 'Not Connected' }}
+                </div>
+                <div class="text-caption text-grey-8" v-if="connectedProvider">
+                  {{ connectedProvider }}
+                </div>
+                <div class="text-caption text-grey-8" v-else>
+                  Connect a Lightning wallet to send and receive payments
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-sm-6 flex justify-end q-mt-md q-mt-sm-none">
+            <q-btn
+              :label="connectedProvider ? 'Change Wallet' : 'Connect Wallet'"
+              :icon="connectedProvider ? 'swap_horiz' : 'bolt'"
+              :color="connectedProvider ? 'secondary' : 'primary'"
+              @click="configureBitcoinConnect"
+              :flat="!!connectedProvider"
+              :outline="!!connectedProvider"
+            />
+          </div>
+        </div>
       </q-card-section>
     </q-card>
 
     <q-card class="full-width q-mt-md">
       <q-card-section>
-        <div class="text-h6">Nostr Settings</div>
+        <div class="text-h6">Nostr</div>
 
         <!-- <q-input
           v-model="pubkey"
@@ -71,6 +97,21 @@
 
     <q-card class="full-width q-mt-md">
       <q-card-section>
+        <div class="text-subtitle1">App Version: {{ version }}</div>
+        <div class="text-subtitle1">Quasar Version: {{ quasarVersion }}</div>
+        <BuildInfo />
+        <q-btn
+          label="Check for Updates"
+          icon="refresh"
+          color="primary"
+          class="q-mt-md"
+          @click="checkForUpdates"
+        />
+      </q-card-section>
+    </q-card>
+
+    <q-card class="full-width q-mt-md">
+      <q-card-section>
         <div class="text-h6">Danger Zone</div>
 
         <q-card-actions>
@@ -89,6 +130,31 @@ import { Dialog, Loading, Notify } from 'quasar'
 import { getErrorMessage } from 'src/utils/error'
 import { useNostrStore } from 'src/stores/nostr'
 import { computed, ref, watch } from 'vue'
+import {
+  getConnectorConfig,
+  launchModal,
+  onConnected,
+  onDisconnected,
+} from '@getalby/bitcoin-connect'
+
+const connectedProvider = ref('')
+
+function updateConnectedProvider() {
+  const config = getConnectorConfig()
+  connectedProvider.value = config?.connectorName || ''
+}
+
+onDisconnected(() => {
+  updateConnectedProvider()
+})
+
+onConnected(() => {
+  updateConnectedProvider()
+})
+
+function configureBitcoinConnect() {
+  launchModal()
+}
 
 function deleteData() {
   console.log('Deleting data...')
@@ -261,5 +327,24 @@ async function resetRelays() {
 <style scoped>
 .full-width {
   width: 100%;
+}
+.connection-status {
+  display: flex;
+  align-items: center;
+}
+
+.wallet-details {
+  border-left: 4px solid var(--q-secondary);
+}
+
+.rounded-borders {
+  border-radius: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 599px) {
+  .justify-end {
+    justify-content: flex-start;
+  }
 }
 </style>
