@@ -85,6 +85,8 @@ async function checkForUpdates() {
 
   try {
     Loading.show({ message: 'Checking for updates...' })
+    await clearServiceWorkerCaches()
+
     const registration = await navigator.serviceWorker.getRegistration()
 
     if (!registration) {
@@ -127,6 +129,14 @@ async function checkForUpdates() {
     })
   } finally {
     Loading.hide()
+  }
+}
+
+async function clearServiceWorkerCaches() {
+  if ('caches' in window) {
+    const cacheNames = await caches.keys()
+    await Promise.all(cacheNames.map((name) => caches.delete(name)))
+    console.log('All service worker caches cleared')
   }
 }
 </script>
