@@ -14,6 +14,62 @@
           @click="checkForUpdates"
         />
       </q-card-section>
+    </q-card>
+
+    <q-card class="full-width q-mt-md">
+      <q-card-section>
+        <div class="text-h6">Nostr Settings</div>
+
+        <!-- <q-input
+          v-model="pubkey"
+          label="Your Nostr Public Key (npub or hex)"
+          outlined
+          class="q-mb-md"
+          @change="updatePubkey"
+          :rules="[
+            (val) =>
+              !val ||
+              val.startsWith('npub1') ||
+              /^[0-9a-f]{64}$/.test(val) ||
+              'Invalid npub or hex format',
+          ]"
+        /> -->
+
+        <div class="text-subtitle2 q-mb-sm">Relays</div>
+        <q-list bordered separator class="q-mb-md">
+          <q-item v-for="(relay, index) in relays" :key="index">
+            <q-item-section>{{ relay }}</q-item-section>
+            <q-item-section side>
+              <q-btn flat round dense icon="delete" color="negative" @click="removeRelay(relay)" />
+            </q-item-section>
+          </q-item>
+        </q-list>
+
+        <div class="row q-col-gutter-md">
+          <div class="col-8">
+            <q-input
+              v-model="newRelay"
+              label="Add relay URL (wss://...)"
+              outlined
+              :rules="[(val) => !val || val.startsWith('wss://') || 'Must start with wss://']"
+            />
+          </div>
+          <div class="col-4">
+            <q-btn
+              label="Add"
+              color="primary"
+              class="full-width q-mt-sm"
+              :disable="!isValidRelayUrl"
+              @click="addNewRelay"
+            />
+          </div>
+        </div>
+
+        <q-btn label="Reset to Defaults" outline class="q-mt-md" @click="resetRelays" />
+      </q-card-section>
+    </q-card>
+
+    <q-card class="full-width q-mt-md">
       <q-card-section>
         <div class="text-h6">Danger Zone</div>
 
@@ -31,6 +87,8 @@ import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'
 import { Dialog, Loading, Notify } from 'quasar'
 import { getErrorMessage } from 'src/utils/error'
+import { useNostrStore } from 'src/stores/nostr'
+import { computed, ref, watch } from 'vue'
 
 function deleteData() {
   console.log('Deleting data...')
@@ -138,6 +196,65 @@ async function clearServiceWorkerCaches() {
     await Promise.all(cacheNames.map((name) => caches.delete(name)))
     console.log('All service worker caches cleared')
   }
+}
+
+// Nostr settings
+const nostrStore = useNostrStore()
+const relays = ref(nostrStore.relays)
+//const pubkey = ref(nostrStore.pubkey)
+const newRelay = ref('')
+
+// Watch for store changes to keep local refs in sync
+watch(
+  () => nostrStore.relays,
+  (newRelays) => {
+    relays.value = [...newRelays]
+  },
+  { deep: true },
+)
+
+const isValidRelayUrl = computed(() => {
+  return newRelay.value && newRelay.value.startsWith('wss://')
+})
+
+// function updatePubkey() {
+//   nostrStore.setPubkey(pubkey.value)
+// }
+
+async function addNewRelay() {
+  if (isValidRelayUrl.value && (await nostrStore.addRelay(newRelay.value))) {
+    Notify.create({
+      type: 'positive',
+      message: `Added relay: ${newRelay.value}`,
+      position: 'top',
+    })
+    newRelay.value = ''
+  } else {
+    Notify.create({
+      type: 'negative',
+      message: 'Invalid relay URL or already exists',
+      position: 'top',
+    })
+  }
+}
+
+async function removeRelay(relay: string) {
+  if (await nostrStore.removeRelay(relay)) {
+    Notify.create({
+      type: 'info',
+      message: `Removed relay: ${relay}`,
+      position: 'top',
+    })
+  }
+}
+
+async function resetRelays() {
+  await nostrStore.resetRelays()
+  Notify.create({
+    type: 'info',
+    message: 'Reset relays to defaults',
+    position: 'top',
+  })
 }
 </script>
 

@@ -1,29 +1,61 @@
 import { defineStore } from 'pinia'
-
+import { useLocalStorage } from '@vueuse/core'
 import type { NDKEvent, NDKFilter } from '@nostr-dev-kit/ndk'
 import NDK from '@nostr-dev-kit/ndk'
-import { Nip87Kinds } from 'src/types/nip87'
 import type { Federation } from 'src/components/models'
+import { Nip87Kinds } from 'src/types/nip87'
+
+const DEFAULT_RELAYS = [
+  'wss://nostr.mutinywallet.com/',
+  'wss://relay.damus.io',
+  'wss://nos.lol',
+  'wss://relay.nostr.band',
+  'wss://relay.snort.social',
+  'wss://relay.primal.net',
+]
 
 export const useNostrStore = defineStore('nostr', {
   state: () => ({
+    relays: useLocalStorage<string[]>('vipr.nostr.relays', DEFAULT_RELAYS),
+    pubkey: useLocalStorage<string>('vipr.nostr.pubkey', ''),
     ndk: null as NDK | null,
     discoveredFederations: [] as Federation[],
   }),
 
   getters: {},
   actions: {
+    async addRelay(relay: string) {
+      if (!this.relays.includes(relay) && relay.startsWith('wss://')) {
+        this.relays.push(relay)
+        await this.initNdk()
+        return true
+      }
+      return false
+    },
+
+    async removeRelay(relay: string) {
+      const index = this.relays.indexOf(relay)
+      if (index !== -1) {
+        this.relays.splice(index, 1)
+        await this.initNdk()
+        return true
+      }
+      return false
+    },
+
+    async resetRelays() {
+      this.relays = [...DEFAULT_RELAYS]
+      await this.initNdk()
+    },
+
+    setPubkey(pubkey: string) {
+      this.pubkey = pubkey
+    },
+
     async initNdk() {
       try {
         this.ndk = new NDK({
-          explicitRelayUrls: [
-            'wss://nostr.mutinywallet.com/',
-            'wss://relay.damus.io',
-            'wss://nos.lol',
-            'wss://relay.nostr.band',
-            'wss://relay.snort.social',
-            'wss://relay.primal.net',
-          ],
+          explicitRelayUrls: this.relays,
         })
 
         // Setup connection promise before connecting
@@ -41,6 +73,8 @@ export const useNostrStore = defineStore('nostr', {
           ),
           connectionPromise,
         ])
+
+        console.log('NDK initialized ', this.ndk.explicitRelayUrls)
 
         // Give time for more relays to connect
         await new Promise((resolve) => setTimeout(resolve, 1000))
