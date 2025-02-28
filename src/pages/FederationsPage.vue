@@ -21,11 +21,9 @@
       <AddFederation @close="showAdd = false" />
     </q-dialog>
 
-    <q-card class="full-width">
-      <q-card-section class="row items-center justify-between">
-        <div class="text-h6">Federations</div>
-      </q-card-section>
-    </q-card>
+    <q-toolbar class="header-section">
+      <q-toolbar-title class="text-center">Federations</q-toolbar-title>
+    </q-toolbar>
 
     <div class="q-pa-md">
       <FederationList />

@@ -229,15 +229,6 @@ async function copyInvoice() {
 .transaction-details-page {
   padding-bottom: 80px;
 
-  .header-section {
-    background-color: #202020;
-    color: white;
-    padding: 16px;
-    display: flex;
-    align-items: center;
-    margin-bottom: 16px;
-  }
-
   .transaction-content {
     max-width: 600px;
     margin: 0 auto;
