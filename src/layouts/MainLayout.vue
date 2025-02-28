@@ -21,7 +21,7 @@
           icon="home"
           :color="isHomeActive ? 'primary' : 'white'"
           label="Home"
-          class="small-label button-container text-primary"
+          class="small-label button-container"
           :to="'/'"
         />
 

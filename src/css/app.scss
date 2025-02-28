@@ -3,7 +3,7 @@
 @use 'sass:color';
 
 // Rounded buttons
-.q-btn {
+.q-btn:not(.q-btn--fab) {
   border-radius: 8px;
 
   &.q-btn--round {
@@ -26,7 +26,7 @@
 }
 
 .dark-gradient {
-  background: linear-gradient(135deg, $dark, color.adjust($dark, $lightness: 6%));
+  background: linear-gradient(135deg, $dark, color.adjust($dark, $lightness: 4%));
 }
 
 .text-h4,

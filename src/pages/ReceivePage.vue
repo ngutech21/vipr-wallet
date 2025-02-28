@@ -30,7 +30,7 @@
                 <div class="col-3" v-for="preset in [1000, 5000, 10000, 21000]" :key="preset">
                   <q-btn
                     outline
-                    color="primary"
+                    color="white"
                     class="full-width"
                     :label="`${preset.toLocaleString()}`"
                     @click="amount = preset"
