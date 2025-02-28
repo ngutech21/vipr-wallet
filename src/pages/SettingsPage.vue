@@ -63,6 +63,7 @@ function deleteData() {
         })
       })
       .finally(() => {
+        window.location.reload()
         Loading.hide()
         Notify.create({
           type: 'positive',
