@@ -41,6 +41,11 @@ const routes: RouteRecordRaw[] = [
     name: 'federation-details',
     component: () => import('pages/FederationDetailsPage.vue'),
   },
+  {
+    path: '/transaction/:id',
+    name: 'transaction-details',
+    component: () => import('pages/TransactionDetailsPage.vue'),
+  },
 
   // Always leave this as last one,
   // but you can also remove it
