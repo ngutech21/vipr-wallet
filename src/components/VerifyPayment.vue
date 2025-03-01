@@ -6,7 +6,7 @@
       <q-card-section>
         <div class="row q-mb-sm">
           <div class="col-4 text-weight-medium">Amount</div>
-          <div class="col">{{ decodedInvoice.amount / 1_000 }} sats</div>
+          <div class="col">{{ decodedInvoice.amount }} sats</div>
         </div>
 
         <div class="row q-mb-sm">

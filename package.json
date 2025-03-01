@@ -29,7 +29,6 @@
     "@vueuse/core": "^12.7.0",
     "idb": "^8.0.2",
     "js-confetti": "^0.12.0",
-    "light-bolt11-decoder": "^3.2.0",
     "qrcode.vue": "^3.6.0",
     "quasar": "^2.16.0",
     "register-service-worker": "^1.7.2",

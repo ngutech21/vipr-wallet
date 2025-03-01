@@ -1,30 +1,23 @@
 import { defineStore } from 'pinia'
-import { decode } from 'light-bolt11-decoder'
 import type { Bolt11Invoice } from 'src/components/models'
-import { fiat } from '@getalby/lightning-tools'
+import { fiat, Invoice } from '@getalby/lightning-tools'
 
 export const useLightningStore = defineStore('lightning', {
   state: () => ({}),
   actions: {
     decodeInvoice(invoice: string): Bolt11Invoice {
-      const decoded = decode(invoice)
+      const { paymentHash, satoshi, description, expiry, timestamp } = new Invoice({
+        pr: invoice,
+      })
 
-      // Find specific sections by their name
-      const paymentHashSection = decoded.sections.find((s) => s.name === 'payment_hash')
-      const amountSection = decoded.sections.find((s) => s.name === 'amount')
-      const descriptionSection = decoded.sections.find((s) => s.name === 'description')
-      const timestampSection = decoded.sections.find((s) => s.name === 'timestamp')
-
-      const bolt11Invoice: Bolt11Invoice = {
+      return {
         invoice,
-        paymentHash: paymentHashSection?.value || '',
-        amount: amountSection ? parseInt(amountSection.value) : 0,
-        timestamp: timestampSection?.value || 0,
-        expiry: decoded.expiry || 0,
-        description: descriptionSection?.value || '',
-      }
-
-      return bolt11Invoice
+        paymentHash,
+        amount: satoshi,
+        timestamp: timestamp,
+        expiry: expiry,
+        description,
+      } satisfies Bolt11Invoice
     },
     async satsToFiat(amountInSats: number): Promise<number> {
       // FIXME store the currency in the store and make it configurable in settings

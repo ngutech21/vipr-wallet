@@ -38,8 +38,8 @@ export type Bolt11Invoice = {
   paymentHash: string
   amount: number
   timestamp: number
-  expiry: number
-  description: string
+  expiry: number | undefined
+  description: string | null
 }
 
 export type BaseTransaction = {

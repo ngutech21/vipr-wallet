@@ -9,12 +9,32 @@
             <q-input
               filled
               v-model="lightningInvoice"
-              label="Enter Lightning Invoice"
+              label="Enter Lightning Invoice or Lightning address"
               type="textarea"
               autogrow
             />
           </div>
-          <q-btn label="Verify Invoice" color="primary" @click="decodeInvoice" />
+          <q-btn label="Next" color="primary" @click="decodeInvoice" v-if="!amountRequired" />
+
+          <div v-if="amountRequired" class="q-mb-md">
+            <q-input
+              filled
+              v-model="invoiceAmount"
+              label="Amount in sats"
+              type="number"
+              autogrow
+              :rules="[(val) => val > 0 || 'Enter a positive amount']"
+            />
+            <q-input
+              filled
+              v-model="invoiceMemo"
+              label="Memo"
+              type="text"
+              autogrow
+              class="q-mt-md"
+            />
+            <q-btn label="Next" color="primary" @click="createInvoice" class="q-mt-md" />
+          </div>
         </template>
 
         <VerifyPayment
@@ -49,31 +69,71 @@ const lightningStore = useLightningStore()
 const $q = useQuasar()
 const route = useRoute()
 const query = route.query as SendRouteQuery
-
 const transactionsStore = useTransactionsStore()
-
 const federationsStore = useFederationStore()
+const invoiceAmount = ref(0)
+const invoiceMemo = ref('')
+const lnAdress = ref(<LightningAddress | null>null)
+
+// determine if the amount is required e.g. when paying a lightning address or lnurl-p
+const amountRequired = ref(false)
+
+import { LightningAddress } from '@getalby/lightning-tools'
 
 watch(
   () => query.invoice,
-  (newInvoice) => {
+  async (newInvoice) => {
     if (typeof newInvoice === 'string') {
       lightningInvoice.value = newInvoice
-      decodeInvoice()
+      await decodeInvoice()
     }
   },
   { immediate: true },
 )
 
-function decodeInvoice() {
-  try {
+async function createInvoice() {
+  const invoice = await lnAdress?.value?.requestInvoice({
+    satoshi: invoiceAmount.value,
+    comment: invoiceMemo.value,
+  })
+  if (invoice) {
+    lightningInvoice.value = invoice.paymentRequest
     decodedInvoice.value = lightningStore.decodeInvoice(lightningInvoice.value)
-  } catch (error) {
-    $q.notify({
-      type: 'negative',
-      message: `Failed to decode invoice: ${getErrorMessage(error)}`,
-      position: 'top',
-    })
+  }
+}
+
+async function decodeInvoice() {
+  if (lightningInvoice.value.includes('@')) {
+    amountRequired.value = true
+    lnAdress.value = new LightningAddress(lightningInvoice.value)
+    try {
+      await lnAdress.value.fetchWithProxy()
+      if (!lnAdress.value.lnurlpData) {
+        amountRequired.value = false
+        lnAdress.value = null
+        $q.notify({
+          type: 'negative',
+          message: 'Invalid lightning address',
+          position: 'top',
+        })
+      }
+    } catch (error) {
+      $q.notify({
+        type: 'negative',
+        message: `Failed to fetch lightning address: ${getErrorMessage(error)}`,
+        position: 'top',
+      })
+    }
+  } else {
+    try {
+      decodedInvoice.value = lightningStore.decodeInvoice(lightningInvoice.value)
+    } catch (error) {
+      $q.notify({
+        type: 'negative',
+        message: `Failed to decode invoice: ${getErrorMessage(error)}`,
+        position: 'top',
+      })
+    }
   }
 }
 
