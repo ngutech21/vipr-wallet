@@ -67,13 +67,8 @@
             <q-separator class="q-my-md" />
 
             <div class="detail-row">
-              <div class="label">Date</div>
+              <div class="label">Created on</div>
               <div class="value">{{ formatDate(transaction.createdAt) }}</div>
-            </div>
-
-            <div class="detail-row">
-              <div class="label">Time</div>
-              <div class="value">{{ formatTime(transaction.createdAt) }}</div>
             </div>
 
             <!-- Additional details based on transaction type -->
@@ -139,6 +134,7 @@ import { useTransactionsStore } from 'src/stores/transactions'
 import { Notify } from 'quasar'
 import type { AnyTransaction } from 'src/components/models'
 import { useFederationStore } from 'src/stores/federation'
+import { date } from 'quasar'
 
 const route = useRoute()
 const router = useRouter()
@@ -209,12 +205,8 @@ function formatMsats(msats: number): string {
   return Math.round(msats / 1000).toLocaleString()
 }
 
-function formatDate(date: Date): string {
-  return date.toLocaleDateString()
-}
-
-function formatTime(date: Date): string {
-  return date.toLocaleTimeString()
+function formatDate(param: Date): string {
+  return date.formatDate(param, 'MMMM D, YYYY - h:mm A')
 }
 
 function getStatusColor(status: string): string {
@@ -278,7 +270,7 @@ async function copyInvoice() {
 
     .label {
       font-weight: 500;
-      color: var(--q-primary);
+      color: white;
     }
 
     .value {

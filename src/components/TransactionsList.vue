@@ -20,7 +20,7 @@
         <q-item-section>
           <q-item-label>{{ transaction.type === 'send' ? 'Sent' : 'Received' }}</q-item-label>
           <q-item-label caption>{{
-            new Date(transaction.createdAt).toLocaleString()
+            date.formatDate(transaction.createdAt, 'MMMM D, YYYY - h:mm A')
           }}</q-item-label>
         </q-item-section>
 
@@ -54,6 +54,7 @@
 import { computed, onMounted } from 'vue'
 import { useTransactionsStore } from 'src/stores/transactions'
 import { QIcon } from 'quasar'
+import { date } from 'quasar'
 
 const transactionsStore = useTransactionsStore()
 
