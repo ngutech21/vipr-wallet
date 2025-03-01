@@ -141,7 +141,7 @@ async function payInvoice() {
   try {
     await store.wallet?.lightning.payInvoice(lightningInvoice.value)
 
-    const amountInSats = decodedInvoice.value?.amount ? decodedInvoice.value.amount / 1_000 : 0
+    const amountInSats = decodedInvoice.value?.amount ? decodedInvoice.value.amount : 0
     await transactionsStore.addSendTransaction({
       amountInSats,
       federationId: federationsStore.selectedFederation?.federationId ?? 'unknown',
