@@ -1,12 +1,12 @@
 <template>
-  <div class="transactions-list q-ml-md q-mr-md">
+  <div class="q-ml-md q-mr-md q-pt-md">
     <ul class="transaction-list-container">
       <q-item
         clickable
         v-ripple
         v-for="transaction in recentTransactions"
         :key="String(transaction.id)"
-        class="transaction-item q-py-md"
+        class="transaction-item"
         @click="viewTransactionDetails(transaction.id)"
       >
         <q-item-section avatar>
@@ -74,20 +74,18 @@ async function viewTransactionDetails(id: string) {
 </script>
 
 <style scoped>
-.transactions-list {
-  padding: 16px;
-}
-
 .transaction-list-container {
   list-style-type: none;
-  padding: 0;
-  margin: 0;
+  padding: 0px;
+  margin: 0px;
 }
 
 .transaction-item {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 3px;
   margin-bottom: 4px;
+  padding-left: 0px;
+  padding-right: 0px;
   transition: background-color 0.2s;
 
   &:hover {
