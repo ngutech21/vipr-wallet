@@ -55,18 +55,15 @@ import { computed, onMounted } from 'vue'
 import { useTransactionsStore } from 'src/stores/transactions'
 import { QIcon } from 'quasar'
 import { date } from 'quasar'
+import { useRouter } from 'vue-router'
 
 const transactionsStore = useTransactionsStore()
+const router = useRouter()
+const recentTransactions = computed(() => transactionsStore.recentTransactions)
 
 onMounted(async () => {
   await transactionsStore.loadAllTransactions()
 })
-
-const recentTransactions = computed(() => transactionsStore.recentTransactions)
-
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
 
 async function viewTransactionDetails(id: string) {
   await router.push(`/transaction/${id}`)
