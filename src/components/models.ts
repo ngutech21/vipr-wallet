@@ -22,9 +22,9 @@ export type FederationMeta = {
   federation_icon_url: string
   max_balance_msats: string
   max_invoice_msats: string
-  onchain_deposits_disabled: string
+  onchain_deposits_disabled: boolean
   public: string
-  stability_pool_disabled: string
+  stability_pool_disabled: boolean
   welcome_message: string
   tos_url: string
   invite_code: string
