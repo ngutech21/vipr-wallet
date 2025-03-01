@@ -32,6 +32,9 @@
             {{ transaction.type === 'send' ? '- ' : '+ ' }}
             {{ transaction.amountInSats.toLocaleString() }} sats
           </div>
+          <div class="text-caption text-grey">
+            ≈ ${{ transaction.amountInFiat.toFixed(2) }} {{ transaction.fiatCurrency }}
+          </div>
         </q-item-section>
 
         <q-item-section side>

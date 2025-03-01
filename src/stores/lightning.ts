@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { decode } from 'light-bolt11-decoder'
 import type { Bolt11Invoice } from 'src/components/models'
+import { fiat } from '@getalby/lightning-tools'
 
 export const useLightningStore = defineStore('lightning', {
   state: () => ({}),
@@ -24,6 +25,10 @@ export const useLightningStore = defineStore('lightning', {
       }
 
       return bolt11Invoice
+    },
+    async satsToFiat(amountInSats: number): Promise<number> {
+      // FIXME store the currency in the store and make it configurable in settings
+      return await fiat.getFiatValue({ satoshi: amountInSats, currency: 'usd' })
     },
   },
 })

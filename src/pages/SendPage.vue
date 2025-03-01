@@ -81,12 +81,15 @@ async function payInvoice() {
   try {
     await store.wallet?.lightning.payInvoice(lightningInvoice.value)
 
+    const amountInSats = decodedInvoice.value?.amount ? decodedInvoice.value.amount / 1_000 : 0
     await transactionsStore.addSendTransaction({
-      amountInSats: decodedInvoice.value?.amount ? decodedInvoice.value.amount / 1_000 : 0,
+      amountInSats,
       federationId: federationsStore.selectedFederation?.federationId ?? 'unknown',
       createdAt: new Date(),
       invoice: lightningInvoice.value,
       status: 'completed',
+      amountInFiat: await lightningStore.satsToFiat(amountInSats),
+      fiatCurrency: 'usd',
     })
 
     $q.notify({

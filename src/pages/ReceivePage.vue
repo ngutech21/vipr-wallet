@@ -111,6 +111,7 @@ import { useRouter } from 'vue-router'
 import { useTransactionsStore } from 'src/stores/transactions'
 import { useShare } from '@vueuse/core'
 import { init, requestProvider } from '@getalby/bitcoin-connect'
+import { useLightningStore } from 'src/stores/lightning'
 
 const amount = ref<number>(0)
 const qrData = ref('')
@@ -123,6 +124,7 @@ const lnExpiry = 60 * 20 // 20 minutes
 const countdown = ref(lnExpiry)
 const isWaiting = ref(false)
 const isLeaving = ref(false) // New flag to control transition
+const lightningStore = useLightningStore()
 
 const { share, isSupported } = useShare()
 
@@ -198,6 +200,8 @@ async function onRequest() {
         createdAt: new Date(),
         invoice: invoice.invoice,
         status: 'completed',
+        amountInFiat: await lightningStore.satsToFiat(amount.value),
+        fiatCurrency: 'usd',
       })
       await store.updateBalance()
 

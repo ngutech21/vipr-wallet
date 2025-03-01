@@ -46,6 +46,8 @@ export type BaseTransaction = {
   id: string
   createdAt: Date
   amountInSats: number
+  amountInFiat: number
+  fiatCurrency: 'usd' | 'eur' | 'gbp'
 }
 
 export type LightningReceiveTransaction = BaseTransaction & {

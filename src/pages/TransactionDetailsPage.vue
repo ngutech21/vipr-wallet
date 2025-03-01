@@ -31,7 +31,7 @@
               }}{{ formatSats(transaction.amountInSats) }}
             </div>
             <div class="text-caption text-grey">
-              ≈ ${{ (transaction.amountInSats * satsToUsd).toFixed(2) }} USD
+              ≈ ${{ transaction.amountInFiat.toFixed(2) }} {{ transaction.fiatCurrency }}
             </div>
           </div>
 
@@ -133,7 +133,6 @@ const federationStore = useFederationStore()
 const transaction = ref<AnyTransaction | null>(null)
 const loading = ref(true)
 const error = ref('')
-const satsToUsd = ref(0.0000458) // FIXME store usd amount in transaction
 
 onMounted(async () => {
   try {
