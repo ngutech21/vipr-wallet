@@ -34,7 +34,8 @@
                     class="full-width"
                     :label="`${preset.toLocaleString()}`"
                     @click="amount = preset"
-                  />
+                  >
+                  </q-btn>
                 </div>
               </div>
 
@@ -45,7 +46,13 @@
                 :disable="amount <= 0"
                 @click="onRequest"
                 icon="bolt"
-              />
+                :loading="isCreatingInvoice"
+              >
+                <template v-slot:loading>
+                  <q-spinner-dots color="white" />
+                </template>
+                <q-icon name="bolt" class="q-ml-sm" />
+              </q-btn>
             </div>
           </div>
 
@@ -125,8 +132,8 @@ const countdown = ref(lnExpiry)
 const isWaiting = ref(false)
 const isLeaving = ref(false) // New flag to control transition
 const lightningStore = useLightningStore()
-
 const { share, isSupported } = useShare()
+const isCreatingInvoice = ref(false)
 
 const formattedCountdown = computed(() => {
   const minutes = Math.floor(countdown.value / 60)
@@ -164,6 +171,7 @@ async function onRequest() {
   if (amount.value < 1) {
     return
   }
+  isCreatingInvoice.value = true
 
   const interval = setInterval(() => {
     if (countdown.value > 0) {
@@ -223,6 +231,7 @@ async function onRequest() {
       })
     } finally {
       isWaiting.value = false
+      isCreatingInvoice.value = false
     }
   }
 }
