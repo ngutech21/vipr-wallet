@@ -6,7 +6,7 @@
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#202020",
-  "theme_color": "#8000ff",
+  "theme_color": "#202020",
   "prefer_related_applications": false,
   "lang": "en",
   "dir": "ltr",
