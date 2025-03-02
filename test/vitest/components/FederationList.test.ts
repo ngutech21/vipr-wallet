@@ -3,7 +3,6 @@ import { mount } from '@vue/test-utils'
 import { Quasar } from 'quasar'
 import { createTestingPinia } from '@pinia/testing'
 import FederationList from 'src/components/FederationList.vue'
-//import { useFederationStore } from '@/stores/federation'
 import { useFederationStore } from 'src/stores/federation'
 import { vi } from 'vitest'
 
