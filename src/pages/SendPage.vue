@@ -7,11 +7,6 @@
     <q-layout view="lHh Lpr lFf">
       <q-page-container>
         <q-page class="column dark-gradient">
-          <!-- Header section -->
-          <!-- <div class="row items-center q-mb-lg">
-            <q-btn flat round icon="arrow_back" :to="'/'" color="white" />
-            <div class="text-h6 q-ml-sm">Send Payment</div>
-          </div> -->
           <q-toolbar class="header-section">
             <q-btn flat round icon="arrow_back" :to="'/'" />
             <q-space />
