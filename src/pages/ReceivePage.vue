@@ -7,9 +7,13 @@
     <!-- Only render layout if not leaving -->
     <q-layout v-if="!isLeaving" view="lHh Lpr lFf">
       <q-page-container>
-        <q-page padding>
-          <!-- Back button: remove :to, call goBack -->
-          <q-btn icon="arrow_back" label="Back" flat class="q-mb-lg" @click="goBack" />
+        <q-page class="dark-gradient">
+          <q-toolbar class="header-section">
+            <q-btn flat round icon="arrow_back" @click="goBack" />
+            <q-space />
+            <q-toolbar-title>Receive</q-toolbar-title>
+            <q-space />
+          </q-toolbar>
 
           <div class="flex flex-center full-width">
             <div v-if="!qrData" class="amount-entry-container q-pa-lg glass-effect">

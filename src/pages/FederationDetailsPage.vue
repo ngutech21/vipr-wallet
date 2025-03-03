@@ -4,8 +4,9 @@
       <q-page>
         <q-toolbar class="header-section">
           <q-btn flat round icon="arrow_back" :to="'/federations'" />
-          <q-toolbar-title class="text-center">Federation Details</q-toolbar-title>
-          <div></div>
+          <q-space />
+          <q-toolbar-title>Federation Details</q-toolbar-title>
+          <q-space />
         </q-toolbar>
         <div class="q-px-md">
           <template v-if="metadata">
@@ -22,9 +23,7 @@
                   <div class="text-subtitle2 text-grey">{{ metadata.default_currency }}</div>
                   <div class="q-mt-sm">
                     <q-chip
-                      :color="
-                        metadata.onchain_deposits_disabled === true ? 'negative' : 'positive'
-                      "
+                      :color="metadata.onchain_deposits_disabled === true ? 'negative' : 'positive'"
                       text-color="white"
                       size="sm"
                     >
@@ -44,10 +43,9 @@
               </q-card-section>
             </q-card>
 
-             <div class="text-subtitle1 q-mb-xs">Details</div>
+            <div class="text-subtitle1 q-mb-xs">Details</div>
             <q-card flat class="q-mb-md">
               <q-card-section>
-
                 <q-list>
                   <q-item>
                     <q-item-section>
@@ -93,9 +91,8 @@
             </q-card>
 
             <div class="text-subtitle1 q-mb-xs">Messages</div>
-             <q-card flat class="q-mb-md" v-if="hasMessages">
+            <q-card flat class="q-mb-md" v-if="hasMessages">
               <q-card-section>
-
                 <q-list>
                   <template v-if="metadata.preview_message">
                     <q-item>

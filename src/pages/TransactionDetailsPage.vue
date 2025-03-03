@@ -10,8 +10,9 @@
         <q-page class="transaction-details-page">
           <q-toolbar class="header-section">
             <q-btn flat round color="white" icon="arrow_back" @click="navigateBack" />
-            <q-toolbar-title class="text-center">Transaction Details</q-toolbar-title>
-            <div></div>
+            <q-space />
+            <q-toolbar-title>Transaction Details</q-toolbar-title>
+            <q-space />
           </q-toolbar>
 
           <!-- Loading state -->
