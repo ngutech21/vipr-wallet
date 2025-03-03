@@ -12,8 +12,8 @@ importers:
         specifier: ^0.0.10
         version: 0.0.10
       '@getalby/bitcoin-connect':
-        specifier: ^3.6.3
-        version: 3.6.3(react@19.0.0)(typescript@5.7.3)
+        specifier: ^3.7.0
+        version: 3.7.0(react@19.0.0)(typescript@5.7.3)
       '@getalby/lightning-tools':
         specifier: ^5.1.2
         version: 5.1.2
@@ -985,15 +985,15 @@ packages:
   '@fedimint/fedimint-client-wasm-bundler@0.0.2':
     resolution: {integrity: sha512-+6chBN4sItrPTS792na6ZZJL3OlZf+edzhy0W40B8PULesjRURV0DbCmR4mCdg+QHds3CkuKkISn/UQpN/cDdQ==}
 
-  '@getalby/bitcoin-connect@3.6.3':
-    resolution: {integrity: sha512-mS3hmKGF8P7RH06DFtawc6T738iwz+wGz28XR46tMDKGfZjPrpcCG7R8Wy7n0w1JBgf7Nec79edQ5cDM1Pbrrw==}
+  '@getalby/bitcoin-connect@3.7.0':
+    resolution: {integrity: sha512-9Tzn7tCJ2awniiunRvTcEQRJQEhw5hZLVBCmhckgAP0GRj5kESnoWfA1jX0WKZZVtSq/2qOfX1wMiz73gCd8gQ==}
 
   '@getalby/lightning-tools@5.1.2':
     resolution: {integrity: sha512-BwGm8eGbPh59BVa1gI5yJMantBl/Fdps6X4p1ZACnmxz9vDINX8/3aFoOnDlF7yyA2boXWCsReVQSr26Q2yjiQ==}
     engines: {node: '>=14'}
 
-  '@getalby/sdk@3.9.0':
-    resolution: {integrity: sha512-qgNXr4FsX0a+PPvWgb112Q8h1/ov31zVP4LjsDYr5+W0CkrRbW9pQnsHPycVPLB5H8k5WVRRNkxYBBoWIBAwyw==}
+  '@getalby/sdk@4.1.1':
+    resolution: {integrity: sha512-Tm0Puqm3qpXxSfUhiO8W7Uaq9Fx/Ww2aOv3sjRYL1jukLi+GRj4s65QCsjCIWaKWUN+RCJMlW3LtKFnUQC/O3A==}
     engines: {node: '>=14'}
 
   '@humanfs/core@0.19.1':
@@ -2185,10 +2185,6 @@ packages:
   elementtree@0.1.7:
     resolution: {integrity: sha512-wkgGT6kugeQk/P6VZ/f4T+4HB41BVgNBq5CDIZVbQ02nvTVqAiVTbskxxu3eA/X96lMlfYOwnLQpN2v5E1zDEg==}
     engines: {node: '>= 0.4.0'}
-
-  emittery@1.1.0:
-    resolution: {integrity: sha512-rsX7ktqARv/6UQDgMaLfIqUWAEzzbCQiVh7V9rhDXp6c37yoJcks12NVD+XPkgl4AEavmNhVfrhGoqYwIsMYYA==}
-    engines: {node: '>=14.16'}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -5364,10 +5360,10 @@ snapshots:
 
   '@fedimint/fedimint-client-wasm-bundler@0.0.2': {}
 
-  '@getalby/bitcoin-connect@3.6.3(react@19.0.0)(typescript@5.7.3)':
+  '@getalby/bitcoin-connect@3.7.0(react@19.0.0)(typescript@5.7.3)':
     dependencies:
       '@getalby/lightning-tools': 5.1.2
-      '@getalby/sdk': 3.9.0(typescript@5.7.3)
+      '@getalby/sdk': 4.1.1(typescript@5.7.3)
       '@lightninglabs/lnc-web': 0.3.2-alpha
       qrcode-generator: 1.4.4
       zustand: 4.5.6(react@19.0.0)
@@ -5379,9 +5375,8 @@ snapshots:
 
   '@getalby/lightning-tools@5.1.2': {}
 
-  '@getalby/sdk@3.9.0(typescript@5.7.3)':
+  '@getalby/sdk@4.1.1(typescript@5.7.3)':
     dependencies:
-      emittery: 1.1.0
       nostr-tools: 2.9.4(typescript@5.7.3)
     transitivePeerDependencies:
       - typescript
@@ -6678,8 +6673,6 @@ snapshots:
   elementtree@0.1.7:
     dependencies:
       sax: 1.1.4
-
-  emittery@1.1.0: {}
 
   emoji-regex@8.0.0: {}
 
