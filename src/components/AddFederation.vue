@@ -27,23 +27,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
 import ModalCard from 'src/components/ModalCard.vue'
 import { Loading, Notify } from 'quasar'
 import { getErrorMessage } from 'src/utils/error'
 
+const walletStore = useWalletStore()
+const federationStore = useFederationStore()
+
 const emit = defineEmits<{
   close: []
 }>()
 
+const props = defineProps<{
+  initialInviteCode?: string | null
+}>()
+
+// Change to initialize from prop if available
+const inviteCode = ref(props.initialInviteCode || '')
+
+// Watch for changes to the prop to update the local ref
+watch(
+  () => props.initialInviteCode,
+  (newCode) => {
+    if (newCode) {
+      inviteCode.value = newCode
+    }
+  },
+)
+
 function onClose() {
   emit('close')
 }
-const inviteCode = ref('')
-const walletStore = useWalletStore()
-const federationStore = useFederationStore()
 
 async function pasteFromClipboard() {
   await navigator.clipboard.readText().then((text) => {

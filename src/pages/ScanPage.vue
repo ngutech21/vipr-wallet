@@ -2,6 +2,10 @@
   <q-layout view="lHh Lpr lFf" class="scan-page">
     <q-page-container>
       <q-page class="full-height">
+        <q-dialog v-model="showAddFederation" position="bottom" @hide="resetScan">
+          <AddFederation @close="showAddFederation = false" :initialInviteCode="detectedContent" />
+        </q-dialog>
+
         <div class="camera-container">
           <qrcode-stream
             @detect="onDetect"
@@ -52,37 +56,67 @@ import type { DetectedBarcode } from 'vue-qrcode-reader'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { SendRouteQuery } from 'src/types/vue-router'
+import AddFederation from 'src/components/AddFederation.vue'
 
-const detectedContent = ref<string | number | null>('')
+const detectedContent = ref<string | null>('')
 const isLoading = ref(true)
 const router = useRouter()
 const torchActive = ref(false)
 const hasTorch = ref(false)
+const showAddFederation = ref(false)
+const isProcessingCode = ref(false)
 
 function onCameraOn(capabilities: unknown) {
   console.log(capabilities)
   hasTorch.value = (capabilities as { torch?: boolean }).torch ?? false
 }
 
+function resetScan() {
+  console.log('Resetting scan state')
+  // Wait a moment before allowing new scans
+  setTimeout(() => {
+    detectedContent.value = ''
+    isProcessingCode.value = false
+  }, 500)
+}
+
 function onDetect(detectedCodes: DetectedBarcode[]) {
+  // Don't process if we're already handling a code
+  if (isProcessingCode.value) return
+
   // Process only the first detected code
   const code = detectedCodes[0]
   if (!code) return
 
+  // Skip if it's the same code we just processed
+  if (code.rawValue === detectedContent.value) return
+
   console.log('Detected code:', code.rawValue)
   detectedContent.value = code.rawValue
+  isProcessingCode.value = true
 
   if (code.rawValue.startsWith('fed')) {
-    alert('Detected Fedimint Invitecode: ' + code.rawValue)
-  } else if (code.rawValue.startsWith('lnbc')) {
+    showAddFederation.value = true
+  } else if (code.rawValue.startsWith('lnbc') || code.rawValue.includes('@')) {
     router
       .push({
         name: 'send',
         query: { invoice: code.rawValue } as SendRouteQuery,
       })
       .catch(console.error)
+      .finally(() => {
+        // Reset after navigation
+        setTimeout(() => {
+          detectedContent.value = ''
+          isProcessingCode.value = false
+        }, 500)
+      })
+  } else {
+    // If no special handling, allow scanning again
+    isProcessingCode.value = false
   }
 }
+
 function onInit(promise: Promise<void>) {
   promise
     .then(() => {
