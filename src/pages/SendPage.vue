@@ -61,6 +61,7 @@ import type { SendRouteQuery } from 'src/types/vue-router'
 import { useTransactionsStore } from 'src/stores/transactions'
 import { useFederationStore } from 'src/stores/federation'
 import { getErrorMessage } from 'src/utils/error'
+import { LightningAddress } from '@getalby/lightning-tools'
 
 const lightningInvoice = ref('')
 const decodedInvoice = ref<Bolt11Invoice | null>(null)
@@ -77,8 +78,6 @@ const lnAdress = ref(<LightningAddress | null>null)
 
 // determine if the amount is required e.g. when paying a lightning address or lnurl-p
 const amountRequired = ref(false)
-
-import { LightningAddress } from '@getalby/lightning-tools'
 
 watch(
   () => query.invoice,

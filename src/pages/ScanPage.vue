@@ -1,39 +1,45 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
+  <q-layout view="lHh Lpr lFf" class="scan-page">
     <q-page-container>
-      <q-page class="padding">
-        <q-btn icon="arrow_back" label="Back" flat class="q-mb-lg" :to="'/'" />
-        <div class="row items-center justify-evenly">
-          <q-card class="q-px-md q-pt-md q-pb-xl full-width">
-            <q-card-section>
-              <div class="text-h6">Scan QR Code</div>
-            </q-card-section>
+      <q-page class="full-height">
+        <div class="camera-container">
+          <qrcode-stream
+            @detect="onDetect"
+            @init="onInit"
+            @cameraOn="onCameraOn"
+            :track="paintOutline"
+            :torch="torchActive"
+            :formats="['qr_code']"
+          />
 
-            <q-separator />
+          <div class="scan-overlay">
+            <div class="targeting-frame"></div>
+          </div>
+        </div>
 
-            <q-card-section>
-              <qrcode-stream
-                @detect="onDetect"
-                @init="onInit"
-                :track="paintOutline"
-                :formats="['qr_code']"
-              />
-            </q-card-section>
+        <div class="action-bar top-bar q-px-md q-py-sm">
+          <q-btn
+            round
+            flat
+            color="white"
+            icon="arrow_back"
+            @click="$router.push('/')"
+            class="q-mr-md"
+          />
+          <div class="text-white text-subtitle1 text-weight-medium">Scan QR Code</div>
+        </div>
 
-            <q-card-section>
-              <q-input
-                filled
-                label="Detected QR Code"
-                v-model="detectedContent"
-                readonly
-                type="textarea"
-              />
-            </q-card-section>
-
-            <q-card-section>
-              <q-btn label="Close" color="primary" :to="'/'" />
-            </q-card-section>
-          </q-card>
+        <div class="action-bar bottom-bar q-px-md q-py-sm">
+          <div class="detected-text text-white text-caption text-weight-medium">
+            {{ detectedContent || 'No QR code detected' }}
+          </div>
+          <q-toggle
+            v-model="torchActive"
+            color="orange"
+            icon="flashlight_on"
+            checked-icon="flashlight_off"
+            :disable="!hasTorch"
+          />
         </div>
       </q-page>
     </q-page-container>
@@ -47,9 +53,16 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { SendRouteQuery } from 'src/types/vue-router'
 
-const detectedContent = ref('')
+const detectedContent = ref<string | number | null>('')
 const isLoading = ref(true)
 const router = useRouter()
+const torchActive = ref(false)
+const hasTorch = ref(false)
+
+function onCameraOn(capabilities: unknown) {
+  console.log(capabilities)
+  hasTorch.value = (capabilities as { torch?: boolean }).torch ?? false
+}
 
 function onDetect(detectedCodes: DetectedBarcode[]) {
   // Process only the first detected code
@@ -115,7 +128,82 @@ function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingCont
 </script>
 
 <style scoped>
-.full-width {
+.scan-page {
+  background-color: #000;
+}
+
+.camera-container {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.scan-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.targeting-frame {
+  width: 70vw;
+  height: 70vw;
+  max-width: 300px;
+  max-height: 300px;
+  border: 2px solid var(--q-primary);
+  border-radius: 20px;
+  box-shadow: 0 0 0 5000px rgba(0, 0, 0, 0.5);
+}
+
+.action-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: rgba(32, 32, 32, 0.7);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+}
+
+.top-bar {
+  top: 0;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  padding-top: env(safe-area-inset-top);
+}
+
+.bottom-bar {
+  bottom: 0;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.camera-selector {
+  min-width: 120px;
+}
+
+.detected-text {
+  color: white;
+  font-size: 12px;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+::v-deep(.qrcode-stream) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>
