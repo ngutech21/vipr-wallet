@@ -17,7 +17,12 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/received-lightning',
     name: 'received-lightning',
-    component: () => import('pages/ReceivedLightningPage.vue'),
+    component: () => import('pages/ReceivedLightningSuccessPage.vue'),
+  },
+  {
+    path: '/sent-lightning',
+    name: 'sent-lightning',
+    component: () => import('pages/SentLightningSuccessPage.vue'),
   },
   {
     path: '/send',

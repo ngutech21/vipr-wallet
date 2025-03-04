@@ -297,13 +297,10 @@ async function payInvoice() {
 
     await store.updateBalance()
 
-    $q.notify({
-      type: 'positive',
-      message: 'Payment successful!',
-      position: 'top',
+    await router.push({
+      name: 'sent-lightning',
+      query: { amount: amountInSats, fee: paymentResult?.fee },
     })
-
-    await router.push('/')
   } catch (error) {
     $q.notify({
       type: 'negative',
