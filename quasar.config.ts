@@ -5,13 +5,14 @@ import { defineConfig } from '#q-app/wrappers'
 import wasm from 'vite-plugin-wasm'
 import topLevelAwait from 'vite-plugin-top-level-await'
 import fs from 'node:fs'
-
-// Add this debugging code
-console.log('Environment variables debug:')
-console.log('- HTTPS_KEY:', process.env.HTTPS_KEY)
-console.log('- HTTPS_CERT:', process.env.HTTPS_CERT)
+import { loadEnv } from 'vite'
 
 export default defineConfig((_ctx) => {
+  const env = loadEnv('dev', process.cwd(), '')
+  // use env variables HTTPS_KEY and HTTPS_CERT for enabling https using self-signed certificates
+  console.log('- HTTPS_KEY:', env.HTTPS_KEY)
+  console.log('- HTTPS_CERT:', env.HTTPS_CERT)
+
   const buildTimeStamp = new Date().toISOString()
   const envVars = {
     'import.meta.env.VITE_COMMIT_HASH': JSON.stringify(process.env.COMMITHASH || 'development'),
@@ -124,17 +125,17 @@ export default defineConfig((_ctx) => {
       open: { app: { name: 'firefox' } },
       // Modify this to include debug info
       ...(() => {
-        if (process.env.HTTPS_KEY && process.env.HTTPS_CERT) {
-          const keyExists = fs.existsSync(process.env.HTTPS_KEY)
-          const certExists = fs.existsSync(process.env.HTTPS_CERT)
+        if (env.HTTPS_KEY && env.HTTPS_CERT) {
+          const keyExists = fs.existsSync(env.HTTPS_KEY)
+          const certExists = fs.existsSync(env.HTTPS_CERT)
 
           console.log('Certificate files exist?', { keyExists, certExists })
 
           if (keyExists && certExists) {
             return {
               https: {
-                key: fs.readFileSync(process.env.HTTPS_KEY),
-                cert: fs.readFileSync(process.env.HTTPS_CERT),
+                key: fs.readFileSync(env.HTTPS_KEY),
+                cert: fs.readFileSync(env.HTTPS_CERT),
               },
             }
           } else {
