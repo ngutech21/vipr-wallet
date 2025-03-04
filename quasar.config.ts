@@ -4,8 +4,14 @@
 import { defineConfig } from '#q-app/wrappers'
 import wasm from 'vite-plugin-wasm'
 import topLevelAwait from 'vite-plugin-top-level-await'
+import fs from 'node:fs'
 
-export default defineConfig((/* ctx */) => {
+// Add this debugging code
+console.log('Environment variables debug:')
+console.log('- HTTPS_KEY:', process.env.HTTPS_KEY)
+console.log('- HTTPS_CERT:', process.env.HTTPS_CERT)
+
+export default defineConfig((_ctx) => {
   const buildTimeStamp = new Date().toISOString()
   const envVars = {
     'import.meta.env.VITE_COMMIT_HASH': JSON.stringify(process.env.COMMITHASH || 'development'),
@@ -114,12 +120,32 @@ export default defineConfig((/* ctx */) => {
       ],
     },
 
-    // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#devserver
     devServer: {
-      // https: true,
-      open: { app: { name: 'firefox' } }, // opens browser window automatically
-    },
+      open: { app: { name: 'firefox' } },
+      // Modify this to include debug info
+      ...(() => {
+        if (process.env.HTTPS_KEY && process.env.HTTPS_CERT) {
+          const keyExists = fs.existsSync(process.env.HTTPS_KEY)
+          const certExists = fs.existsSync(process.env.HTTPS_CERT)
 
+          console.log('Certificate files exist?', { keyExists, certExists })
+
+          if (keyExists && certExists) {
+            return {
+              https: {
+                key: fs.readFileSync(process.env.HTTPS_KEY),
+                cert: fs.readFileSync(process.env.HTTPS_CERT),
+              },
+            }
+          } else {
+            console.log('Certificate files not found at the specified paths')
+          }
+        } else {
+          console.log('HTTPS environment variables are not defined')
+        }
+        return {}
+      })(),
+    },
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
     framework: {
       config: {
