@@ -133,6 +133,7 @@ async function addFederation(federation: Federation) {
         color: 'positive',
         icon: 'check',
         position: 'top',
+        timeout: 3000,
       })
       emit('close')
     }

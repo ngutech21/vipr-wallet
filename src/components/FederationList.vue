@@ -1,26 +1,64 @@
 <template>
-  <q-list bordered padding v-if="federations.length > 0">
-    <q-item
-      v-for="fedi in federations"
-      :key="fedi.federationId"
-      :class="{ 'selected-federation': isSelected(fedi) }"
-    >
-      <q-item-section class="federation-item cursor-pointer" @click="selectFederation(fedi)">
-        <q-item-label class="row items-center">
-          <q-img :src="fedi.icon_url" class="federation-icon q-mr-md" no-transition />
-          <span>{{ fedi.title }}</span>
-        </q-item-label>
-      </q-item-section>
-      <q-item-section side>
-        <q-btn
-          flat
-          round
-          icon="arrow_forward"
-          :to="{ name: 'federation-details', params: { id: fedi.federationId } }"
-        />
-      </q-item-section>
-    </q-item>
-  </q-list>
+  <div v-if="federations.length > 0">
+    <transition-group name="federation-list" tag="div" class="federation-list">
+      <q-card
+        v-for="fedi in federations"
+        :key="fedi.federationId"
+        :class="['federation-card q-mb-md', isSelected(fedi) ? 'federation-selected' : '']"
+        flat
+        bordered
+        @click="selectFederation(fedi)"
+      >
+        <div v-if="isSelected(fedi)" class="selection-indicator"></div>
+
+        <q-item>
+          <q-item-section avatar>
+            <q-avatar size="42px">
+              <q-img :src="fedi.icon_url" no-transition />
+            </q-avatar>
+          </q-item-section>
+
+          <!-- Federation details -->
+          <q-item-section>
+            <q-item-label class="text-weight-medium">{{ fedi.title }}</q-item-label>
+            <q-item-label caption>
+              <q-chip
+                size="sm"
+                :color="isSelected(fedi) ? 'primary' : 'grey-7'"
+                text-color="white"
+                dense
+                class="status-chip"
+              >
+                {{ isSelected(fedi) ? 'Active' : 'Available' }}
+              </q-chip>
+              <span class="federation-id q-ml-sm">ID: {{ truncateId(fedi.federationId) }}</span>
+            </q-item-label>
+          </q-item-section>
+
+          <!-- Action buttons -->
+          <q-item-section side>
+            <div class="row items-center">
+              <q-btn
+                flat
+                round
+                icon="arrow_forward"
+                :color="isSelected(fedi) ? 'primary' : 'grey'"
+                size="sm"
+                class="q-mr-sm"
+                :to="{ name: 'federation-details', params: { id: fedi.federationId } }"
+              />
+            </div>
+          </q-item-section>
+        </q-item>
+      </q-card>
+    </transition-group>
+
+    <!-- Empty state when no federations -->
+    <div v-if="federations.length === 0" class="column items-center q-pa-lg text-grey">
+      <q-icon name="info" size="48px" />
+      <div class="text-subtitle1 q-mt-md">No federations added yet</div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -38,25 +76,75 @@ async function selectFederation(fedi: Federation) {
     console.error('Error selecting federation:', error)
   }
 }
+
 function isSelected(fedi: Federation): boolean {
   return fedi.federationId === selectedFederation.value?.federationId
 }
+
+function truncateId(id: string): string {
+  if (id.length <= 12) return id
+  return id.substring(0, 6) + '...' + id.substring(id.length - 6)
+}
 </script>
 
-<style scoped>
-.selected-federation {
-  background-color: var(--q-primary);
-}
-.federation-item {
-  flex: 1;
+<style lang="scss" scoped>
+.federation-list {
+  display: flex;
+  flex-direction: column;
 }
 
-.cursor-pointer {
+.federation-card {
+  position: relative;
+  transition: all 0.2s ease;
+  border-radius: 12px;
+  overflow: hidden;
   cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  &.federation-selected {
+    background: rgba(var(--q-primary-rgb), 0.1);
+    border-color: var(--q-primary);
+  }
 }
-.federation-icon {
-  height: 32px;
-  width: 32px;
-  border-radius: 4px;
+
+.selection-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--q-primary);
+  border-radius: 4px 0 0 4px;
+}
+
+.status-chip {
+  height: 18px;
+  font-size: 10px;
+}
+
+.federation-id {
+  opacity: 0.6;
+  font-size: 11px;
+}
+
+// List animations
+.federation-list-enter-active,
+.federation-list-leave-active {
+  transition: all 0.3s;
+}
+
+.federation-list-enter-from,
+.federation-list-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.federation-list-move {
+  transition: transform 0.3s;
 }
 </style>
