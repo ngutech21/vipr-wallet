@@ -33,7 +33,7 @@ describe('FederationList.vue', () => {
     expect(wrapper.text()).toContain('Test Federation')
 
     // Test store interaction
-    const federationItem = wrapper.find('.federation-item')
+    const federationItem = wrapper.find('.federation-card')
     await federationItem.trigger('click')
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
