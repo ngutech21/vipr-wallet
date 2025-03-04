@@ -31,7 +31,7 @@
                         :color="
                           metadata.onchain_deposits_disabled === true ? 'negative' : 'positive'
                         "
-                        text-color="white"
+                        text-color="black"
                         size="sm"
                       >
                         Onchain Deposits
@@ -39,7 +39,7 @@
                       </q-chip>
                       <q-chip
                         :color="metadata.stability_pool_disabled === true ? 'negative' : 'positive'"
-                        text-color="white"
+                        text-color="black"
                         size="sm"
                       >
                         Stability Pool
@@ -80,7 +80,7 @@
                         <q-item-label class="text-body1">
                           <q-chip
                             :color="metadata.public === 'true' ? 'positive' : 'blue-grey'"
-                            text-color="white"
+                            text-color="black"
                             size="sm"
                           >
                             <q-icon
