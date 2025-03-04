@@ -30,13 +30,37 @@
 
               <!-- Preset amount buttons -->
               <div class="row q-col-gutter-sm q-mb-lg">
-                <div class="col-3" v-for="preset in [1000, 5000, 10000, 21000]" :key="preset">
+                <div class="col-4" v-for="preset in [1, 2, 3, 4, 5, 6, 7, 8, 9]" :key="preset">
                   <q-btn
                     outline
                     color="white"
                     class="full-width"
                     :label="`${preset.toLocaleString()}`"
-                    @click="amount = preset"
+                    @click="appendDigit(preset)"
+                  >
+                  </q-btn>
+                </div>
+                <div class="col-4">
+                  <q-btn outline color="white" class="full-width" icon="clear" @click="amount = 0">
+                  </q-btn>
+                </div>
+                <div class="col-4">
+                  <q-btn
+                    outline
+                    color="white"
+                    class="full-width"
+                    :label="`0`"
+                    @click="appendDigit(0)"
+                  >
+                  </q-btn>
+                </div>
+                <div class="col-4">
+                  <q-btn
+                    outline
+                    color="white"
+                    class="full-width"
+                    icon="backspace"
+                    @click="deleteLastDigit"
                   >
                   </q-btn>
                 </div>
@@ -140,6 +164,21 @@ const lightningStore = useLightningStore()
 const { share, isSupported } = useShare()
 const isCreatingInvoice = ref(false)
 const federationStore = useFederationStore()
+
+function deleteLastDigit() {
+  if (amount.value === 0) return
+
+  let currentAmount = amount.value.toString()
+  currentAmount = currentAmount.slice(0, -1)
+  amount.value = currentAmount ? Number(currentAmount) : 0
+}
+
+function appendDigit(digit: number) {
+  // Convert current amount to string, remove any decimals, append the digit, convert back to number
+  const currentAmount = amount.value || 0
+  const newValue = Number(currentAmount.toString().replace(/\.\d*$/, '') + digit.toString())
+  amount.value = newValue
+}
 
 const formattedCountdown = computed(() => {
   const minutes = Math.floor(countdown.value / 60)
