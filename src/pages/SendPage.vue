@@ -282,7 +282,7 @@ async function payInvoice() {
     isProcessing.value = true
     Loading.show({ message: 'Processing payment...' })
 
-    await store.wallet?.lightning.payInvoice(lightningInvoice.value)
+    const paymentResult = await store.wallet?.lightning.payInvoice(lightningInvoice.value)
 
     const amountInSats = decodedInvoice.value?.amount ? decodedInvoice.value.amount : 0
     await transactionsStore.addSendTransaction({
@@ -293,6 +293,7 @@ async function payInvoice() {
       status: 'completed',
       amountInFiat: await lightningStore.satsToFiat(amountInSats),
       fiatCurrency: 'usd',
+      ...(paymentResult?.fee !== undefined ? { feeInMsats: paymentResult.fee } : {}),
     })
 
     await store.updateBalance()

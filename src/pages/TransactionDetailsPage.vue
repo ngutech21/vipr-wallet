@@ -90,6 +90,10 @@
             </div>
 
             <!-- Fee for sent transactions -->
+            <q-separator
+              class="q-my-md"
+              v-if="transaction.type === 'send' && transaction.feeInMsats"
+            />
             <div v-if="transaction.type === 'send' && transaction.feeInMsats" class="detail-row">
               <div class="label">Fee</div>
               <div class="value">{{ formatMsats(transaction.feeInMsats) }} sats</div>
