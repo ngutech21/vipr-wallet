@@ -69,7 +69,11 @@ function onCameraOn(capabilities: unknown) {
   hasTorch.value = (capabilities as { torch?: boolean }).torch ?? false
 }
 
-function onDetect(detectedCodes: DetectedBarcode[]) {
+function stripLightningPrefix(value: string): string {
+  return value.startsWith('lightning:') ? value.substring('lightning:'.length) : value
+}
+
+async function onDetect(detectedCodes: DetectedBarcode[]) {
   // Process only the first detected code
   const code = detectedCodes[0]
   if (!code) return
@@ -77,18 +81,26 @@ function onDetect(detectedCodes: DetectedBarcode[]) {
   console.log('Detected code:', code.rawValue)
   detectedContent.value = code.rawValue
 
-  if (code.rawValue.startsWith('fed')) {
+  const cleanCode = code.rawValue.toLocaleLowerCase()
+
+  if (cleanCode.startsWith('fed')) {
     alert('Detected Fedimint Invitecode: ' + code.rawValue)
     showAddFederation.value = true
-  } else if (code.rawValue.startsWith('lnbc') || code.rawValue.includes('@')) {
-    router
+  } else if (
+    cleanCode.startsWith('lnbc') ||
+    cleanCode.includes('@') ||
+    cleanCode.startsWith('lightning:')
+  ) {
+    const invoice = stripLightningPrefix(cleanCode)
+    await router
       .push({
         name: 'send',
-        query: { invoice: code.rawValue } as SendRouteQuery,
+        query: { invoice } as SendRouteQuery,
       })
       .catch(console.error)
   }
 }
+
 function onInit(promise: Promise<void>) {
   promise
     .then(() => {

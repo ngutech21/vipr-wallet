@@ -10,7 +10,7 @@
           <q-toolbar class="header-section">
             <q-btn flat round icon="arrow_back" :to="'/'" />
             <q-space />
-            <q-toolbar-title>Send Payment</q-toolbar-title>
+            <q-toolbar-title>Send</q-toolbar-title>
             <q-space />
           </q-toolbar>
           <div class="q-px-md">
@@ -150,6 +150,7 @@ const hasCopiedText = ref(false)
 // determine if the amount is required e.g. when paying a lightning address or lnurl-p
 const amountRequired = ref(false)
 
+// FIXME
 // Validate input before allowing to continue
 // const isValidInput = computed(() => {
 //   if (amountRequired.value) {
