@@ -48,6 +48,7 @@ export type BaseTransaction = {
   amountInSats: number
   amountInFiat: number
   fiatCurrency: 'usd' | 'eur' | 'gbp'
+  federationId: string
 }
 
 export type LightningReceiveTransaction = BaseTransaction & {
@@ -61,7 +62,6 @@ export type LightningSendTransaction = BaseTransaction & {
   feeInMsats?: number
   status: 'pending' | 'completed' | 'failed'
   memo?: string
-  federationId: string
 }
 
 export type AnyTransaction =

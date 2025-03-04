@@ -58,8 +58,9 @@ import { date } from 'quasar'
 import { useRouter } from 'vue-router'
 
 const transactionsStore = useTransactionsStore()
+
 const router = useRouter()
-const recentTransactions = computed(() => transactionsStore.recentTransactions)
+const recentTransactions = computed(() => transactionsStore.recentTransactionsBySelectedFederation)
 
 onMounted(async () => {
   await transactionsStore.loadAllTransactions()

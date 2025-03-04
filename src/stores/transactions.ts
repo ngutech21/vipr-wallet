@@ -7,12 +7,15 @@ import type {
   LightningReceiveTransaction,
   LightningSendTransaction,
 } from 'src/components/models'
+import { useFederationStore } from './federation'
 
 const DB_NAME = 'viper-transactions'
 const DB_LN_RECEIVE = 'lightning-receive'
 const DB_LN_SEND = 'lightning-send'
 // Database version - increment when schema changes
 const DB_VERSION = 1
+
+const federationStore = useFederationStore()
 
 async function getDatabase() {
   return openDB(DB_NAME, DB_VERSION, {
@@ -23,12 +26,14 @@ async function getDatabase() {
           const receiveStore = db.createObjectStore(DB_LN_RECEIVE, { keyPath: 'id' })
           receiveStore.createIndex('createdAt', 'createdAt')
           receiveStore.createIndex('status', 'status')
+          receiveStore.createIndex('federationId', 'federationId')
         }
 
         if (!db.objectStoreNames.contains(DB_LN_SEND)) {
           const sendStore = db.createObjectStore(DB_LN_SEND, { keyPath: 'id' })
           sendStore.createIndex('createdAt', 'createdAt')
           sendStore.createIndex('status', 'status')
+          sendStore.createIndex('federationId', 'federationId')
         }
       }
     },
@@ -75,8 +80,14 @@ export const useTransactionsStore = defineStore('transactions', {
       return [...receives, ...sends].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     },
 
-    recentTransactions(): AnyTransaction[] {
-      return this.allTransactions.slice(0, 5)
+    recentTransactionsBySelectedFederation(): AnyTransaction[] {
+      if (!federationStore.selectedFederation) {
+        return []
+      }
+
+      return this.allTransactions
+        .filter((tx) => tx.federationId === federationStore.selectedFederation!.federationId)
+        .slice(0, 5)
     },
   },
 

@@ -123,6 +123,8 @@ import { useTransactionsStore } from 'src/stores/transactions'
 import { useShare } from '@vueuse/core'
 import { init, requestProvider } from '@getalby/bitcoin-connect'
 import { useLightningStore } from 'src/stores/lightning'
+import { useFederationStore } from 'src/stores/federation'
+import { logger } from 'workbox-core/_private'
 
 const amount = ref<number>(0)
 const qrData = ref('')
@@ -138,6 +140,7 @@ const isLeaving = ref(false) // New flag to control transition
 const lightningStore = useLightningStore()
 const { share, isSupported } = useShare()
 const isCreatingInvoice = ref(false)
+const federationStore = useFederationStore()
 
 const formattedCountdown = computed(() => {
   const minutes = Math.floor(countdown.value / 60)
@@ -172,6 +175,13 @@ async function shareQrcode() {
 }
 
 async function onRequest() {
+  if (federationStore.selectedFederation === null) {
+    logger.error('No federation selected')
+    return
+  }
+
+  const selectedFederationId = federationStore.selectedFederation?.federationId ?? ''
+
   if (amount.value < 1) {
     return
   }
@@ -214,6 +224,7 @@ async function onRequest() {
         status: 'completed',
         amountInFiat: await lightningStore.satsToFiat(amount.value),
         fiatCurrency: 'usd',
+        federationId: selectedFederationId,
       })
       await store.updateBalance()
 

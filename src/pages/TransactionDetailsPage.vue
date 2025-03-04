@@ -10,9 +10,8 @@
         <q-page class="transaction-details-page">
           <q-toolbar class="header-section">
             <q-btn flat round color="white" icon="arrow_back" @click="navigateBack" />
-            <q-space />
-            <q-toolbar-title>Transaction Details</q-toolbar-title>
-            <q-space />
+            <q-toolbar-title class="text-center no-wrap">Transaction</q-toolbar-title>
+            <div class="q-ml-md" style="width: 40px"></div>
           </q-toolbar>
 
           <!-- Loading state -->
@@ -32,8 +31,10 @@
           <div v-else-if="transaction" class="transaction-content q-pa-md">
             <!-- Amount section -->
             <div class="amount-section text-center q-py-lg">
-              <div class="text-overline q-mb-sm">Amount</div>
-              <div class="text-h4 text-weight-bold">
+              <div
+                class="text-h4 text-weight-bold"
+                :class="transaction.type === 'send' ? 'text-negative' : 'text-positive'"
+              >
                 {{ transaction.type === 'receive' ? '+' : '-'
                 }}{{ formatSats(transaction.amountInSats) }}
               </div>
@@ -81,11 +82,10 @@
               <div class="value">{{ transaction.memo }}</div>
             </div>
 
-            <!-- Federation ID for sent transactions -->
-            <div v-if="transaction.type === 'send'" class="detail-row">
+            <div class="detail-row">
               <div class="label">Federation</div>
               <div class="value">
-                {{ federationTitle || transaction.federationId }}
+                {{ federationTitle }}
               </div>
             </div>
 
@@ -93,6 +93,12 @@
             <div v-if="transaction.type === 'send' && transaction.feeInMsats" class="detail-row">
               <div class="label">Fee</div>
               <div class="value">{{ formatMsats(transaction.feeInMsats) }} sats</div>
+            </div>
+
+            <q-separator class="q-my-md" />
+            <div class="detail-row">
+              <div class="label">Transaction ID</div>
+              <div class="value text-caption">{{ transaction.id }}</div>
             </div>
 
             <!-- Lightning invoice section -->
@@ -113,13 +119,6 @@
               <div class="invoice-container">
                 <div class="invoice-text text-caption">{{ transaction.invoice }}</div>
               </div>
-            </div>
-
-            <!-- ID and QR -->
-            <q-separator class="q-my-md" />
-            <div class="detail-row">
-              <div class="label">Transaction ID</div>
-              <div class="value text-caption">{{ transaction.id }}</div>
             </div>
           </div>
         </q-page>
@@ -186,16 +185,11 @@ onMounted(async () => {
 
 // Get federation title for sent transactions
 const federationTitle = computed(() => {
-  if (transaction.value?.type === 'send') {
-    const sendTransaction = transaction.value as Extract<AnyTransaction, { type: 'send' }>
+  const federation = federationStore.federations.find(
+    (f) => f.federationId === transaction.value?.federationId,
+  )
 
-    const federation = federationStore.federations.find(
-      (f) => f.federationId === sendTransaction.federationId,
-    )
-
-    return federation?.title || null
-  }
-  return null
+  return federation?.title || transaction.value?.federationId
 })
 // Helper functions
 function formatSats(sats: number): string {
