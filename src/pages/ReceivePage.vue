@@ -30,39 +30,15 @@
 
               <!-- Preset amount buttons -->
               <div class="row q-col-gutter-sm q-mb-lg">
-                <div class="col-4" v-for="preset in [1, 2, 3, 4, 5, 6, 7, 8, 9]" :key="preset">
+                <div class="col-4" v-for="(button, index) in keypadButtons" :key="index">
                   <q-btn
                     outline
                     color="white"
                     class="full-width"
-                    :label="`${preset.toLocaleString()}`"
-                    @click="appendDigit(preset)"
-                  >
-                  </q-btn>
-                </div>
-                <div class="col-4">
-                  <q-btn outline color="white" class="full-width" icon="clear" @click="amount = 0">
-                  </q-btn>
-                </div>
-                <div class="col-4">
-                  <q-btn
-                    outline
-                    color="white"
-                    class="full-width"
-                    :label="`0`"
-                    @click="appendDigit(0)"
-                  >
-                  </q-btn>
-                </div>
-                <div class="col-4">
-                  <q-btn
-                    outline
-                    color="white"
-                    class="full-width"
-                    icon="backspace"
-                    @click="deleteLastDigit"
-                  >
-                  </q-btn>
+                    :icon="button.icon"
+                    :label="button.label"
+                    @click="button.handler"
+                  />
                 </div>
               </div>
 
@@ -164,6 +140,28 @@ const lightningStore = useLightningStore()
 const { share, isSupported } = useShare()
 const isCreatingInvoice = ref(false)
 const federationStore = useFederationStore()
+
+const keypadButtons = [
+  // First row (1-3)
+  { label: '1', handler: () => appendDigit(1) },
+  { label: '2', handler: () => appendDigit(2) },
+  { label: '3', handler: () => appendDigit(3) },
+
+  // Second row (4-6)
+  { label: '4', handler: () => appendDigit(4) },
+  { label: '5', handler: () => appendDigit(5) },
+  { label: '6', handler: () => appendDigit(6) },
+
+  // Third row (7-9)
+  { label: '7', handler: () => appendDigit(7) },
+  { label: '8', handler: () => appendDigit(8) },
+  { label: '9', handler: () => appendDigit(9) },
+
+  // Fourth row (special buttons and 0)
+  { icon: 'clear', handler: () => (amount.value = 0) },
+  { label: '0', handler: () => appendDigit(0) },
+  { icon: 'backspace', handler: deleteLastDigit },
+]
 
 function deleteLastDigit() {
   if (amount.value === 0) return
