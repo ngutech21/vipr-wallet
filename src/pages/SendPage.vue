@@ -9,9 +9,8 @@
         <q-page class="column dark-gradient">
           <q-toolbar class="header-section">
             <q-btn flat round icon="arrow_back" :to="'/'" />
-            <q-space />
-            <q-toolbar-title>Send</q-toolbar-title>
-            <q-space />
+            <q-toolbar-title class="text-center no-wrap">Send</q-toolbar-title>
+            <div class="q-ml-md" style="width: 40px"></div>
           </q-toolbar>
           <div class="q-px-md">
             <!-- Payment input section -->

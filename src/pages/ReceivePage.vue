@@ -10,9 +10,8 @@
         <q-page class="dark-gradient">
           <q-toolbar class="header-section">
             <q-btn flat round icon="arrow_back" @click="goBack" />
-            <q-space />
-            <q-toolbar-title>Receive</q-toolbar-title>
-            <q-space />
+            <q-toolbar-title class="text-center no-wrap">Receive</q-toolbar-title>
+            <div class="q-ml-md" style="width: 40px"></div>
           </q-toolbar>
 
           <div class="flex flex-center full-width">

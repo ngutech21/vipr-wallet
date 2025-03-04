@@ -4,9 +4,8 @@
       <q-page>
         <q-toolbar class="header-section">
           <q-btn flat round icon="arrow_back" :to="'/federations'" />
-          <q-space />
-          <q-toolbar-title>Federation Details</q-toolbar-title>
-          <q-space />
+          <q-toolbar-title class="text-center no-wrap">Federation Details</q-toolbar-title>
+          <div class="q-ml-md" style="width: 40px"></div>
         </q-toolbar>
         <div class="q-px-md">
           <template v-if="metadata">
