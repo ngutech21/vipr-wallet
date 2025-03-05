@@ -14,14 +14,12 @@ export const useWalletStore = defineStore('wallet', {
     initWallet() {
       if (!this.wallet) {
         this.wallet = new FedimintWallet()
-        console.log('Wallet initialized')
       }
     },
     async openWallet() {
       const federationStore = useFederationStore()
       const selectedFederation = federationStore.selectedFederation
 
-      console.log('openWallet() Selected federation', selectedFederation)
       if (selectedFederation) {
         console.log('Opening wallet for federation', selectedFederation.federationId)
 
@@ -32,12 +30,9 @@ export const useWalletStore = defineStore('wallet', {
         ) {
           await this.closeWallet()
           this.wallet = new FedimintWallet()
-          const open = this.wallet?.isOpen()
-          console.log('Closing wallet isOpen=', open)
         }
 
         if (!this.wallet?.isOpen()) {
-          console.log('Opening wallet')
           const walletOpened = await this.wallet?.open(selectedFederation.federationId)
           if (!walletOpened) {
             console.log('Joining federation', selectedFederation.federationId)
