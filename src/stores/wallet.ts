@@ -91,7 +91,6 @@ export const useWalletStore = defineStore('wallet', {
       if (this.wallet) {
         const balance = ((await this.wallet.balance.getBalance()) ?? 0) / 1_000
         this.balance = balance
-        console.log('Balance updated:', balance)
       }
     },
 

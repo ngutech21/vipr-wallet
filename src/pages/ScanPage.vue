@@ -9,8 +9,8 @@
         <div class="camera-container">
           <qrcode-stream
             @detect="onDetect"
-            @init="onInit"
             @cameraOn="onCameraOn"
+            @error="onError"
             :track="paintOutline"
             :torch="torchActive"
             :formats="['qr_code']"
@@ -52,20 +52,21 @@
 
 <script setup lang="ts">
 import { QrcodeStream } from 'vue-qrcode-reader'
-import type { DetectedBarcode } from 'vue-qrcode-reader'
+import type { DetectedBarcode, EmittedError } from 'vue-qrcode-reader'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { SendRouteQuery } from 'src/types/vue-router'
+import AddFederation from 'src/components/AddFederation.vue'
+import { Notify } from 'quasar'
 
 const detectedContent = ref<string | number | null>('')
-const isLoading = ref(true)
 const router = useRouter()
 const torchActive = ref(false)
 const hasTorch = ref(false)
 const showAddFederation = ref(false)
 
 function onCameraOn(capabilities: unknown) {
-  console.log(capabilities)
+  console.log('>>>>>>> capabilities ', capabilities)
   hasTorch.value = (capabilities as { torch?: boolean }).torch ?? false
 }
 
@@ -101,23 +102,13 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
   }
 }
 
-function onInit(promise: Promise<void>) {
-  promise
-    .then(() => {
-      isLoading.value = false
-    })
-    .catch((error) => {
-      if (error.name === 'NotAllowedError') {
-        alert('Please allow camera access to scan QR codes.')
-      } else if (error.name === 'NotFoundError') {
-        alert('No camera found on this device.')
-      } else {
-        alert('Error initializing QR code scanner: ' + error.message)
-      }
-    })
-    .finally(() => {
-      isLoading.value = false
-    })
+function onError(error: EmittedError) {
+  console.error('error in camera:', error)
+  Notify.create({
+    message: error.message,
+    color: 'negative',
+    position: 'top',
+  })
 }
 
 function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingContext2D) {
