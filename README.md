@@ -19,7 +19,6 @@ By using this wallet, you acknowledge and accept these risks.
 
 A demo version of the wallet is available at [beta.vipr.cash](https://beta.vipr.cash)
 
-
 ## 📱 App Screenshots
 
 <div align="center">
@@ -50,10 +49,10 @@ A demo version of the wallet is available at [beta.vipr.cash](https://beta.vipr.
 - [ ] show guardian health
 - [ ] show nostr votes for federation
 
-
 ## 🐳 Deployment
 
 ### Docker Image
+
 If you want to host the wallet yourself, you can use the Docker image on Docker Hub.
 
 ```bash
@@ -82,6 +81,7 @@ The wallet will be available at `http://localhost:8080`
 ## 🚀 Getting Started
 
 ### Development Environment
+
 - This project uses [Vue 3](https://v3.vuejs.org/) with [TypeScript](https://www.typescriptlang.org/)
 - [Quasar Framework](https://quasar.dev/) provides the UI components
 - [Pinia](https://pinia.vuejs.org/) is used for state management

@@ -11,6 +11,7 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
+
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
@@ -23,6 +24,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots or videos to help explain your problem.
 
 **Environment:**
+
 - Device: [e.g. iPhone 13, Desktop]
 - Browser (if applicable): [e.g. Chrome 123, Safari 17]
 - OS: [e.g. iOS 17.2, Windows 11]
@@ -30,6 +32,7 @@ If applicable, add screenshots or videos to help explain your problem.
 - Installation method: [e.g. PWA, browser]
 
 **Reproduction frequency:**
+
 - [ ] Always
 - [ ] Sometimes
 - [ ] Rarely

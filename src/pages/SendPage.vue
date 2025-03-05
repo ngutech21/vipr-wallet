@@ -131,7 +131,7 @@ const transactionsStore = useTransactionsStore()
 const federationsStore = useFederationStore()
 const invoiceAmount = ref(0)
 const invoiceMemo = ref('')
-const lnAdress = ref<LightningAddress | null>(null)
+const lnAddress = ref<LightningAddress | null>(null)
 const isProcessing = ref(false)
 
 // determine if the amount is required e.g. when paying a lightning address or lnurl-p
@@ -167,7 +167,7 @@ async function createInvoice() {
     isProcessing.value = true
     Loading.show({ message: 'Creating invoice...' })
 
-    const invoice = await lnAdress?.value?.requestInvoice({
+    const invoice = await lnAddress?.value?.requestInvoice({
       satoshi: invoiceAmount.value,
       comment: invoiceMemo.value,
     })
@@ -193,12 +193,12 @@ async function decodeInvoice() {
 
   if (lightningInvoice.value.includes('@')) {
     amountRequired.value = true
-    lnAdress.value = new LightningAddress(lightningInvoice.value)
+    lnAddress.value = new LightningAddress(lightningInvoice.value)
     try {
-      await lnAdress.value.fetchWithProxy()
-      if (!lnAdress.value.lnurlpData) {
+      await lnAddress.value.fetchWithProxy()
+      if (!lnAddress.value.lnurlpData) {
         amountRequired.value = false
-        lnAdress.value = null
+        lnAddress.value = null
         $q.notify({
           type: 'negative',
           message: 'Invalid lightning address',
