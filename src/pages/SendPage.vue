@@ -34,16 +34,6 @@
                       <q-btn round dense flat icon="qr_code_scanner" @click="openScanner" />
                     </template>
                   </q-input>
-
-                  <div class="q-mt-md" v-if="hasCopiedText">
-                    <q-btn
-                      label="Paste"
-                      icon="content_paste"
-                      flat
-                      color="primary"
-                      @click="pasteFromClipboard"
-                    />
-                  </div>
                 </q-card-section>
               </q-card>
 
@@ -116,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useLightningStore } from 'src/stores/lightning'
 import { useQuasar, Loading } from 'quasar'
@@ -128,7 +118,6 @@ import { useTransactionsStore } from 'src/stores/transactions'
 import { useFederationStore } from 'src/stores/federation'
 import { getErrorMessage } from 'src/utils/error'
 import { LightningAddress } from '@getalby/lightning-tools'
-import { logger } from 'workbox-core/_private'
 
 const lightningInvoice = ref('')
 const decodedInvoice = ref<Bolt11Invoice | null>(null)
@@ -144,7 +133,6 @@ const invoiceAmount = ref(0)
 const invoiceMemo = ref('')
 const lnAdress = ref<LightningAddress | null>(null)
 const isProcessing = ref(false)
-const hasCopiedText = ref(false)
 
 // determine if the amount is required e.g. when paying a lightning address or lnurl-p
 const amountRequired = ref(false)
@@ -158,10 +146,6 @@ const amountRequired = ref(false)
 //   return lightningInvoice.value.trim().startsWith('lnbc')
 // })
 
-onMounted(async () => {
-  await checkClipboard()
-})
-
 // Watch for query params
 watch(
   () => query.invoice,
@@ -173,39 +157,6 @@ watch(
   },
   { immediate: true },
 )
-
-// Check clipboard for invoice
-async function checkClipboard() {
-  try {
-    if ('clipboard' in navigator) {
-      const text = await navigator.clipboard.readText()
-      hasCopiedText.value = text.startsWith('lnbc') || text.includes('@')
-    }
-  } catch (e) {
-    // Clipboard access may be restricted
-    console.log('Could not access clipboard', e)
-  }
-}
-
-async function pasteFromClipboard() {
-  try {
-    const text = await navigator.clipboard.readText()
-    if (text.startsWith('lnbc') || text.includes('@')) {
-      lightningInvoice.value = text.trim()
-      hasCopiedText.value = false
-
-      if (text.startsWith('lnbc')) {
-        await decodeInvoice()
-      }
-    }
-  } catch (e) {
-    logger.error('Could not access clipboard ', e)
-    $q.notify({
-      type: 'negative',
-      message: 'Could not access clipboard',
-    })
-  }
-}
 
 async function openScanner() {
   await router.push('/scan')
