@@ -17,6 +17,9 @@ This software is experimental and comes with risks:
 
 By using this wallet, you acknowledge and accept these risks.
 
+A demo version of the wallet is available at [beta.vipr.cash](https://beta.vipr.cash)
+
+
 ## 📱 App Screenshots
 
 <div align="center">
@@ -37,17 +40,21 @@ By using this wallet, you acknowledge and accept these risks.
 - [ ] pay to Nostr contacts
 - [ ] export ecash
 - [ ] import ecash
+- [ ] backup wallet
+- [ ] restore wallet
 
 ### Federations
 
+- [x] join multiple federations
 - [x] Discover federations using nostr
 - [ ] show guardian health
+- [ ] show nostr votes for federation
+
 
 ## 🐳 Deployment
 
 ### Docker Image
-
-The latest version of Vipr Wallet is available on Docker Hub:
+If you want to host the wallet yourself, you can use the Docker image on Docker Hub.
 
 ```bash
 docker pull ngutech21/vipr-wallet:latest
@@ -73,6 +80,12 @@ docker compose up -d
 The wallet will be available at `http://localhost:8080`
 
 ## 🚀 Getting Started
+
+### Development Environment
+- This project uses [Vue 3](https://v3.vuejs.org/) with [TypeScript](https://www.typescriptlang.org/)
+- [Quasar Framework](https://quasar.dev/) provides the UI components
+- [Pinia](https://pinia.vuejs.org/) is used for state management
+- [Fedimint-Web-SDK](https://github.com/fedimint/fedimint-web-sdk) is used for interacting with the fedimint
 
 ### Prerequisites
 
