@@ -60,10 +60,6 @@
             </div>
           </div>
 
-          <div v-if="qrData" class="column items-center justify-center h-6 heading-text">
-            Pay the lightning invoice to receive your ecash
-          </div>
-
           <!-- QR Code Card -->
           <div class="column items-center justify-center">
             <q-card v-if="qrData" class="qr-card">
@@ -88,7 +84,7 @@
           </div>
 
           <!-- Payment Status -->
-          <div v-if="qrData" class="column items-center justify-center q-mt-lg">
+          <div v-if="qrData" class="column items-center justify-center q-mt-xs">
             <span class="highlight">{{ formattedCountdown }}</span>
             <span class="countdown-text">
               Waiting for Lightning payment...
