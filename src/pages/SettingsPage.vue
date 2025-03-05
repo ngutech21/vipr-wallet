@@ -1,134 +1,181 @@
 <template>
-  <q-page class="column dark-gradient">
-    <q-toolbar class="header-section">
+  <q-page class="dark-gradient">
+    <q-toolbar class="header-section q-mb-md">
       <q-toolbar-title class="text-center">Settings</q-toolbar-title>
     </q-toolbar>
 
-    <div class="q-px-md">
-      <q-card class="full-width q-mt-md">
-        <q-card-section>
-          <div class="text-h6 q-mb-md">Bitcoin Wallet</div>
-          <div class="row items-center q-mb-lg">
-            <div class="col-12 col-sm-6">
-              <div class="connection-status">
-                <q-icon
-                  :name="connectedProvider ? 'check_circle' : 'radio_button_unchecked'"
-                  :class="connectedProvider ? 'text-positive' : 'text-grey-6'"
-                  size="md"
-                  class="q-mr-sm"
-                />
-                <div>
-                  <div class="text-subtitle1 q-mb-xs">
-                    {{ connectedProvider ? 'Connected' : 'Not Connected' }}
-                  </div>
-                  <div class="text-caption text-grey-8" v-if="connectedProvider">
-                    {{ connectedProvider }}
-                  </div>
-                  <div class="text-caption text-grey-8" v-else>
-                    Connect a Lightning wallet to send and receive payments
+    <div class="q-px-md q-pb-xl">
+      <q-expansion-item
+        expand-separator
+        icon="account_balance_wallet"
+        label="Bitcoin Wallet"
+        caption="Lightning wallet connection settings"
+        header-class="settings-header"
+        expand-icon-class="text-primary"
+      >
+        <q-card>
+          <q-card-section>
+            <div class="row items-center q-mb-md">
+              <div class="col-12 col-sm-8">
+                <div class="connection-status">
+                  <q-icon
+                    :name="connectedProvider ? 'check_circle' : 'radio_button_unchecked'"
+                    :class="connectedProvider ? 'text-positive' : 'text-grey-6'"
+                    size="md"
+                    class="q-mr-sm"
+                  />
+                  <div>
+                    <div class="text-subtitle1 q-mb-xs">
+                      {{ connectedProvider ? 'Connected' : 'Not Connected' }}
+                    </div>
+                    <div class="text-caption text-grey-8" v-if="connectedProvider">
+                      {{ connectedProvider }}
+                    </div>
+                    <div class="text-caption text-grey-8" v-else>
+                      Connect to send and receive payments via Lightning
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="col-12 col-sm-6 flex justify-end q-mt-md q-mt-sm-none">
-              <q-btn
-                :label="connectedProvider ? 'Change Wallet' : 'Connect Wallet'"
-                :icon="connectedProvider ? 'swap_horiz' : 'bolt'"
-                :color="connectedProvider ? 'secondary' : 'primary'"
-                @click="configureBitcoinConnect"
-                :flat="!!connectedProvider"
-                :outline="!!connectedProvider"
-              />
-            </div>
-          </div>
-        </q-card-section>
-      </q-card>
-
-      <q-card class="full-width q-mt-md">
-        <q-card-section>
-          <div class="text-h6">Nostr</div>
-
-          <!-- <q-input
-          v-model="pubkey"
-          label="Your Nostr Public Key (npub or hex)"
-          outlined
-          class="q-mb-md"
-          @change="updatePubkey"
-          :rules="[
-            (val) =>
-              !val ||
-              val.startsWith('npub1') ||
-              /^[0-9a-f]{64}$/.test(val) ||
-              'Invalid npub or hex format',
-          ]"
-        /> -->
-
-          <div class="text-subtitle2 q-mb-sm">Relays</div>
-          <q-list bordered separator class="q-mb-md">
-            <q-item v-for="(relay, index) in relays" :key="index">
-              <q-item-section>{{ relay }}</q-item-section>
-              <q-item-section side>
+              <div class="col-12 col-sm-4 flex justify-end q-mt-sm q-mt-sm-none">
                 <q-btn
-                  flat
-                  round
-                  dense
-                  icon="delete"
-                  color="negative"
-                  @click="removeRelay(relay)"
+                  :label="connectedProvider ? 'Change' : 'Connect'"
+                  :icon="connectedProvider ? 'swap_horiz' : 'bolt'"
+                  :color="connectedProvider ? 'secondary' : 'primary'"
+                  @click="configureBitcoinConnect"
+                  :flat="!!connectedProvider"
+                  :outline="!!connectedProvider"
                 />
-              </q-item-section>
-            </q-item>
-          </q-list>
-
-          <div class="row q-col-gutter-md">
-            <div class="col-8">
-              <q-input
-                v-model="newRelay"
-                label="Add relay URL (wss://...)"
-                outlined
-                :rules="[(val) => !val || val.startsWith('wss://') || 'Must start with wss://']"
-              />
+              </div>
             </div>
-            <div class="col-4">
-              <q-btn
-                label="Add"
-                color="primary"
-                class="full-width q-mt-sm"
-                :disable="!isValidRelayUrl"
-                @click="addNewRelay"
-              />
+          </q-card-section>
+        </q-card>
+      </q-expansion-item>
+
+      <!-- Nostr Settings Section -->
+      <q-expansion-item
+        expand-separator
+        icon="forum"
+        label="Nostr Settings"
+        caption="Manage your Nostr relays"
+        header-class="settings-header"
+        expand-icon-class="text-primary"
+      >
+        <q-card>
+          <q-card-section>
+            <!-- Relays List -->
+            <div class="text-subtitle2 q-mb-sm">Relays</div>
+            <q-list bordered separator class="rounded-borders q-mb-md">
+              <q-item v-for="(relay, index) in relays" :key="index">
+                <q-item-section>
+                  <q-item-label>{{ relay }}</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-btn
+                    flat
+                    round
+                    dense
+                    icon="delete"
+                    color="negative"
+                    size="sm"
+                    @click="removeRelay(relay)"
+                  />
+                </q-item-section>
+              </q-item>
+
+              <!-- Empty state -->
+              <q-item v-if="relays.length === 0">
+                <q-item-section>
+                  <q-item-label caption>No relays configured</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+
+            <!-- Add new relay -->
+            <div class="row q-col-gutter-md items-center">
+              <div class="col-8">
+                <q-input
+                  v-model="newRelay"
+                  label="Add relay URL"
+                  outlined
+                  dense
+                  placeholder="Must start with wss://"
+                  class="relay-input"
+                />
+              </div>
+              <div class="col-4">
+                <q-btn
+                  label="Add"
+                  color="primary"
+                  class="full-width"
+                  :disable="!isValidRelayUrl"
+                  @click="addNewRelay"
+                />
+              </div>
             </div>
-          </div>
 
-          <q-btn label="Reset to Defaults" outline class="q-mt-md" @click="resetRelays" />
-        </q-card-section>
-      </q-card>
+            <div class="q-mt-md">
+              <q-btn label="Reset to Defaults" outline color="secondary" @click="resetRelays" />
+            </div>
+          </q-card-section>
+        </q-card>
+      </q-expansion-item>
 
-      <q-card class="full-width q-mt-md">
-        <q-card-section>
-          <div class="text-subtitle1">App Version: {{ version }}</div>
-          <div class="text-subtitle1">Quasar Version: {{ quasarVersion }}</div>
-          <BuildInfo />
-          <q-btn
-            label="Check for Updates"
-            icon="refresh"
-            color="primary"
-            class="q-mt-md"
-            @click="checkForUpdates"
-          />
-        </q-card-section>
-      </q-card>
+      <!-- App Version Section -->
+      <q-expansion-item
+        expand-separator
+        icon="info"
+        label="App Info & Updates"
+        caption="Version information and updates"
+        header-class="settings-header"
+        expand-icon-class="text-primary"
+      >
+        <q-card>
+          <q-card-section>
+            <div class="row items-center q-mb-md">
+              <div class="col">
+                <div class="text-subtitle1">App Version: {{ version }}</div>
+                <div class="text-subtitle1">Quasar Version: {{ quasarVersion }}</div>
+                <BuildInfo />
+              </div>
+              <div>
+                <q-btn
+                  label="Check for Updates"
+                  icon="refresh"
+                  color="primary"
+                  @click="checkForUpdates"
+                />
+              </div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </q-expansion-item>
 
-      <q-card class="full-width q-mt-md">
-        <q-card-section>
-          <div class="text-h6">Danger Zone</div>
-
-          <q-card-actions>
-            <q-btn label="Delete ALL Data" color="primary" @click="deleteData" />
-          </q-card-actions>
-        </q-card-section>
-      </q-card>
+      <!-- Danger Zone -->
+      <q-expansion-item
+        expand-separator
+        icon="warning"
+        label="Danger Zone"
+        caption="Delete all data and reset the app"
+        header-class="settings-header danger-header"
+        expand-icon-class="text-negative"
+      >
+        <q-card>
+          <q-card-section>
+            <div class="text-subtitle1 q-mb-md">
+              Deleting all data will remove your wallet connections, federations and all settings.
+              This cannot be undone.
+            </div>
+            <q-btn
+              label="Delete ALL Data"
+              color="negative"
+              @click="deleteData"
+              class="full-width"
+            />
+          </q-card-section>
+        </q-card>
+      </q-expansion-item>
     </div>
   </q-page>
 </template>
@@ -339,23 +386,56 @@ async function resetRelays() {
 .full-width {
   width: 100%;
 }
+
+.settings-header {
+  font-weight: 500;
+}
+
+.danger-header {
+  color: var(--q-negative);
+}
+
 .connection-status {
   display: flex;
   align-items: center;
 }
 
-.wallet-details {
-  border-left: 4px solid var(--q-secondary);
+.relay-input :deep(.q-field__bottom) {
+  padding: 4px 12px 0;
 }
 
 .rounded-borders {
   border-radius: 8px;
 }
 
+:deep(.q-expansion-item) {
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+:deep(.q-expansion-item__content) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+:deep(.q-card) {
+  background: transparent;
+  box-shadow: none;
+}
+
+:deep(.q-item__section--side) .q-btn {
+  margin-right: -8px;
+}
+
+:deep(.q-expansion-item__content .q-item) {
+  padding: 10px 16px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 599px) {
   .justify-end {
     justify-content: flex-start;
+    margin-top: 8px;
   }
 }
 </style>
