@@ -19,9 +19,11 @@ By using this wallet, you acknowledge and accept these risks.
 
 ## 📱 App Screenshots
 
-|               Home Dashboard                |                      Federation                      |               Receive Payment                |
-| :-----------------------------------------: | :--------------------------------------------------: | :------------------------------------------: |
-| ![Dashboard](./screenshots/Home-iphone.png) | ![Send](./screenshots/Federation-Details-iphone.png) | ![Receive](./screenshots/Receive-iphone.png) |
+<div align="center">
+  <img src="./screenshots/Home-iphone.png" alt="Dashboard" width="30%" />
+  <img src="./screenshots/Federation-Details-iphone.png" alt="Federation Details" width="30%" />
+  <img src="./screenshots/Receive-iphone.png" alt="Receive Payment" width="30%" />
+</div>
 
 ## ✨ Features
 
