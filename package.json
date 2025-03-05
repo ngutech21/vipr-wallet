@@ -26,7 +26,7 @@
     "@j2only/slide-unlock": "^0.5.11",
     "@nostr-dev-kit/ndk": "^2.12.0",
     "@quasar/extras": "^1.16.17",
-    "@vueuse/core": "^12.7.0",
+    "@vueuse/core": "^12.8.2",
     "idb": "^8.0.2",
     "js-confetti": "^0.12.0",
     "qrcode.vue": "^3.6.0",
