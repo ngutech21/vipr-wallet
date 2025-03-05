@@ -17,15 +17,24 @@ This software is experimental and comes with risks:
 
 By using this wallet, you acknowledge and accept these risks.
 
+## 📱 App Screenshots
+
+|               Home Dashboard                |                      Federation                      |               Receive Payment                |
+| :-----------------------------------------: | :--------------------------------------------------: | :------------------------------------------: |
+| ![Dashboard](./screenshots/Home-iphone.png) | ![Send](./screenshots/Federation-Details-iphone.png) | ![Receive](./screenshots/receive-iphone.png) |
+
 ## ✨ Features
 
 ### General
 
 - [x] lightning send
 - [x] receive tokens by paying a lightning invoice
+- [x] pay lightning invoice using nostr wallet connect
 - [ ] lnurl-p support
-- [ ] lightning address support
+- [x] lightning address support
 - [ ] pay to Nostr contacts
+- [ ] export ecash
+- [ ] import ecash
 
 ### Federations
 
