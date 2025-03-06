@@ -26,24 +26,16 @@
                   <div class="col">
                     <div class="text-h6">{{ federation?.title }}</div>
                     <div class="text-subtitle2 text-grey">{{ metadata.default_currency }}</div>
-                    <div class="q-mt-sm">
+                    <div class="q-mt-sm row items-center">
                       <q-chip
-                        :color="
-                          metadata.onchain_deposits_disabled === true ? 'negative' : 'positive'
-                        "
+                        v-for="module in federation?.modules"
+                        :key="module.kind"
+                        color="positive"
                         text-color="black"
                         size="sm"
+                        class="q-mr-xs"
                       >
-                        Onchain Deposits
-                        {{ metadata.onchain_deposits_disabled === true ? 'Disabled' : 'Enabled' }}
-                      </q-chip>
-                      <q-chip
-                        :color="metadata.stability_pool_disabled === true ? 'negative' : 'positive'"
-                        text-color="black"
-                        size="sm"
-                      >
-                        Stability Pool
-                        {{ metadata.stability_pool_disabled === true ? 'Disabled' : 'Enabled' }}
+                        {{ module.kind }}
                       </q-chip>
                     </div>
                   </div>

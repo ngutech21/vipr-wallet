@@ -7,6 +7,16 @@ export type Federation = {
   icon_url?: string
   // mainnet | testnet | regtest | signet
   network?: string
+  modules: ModuleConfig[]
+}
+
+export type ModuleConfig = {
+  config: string
+  kind: string
+  version: {
+    major: number
+    minor: number
+  }
 }
 
 export type FederationConfig = {
@@ -14,6 +24,7 @@ export type FederationConfig = {
     federation_name: string
     meta_external_url: string
   }
+  modules: ModuleConfig[]
 }
 
 export type FederationMeta = {

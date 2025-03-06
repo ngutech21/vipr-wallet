@@ -4,6 +4,7 @@ import type { NDKEvent, NDKFilter } from '@nostr-dev-kit/ndk'
 import NDK from '@nostr-dev-kit/ndk'
 import type { Federation } from 'src/components/models'
 import { Nip87Kinds } from 'src/types/nip87'
+import { useWalletStore } from './wallet'
 
 const DEFAULT_RELAYS = [
   'wss://nostr.mutinywallet.com/',
@@ -13,6 +14,8 @@ const DEFAULT_RELAYS = [
   'wss://relay.snort.social',
   'wss://relay.primal.net',
 ]
+
+const walletStore = useWalletStore()
 
 export const useNostrStore = defineStore('nostr', {
   state: () => ({
@@ -130,17 +133,14 @@ async function processFederationEvent(discoveredFederations: Federation[], event
     federation.federationId = fedId
 
     // Get metadata
-    const meta = await getMetaData(federation.inviteCode)
-    console.log('Federation metadata:', meta)
-    federation.title = meta.federation_name
-    federation.icon_url = meta.federation_icon_url
-
-    // Skip expired federations
-    const currentTime = Math.floor(Date.now() / 1000)
-    if (meta.federation_expiry_timestamp && meta.federation_expiry_timestamp < currentTime) {
-      console.log(`Skipping expired federation: ${federation.federationId}`)
+    const federationFromInvite = await walletStore.getFederationByInviteCode(federation.inviteCode)
+    if (federationFromInvite === undefined) {
+      console.error('Failed to fetch metadata for federation:', federation)
       return
     }
+    console.log('Federation metadata:', federationFromInvite)
+    federation.title = federationFromInvite.title
+    federation.icon_url = federationFromInvite.icon_url || ''
 
     // Add if not exists
     const exists = discoveredFederations.some((f) => f.federationId === federation.federationId)
@@ -151,11 +151,6 @@ async function processFederationEvent(discoveredFederations: Federation[], event
       })
     }
   } catch (error) {
-    console.error('Error processing federation:', error)
+    console.error('Error processing federationEvent:', event, error)
   }
-}
-
-async function getMetaData(inviteCode: string) {
-  const metaResponse = await fetch(`https://fmo.sirion.io/config/${inviteCode}/meta`)
-  return await metaResponse.json()
 }

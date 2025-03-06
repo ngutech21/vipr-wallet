@@ -48,20 +48,19 @@
       <div v-else class="text-center q-pa-lg text-grey-7">
         <q-icon name="search" size="48px" />
         <div class="text-body1 q-mt-sm">No federations discovered yet</div>
-        <q-btn
-          label="Discover Federations"
-          color="primary"
-          class="q-mt-md"
-          :loading="isDiscovering"
-          @click="discoverFederations"
-        />
+
+        <!-- Loading indicator -->
+        <div v-if="isDiscovering" class="q-mt-md">
+          <q-spinner color="primary" size="2em" />
+          <div class="text-caption q-mt-xs">Searching...</div>
+        </div>
       </div>
     </div>
   </ModalCard>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useNostrStore } from 'src/stores/nostr'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
@@ -70,18 +69,31 @@ import { Loading, Notify } from 'quasar'
 import type { Federation } from 'src/components/models'
 import { getErrorMessage } from 'src/utils/error'
 
-const emit = defineEmits<{
-  close: []
-}>()
-
 const nostr = useNostrStore()
 const walletStore = useWalletStore()
 const federationStore = useFederationStore()
 const isDiscovering = ref(false)
 
-onMounted(async () => {
-  await discoverFederations()
+const emit = defineEmits<{
+  close: []
+}>()
+
+const props = defineProps({
+  visible: {
+    type: Boolean,
+    default: false,
+  },
 })
+
+watch(
+  () => props.visible,
+  async (isVisible) => {
+    if (isVisible) {
+      await discoverFederations()
+    }
+  },
+  { immediate: true },
+)
 
 // Add function to check if federation is already added
 function isAdded(federation: Federation): boolean {
@@ -120,7 +132,7 @@ async function addFederation(federation: Federation) {
       return
     }
 
-    const validFederation = await walletStore.isValidInviteCode(federation.inviteCode)
+    const validFederation = await walletStore.getFederationByInviteCode(federation.inviteCode)
     if (validFederation) {
       const meta = await walletStore.getMetadata(validFederation)
       validFederation.icon_url = meta?.federation_icon_url ?? ''
