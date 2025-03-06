@@ -67,7 +67,7 @@
                     <q-separator inset />
 
                     <q-item>
-                      <q-item-section>
+                      <q-item-section v-if="metadata?.public">
                         <q-item-label caption>Public Federation</q-item-label>
                         <q-item-label class="text-body1">
                           <q-chip
@@ -89,7 +89,7 @@
                 </q-card-section>
               </q-card>
 
-              <div class="text-subtitle1 q-mb-xs">Messages</div>
+              <div class="text-subtitle1 q-mb-xs" v-if="hasMessages">Messages</div>
               <q-card flat class="q-mb-md" v-if="hasMessages">
                 <q-card-section>
                   <q-list>
@@ -216,11 +216,7 @@ const federation = federationStore.federations.find((f) => f.federationId === ro
 const confirmLeave = ref(false)
 
 const hasMessages = computed(() => {
-  return (
-    metadata.value?.welcome_message ||
-    metadata.value?.preview_message ||
-    metadata.value?.popup_countdown_message
-  )
+  return metadata.value?.preview_message || metadata.value?.popup_countdown_message
 })
 
 function formatDate(timestamp: string) {
@@ -247,7 +243,6 @@ onMounted(async () => {
     try {
       const meta = await walletStore.getMetadata(federation)
       if (meta) {
-        console.log('Federation metadata:', meta)
         metadata.value = meta
       }
     } catch (error) {
