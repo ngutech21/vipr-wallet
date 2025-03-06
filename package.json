@@ -30,7 +30,7 @@
     "idb": "^8.0.2",
     "js-confetti": "^0.12.0",
     "qrcode.vue": "^3.6.0",
-    "quasar": "^2.18.0",
+    "quasar": "^2.18.1",
     "register-service-worker": "^1.7.2",
     "uuid": "^11.1.0",
     "vue": "^3.4.18",
