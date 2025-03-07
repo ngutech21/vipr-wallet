@@ -95,6 +95,9 @@ export const useWalletStore = defineStore('wallet', {
     },
 
     async getMetadata(federation: Federation): Promise<FederationMeta | undefined> {
+      if (!federation.metaUrl) {
+        return undefined
+      }
       try {
         const response = await fetch(federation.metaUrl)
         console.log('federation url', federation.metaUrl)
@@ -128,7 +131,7 @@ export const useWalletStore = defineStore('wallet', {
           title: fediConfig.federationName,
           inviteCode: inviteCode,
           federationId: federationId,
-          metaUrl: fediConfig.metaUrl,
+          metaUrl: fediConfig.metaUrl || '',
           modules: fediConfig.modules,
         } satisfies Federation
       }
@@ -142,7 +145,7 @@ if (import.meta.hot) {
 
 function extractFederationInfo(config: JSONValue): {
   federationName: string
-  metaUrl: string
+  metaUrl?: string
   modules: ModuleConfig[]
 } {
   const typedConfig = config as unknown as FederationConfig

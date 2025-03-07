@@ -47,7 +47,7 @@
             <q-card flat class="q-mb-md" v-if="federation?.metadata">
               <q-card-section>
                 <q-list>
-                  <q-item>
+                  <q-item v-if="federation?.metadata?.max_balance_msats">
                     <q-item-section>
                       <q-item-label caption>Maximum Balance</q-item-label>
                       <q-item-label class="text-body1">
@@ -58,7 +58,7 @@
                   </q-item>
                   <q-separator inset />
 
-                  <q-item>
+                  <q-item v-if="federation?.metadata?.max_invoice_msats">
                     <q-item-section>
                       <q-item-label caption>Maximum Invoice</q-item-label>
                       <q-item-label class="text-body1">
