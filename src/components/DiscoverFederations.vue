@@ -45,23 +45,18 @@
         </q-item>
       </q-list>
 
-      <div v-else class="text-center q-pa-lg text-grey-7">
-        <q-icon name="search" size="48px" />
-        <div class="text-body1 q-mt-sm">No federations discovered yet</div>
-        <q-btn
-          label="Discover Federations"
-          color="primary"
-          class="q-mt-md"
-          :loading="isDiscovering"
-          @click="discoverFederations"
-        />
+      <div class="text-center q-pa-lg text-grey-7">
+        <div v-if="isDiscovering" class="q-mt-md">
+          <q-spinner color="primary" size="2em" />
+          <div class="text-caption q-mt-xs">Searching...</div>
+        </div>
       </div>
     </div>
   </ModalCard>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, watch } from 'vue'
 import { useNostrStore } from 'src/stores/nostr'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
@@ -70,18 +65,31 @@ import { Loading, Notify } from 'quasar'
 import type { Federation } from 'src/components/models'
 import { getErrorMessage } from 'src/utils/error'
 
+const nostr = useNostrStore()
+const walletStore = useWalletStore()
+const federationStore = useFederationStore()
+const isDiscovering = computed(() => nostr.isDiscoveringFederations)
+
 const emit = defineEmits<{
   close: []
 }>()
 
-const nostr = useNostrStore()
-const walletStore = useWalletStore()
-const federationStore = useFederationStore()
-const isDiscovering = ref(false)
-
-onMounted(async () => {
-  await discoverFederations()
+const props = defineProps({
+  visible: {
+    type: Boolean,
+    default: false,
+  },
 })
+
+watch(
+  () => props.visible,
+  async (isVisible) => {
+    if (isVisible) {
+      await discoverFederations()
+    }
+  },
+  { immediate: true },
+)
 
 // Add function to check if federation is already added
 function isAdded(federation: Federation): boolean {
@@ -89,7 +97,6 @@ function isAdded(federation: Federation): boolean {
 }
 
 async function discoverFederations() {
-  isDiscovering.value = true
   try {
     await nostr.discoverFederations()
   } catch (error) {
@@ -100,8 +107,6 @@ async function discoverFederations() {
       icon: 'error',
       position: 'top',
     })
-  } finally {
-    isDiscovering.value = false
   }
 }
 
@@ -120,10 +125,13 @@ async function addFederation(federation: Federation) {
       return
     }
 
-    const validFederation = await walletStore.isValidInviteCode(federation.inviteCode)
+    const validFederation = await walletStore.getFederationByInviteCode(federation.inviteCode)
     if (validFederation) {
       const meta = await walletStore.getMetadata(validFederation)
       validFederation.icon_url = meta?.federation_icon_url ?? ''
+      if (meta) {
+        validFederation.metadata = meta
+      }
 
       federationStore.addFederation(validFederation)
       await federationStore.selectFederation(validFederation)

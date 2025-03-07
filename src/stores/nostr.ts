@@ -4,6 +4,7 @@ import type { NDKEvent, NDKFilter } from '@nostr-dev-kit/ndk'
 import NDK from '@nostr-dev-kit/ndk'
 import type { Federation } from 'src/components/models'
 import { Nip87Kinds } from 'src/types/nip87'
+import { useWalletStore } from './wallet'
 
 const DEFAULT_RELAYS = [
   'wss://nostr.mutinywallet.com/',
@@ -14,12 +15,15 @@ const DEFAULT_RELAYS = [
   'wss://relay.primal.net',
 ]
 
+const walletStore = useWalletStore()
+
 export const useNostrStore = defineStore('nostr', {
   state: () => ({
     relays: useLocalStorage<string[]>('vipr.nostr.relays', DEFAULT_RELAYS),
     pubkey: useLocalStorage<string>('vipr.nostr.pubkey', ''),
     ndk: null as NDK | null,
     discoveredFederations: [] as Federation[],
+    isDiscoveringFederations: false,
   }),
 
   getters: {},
@@ -84,10 +88,10 @@ export const useNostrStore = defineStore('nostr', {
     },
 
     async discoverFederations() {
-      this.discoveredFederations = []
       if (this.ndk === null) {
         await this.initNdk()
       }
+      this.isDiscoveringFederations = true
 
       const mintInfoFilter: NDKFilter = {
         kinds: [Nip87Kinds.FediInfo],
@@ -96,66 +100,55 @@ export const useNostrStore = defineStore('nostr', {
 
       // Process event synchronously, but handle async operations properly
       sub?.on('event', (event) => {
-        void processFederationEvent(this.discoveredFederations, event)
+        void processFederationEvent(this.discoveredFederations, this, event)
       })
     },
   },
 })
 
-async function processFederationEvent(discoveredFederations: Federation[], event: NDKEvent) {
+async function processFederationEvent(
+  discoveredFederations: Federation[],
+  store: ReturnType<typeof useNostrStore>,
+  event: NDKEvent,
+) {
   if (event.kind !== Nip87Kinds.FediInfo) return
 
   try {
-    const federation: Federation = {} as Federation
-
-    // FIXME does not work at the moment. 'd' tag does not contain the network
-    // const networks = event.getMatchingTags('d')
-    // const network = networks[0]?.[1]
-    // if (network) {
-    //   federation.network = network
-    // }
-
     // Get invite code
     const inviteTags = event.getMatchingTags('u')
     const inviteCode = inviteTags[0]?.[1]
     if (!inviteCode) return
 
-    federation.inviteCode = inviteCode
-
     // Get federation ID
     const fedTags = event.getMatchingTags('d')
-    const fedId = fedTags[0]?.[1]
-    if (!fedId) return
+    const federationId = fedTags[0]?.[1]
+    if (!federationId) return
 
-    federation.federationId = fedId
-
-    // Get metadata
-    const meta = await getMetaData(federation.inviteCode)
-    console.log('Federation metadata:', meta)
-    federation.title = meta.federation_name
-    federation.icon_url = meta.federation_icon_url
-
-    // Skip expired federations
-    const currentTime = Math.floor(Date.now() / 1000)
-    if (meta.federation_expiry_timestamp && meta.federation_expiry_timestamp < currentTime) {
-      console.log(`Skipping expired federation: ${federation.federationId}`)
+    if (discoveredFederations.some((f) => f.federationId === federationId)) {
+      console.log('Federation already discovered:', federationId)
       return
     }
 
-    // Add if not exists
-    const exists = discoveredFederations.some((f) => f.federationId === federation.federationId)
-    if (!exists) {
-      discoveredFederations.push(federation)
-      discoveredFederations.sort((a, b) => {
-        return (a.title || '').localeCompare(b.title || '')
-      })
+    const federation = await walletStore.getFederationByInviteCode(inviteCode)
+    if (federation === undefined) {
+      console.error('>>> Failed to load Wallet for federation:', federationId)
+      return
     }
-  } catch (error) {
-    console.error('Error processing federation:', error)
-  }
-}
 
-async function getMetaData(inviteCode: string) {
-  const metaResponse = await fetch(`https://fmo.sirion.io/config/${inviteCode}/meta`)
-  return await metaResponse.json()
+    // metadata is optional
+    const meta = await walletStore.getMetadata(federation)
+    if (meta === undefined) {
+      console.warn('Failed to fetch metadata for federation:', inviteCode)
+    } else {
+      federation.metadata = meta
+    }
+
+    discoveredFederations.push(federation)
+    discoveredFederations.sort((a, b) => {
+      return (a.title || '').localeCompare(b.title || '')
+    })
+    store.isDiscoveringFederations = false
+  } catch (error) {
+    console.error('Error processing federationEvent:', event, error)
+  }
 }
