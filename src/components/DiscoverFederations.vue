@@ -45,11 +45,7 @@
         </q-item>
       </q-list>
 
-      <div v-else class="text-center q-pa-lg text-grey-7">
-        <q-icon name="search" size="48px" />
-        <div class="text-body1 q-mt-sm">No federations discovered yet</div>
-
-        <!-- Loading indicator -->
+      <div class="text-center q-pa-lg text-grey-7">
         <div v-if="isDiscovering" class="q-mt-md">
           <q-spinner color="primary" size="2em" />
           <div class="text-caption q-mt-xs">Searching...</div>
@@ -60,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useNostrStore } from 'src/stores/nostr'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
@@ -72,7 +68,7 @@ import { getErrorMessage } from 'src/utils/error'
 const nostr = useNostrStore()
 const walletStore = useWalletStore()
 const federationStore = useFederationStore()
-const isDiscovering = ref(false)
+const isDiscovering = computed(() => nostr.isDiscoveringFederations)
 
 const emit = defineEmits<{
   close: []
@@ -101,7 +97,6 @@ function isAdded(federation: Federation): boolean {
 }
 
 async function discoverFederations() {
-  isDiscovering.value = true
   try {
     await nostr.discoverFederations()
   } catch (error) {
@@ -112,8 +107,6 @@ async function discoverFederations() {
       icon: 'error',
       position: 'top',
     })
-  } finally {
-    isDiscovering.value = false
   }
 }
 

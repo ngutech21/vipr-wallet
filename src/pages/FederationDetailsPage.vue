@@ -206,7 +206,6 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
-//import type { FederationMeta } from 'src/components/models'
 import { useFormatters } from '../utils/formatter'
 
 const { formatNumber } = useFormatters()
@@ -214,7 +213,6 @@ const route = useRoute()
 const router = useRouter()
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
-//const metadata = ref<FederationMeta | null>(null)
 const federation = federationStore.federations.find((f) => f.federationId === route.params.id)
 const confirmLeave = ref(false)
 
@@ -240,19 +238,6 @@ async function leaveFederation() {
     await router.push('/federations')
   }
 }
-
-// onMounted(async () => {
-//   if (walletStore.wallet && federation) {
-//     try {
-//       const meta = await walletStore.getMetadata(federation)
-//       if (meta) {
-//         metadata.value = meta
-//       }
-//     } catch (error) {
-//       console.error('Error fetching metadata:', error)
-//     }
-//   }
-// })
 </script>
 <style scoped>
 .q-card {

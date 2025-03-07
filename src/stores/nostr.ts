@@ -23,6 +23,7 @@ export const useNostrStore = defineStore('nostr', {
     pubkey: useLocalStorage<string>('vipr.nostr.pubkey', ''),
     ndk: null as NDK | null,
     discoveredFederations: [] as Federation[],
+    isDiscoveringFederations: false,
   }),
 
   getters: {},
@@ -90,6 +91,7 @@ export const useNostrStore = defineStore('nostr', {
       if (this.ndk === null) {
         await this.initNdk()
       }
+      this.isDiscoveringFederations = true
 
       const mintInfoFilter: NDKFilter = {
         kinds: [Nip87Kinds.FediInfo],
@@ -98,13 +100,17 @@ export const useNostrStore = defineStore('nostr', {
 
       // Process event synchronously, but handle async operations properly
       sub?.on('event', (event) => {
-        void processFederationEvent(this.discoveredFederations, event)
+        void processFederationEvent(this.discoveredFederations, this, event)
       })
     },
   },
 })
 
-async function processFederationEvent(discoveredFederations: Federation[], event: NDKEvent) {
+async function processFederationEvent(
+  discoveredFederations: Federation[],
+  store: ReturnType<typeof useNostrStore>,
+  event: NDKEvent,
+) {
   if (event.kind !== Nip87Kinds.FediInfo) return
 
   try {
@@ -119,6 +125,7 @@ async function processFederationEvent(discoveredFederations: Federation[], event
     if (!federationId) return
 
     if (discoveredFederations.some((f) => f.federationId === federationId)) {
+      console.log('Federation already discovered:', federationId)
       return
     }
 
@@ -140,6 +147,7 @@ async function processFederationEvent(discoveredFederations: Federation[], event
     discoveredFederations.sort((a, b) => {
       return (a.title || '').localeCompare(b.title || '')
     })
+    store.isDiscoveringFederations = false
   } catch (error) {
     console.error('Error processing federationEvent:', event, error)
   }
