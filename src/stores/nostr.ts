@@ -109,8 +109,6 @@ async function processFederationEvent(discoveredFederations: Federation[], event
   if (event.kind !== Nip87Kinds.FediInfo) return
 
   try {
-    const federation: Federation = {} as Federation
-
     // FIXME does not work at the moment. 'd' tag does not contain the network
     // const networks = event.getMatchingTags('d')
     // const network = networks[0]?.[1]
@@ -123,24 +121,17 @@ async function processFederationEvent(discoveredFederations: Federation[], event
     const inviteCode = inviteTags[0]?.[1]
     if (!inviteCode) return
 
-    federation.inviteCode = inviteCode
-
     // Get federation ID
     const fedTags = event.getMatchingTags('d')
-    const fedId = fedTags[0]?.[1]
-    if (!fedId) return
-
-    federation.federationId = fedId
+    const federationId = fedTags[0]?.[1]
+    if (!federationId) return
 
     // Get metadata
-    const federationFromInvite = await walletStore.getFederationByInviteCode(federation.inviteCode)
-    if (federationFromInvite === undefined) {
-      console.error('Failed to fetch metadata for federation:', federation)
+    const federation = await walletStore.getFederationByInviteCode(inviteCode)
+    if (federation === undefined) {
+      console.error('Failed to fetch metadata for federation:', federationId)
       return
     }
-    console.log('Federation metadata:', federationFromInvite)
-    federation.title = federationFromInvite.title
-    federation.icon_url = federationFromInvite.icon_url || ''
 
     // Add if not exists
     const exists = discoveredFederations.some((f) => f.federationId === federation.federationId)

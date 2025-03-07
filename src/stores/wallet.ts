@@ -117,13 +117,11 @@ export const useWalletStore = defineStore('wallet', {
         await tmpWallet.joinFederation(inviteCode, inviteCode)
         const federationId = await tmpWallet.federation.getFederationId()
         const rawConfig = await tmpWallet.federation.getConfig()
-        console.log('>>>> Raw config:', rawConfig)
         if (!rawConfig) {
-          await tmpWallet.cleanup()
+          await this.deleteFederationData(inviteCode)
           return undefined
         }
         const fediConfig = extractFederationInfo(rawConfig)
-        await tmpWallet.cleanup()
         await this.deleteFederationData(inviteCode)
 
         return {
