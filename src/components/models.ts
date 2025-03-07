@@ -8,6 +8,7 @@ export type Federation = {
   // mainnet | testnet | regtest | signet
   network?: string
   modules: ModuleConfig[]
+  metadata?: FederationMeta
 }
 
 export type ModuleConfig = {

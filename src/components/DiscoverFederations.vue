@@ -136,6 +136,9 @@ async function addFederation(federation: Federation) {
     if (validFederation) {
       const meta = await walletStore.getMetadata(validFederation)
       validFederation.icon_url = meta?.federation_icon_url ?? ''
+      if (meta) {
+        validFederation.metadata = meta
+      }
 
       federationStore.addFederation(validFederation)
       await federationStore.selectFederation(validFederation)

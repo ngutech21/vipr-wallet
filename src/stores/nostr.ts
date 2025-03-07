@@ -87,7 +87,6 @@ export const useNostrStore = defineStore('nostr', {
     },
 
     async discoverFederations() {
-      this.discoveredFederations = []
       if (this.ndk === null) {
         await this.initNdk()
       }
@@ -109,13 +108,6 @@ async function processFederationEvent(discoveredFederations: Federation[], event
   if (event.kind !== Nip87Kinds.FediInfo) return
 
   try {
-    // FIXME does not work at the moment. 'd' tag does not contain the network
-    // const networks = event.getMatchingTags('d')
-    // const network = networks[0]?.[1]
-    // if (network) {
-    //   federation.network = network
-    // }
-
     // Get invite code
     const inviteTags = event.getMatchingTags('u')
     const inviteCode = inviteTags[0]?.[1]
@@ -126,15 +118,27 @@ async function processFederationEvent(discoveredFederations: Federation[], event
     const federationId = fedTags[0]?.[1]
     if (!federationId) return
 
-    // Get metadata
-    const federation = await walletStore.getFederationByInviteCode(inviteCode)
-    if (federation === undefined) {
-      console.error('Failed to fetch metadata for federation:', federationId)
+    // skip if already discovered
+    if (discoveredFederations.some((f) => f.federationId === federationId)) {
       return
     }
 
+    // Get federation
+    const federation = await walletStore.getFederationByInviteCode(inviteCode)
+    if (federation === undefined) {
+      console.error('>>> Failed to load Wallet for federation:', federationId)
+      return
+    }
+
+    const meta = await walletStore.getMetadata(federation)
+    if (meta === undefined) {
+      console.error('>>> Failed to fetch metadata for federation:', federationId)
+      return
+    }
+    federation.metadata = meta
+
     // Add if not exists
-    const exists = discoveredFederations.some((f) => f.federationId === federation.federationId)
+    const exists = discoveredFederations.some((f) => f.federationId === federationId)
     if (!exists) {
       discoveredFederations.push(federation)
       discoveredFederations.sort((a, b) => {
