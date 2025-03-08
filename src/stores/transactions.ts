@@ -15,8 +15,6 @@ const DB_LN_SEND = 'lightning-send'
 // Database version - increment when schema changes
 const DB_VERSION = 1
 
-const federationStore = useFederationStore()
-
 async function getDatabase() {
   return openDB(DB_NAME, DB_VERSION, {
     upgrade(db, oldVersion, _newVersion) {
@@ -81,6 +79,7 @@ export const useTransactionsStore = defineStore('transactions', {
     },
 
     recentTransactionsBySelectedFederation(): AnyTransaction[] {
+      const federationStore = useFederationStore()
       if (!federationStore.selectedFederation) {
         return []
       }
@@ -133,6 +132,36 @@ export const useTransactionsStore = defineStore('transactions', {
         console.error('Failed to load transactions:', error)
         this.receiveTransactions = []
         this.sendTransactions = []
+      }
+    },
+    async deleteTransactionsByFederationId(federationId: string) {
+      try {
+        // First get all transactions to delete
+        const [receiveToDelete, sendToDelete] = await Promise.all([
+          withDB((db) => db.getAllFromIndex(DB_LN_RECEIVE, 'federationId', federationId)),
+          withDB((db) => db.getAllFromIndex(DB_LN_SEND, 'federationId', federationId)),
+        ])
+
+        // Delete from database
+        await Promise.all([
+          ...receiveToDelete.map((tx) => withDB((db) => db.delete(DB_LN_RECEIVE, tx.id))),
+          ...sendToDelete.map((tx) => withDB((db) => db.delete(DB_LN_SEND, tx.id))),
+        ])
+
+        // Update local state
+        this.receiveTransactions = this.receiveTransactions.filter(
+          (tx) => tx.federationId !== federationId,
+        )
+        this.sendTransactions = this.sendTransactions.filter(
+          (tx) => tx.federationId !== federationId,
+        )
+
+        return {
+          deleted: receiveToDelete.length + sendToDelete.length,
+        }
+      } catch (error) {
+        console.error(`Failed to delete transactions for federation ${federationId}:`, error)
+        throw error
       }
     },
   },

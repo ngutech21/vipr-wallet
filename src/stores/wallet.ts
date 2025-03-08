@@ -48,10 +48,9 @@ export const useWalletStore = defineStore('wallet', {
             console.log('Joined federation', joined)
           }
         }
-
-        // Update balance after opening the wallet
-        await this.updateBalance()
       }
+      // Update balance after opening the wallet
+      await this.updateBalance()
     },
     async closeWallet() {
       await this.wallet?.cleanup()
@@ -91,6 +90,8 @@ export const useWalletStore = defineStore('wallet', {
       if (this.wallet) {
         const balance = ((await this.wallet.balance.getBalance()) ?? 0) / 1_000
         this.balance = balance
+      } else {
+        this.balance = 0
       }
     },
 
