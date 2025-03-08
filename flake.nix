@@ -19,14 +19,12 @@
             nodejs_20
             nodePackages.pnpm
             nodePackages.typescript
-            nodePackages.quasar-cli
           ];
 
           shellHook = ''
             echo "Vipr-Wallet development environment"
             echo "Node.js $(node --version)"
             echo "pnpm $(pnpm --version)"
-            echo "Quasar CLI $(quasar --version)"
             echo "TypeScript $(tsc --version)"
             echo ""
             echo "Run 'pnpm install' to set up dependencies"

@@ -93,14 +93,14 @@ Make sure you have the following installed:
 
 - Node.js 20+
 - pnpm 10+
-- Quasar CLI
 
 ### Installation
 
-1. **Install Quasar CLI**
+1. **Clone the repository**
 
 ```bash
-npm i -g @quasar/cli
+git clone https://github.com/ngutech21/vipr-wallet.git
+cd vipr-wallet
 ```
 
 2. **Install pnpm**
@@ -109,20 +109,13 @@ npm i -g @quasar/cli
 npm install -g pnpm@latest-10
 ```
 
-3. **Clone the repository**
-
-```bash
-git clone https://github.com/ngutech21/vipr-wallet.git
-cd vipr-wallet
-```
-
-4. **Install the dependencies**
+3. **Install the dependencies**
 
 ```bash
 pnpm install
 ```
 
-5.  **Start the app in development mode (hot-code reloading, error reporting, etc.)**
+4.  **Start the app in development mode (hot-code reloading, error reporting, etc.)**
 
 ```bash
 pnpm dev
