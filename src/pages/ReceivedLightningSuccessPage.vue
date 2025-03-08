@@ -78,6 +78,7 @@ onUnmounted(() => {
 
 <style scoped>
 .page-container {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   position: relative;
   background: linear-gradient(145deg, var(--q-primary) 0%, #8000ff 100%);
   min-height: 100vh;
