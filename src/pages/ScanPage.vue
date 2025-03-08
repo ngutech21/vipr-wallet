@@ -22,14 +22,7 @@
         </div>
 
         <div class="action-bar top-bar q-px-md q-py-sm">
-          <q-btn
-            round
-            flat
-            color="white"
-            icon="arrow_back"
-            @click="$router.push('/')"
-            class="q-mr-md"
-          />
+          <q-btn round flat color="white" icon="arrow_back" :to="'/'" class="q-mr-md" />
           <div class="text-white text-subtitle1 text-weight-medium">Scan QR Code</div>
         </div>
 
@@ -85,10 +78,9 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
   const cleanCode = code.rawValue.toLocaleLowerCase()
 
   if (cleanCode.startsWith('fed')) {
-    alert('Detected Fedimint Invitecode: ' + code.rawValue)
     showAddFederation.value = true
   } else if (
-    cleanCode.startsWith('lnbc') ||
+    cleanCode.startsWith('ln') ||
     cleanCode.includes('@') ||
     cleanCode.startsWith('lightning:')
   ) {
