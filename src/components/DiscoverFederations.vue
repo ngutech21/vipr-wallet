@@ -21,8 +21,8 @@
           @click="addFederation(federation)"
           :disable="isAdded(federation)"
         >
-          <q-item-section avatar v-if="federation.icon_url">
-            <q-img :src="federation.icon_url" class="logo" loading="eager" />
+          <q-item-section avatar v-if="federation?.metadata?.federation_icon_url">
+            <q-img :src="federation?.metadata?.federation_icon_url" class="logo" />
           </q-item-section>
           <template v-else>
             <q-avatar color="grey-3" text-color="grey-7" class="logo q-mr-md">
@@ -128,7 +128,6 @@ async function addFederation(federation: Federation) {
     const validFederation = await walletStore.getFederationByInviteCode(federation.inviteCode)
     if (validFederation) {
       const meta = await walletStore.getMetadata(validFederation)
-      validFederation.icon_url = meta?.federation_icon_url ?? ''
       if (meta) {
         validFederation.metadata = meta
       }

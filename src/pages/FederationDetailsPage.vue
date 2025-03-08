@@ -18,9 +18,23 @@
             <q-card flat class="q-mb-md">
               <q-card-section class="row items-center">
                 <div class="col-auto">
-                  <q-avatar size="72px" class="q-mr-md">
-                    <q-img :src="federation?.icon_url" loading="eager" />
+                  <q-avatar
+                    size="72px"
+                    class="q-mr-md"
+                    v-if="federation?.metadata?.federation_icon_url"
+                  >
+                    <q-img
+                      :src="federation?.metadata?.federation_icon_url"
+                      loading="eager"
+                      no-spinner
+                      no-transition
+                    />
                   </q-avatar>
+                  <template v-else>
+                    <q-avatar color="grey-3" text-color="grey-7" class="logo q-mr-md">
+                      <q-icon name="account_balance" />
+                    </q-avatar>
+                  </template>
                 </div>
                 <div class="col">
                   <div class="text-h6">{{ federation?.title }}</div>

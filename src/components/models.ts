@@ -4,7 +4,6 @@ export type Federation = {
   federationId: string
   // external url to get meta data from the federation like chat-url, max-balance etc.
   metaUrl?: string
-  icon_url?: string
   // mainnet | testnet | regtest | signet
   network?: string
   modules: ModuleConfig[]

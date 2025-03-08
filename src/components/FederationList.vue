@@ -13,9 +13,19 @@
 
         <q-item>
           <q-item-section avatar>
-            <q-avatar size="42px">
-              <q-img :src="fedi.icon_url" loading="eager" />
+            <q-avatar size="42px" v-if="fedi?.metadata?.federation_icon_url">
+              <q-img
+                :src="fedi?.metadata?.federation_icon_url"
+                loading="eager"
+                no-spinner
+                no-transition
+              />
             </q-avatar>
+            <template v-else>
+              <q-avatar color="grey-3" text-color="grey-7" class="logo q-mr-md">
+                <q-icon name="account_balance" />
+              </q-avatar>
+            </template>
           </q-item-section>
 
           <!-- Federation details -->
