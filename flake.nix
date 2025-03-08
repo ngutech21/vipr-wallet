@@ -36,10 +36,7 @@
               echo "Generating TLS certificates for localhost..."
               cd certs
               mkcert -install >/dev/null 2>&1
-              mkcert localhost 127.0.0.1
-              # Rename files to standard key/cert naming
-              mv localhost+1-key.pem localhost-key.pem
-              mv localhost+1.pem localhost.pem
+              mkcert --cert-file localhost.pem --key-file localhost-key.pem localhost 127.0.0.1
               cd ..
               echo "✅ TLS certificates generated!"
             else
