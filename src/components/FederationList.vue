@@ -14,7 +14,7 @@
         <q-item>
           <q-item-section avatar>
             <q-avatar size="42px">
-              <q-img :src="fedi.icon_url" no-transition />
+              <q-img :src="fedi.icon_url" loading="eager" />
             </q-avatar>
           </q-item-section>
 

@@ -19,7 +19,7 @@
               <q-card-section class="row items-center">
                 <div class="col-auto">
                   <q-avatar size="72px" class="q-mr-md">
-                    <q-img :src="federation?.icon_url" />
+                    <q-img :src="federation?.icon_url" loading="eager" />
                   </q-avatar>
                 </div>
                 <div class="col">

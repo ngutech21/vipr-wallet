@@ -22,7 +22,7 @@
           :disable="isAdded(federation)"
         >
           <q-item-section avatar v-if="federation.icon_url">
-            <q-img :src="federation.icon_url" class="logo" />
+            <q-img :src="federation.icon_url" class="logo" loading="eager" />
           </q-item-section>
           <template v-else>
             <q-avatar color="grey-3" text-color="grey-7" class="logo q-mr-md">

@@ -220,6 +220,22 @@ export default defineConfig((_ctx) => {
       extendGenerateSWOptions(cfg) {
         cfg.skipWaiting = false
         cfg.clientsClaim = true
+
+        cfg.runtimeCaching = cfg.runtimeCaching || []
+        cfg.runtimeCaching.push({
+          urlPattern: new RegExp('\\.(png|jpg|jpeg|svg|gif|webp)$'),
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'images-cache',
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
+          },
+        })
       },
     },
 
