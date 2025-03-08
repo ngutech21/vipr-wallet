@@ -107,6 +107,7 @@
               <div class="col-4">
                 <q-btn
                   label="Add"
+                  icon="add"
                   color="primary"
                   class="full-width"
                   :disable="!isValidRelayUrl"
@@ -116,7 +117,13 @@
             </div>
 
             <div class="q-mt-md">
-              <q-btn label="Reset to Defaults" outline color="secondary" @click="resetRelays" />
+              <q-btn
+                label="Reset to Defaults"
+                outline
+                color="secondary"
+                icon="settings_backup_restore"
+                @click="resetRelays"
+              />
             </div>
           </q-card-section>
         </q-card>
@@ -132,21 +139,23 @@
         expand-icon-class="text-primary"
       >
         <q-card>
-          <q-card-section>
-            <div class="row items-center q-mb-md">
-              <div class="col">
-                <div class="text-subtitle1">App Version: {{ version }}</div>
-                <div class="text-subtitle1">Quasar Version: {{ quasarVersion }}</div>
-                <BuildInfo />
-              </div>
-              <div>
-                <q-btn
-                  label="Check for Updates"
-                  icon="refresh"
-                  color="primary"
-                  @click="checkForUpdates"
-                />
-              </div>
+          <q-card-section class="column">
+            <!-- Version information -->
+            <div class="q-mb-md">
+              <div class="text-subtitle1">App Version: {{ version }}</div>
+              <div class="text-subtitle1">Quasar Version: {{ quasarVersion }}</div>
+              <BuildInfo />
+            </div>
+
+            <!-- Update button below version info -->
+            <div>
+              <q-btn
+                label="Check for Updates"
+                icon="refresh"
+                color="primary"
+                @click="checkForUpdates"
+                class="q-mt-sm full-width"
+              />
             </div>
           </q-card-section>
         </q-card>
@@ -170,6 +179,7 @@
             <q-btn
               label="Delete ALL Data"
               color="negative"
+              icon="delete"
               @click="deleteData"
               class="full-width"
             />
