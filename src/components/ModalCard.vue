@@ -1,8 +1,9 @@
 <template>
   <q-card class="full-width">
-    <q-card-section class="row items-center justify-between">
-      <div class="text-h6">{{ title }}</div>
-      <q-btn icon="close" color="primary" flat round dense v-close-popup />
+    <q-card-section class="row items-center">
+      <div style="width: 40px;"></div>
+      <div class="text-h6  col full-width text-center">{{ title }}</div>
+      <q-btn icon="close" color="primary" class="q-ml-sm" flat round dense v-close-popup />
     </q-card-section>
     <q-separator />
     <slot></slot>

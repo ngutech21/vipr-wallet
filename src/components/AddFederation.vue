@@ -9,18 +9,19 @@
         type="textarea"
       />
 
-      <div class="row justify-between full-width">
-        <q-btn flat label="Scan" icon="qr_code_scanner" color="primary" :to="'/scan'" />
+      <div class="row justify-between full-width q-mt-none">
+        <q-btn flat label="Scan QR" icon="qr_code_scanner" color="primary" :to="'/scan'" class="q-pl-none"/>
         <q-btn
           flat
           label="Paste"
           icon="content_paste"
           color="primary"
           @click="pasteFromClipboard"
+          class="q-pr-none"
         />
       </div>
-      <div class="row items-center justify-evenly q-gutter-md q-mt-md">
-        <q-btn type="submit" label="Add Federation" color="primary" class="q-mt-md" />
+      <div class="q-mt-xl">
+        <q-btn type="submit" label="Add Federation" color="primary" class="q-mt-md full-width" />
       </div>
     </q-form>
   </ModalCard>

@@ -1,23 +1,27 @@
 <template>
-  <ModalCard title="Join Federation">
+  <ModalCard title="Join a federation">
     <div class="q-pa-md">
       <div class="row q-col-gutter-md">
         <div class="col-12">
           <q-card class="cursor-pointer" v-ripple @click="onDiscover">
-            <q-card-section class="text-center">
-              <q-icon name="search" size="48px" color="primary" />
-              <div class="text-h6 q-mt-sm">Discover Federations</div>
-              <div class="text-caption text-grey-7">Find and join public federations via Nostr</div>
+            <q-card-section class="row">
+              <q-icon name="search" size="48px" color="primary" class="col-2"/>
+              <div class="col-10">
+                <div class="text-h6 q-mt-sm">Discover federations</div>
+                <div class="text-caption text-grey-7">View federations recommended by Nostr users at bitcoinmints.com</div>
+            </div>
             </q-card-section>
           </q-card>
         </div>
 
         <div class="col-12">
           <q-card class="cursor-pointer" v-ripple @click="onAdd">
-            <q-card-section class="text-center">
-              <q-icon name="add_circle" size="48px" color="primary" />
-              <div class="text-h6 q-mt-sm">Join Trusted Federation</div>
-              <div class="text-caption text-grey-7">Join a federation using an invite code</div>
+            <q-card-section class="row">
+              <q-icon name="add_circle" size="48px" color="primary" class="col-2" />
+              <div class="col-10">
+                <div class="text-h6 q-mt-sm">Join a trusted federation</div>
+                <div class="text-caption text-grey-7">Already know the federation you want to join? Scan the QR code or enter the invitecode</div>
+              </div>
             </q-card-section>
           </q-card>
         </div>
