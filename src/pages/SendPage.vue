@@ -151,6 +151,9 @@ watch(
   () => query.invoice,
   async (newInvoice) => {
     if (typeof newInvoice === 'string') {
+      if (newInvoice.startsWith('web+lightning:') || newInvoice.startsWith('lightning:')) {
+        newInvoice = newInvoice.replace('web+lightning:', '').replace('lightning:', '')
+      }
       lightningInvoice.value = newInvoice
       await decodeInvoice()
     }
