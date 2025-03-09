@@ -46,7 +46,7 @@
       </q-list>
 
       <div class="text-center q-pa-lg text-grey-7">
-        <div v-if="isDiscovering" class="q-mt-md">
+        <div v-if="isDiscovering" class="loading-container">
           <q-spinner color="primary" size="2em" />
           <div class="text-caption q-mt-xs">Searching...</div>
         </div>
@@ -160,7 +160,7 @@ async function addFederation(federation: Federation) {
 </script>
 
 <style scoped>
-.federation-id {
+/* .federation-id {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -168,5 +168,64 @@ async function addFederation(federation: Federation) {
 .logo {
   width: 40px;
   height: 40px;
+} */
+
+.q-list {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px !important;
+  border: none !important;
+}
+
+.q-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  transition: background-color 0.2s ease;
+}
+
+.q-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.q-item:last-child {
+  border-bottom: none !important;
+}
+
+/* Create better transitions for interactive elements */
+.q-item,
+.q-btn {
+  transition:
+    transform 0.2s,
+    background-color 0.2s;
+}
+
+.q-item:active {
+  transform: translateY(1px);
+}
+
+/* Improve logo styling */
+.logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Improve text styling */
+.federation-id {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+}
+
+/* Enhance the loading state */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
 }
 </style>

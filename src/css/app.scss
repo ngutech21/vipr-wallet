@@ -67,3 +67,114 @@
   align-items: center;
   margin-bottom: 16px;
 }
+
+.q-dialog {
+  // Glass effect dialog
+  .q-card {
+    background: rgba(40, 40, 40, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    color: white;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+
+    // Smooth entrance animation
+    animation: dialog-fade-in 0.25s ease-out;
+
+    // Card sections styling
+    .q-card__section {
+      padding: 16px 20px;
+
+      &.q-card__section--vert {
+        padding: 20px;
+      }
+
+      + .q-card__section--vert {
+        padding-top: 0;
+      }
+    }
+
+    // Dialog header
+    .q-card__section--vert:first-child {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    // Dialog title
+    .q-card__title,
+    .text-h6 {
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      color: white;
+    }
+
+    // Dialog actions/footer
+    .q-card__actions {
+      padding: 12px 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      justify-content: flex-end;
+
+      .q-btn:not(:first-child) {
+        margin-left: 8px;
+      }
+    }
+
+    // Form controls within dialogs
+    .q-field {
+      .q-field__control {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+
+        &:hover {
+          border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        &.q-field__control--focused {
+          border-color: $primary;
+        }
+      }
+    }
+
+    // Lists within dialogs
+    .q-list {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+
+      .q-item {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.05);
+        }
+      }
+    }
+  }
+}
+
+// Dialog fade-in animation
+@keyframes dialog-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Specifically target ModalCard component if you're using it for dialogs
+.modal-card {
+  width: 90vw;
+  max-width: 450px;
+
+  .modal-card__title {
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+}
