@@ -22,9 +22,9 @@ A demo version of the wallet is available at [beta.vipr.cash](https://beta.vipr.
 ## 📱 App Screenshots
 
 <div align="center">
-  <img src="./screenshots/Home-iphone.png" alt="Dashboard" width="30%" />
-  <img src="./screenshots/Federation-Details-iphone.png" alt="Federation Details" width="30%" />
-  <img src="./screenshots/Receive-iphone.png" alt="Receive Payment" width="30%" />
+  <img src="./public/screenshots/Home-iphone.png" alt="Dashboard" width="30%" />
+  <img src="./public/screenshots/Federation-Details-iphone.png" alt="Federation Details" width="30%" />
+  <img src="./public/screenshots/Receive-iphone.png" alt="Receive Payment" width="30%" />
 </div>
 
 ## ✨ Features
