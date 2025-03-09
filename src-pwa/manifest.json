@@ -38,5 +38,11 @@
       "sizes": "512x512",
       "type": "image/png"
     }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+lightning",
+      "url": "/send?invoice=%s"
+    }
   ]
 }
