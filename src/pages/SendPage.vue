@@ -15,7 +15,7 @@
           <div class="q-px-md">
             <!-- Payment input section -->
             <template v-if="!decodedInvoice">
-              <q-card flat bordered class="bg-dark q-mb-md">
+              <q-card flat class="glass-effect q-mb-md">
                 <q-card-section>
                   <div class="text-subtitle2 text-grey q-mb-sm">
                     Enter Lightning Invoice or Address
@@ -39,7 +39,7 @@
 
               <!-- Amount input section (for lightning address) -->
               <q-slide-transition>
-                <q-card v-if="amountRequired" flat bordered class="bg-dark q-mb-md">
+                <q-card v-if="amountRequired" flat bordered class="glass-effect q-mb-md">
                   <q-card-section>
                     <div class="text-subtitle2 text-grey q-mb-sm">Payment Details</div>
 
@@ -269,6 +269,12 @@ async function payInvoice() {
 </script>
 
 <style scoped>
+.entry-container {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 16px;
+}
+
 .custom-input :deep(.q-field__control) {
   background-color: rgba(255, 255, 255, 0.05);
 }

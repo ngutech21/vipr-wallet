@@ -17,9 +17,6 @@ importers:
       '@getalby/lightning-tools':
         specifier: ^5.1.2
         version: 5.1.2
-      '@j2only/slide-unlock':
-        specifier: ^0.5.11
-        version: 0.5.11(typescript@5.8.2)
       '@nostr-dev-kit/ndk':
         specifier: ^2.12.2
         version: 2.12.2(typescript@5.8.2)
@@ -1026,9 +1023,6 @@ packages:
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
-
-  '@j2only/slide-unlock@0.5.11':
-    resolution: {integrity: sha512-Zyz7vhxHHdo1M3eTUpp3WHfDR0jeT/iiL5KgCOeC/hneLg1CfWjGhBllCfR31NYYbrvT2tl8JDdqGuAzvjn7Eg==}
 
   '@jridgewell/gen-mapping@0.3.8':
     resolution: {integrity: sha512-imAbBGkb+ebQyxKgzv5Hu2nmROxoDOXHh80evxdoXNOrvAnVx7zimzc1Oo5h9RlfV4vPXaE2iM5pOFbvOCClWA==}
@@ -2292,9 +2286,6 @@ packages:
 
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
-
-  easy-ease@1.0.9:
-    resolution: {integrity: sha512-6urP1sGYAtb9It7ujwgtKcFkBdQS51q1pbSahxnRcmI438Hco10bgqopT2XZkBy/FNqBamxLU3S9PRu13IeSjQ==}
 
   editorconfig@1.0.4:
     resolution: {integrity: sha512-L9Qe08KWTlqYMVvMcTIvMAdl1cDUubzRNYL+WfA4bLDMHe4nemKkpmYzkznE1FwLKu0EEmy6obgQKzMJrg4x9Q==}
@@ -5793,14 +5784,6 @@ snapshots:
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: wrap-ansi@7.0.0
 
-  '@j2only/slide-unlock@0.5.11(typescript@5.8.2)':
-    dependencies:
-      easy-ease: 1.0.9
-      lodash.debounce: 4.0.8
-      vue: 3.5.13(typescript@5.8.2)
-    transitivePeerDependencies:
-      - typescript
-
   '@jridgewell/gen-mapping@0.3.8':
     dependencies:
       '@jridgewell/set-array': 1.2.1
@@ -7180,8 +7163,6 @@ snapshots:
       gopd: 1.2.0
 
   eastasianwidth@0.2.0: {}
-
-  easy-ease@1.0.9: {}
 
   editorconfig@1.0.4:
     dependencies:
