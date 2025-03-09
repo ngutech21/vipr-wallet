@@ -12,6 +12,8 @@
   "dir": "ltr",
   "categories": ["finance", "bitcoin"],
   "scope": "/",
+  "width": 450,
+  "height": 800,
   "icons": [
     {
       "src": "icons/icon-128x128.png",
