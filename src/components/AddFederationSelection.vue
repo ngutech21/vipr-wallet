@@ -1,5 +1,5 @@
 <template>
-  <ModalCard title="Add Federation">
+  <ModalCard title="Join Federation">
     <div class="q-pa-md">
       <div class="row q-col-gutter-md">
         <div class="col-12">
@@ -16,7 +16,7 @@
           <q-card class="cursor-pointer" v-ripple @click="onAdd">
             <q-card-section class="text-center">
               <q-icon name="add_circle" size="48px" color="primary" />
-              <div class="text-h6 q-mt-sm">Add Trusted Federation</div>
+              <div class="text-h6 q-mt-sm">Join Trusted Federation</div>
               <div class="text-caption text-grey-7">Join a federation using an invite code</div>
             </q-card-section>
           </q-card>

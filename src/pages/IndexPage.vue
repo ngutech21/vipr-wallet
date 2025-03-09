@@ -40,7 +40,7 @@
       style="flex: 1"
     >
       <div class="text-h6">Ready to start?</div>
-      <div class="text-subtitle7">Add a Federation to get up and running</div>
+      <div class="text-subtitle7">Join a Federation to get up and running</div>
       <q-btn
         label="Join a federation"
         color="primary"
