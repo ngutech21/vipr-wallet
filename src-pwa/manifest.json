@@ -42,7 +42,30 @@
   "protocol_handlers": [
     {
       "protocol": "web+lightning",
-      "url": "/send?invoice=%s"
+      "url": "/#/send?invoice=%s"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/Home-iphone.png",
+      "form_factor": "narrow",
+      "sizes": "974x1920",
+      "type": "image/png",
+      "label": "Home"
+    },
+    {
+      "src": "/screenshots/Federation-Details-iphone.png",
+      "form_factor": "narrow",
+      "sizes": "974x1920",
+      "type": "image/png",
+      "label": "Receive Payment"
+    },
+    {
+      "src": "/screenshots/Federation-Details-iphone.png",
+      "form_factor": "narrow",
+      "sizes": "974x1920",
+      "type": "image/png",
+      "label": "Federation Details"
     }
   ]
 }
