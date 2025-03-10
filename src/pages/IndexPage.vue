@@ -58,7 +58,13 @@
     >
       <div class="q-pa-md">
         <div class="row items-center justify-evenly q-gutter-md">
-          <q-btn label="Send" icon="arrow_upward" color="primary" :to="'/send'" />
+          <q-btn
+            label="Send"
+            icon="arrow_upward"
+            color="primary"
+            :to="'/send'"
+            :disable="totalBalance <= 0"
+          />
           <q-btn label="" color="primary" icon="qr_code_scanner" :to="'/scan'" />
           <q-btn label="Receive" icon="arrow_downward" color="primary" :to="'/receive'" />
         </div>
