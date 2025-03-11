@@ -14,37 +14,30 @@
     </q-page-container>
 
     <q-footer class="text-white footer-container ios-safe-area dark-bg">
-      <q-toolbar class="dark-bg">
-        <q-btn
-          stack
-          flat
-          icon="home"
-          :color="isHomeActive ? 'primary' : 'white'"
-          label="Home"
-          class="small-label button-container"
-          :to="'/'"
-        />
-
-        <q-btn
-          stack
-          flat
+      <q-tabs
+        no-caps
+        indicator-color="transparent"
+        active-color="primary"
+        inactive-color="white"
+        :model-value="currentTab"
+        align="justify"
+      >
+        <q-route-tab name="home" icon="home" label="Home" :to="'/'" :ripple="false" />
+        <q-route-tab
+          name="federations"
           icon="account_balance"
-          :color="isFederationsActive ? 'primary' : 'white'"
           label="Federations"
-          class="small-label button-container"
           :to="'/federations'"
+          :ripple="false"
         />
-
-        <q-btn
-          stack
-          flat
+        <q-route-tab
+          name="settings"
           icon="settings"
-          :color="isSettingsActive ? 'primary' : 'white'"
           label="Settings"
-          class="small-label button-container"
           :to="'/settings'"
+          :ripple="false"
         />
-      </q-toolbar>
+      </q-tabs>
     </q-footer>
   </q-layout>
 </template>
@@ -55,23 +48,32 @@ import { useRoute } from 'vue-router'
 import AddFederation from 'src/components/AddFederation.vue'
 
 const showAddFederationOverlay = ref(false)
+
 const route = useRoute()
-const isHomeActive = computed(() => route.path === '/')
-const isFederationsActive = computed(() => route.path === '/federations')
-const isSettingsActive = computed(() => route.path === '/settings')
+
+const currentTab = computed(() => {
+  if (route.path === '/') return 'home'
+  if (route.path === '/federations') return 'federations'
+  if (route.path === '/settings') return 'settings'
+  return null
+})
 </script>
 
 <style scoped>
-.button-container {
-  flex: 1;
-  display: flex;
-  justify-content: center;
+:deep(.q-focus-helper) {
+  display: none !important;
+  opacity: 0 !important;
+  background: transparent !important;
 }
 
-/* Added rules to ensure proper styling in Firefox */
-::v-deep(.q-btn.small-label .q-btn__content .q-btn__label) {
-  font-size: 0.5rem !important;
-  text-align: center;
+:deep(.q-tab__label) {
+  font-size: 0.8rem;
+  line-height: 1;
+  margin-top: 4px;
+}
+
+:deep(.q-tab--active .q-tab__icon) {
+  transform: translateY(-1px);
 }
 
 .dark-bg {
