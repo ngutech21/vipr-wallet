@@ -12,8 +12,8 @@ importers:
         specifier: ^0.0.10
         version: 0.0.10
       '@getalby/bitcoin-connect':
-        specifier: ^3.7.0
-        version: 3.7.0(react@19.0.0)(typescript@5.8.2)
+        specifier: ^3.7.1
+        version: 3.7.1(react@19.0.0)(typescript@5.8.2)
       '@getalby/lightning-tools':
         specifier: ^5.1.2
         version: 5.1.2
@@ -995,8 +995,8 @@ packages:
   '@fedimint/fedimint-client-wasm-bundler@0.0.2':
     resolution: {integrity: sha512-+6chBN4sItrPTS792na6ZZJL3OlZf+edzhy0W40B8PULesjRURV0DbCmR4mCdg+QHds3CkuKkISn/UQpN/cDdQ==}
 
-  '@getalby/bitcoin-connect@3.7.0':
-    resolution: {integrity: sha512-9Tzn7tCJ2awniiunRvTcEQRJQEhw5hZLVBCmhckgAP0GRj5kESnoWfA1jX0WKZZVtSq/2qOfX1wMiz73gCd8gQ==}
+  '@getalby/bitcoin-connect@3.7.1':
+    resolution: {integrity: sha512-HUb0KTdDOH9KANNEZtQgoF1d4++8t/VBoLvHyIc3jWoSW1GNAf50ubCOeV76bT0Lpc7AYmf+MTsjYyZKlmS2cw==}
 
   '@getalby/lightning-tools@5.1.2':
     resolution: {integrity: sha512-BwGm8eGbPh59BVa1gI5yJMantBl/Fdps6X4p1ZACnmxz9vDINX8/3aFoOnDlF7yyA2boXWCsReVQSr26Q2yjiQ==}
@@ -5755,7 +5755,7 @@ snapshots:
 
   '@fedimint/fedimint-client-wasm-bundler@0.0.2': {}
 
-  '@getalby/bitcoin-connect@3.7.0(react@19.0.0)(typescript@5.8.2)':
+  '@getalby/bitcoin-connect@3.7.1(react@19.0.0)(typescript@5.8.2)':
     dependencies:
       '@getalby/lightning-tools': 5.1.2
       '@getalby/sdk': 4.1.1(typescript@5.8.2)
