@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies
-RUN npm install -g pnpm && NODE_OPTIONS=--omit=optional pnpm install
+RUN npm install -g pnpm && pnpm install --no-optional
 
 # Copy all remaining files
 ARG COMMITHASH
@@ -16,8 +16,7 @@ ARG BUILDTIME
 ENV COMMITHASH=${COMMITHASH}
 ENV BUILDTIME=${BUILDTIME}
 
-# Build the Quasar app (adjust build command if different)
-RUN pnpm quasar build -m pwa
+RUN pnpm build
 
 # Stage 2: Serve the app using Nginx
 FROM nginx:stable-alpine
