@@ -1,13 +1,18 @@
 # Stage 1: Build the Quasar PWA
-FROM node:22-alpine AS builder
+FROM node:22-slim AS builder
 
-RUN corepack enable
+RUN corepack enable \
+    && corepack prepare pnpm@latest --activate \
+    && apt-get update \
+    && apt-get install -y python3 make g++ \
+    && echo "shamefully-hoist=true" > .npmrc \
+    && echo "node-linker=hoisted" >> .npmrc
 
 WORKDIR /app
 
 COPY . .
 
-RUN pnpm install --no-optional
+RUN pnpm install
 
 
 # Copy all remaining files
