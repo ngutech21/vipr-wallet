@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies
-RUN npm install -g pnpm && pnpm install
+RUN npm install -g pnpm && NODE_OPTIONS=--omit=optional pnpm install
 
 # Copy all remaining files
 ARG COMMITHASH
