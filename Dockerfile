@@ -1,5 +1,5 @@
 # Stage 1: Build the Quasar PWA
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Create app directory
 WORKDIR /app
