@@ -67,6 +67,12 @@
     "workbox-routing": "^7.0.0",
     "workbox-strategies": "^7.0.0"
   },
+  "overrides": {
+    "ws": {
+      "bufferutil": false,
+      "utf-8-validate": false
+    }
+  },
   "engines": {
     "node": "^28 || ^26 || ^24 || ^22 || ^20 || ^18",
     "npm": ">= 6.13.4",
