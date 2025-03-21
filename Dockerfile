@@ -1,14 +1,14 @@
 # Stage 1: Build the Quasar PWA
 FROM node:22-alpine AS builder
 
-# Create app directory
+RUN corepack enable
+
 WORKDIR /app
 
-# Copy dependency files first to leverage build cache
 COPY . .
 
-# Install dependencies
-RUN npm install -g pnpm && pnpm install --no-optional
+RUN pnpm install --no-optional
+
 
 # Copy all remaining files
 ARG COMMITHASH
