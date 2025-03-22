@@ -10,10 +10,11 @@ RUN corepack enable \
 
 WORKDIR /app
 
+COPY package.json pnpm-lock.yaml* ./
+
+RUN pnpm install --ignore-scripts
+
 COPY . .
-
-RUN pnpm install
-
 
 # Copy all remaining files
 ARG COMMITHASH
