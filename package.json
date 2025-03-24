@@ -37,7 +37,7 @@
     "vue-router": "^4.0.12"
   },
   "devDependencies": {
-    "@eslint/js": "^9.22.0",
+    "@eslint/js": "^9.23.0",
     "@pinia/testing": "^1.0.0",
     "@quasar/app-vite": "^2.1.4",
     "@quasar/cli": "^2.5.0",
