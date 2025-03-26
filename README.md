@@ -34,7 +34,7 @@ A demo version of the wallet is available at [beta.vipr.cash](https://beta.vipr.
 - [x] lightning send
 - [x] receive tokens by paying a lightning invoice
 - [x] pay lightning invoice using nostr wallet connect
-- [ ] lnurl-p support
+- [x] lnurl-p support
 - [x] lightning address support
 - [ ] pay to Nostr contacts
 - [ ] export ecash
