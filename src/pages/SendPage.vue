@@ -17,9 +17,6 @@
             <template v-if="!decodedInvoice">
               <q-card flat class="glass-effect q-mb-md">
                 <q-card-section>
-                  <div class="text-subtitle2 text-grey q-mb-sm">
-                    Enter Lightning Invoice or Address
-                  </div>
                   <q-input
                     v-model="lightningInvoice"
                     filled
@@ -27,7 +24,7 @@
                     dense
                     dark
                     type="textarea"
-                    placeholder="lnbc... or name@domain.com"
+                    placeholder="Enter Lightning Invoice, Address or LNURL"
                     class="custom-input"
                   >
                     <template v-slot:after>
@@ -119,6 +116,8 @@ import { useFederationStore } from 'src/stores/federation'
 import { getErrorMessage } from 'src/utils/error'
 import { LightningAddress } from '@getalby/lightning-tools'
 
+import { requestInvoice } from 'src/utils/lnurl'
+
 const lightningInvoice = ref('')
 const decodedInvoice = ref<Bolt11Invoice | null>(null)
 const store = useWalletStore()
@@ -168,16 +167,24 @@ async function openScanner() {
 async function createInvoice() {
   try {
     isProcessing.value = true
-    Loading.show({ message: 'Creating invoice...' })
 
-    const invoice = await lnAddress?.value?.requestInvoice({
-      satoshi: invoiceAmount.value,
-      comment: invoiceMemo.value,
-    })
+    if (!lnAddress.value) {
+      const invoice = await requestInvoice(lightningInvoice.value, invoiceAmount.value)
 
-    if (invoice) {
-      lightningInvoice.value = invoice.paymentRequest
-      decodedInvoice.value = lightningStore.decodeInvoice(lightningInvoice.value)
+      if (invoice) {
+        lightningInvoice.value = invoice
+        decodedInvoice.value = lightningStore.decodeInvoice(lightningInvoice.value)
+      }
+    } else {
+      const invoice = await lnAddress?.value?.requestInvoice({
+        satoshi: invoiceAmount.value,
+        comment: invoiceMemo.value,
+      })
+
+      if (invoice) {
+        lightningInvoice.value = invoice.paymentRequest
+        decodedInvoice.value = lightningStore.decodeInvoice(lightningInvoice.value)
+      }
     }
   } catch (error) {
     $q.notify({
@@ -215,6 +222,8 @@ async function decodeInvoice() {
         position: 'top',
       })
     }
+  } else if (lightningInvoice.value.startsWith('LNURL1')) {
+    amountRequired.value = true
   } else {
     try {
       decodedInvoice.value = lightningStore.decodeInvoice(lightningInvoice.value)
