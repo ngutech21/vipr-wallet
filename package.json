@@ -39,7 +39,7 @@
   "devDependencies": {
     "@eslint/js": "^9.23.0",
     "@pinia/testing": "^1.0.0",
-    "@quasar/app-vite": "^2.1.4",
+    "@quasar/app-vite": "^2.2.0",
     "@quasar/cli": "^2.5.0",
     "@quasar/quasar-app-extension-testing-unit-vitest": "^1.1.0",
     "@types/node": "^22.13.13",
