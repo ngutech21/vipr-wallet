@@ -10,7 +10,14 @@
       />
 
       <div class="row justify-between full-width q-mt-none">
-        <q-btn flat label="Scan QR" icon="qr_code_scanner" color="primary" :to="'/scan'" class="q-pl-none"/>
+        <q-btn
+          flat
+          label="Scan QR"
+          icon="qr_code_scanner"
+          color="primary"
+          :to="'/scan'"
+          class="q-pl-none"
+        />
         <q-btn
           flat
           label="Paste"

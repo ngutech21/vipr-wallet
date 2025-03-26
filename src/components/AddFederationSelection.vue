@@ -5,11 +5,13 @@
         <div class="col-12">
           <q-card class="cursor-pointer" v-ripple @click="onDiscover">
             <q-card-section class="row">
-              <q-icon name="search" size="48px" color="primary" class="col-2"/>
+              <q-icon name="search" size="48px" color="primary" class="col-2" />
               <div class="col-10">
                 <div class="text-h6 q-mt-sm">Discover federations</div>
-                <div class="text-caption text-grey-7">View federations recommended by Nostr users at bitcoinmints.com</div>
-            </div>
+                <div class="text-caption text-grey-7">
+                  View federations recommended by Nostr users at bitcoinmints.com
+                </div>
+              </div>
             </q-card-section>
           </q-card>
         </div>
@@ -20,7 +22,10 @@
               <q-icon name="add_circle" size="48px" color="primary" class="col-2" />
               <div class="col-10">
                 <div class="text-h6 q-mt-sm">Join a trusted federation</div>
-                <div class="text-caption text-grey-7">Already know the federation you want to join? Scan the QR code or enter the invitecode</div>
+                <div class="text-caption text-grey-7">
+                  Already know the federation you want to join? Scan the QR code or enter the
+                  invitecode
+                </div>
               </div>
             </q-card-section>
           </q-card>

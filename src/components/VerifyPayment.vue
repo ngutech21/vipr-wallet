@@ -1,6 +1,5 @@
 <template>
   <div class="payment-verification">
-
     <q-card flat class="glass-effect q-mb-lg">
       <q-card-section>
         <div class="row q-mb-sm">
@@ -15,7 +14,9 @@
 
         <div class="row q-mb-sm">
           <div class="col-4 text-weight-medium text-white-8">Payment Hash</div>
-          <div class="col text-white text-weight-bold text-wrap">{{ decodedInvoice.paymentHash }}</div>
+          <div class="col text-white text-weight-bold text-wrap">
+            {{ decodedInvoice.paymentHash }}
+          </div>
         </div>
 
         <div class="row q-mb-sm">
@@ -50,13 +51,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed} from 'vue'
+import { computed } from 'vue'
 import type { Bolt11Invoice } from 'src/components/models'
 
 const props = defineProps<{
   decodedInvoice: Bolt11Invoice
 }>()
-
 
 defineEmits<{
   cancel: []
@@ -69,7 +69,13 @@ const formatExpiry = computed(() => {
   return date.toLocaleString()
 })
 
-function onSlideAction({ side, reset }: { side: 'left' | 'right' | 'top' | 'bottom'; reset: () => void }) {
+function onSlideAction({
+  side,
+  reset,
+}: {
+  side: 'left' | 'right' | 'top' | 'bottom'
+  reset: () => void
+}) {
   if (side === 'left') {
     // If it's being slid to the left but not completed
     setTimeout(() => {
