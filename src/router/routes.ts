@@ -15,6 +15,10 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/ReceivePage.vue'),
   },
   {
+    path: '/receive-ecash',
+    component: () => import('pages/ReceiveEcashPage.vue'),
+  },
+  {
     path: '/received-lightning',
     name: 'received-lightning',
     component: () => import('pages/ReceivedLightningSuccessPage.vue'),

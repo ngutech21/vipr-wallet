@@ -21,6 +21,19 @@
       <AddFederation @close="showAdd = false" />
     </q-dialog>
 
+    <q-dialog
+      v-model="showReceiveEcashSelection"
+      position="bottom"
+      transition-show="slide-up"
+      transition-hide="slide-down"
+    >
+      <ReceiveEcashSelection
+        @close="showReceiveEcashSelection = false"
+        @show-discover="showReceiveEcashSelection = true"
+        @show-add="showAdd = true"
+      />
+    </q-dialog>
+
     <div class="text-white q-pa-md dark-bg" style="width: 100%">
       <div class="text-h4 text-center">{{ Math.ceil(totalBalance).toLocaleString() }} sats</div>
 
@@ -66,7 +79,12 @@
             :disable="totalBalance <= 0"
           />
           <q-btn label="" color="primary" icon="qr_code_scanner" :to="'/scan'" />
-          <q-btn label="Receive" icon="arrow_downward" color="primary" :to="'/receive'" />
+          <q-btn
+            label="Receive"
+            icon="arrow_downward"
+            color="primary"
+            @click="showReceiveEcashSelection = true"
+          />
         </div>
       </div>
     </q-page-sticky>
@@ -81,11 +99,13 @@ import TransactionsList from 'src/components/TransactionsList.vue'
 import AddFederationSelection from 'src/components/AddFederationSelection.vue'
 import DiscoverFederations from 'src/components/DiscoverFederations.vue'
 import AddFederation from 'src/components/AddFederation.vue'
+import ReceiveEcashSelection from 'src/components/ReceiveEcashSelection.vue'
 
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
 const totalBalance = computed(() => walletStore.balance)
 const showSelection = ref(false)
+const showReceiveEcashSelection = ref(false)
 const showDiscover = ref(false)
 const showAdd = ref(false)
 </script>

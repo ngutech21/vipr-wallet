@@ -38,7 +38,7 @@ A demo version of the wallet is available at [beta.vipr.cash](https://beta.vipr.
 - [x] lightning address support
 - [ ] pay to Nostr contacts
 - [ ] export ecash
-- [ ] import ecash
+- [x] import ecash
 - [ ] backup wallet
 - [ ] restore wallet
 

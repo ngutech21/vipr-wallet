@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import type { JSONValue } from '@fedimint/core-web'
+import type { JSONValue, MSats } from '@fedimint/core-web'
 import { FedimintWallet } from '@fedimint/core-web'
 import { useFederationStore } from './federation'
 import { ref } from 'vue'
@@ -57,6 +57,19 @@ export const useWalletStore = defineStore('wallet', {
     async closeWallet() {
       await this.wallet?.cleanup()
       this.wallet = null
+    },
+
+    async redeemEcash(tokens: string): Promise<MSats | undefined> {
+      const amount = await this.wallet?.mint.parseNotes(tokens)
+      const opsId = await this.wallet?.mint.reissueExternalNotes(tokens)
+      if (opsId) {
+        this.wallet?.mint.subscribeReissueExternalNotes(opsId, (_state) => {
+          this.updateBalance()
+            .then(() => console.log('Balance updated after state change'))
+            .catch((err) => console.error('Error updating balance:', err))
+        })
+      }
+      return amount
     },
 
     async deleteFederationData(federationId: string): Promise<void> {
