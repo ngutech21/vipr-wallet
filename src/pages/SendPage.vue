@@ -54,7 +54,7 @@
                       </div>
                     </div>
 
-                    <div class="row q-col-gutter-md q-mt-md">
+                    <div class="row q-col-gutter-md q-mt-md" v-if="lnAddress">
                       <div class="col-12">
                         <q-input
                           filled
