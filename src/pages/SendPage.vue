@@ -222,7 +222,7 @@ async function decodeInvoice() {
         position: 'top',
       })
     }
-  } else if (lightningInvoice.value.startsWith('LNURL1')) {
+  } else if (lightningInvoice.value.toLowerCase().startsWith('lnurl1')) {
     amountRequired.value = true
   } else {
     try {
