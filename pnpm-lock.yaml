@@ -18,8 +18,8 @@ importers:
         specifier: ^5.1.2
         version: 5.1.2
       '@nostr-dev-kit/ndk':
-        specifier: ^2.12.2
-        version: 2.12.2(typescript@5.8.2)
+        specifier: ^2.13.0
+        version: 2.13.0(nostr-tools@2.10.4(typescript@5.8.2))
       '@quasar/extras':
         specifier: ^1.16.17
         version: 1.16.17
@@ -1107,9 +1107,11 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@nostr-dev-kit/ndk@2.12.2':
-    resolution: {integrity: sha512-uvautgwbpk3AgddoFpew67/FiaV/zpKwwvSnjCvbE/tAdJBpUUS+VjWR5WfUnJvxTy/ZZpPW+X2TkwVFHhUdvA==}
+  '@nostr-dev-kit/ndk@2.13.0':
+    resolution: {integrity: sha512-e3wwHDP4PQW18Ps80WirJRWL4J3MLVCxao6pgmcmwLy7kYzar8ovM7CNr4H0i5ig5I04l081G2/BrzYl9xKlqA==}
     engines: {node: '>=16'}
+    peerDependencies:
+      nostr-tools: ^2.7.1
 
   '@one-ini/wasm@0.1.1':
     resolution: {integrity: sha512-XuySG1E38YScSJoMlqovLru4KTUNSjgVTIjyh7qMX6aNN5HY5Ct5LhRJdxO79JtTzKfzV/bnWpz+zquYrISsvw==}
@@ -5893,7 +5895,7 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
 
-  '@nostr-dev-kit/ndk@2.12.2(typescript@5.8.2)':
+  '@nostr-dev-kit/ndk@2.13.0(nostr-tools@2.10.4(typescript@5.8.2))':
     dependencies:
       '@noble/curves': 1.8.1
       '@noble/hashes': 1.7.1
@@ -5908,7 +5910,6 @@ snapshots:
       websocket-polyfill: 0.0.3
     transitivePeerDependencies:
       - supports-color
-      - typescript
 
   '@one-ini/wasm@0.1.1': {}
 
