@@ -1,9 +1,9 @@
 import type { NDKUserProfile, NostrEvent } from '@nostr-dev-kit/ndk'
 
 export enum Nip87Kinds {
-  Reccomendation = 38000,
-  CashuInfo = 38172,
-  FediInfo = 38173,
+  Reccomendation = 38000 as number,
+  CashuInfo = 38172 as number,
+  FediInfo = 38173 as number,
 }
 
 export enum Nip87MintTypes {
