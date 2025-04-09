@@ -62,10 +62,10 @@ importers:
         version: 9.24.0
       '@pinia/testing':
         specifier: ^1.0.0
-        version: 1.0.0(pinia@3.0.1(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3)))
+        version: 1.0.0(pinia@3.0.2(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3)))
       '@quasar/app-vite':
         specifier: ^2.2.0
-        version: 2.2.0(@types/node@22.14.0)(eslint@9.24.0)(pinia@3.0.1(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3)))(quasar@2.18.1)(rollup@2.79.2)(terser@5.39.0)(typescript@5.8.3)(vue-router@4.5.0(vue@3.5.13(typescript@5.8.3)))(vue@3.5.13(typescript@5.8.3))(workbox-build@7.3.0)
+        version: 2.2.0(@types/node@22.14.0)(eslint@9.24.0)(pinia@3.0.2(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3)))(quasar@2.18.1)(rollup@2.79.2)(terser@5.39.0)(typescript@5.8.3)(vue-router@4.5.0(vue@3.5.13(typescript@5.8.3)))(vue@3.5.13(typescript@5.8.3))(workbox-build@7.3.0)
       '@quasar/cli':
         specifier: ^2.5.0
         version: 2.5.0(@types/express@4.17.21)
@@ -100,8 +100,8 @@ importers:
         specifier: ^16.0.0
         version: 16.0.0
       pinia:
-        specifier: ^3.0.1
-        version: 3.0.1(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3))
+        specifier: ^3.0.2
+        version: 3.0.2(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3))
       prettier:
         specifier: ^3.5.3
         version: 3.5.3
@@ -3601,8 +3601,8 @@ packages:
     resolution: {integrity: sha512-M7BAV6Rlcy5u+m6oPhAPFgJTzAioX/6B0DxyvDlo9l8+T3nLKbrczg2WLUyzd45L8RqfUMyGPzekbMvX2Ldkwg==}
     engines: {node: '>=12'}
 
-  pinia@3.0.1:
-    resolution: {integrity: sha512-WXglsDzztOTH6IfcJ99ltYZin2mY8XZCXujkYWVIJlBjqsP6ST7zw+Aarh63E1cDVYeyUcPCxPHzJpEOmzB6Wg==}
+  pinia@3.0.2:
+    resolution: {integrity: sha512-sH2JK3wNY809JOeiiURUR0wehJ9/gd9qFN2Y828jCbxEzKEmEt0pzCXwqiSTfuRsK9vQsOflSdnbdBOGrhtn+g==}
     peerDependencies:
       typescript: '>=4.4.4'
       vue: ^2.7.0 || ^3.5.11
@@ -5921,9 +5921,9 @@ snapshots:
 
   '@one-ini/wasm@0.1.1': {}
 
-  '@pinia/testing@1.0.0(pinia@3.0.1(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3)))':
+  '@pinia/testing@1.0.0(pinia@3.0.2(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3)))':
     dependencies:
-      pinia: 3.0.1(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3))
+      pinia: 3.0.2(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3))
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -5944,7 +5944,7 @@ snapshots:
 
   '@polka/url@1.0.0-next.28': {}
 
-  '@quasar/app-vite@2.2.0(@types/node@22.14.0)(eslint@9.24.0)(pinia@3.0.1(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3)))(quasar@2.18.1)(rollup@2.79.2)(terser@5.39.0)(typescript@5.8.3)(vue-router@4.5.0(vue@3.5.13(typescript@5.8.3)))(vue@3.5.13(typescript@5.8.3))(workbox-build@7.3.0)':
+  '@quasar/app-vite@2.2.0(@types/node@22.14.0)(eslint@9.24.0)(pinia@3.0.2(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3)))(quasar@2.18.1)(rollup@2.79.2)(terser@5.39.0)(typescript@5.8.3)(vue-router@4.5.0(vue@3.5.13(typescript@5.8.3)))(vue@3.5.13(typescript@5.8.3))(workbox-build@7.3.0)':
     dependencies:
       '@quasar/render-ssr-error': 1.0.3
       '@quasar/ssl-certificate': 1.0.0
@@ -5988,7 +5988,7 @@ snapshots:
       webpack-merge: 6.0.1
     optionalDependencies:
       eslint: 9.24.0
-      pinia: 3.0.1(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3))
+      pinia: 3.0.2(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3))
       typescript: 5.8.3
       workbox-build: 7.3.0
     transitivePeerDependencies:
@@ -8593,7 +8593,7 @@ snapshots:
 
   picomatch@4.0.2: {}
 
-  pinia@3.0.1(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3)):
+  pinia@3.0.2(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3)):
     dependencies:
       '@vue/devtools-api': 7.7.2
       vue: 3.5.13(typescript@5.8.3)
