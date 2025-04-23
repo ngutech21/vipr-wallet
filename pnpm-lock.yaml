@@ -113,7 +113,7 @@ importers:
         version: 6.3.2(@types/node@22.14.1)(sass-embedded@1.86.3)(terser@5.39.0)
       vite-plugin-checker:
         specifier: ^0.9.1
-        version: 0.9.1(eslint@9.25.1)(optionator@0.9.4)(typescript@5.8.3)(vite@6.3.2(@types/node@22.14.1)(sass-embedded@1.86.3)(terser@5.39.0))(vue-tsc@2.2.8(typescript@5.8.3))
+        version: 0.9.1(eslint@9.25.1)(optionator@0.9.4)(typescript@5.8.3)(vite@6.3.2(@types/node@22.14.1)(sass-embedded@1.86.3)(terser@5.39.0))(vue-tsc@2.2.10(typescript@5.8.3))
       vite-plugin-top-level-await:
         specifier: ^1.5.0
         version: 1.5.0(rollup@2.79.2)(vite@6.3.2(@types/node@22.14.1)(sass-embedded@1.86.3)(terser@5.39.0))
@@ -124,8 +124,8 @@ importers:
         specifier: ^3.1.1
         version: 3.1.1(@types/node@22.14.1)(@vitest/ui@3.1.1)(happy-dom@15.11.7)(sass-embedded@1.86.3)(terser@5.39.0)
       vue-tsc:
-        specifier: ^2.2.8
-        version: 2.2.8(typescript@5.8.3)
+        specifier: ^2.2.10
+        version: 2.2.10(typescript@5.8.3)
       workbox-build:
         specifier: ^7.3.0
         version: 7.3.0
@@ -1544,8 +1544,8 @@ packages:
       typescript:
         optional: true
 
-  '@vue/language-core@2.2.8':
-    resolution: {integrity: sha512-rrzB0wPGBvcwaSNRriVWdNAbHQWSf0NlGqgKHK5mEkXpefjUlVRP62u03KvwZpvKVjRnBIQ/Lwre+Mx9N6juUQ==}
+  '@vue/language-core@2.2.10':
+    resolution: {integrity: sha512-+yNoYx6XIKuAO8Mqh1vGytu8jkFEOH5C8iOv3i8Z/65A7x9iAOXA97Q+PqZ3nlm2lxf5rOJuIGI/wDtx/riNYw==}
     peerDependencies:
       typescript: '*'
     peerDependenciesMeta:
@@ -4463,8 +4463,8 @@ packages:
     peerDependencies:
       vue: ^3.2.0
 
-  vue-tsc@2.2.8:
-    resolution: {integrity: sha512-jBYKBNFADTN+L+MdesNX/TB3XuDSyaWynKMDgR+yCSln0GQ9Tfb7JS2lr46s2LiFUT1WsmfWsSvIElyxzOPqcQ==}
+  vue-tsc@2.2.10:
+    resolution: {integrity: sha512-jWZ1xSaNbabEV3whpIDMbjVSVawjAyW+x1n3JeGQo7S0uv2n9F/JMgWW90tGWNFRKya4YwKMZgCtr0vRAM7DeQ==}
     hasBin: true
     peerDependencies:
       typescript: '>=5.0.0'
@@ -6221,7 +6221,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vue/language-core@2.2.8(typescript@5.8.3)':
+  '@vue/language-core@2.2.10(typescript@5.8.3)':
     dependencies:
       '@volar/language-core': 2.4.12
       '@vue/compiler-dom': 3.5.13
@@ -9114,7 +9114,7 @@ snapshots:
       - tsx
       - yaml
 
-  vite-plugin-checker@0.9.1(eslint@9.25.1)(optionator@0.9.4)(typescript@5.8.3)(vite@6.3.2(@types/node@22.14.1)(sass-embedded@1.86.3)(terser@5.39.0))(vue-tsc@2.2.8(typescript@5.8.3)):
+  vite-plugin-checker@0.9.1(eslint@9.25.1)(optionator@0.9.4)(typescript@5.8.3)(vite@6.3.2(@types/node@22.14.1)(sass-embedded@1.86.3)(terser@5.39.0))(vue-tsc@2.2.10(typescript@5.8.3)):
     dependencies:
       '@babel/code-frame': 7.26.2
       chokidar: 4.0.3
@@ -9130,7 +9130,7 @@ snapshots:
       eslint: 9.25.1
       optionator: 0.9.4
       typescript: 5.8.3
-      vue-tsc: 2.2.8(typescript@5.8.3)
+      vue-tsc: 2.2.10(typescript@5.8.3)
 
   vite-plugin-top-level-await@1.5.0(rollup@2.79.2)(vite@6.3.2(@types/node@22.14.1)(sass-embedded@1.86.3)(terser@5.39.0)):
     dependencies:
@@ -9238,10 +9238,10 @@ snapshots:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.13(typescript@5.8.3)
 
-  vue-tsc@2.2.8(typescript@5.8.3):
+  vue-tsc@2.2.10(typescript@5.8.3):
     dependencies:
       '@volar/typescript': 2.4.12
-      '@vue/language-core': 2.2.8(typescript@5.8.3)
+      '@vue/language-core': 2.2.10(typescript@5.8.3)
       typescript: 5.8.3
 
   vue@3.5.13(typescript@5.8.3):
