@@ -28,7 +28,7 @@
     "@quasar/extras": "^1.16.17",
     "@vueuse/core": "^13.1.0",
     "bech32": "^2.0.0",
-    "idb": "^8.0.2",
+    "idb": "^8.0.3",
     "js-confetti": "^0.12.0",
     "qrcode.vue": "^3.6.0",
     "quasar": "^2.18.1",
