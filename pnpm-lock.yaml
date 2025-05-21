@@ -18,8 +18,8 @@ importers:
         specifier: ^5.1.2
         version: 5.1.2
       '@nostr-dev-kit/ndk':
-        specifier: ^2.14.13
-        version: 2.14.13(nostr-tools@2.10.4(typescript@5.8.3))
+        specifier: ^2.14.17
+        version: 2.14.17(nostr-tools@2.10.4(typescript@5.8.3))
       '@quasar/extras':
         specifier: ^1.17.0
         version: 1.17.0
@@ -1117,8 +1117,8 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@nostr-dev-kit/ndk@2.14.13':
-    resolution: {integrity: sha512-AXRnABI8pkv6zlRnI/GXlxM5DD+MuN+ZPQrhcTdZiG8qLjnfqhLHr3SiW7gDora2Da+qzApDXUoYmMuMSmcarA==}
+  '@nostr-dev-kit/ndk@2.14.17':
+    resolution: {integrity: sha512-hnI0H6bk4/M2z+lM/JfkQbLnMQvH+es0mndCkWo9zbWoSMj05VWzzcJapGyhP4Fm+WJIpAkVa6aCk9l9p0J86A==}
     engines: {node: '>=16'}
     peerDependencies:
       nostr-tools: ^2
@@ -5755,7 +5755,7 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
 
-  '@nostr-dev-kit/ndk@2.14.13(nostr-tools@2.10.4(typescript@5.8.3))':
+  '@nostr-dev-kit/ndk@2.14.17(nostr-tools@2.10.4(typescript@5.8.3))':
     dependencies:
       '@noble/curves': 1.9.1
       '@noble/hashes': 1.8.0
