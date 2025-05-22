@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@fedimint/core-web':
-        specifier: ^0.0.10
-        version: 0.0.10
+        specifier: ^0.0.11
+        version: 0.0.11
       '@getalby/bitcoin-connect':
         specifier: ^3.8.0
         version: 3.8.0(react@19.0.0)(typescript@5.8.3)
@@ -1005,11 +1005,11 @@ packages:
     resolution: {integrity: sha512-0J+zgWxHN+xXONWIyPWKFMgVuJoZuGiIFu8yxk7RJjxkzpGmyja5wRFqZIVtjDVOQpV+Rw0iOAjYPE2eQyjr0w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@fedimint/core-web@0.0.10':
-    resolution: {integrity: sha512-1xfWOSKjNi0virkLa19jikdfbqMSo4rn5+CW1gsc7KFgUIcddAV7MQ6ydrKoV2U6YYZ/SqoEIbzk72dlm9y7DA==}
+  '@fedimint/core-web@0.0.11':
+    resolution: {integrity: sha512-7Sx9gg43JzrobFg+GDAn75hctQ4i9/STXY6D7ZKQkP5YbWvsuz5zaz7WIfQIq+JLIQY9BMIMDQiFc6cTzNH9qQ==}
 
-  '@fedimint/fedimint-client-wasm-bundler@0.0.2':
-    resolution: {integrity: sha512-+6chBN4sItrPTS792na6ZZJL3OlZf+edzhy0W40B8PULesjRURV0DbCmR4mCdg+QHds3CkuKkISn/UQpN/cDdQ==}
+  '@fedimint/fedimint-client-wasm-bundler@0.0.3':
+    resolution: {integrity: sha512-6YKr+OjlFIy7RyGqNo2mTbNW6UoyC7M/UOJtqok//PdOEQbaZYGI23qFASHMnJLJQFmHK9xi9IfrF44jwo2ofg==}
 
   '@getalby/bitcoin-connect@3.8.0':
     resolution: {integrity: sha512-mvNFQBogcE9Be/sHeDFk+30aJmLrjhmaxcpjDdSYhbnGWqK2gvj8SyUDAmdB43Tf+JRdXMa2vU0DuNtjLJiAUg==}
@@ -5641,11 +5641,11 @@ snapshots:
       '@eslint/core': 0.14.0
       levn: 0.4.1
 
-  '@fedimint/core-web@0.0.10':
+  '@fedimint/core-web@0.0.11':
     dependencies:
-      '@fedimint/fedimint-client-wasm-bundler': 0.0.2
+      '@fedimint/fedimint-client-wasm-bundler': 0.0.3
 
-  '@fedimint/fedimint-client-wasm-bundler@0.0.2': {}
+  '@fedimint/fedimint-client-wasm-bundler@0.0.3': {}
 
   '@getalby/bitcoin-connect@3.8.0(react@19.0.0)(typescript@5.8.3)':
     dependencies:

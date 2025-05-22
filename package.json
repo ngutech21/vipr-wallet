@@ -21,7 +21,7 @@
     "build-docker": "docker build -t vipr-wallet ."
   },
   "dependencies": {
-    "@fedimint/core-web": "^0.0.10",
+    "@fedimint/core-web": "^0.0.11",
     "@getalby/bitcoin-connect": "^3.8.0",
     "@getalby/lightning-tools": "^5.1.2",
     "@nostr-dev-kit/ndk": "^2.14.18",
