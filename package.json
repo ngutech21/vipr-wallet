@@ -45,7 +45,7 @@
     "@quasar/cli": "^2.5.0",
     "@quasar/quasar-app-extension-testing-unit-vitest": "^1.2.3",
     "@types/node": "^22.15.21",
-    "@vitest/ui": "^3.1.1",
+    "@vitest/ui": "^3.1.4",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.5.0",
     "@vue/test-utils": "^2.4.6",
