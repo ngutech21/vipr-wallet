@@ -24,7 +24,7 @@
     "@fedimint/core-web": "^0.0.11",
     "@getalby/bitcoin-connect": "^3.8.0",
     "@getalby/lightning-tools": "^5.1.2",
-    "@nostr-dev-kit/ndk": "^2.14.23",
+    "@nostr-dev-kit/ndk": "^2.14.29",
     "@quasar/extras": "^1.17.0",
     "@vueuse/core": "^13.3.0",
     "bech32": "^2.0.0",
