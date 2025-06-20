@@ -21,8 +21,8 @@ importers:
         specifier: ^5.1.2
         version: 5.2.0
       '@nostr-dev-kit/ndk':
-        specifier: ^2.14.29
-        version: 2.14.29(nostr-tools@2.10.4(typescript@5.8.3))
+        specifier: ^2.14.30
+        version: 2.14.30(nostr-tools@2.10.4(typescript@5.8.3))
       '@quasar/extras':
         specifier: ^1.17.0
         version: 1.17.0
@@ -1107,8 +1107,8 @@ packages:
     resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
     engines: {node: ^14.21.3 || >=16}
 
-  '@noble/secp256k1@2.2.3':
-    resolution: {integrity: sha512-l7r5oEQym9Us7EAigzg30/PQAvynhMt2uoYtT3t26eGDVm9Yii5mZ5jWSWmZ/oSIR2Et0xfc6DXrG0bZ787V3w==}
+  '@noble/secp256k1@2.3.0':
+    resolution: {integrity: sha512-0TQed2gcBbIrh7Ccyw+y/uZQvbJwm7Ao4scBUxqpBCcsOlZG0O4KGfjtNAy/li4W8n1xt3dxrwJ0beZ2h2G6Kw==}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -1122,8 +1122,8 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@nostr-dev-kit/ndk@2.14.29':
-    resolution: {integrity: sha512-qgep+P7+50lmSDaBxEufarpkx5s3YiI571xjxX2ErC4YAkGK2HmilgqQS0v6yjF1/o0k4UyLfl/wyEeaZCwazg==}
+  '@nostr-dev-kit/ndk@2.14.30':
+    resolution: {integrity: sha512-aYJxVWoAeZ3ZT3TX910h1qOvCVV5P6s7F90NBF/1/XDKVP+/GIwxE64PleTbXtsyc5IRPL8SlJWcI2fr8wX/HA==}
     engines: {node: '>=16'}
     peerDependencies:
       nostr-tools: ^2
@@ -5750,7 +5750,7 @@ snapshots:
 
   '@noble/hashes@1.8.0': {}
 
-  '@noble/secp256k1@2.2.3': {}
+  '@noble/secp256k1@2.3.0': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -5764,11 +5764,11 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
 
-  '@nostr-dev-kit/ndk@2.14.29(nostr-tools@2.10.4(typescript@5.8.3))':
+  '@nostr-dev-kit/ndk@2.14.30(nostr-tools@2.10.4(typescript@5.8.3))':
     dependencies:
       '@noble/curves': 1.9.2
       '@noble/hashes': 1.8.0
-      '@noble/secp256k1': 2.2.3
+      '@noble/secp256k1': 2.3.0
       '@scure/base': 1.2.6
       debug: 4.4.1
       light-bolt11-decoder: 3.2.0
@@ -9284,7 +9284,7 @@ snapshots:
   vite-node@3.1.4(@types/node@24.0.3)(sass-embedded@1.89.2)(terser@5.42.0):
     dependencies:
       cac: 6.7.14
-      debug: 4.4.1
+      debug: 4.4.0
       es-module-lexer: 1.7.0
       pathe: 2.0.3
       vite: 6.3.5(@types/node@24.0.3)(sass-embedded@1.89.2)(terser@5.42.0)
