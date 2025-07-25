@@ -54,8 +54,8 @@ importers:
         specifier: ^3.5.17
         version: 3.5.17(typescript@5.8.3)
       vue-qrcode-reader:
-        specifier: ^5.7.2
-        version: 5.7.2
+        specifier: ^5.7.3
+        version: 5.7.3
       vue-router:
         specifier: ^4.5.1
         version: 4.5.1(vue@3.5.17(typescript@5.8.3))
@@ -1492,8 +1492,8 @@ packages:
   '@types/cordova@11.0.3':
     resolution: {integrity: sha512-kyuRQ40/NWQVhqGIHq78Ehu2Bf9Mlg0LhmSmis6ZFJK7z933FRfYi8tHe/k/0fB+PGfCf95rJC6TO7dopaFvAg==}
 
-  '@types/dom-webcodecs@0.1.14':
-    resolution: {integrity: sha512-ba9aF0qARLLQpLihONIRbj8VvAdUxO+5jIxlscVcDAQTcJmq5qVr781+ino5qbQUJUmO21cLP2eLeXYWzao5Vg==}
+  '@types/dom-webcodecs@0.1.15':
+    resolution: {integrity: sha512-omOlCPvTWyPm4ZE5bZUhlSvnHM2ZWM2U+1cPiYFL/e8aV5O9MouELp+L4dMKNTON0nTeHqEg+KWDfFQMY5Wkaw==}
 
   '@types/emscripten@1.40.1':
     resolution: {integrity: sha512-sr53lnYkQNhjHNN0oJDdUm5564biioI5DuOpycufDVK7D3y+GR3oUswe2rlwY1nPNyusHbrJ9WoTyIHl4/Bpwg==}
@@ -3956,8 +3956,8 @@ packages:
   sax@1.1.4:
     resolution: {integrity: sha512-5f3k2PbGGp+YtKJjOItpg3P99IMD84E4HOvcfleTb5joCHNXYLsR9yWFPOYGgaeMPDubQILTCMdsFb2OMeOjtg==}
 
-  sdp@3.2.0:
-    resolution: {integrity: sha512-d7wDPgDV3DDiqulJjKiV2865wKsJ34YI+NDREbm+FySq6WuKOikwyNQcm+doLAZ1O6ltdO0SeKle2xMpN3Brgw==}
+  sdp@3.2.1:
+    resolution: {integrity: sha512-lwsAIzOPlH8/7IIjjz3K0zYBk7aBVVcvjMwt3M4fLxpjMYyy7i3I97SLHebgn4YBjirkzfp3RvRDWSKsh/+WFw==}
 
   selfsigned@2.4.1:
     resolution: {integrity: sha512-th5B4L2U+eGLq1TVh7zNRGBapioSORUeymIydxgFpwww9d2qyKvtuPU2jJuHvYAwwqi2Y596QBL3eEqcPEYL8Q==}
@@ -4580,8 +4580,8 @@ packages:
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0
 
-  vue-qrcode-reader@5.7.2:
-    resolution: {integrity: sha512-MRwo8IWM+1UzvfRhOQQBqEap06nl0E8QFIb+/HxS1KiH8BqL2qhlzMVvJgMUti4m5x+XH2YlGS0v1Qshpg+Hbw==}
+  vue-qrcode-reader@5.7.3:
+    resolution: {integrity: sha512-iSGko42FsEvdHyizBMBs/X+HMO9Z5ONDxjW+mQdoraOR5emRNedmjC5SEJdYzGz8ZP5ME3lwB4iHy3S7MOt5Qw==}
     engines: {node: '>=18.0.0'}
 
   vue-router@4.5.1:
@@ -6133,7 +6133,7 @@ snapshots:
 
   '@types/cordova@11.0.3': {}
 
-  '@types/dom-webcodecs@0.1.14': {}
+  '@types/dom-webcodecs@0.1.15': {}
 
   '@types/emscripten@1.40.1': {}
 
@@ -6645,7 +6645,7 @@ snapshots:
 
   barcode-detector@2.2.2:
     dependencies:
-      '@types/dom-webcodecs': 0.1.14
+      '@types/dom-webcodecs': 0.1.15
       zxing-wasm: 1.1.3
 
   bare-events@2.5.4:
@@ -8781,7 +8781,7 @@ snapshots:
 
   sax@1.1.4: {}
 
-  sdp@3.2.0: {}
+  sdp@3.2.1: {}
 
   selfsigned@2.4.1:
     dependencies:
@@ -9422,7 +9422,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  vue-qrcode-reader@5.7.2:
+  vue-qrcode-reader@5.7.3:
     dependencies:
       barcode-detector: 2.2.2
       webrtc-adapter: 8.2.3
@@ -9464,7 +9464,7 @@ snapshots:
 
   webrtc-adapter@8.2.3:
     dependencies:
-      sdp: 3.2.0
+      sdp: 3.2.1
 
   whatwg-mimetype@3.0.0: {}
 
