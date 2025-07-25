@@ -3,7 +3,7 @@
     <q-page-container>
       <q-page class="full-height">
         <q-dialog v-model="showAddFederation" position="bottom">
-          <AddFederation @close="showAddFederation = false" />
+          <AddFederation @close="onAddFederationClose" :initial-invite-code="detectedContent"/>
         </q-dialog>
 
         <div class="camera-container">
@@ -52,7 +52,7 @@ import type { SendRouteQuery } from 'src/types/vue-router'
 import AddFederation from 'src/components/AddFederation.vue'
 import { Notify } from 'quasar'
 
-const detectedContent = ref<string | number | null>('')
+const detectedContent = ref<string | null>('')
 const router = useRouter()
 const torchActive = ref(false)
 const hasTorch = ref(false)
@@ -65,6 +65,11 @@ function onCameraOn(capabilities: unknown) {
 
 function stripLightningPrefix(value: string): string {
   return value.startsWith('lightning:') ? value.substring('lightning:'.length) : value
+}
+
+async function onAddFederationClose() {
+  showAddFederation.value = false
+  await router.push('/')
 }
 
 async function onDetect(detectedCodes: DetectedBarcode[]) {
