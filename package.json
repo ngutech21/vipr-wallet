@@ -26,7 +26,7 @@
     "@getalby/lightning-tools": "^5.1.2",
     "@nostr-dev-kit/ndk": "^2.14.32",
     "@quasar/extras": "^1.17.0",
-    "@vueuse/core": "^13.5.0",
+    "@vueuse/core": "^13.6.0",
     "bech32": "^2.0.0",
     "idb": "^8.0.3",
     "js-confetti": "^0.12.0",
