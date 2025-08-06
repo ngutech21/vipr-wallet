@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@fedimint/core-web": "^0.0.11",
-    "@getalby/bitcoin-connect": "^3.9.0",
+    "@getalby/bitcoin-connect": "^3.9.2",
     "@getalby/lightning-tools": "^5.2.1",
     "@nostr-dev-kit/ndk": "^2.14.32",
     "@quasar/extras": "^1.17.0",
