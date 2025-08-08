@@ -18,8 +18,8 @@ importers:
         specifier: ^3.9.2
         version: 3.9.2(react@19.0.0)(typescript@5.8.3)
       '@getalby/lightning-tools':
-        specifier: ^5.2.1
-        version: 5.2.1
+        specifier: ^6.0.0
+        version: 6.0.0
       '@nostr-dev-kit/ndk':
         specifier: ^2.14.33
         version: 2.14.33(nostr-tools@2.15.0(typescript@5.8.3))
@@ -1019,6 +1019,10 @@ packages:
 
   '@getalby/lightning-tools@5.2.1':
     resolution: {integrity: sha512-dxOmJLJAh6qJ8rsbA5/Bwj7MSI9X3RkxxqmCedl5rfP+yKwNSdfu8i4EiCZN/tk2hNBJb8GHSCcPRNZfwfmEHg==}
+    engines: {node: '>=14'}
+
+  '@getalby/lightning-tools@6.0.0':
+    resolution: {integrity: sha512-jpTO+7o1N1KhV5qT6qetPK+et6ZQshCzUMCRV8+Ek1NVlVU4ITIqOWRQ3kOrb0PhSxkbGN5G3d60HCi535hbDw==}
     engines: {node: '>=14'}
 
   '@getalby/sdk@5.1.2':
@@ -5701,6 +5705,8 @@ snapshots:
       - typescript
 
   '@getalby/lightning-tools@5.2.1': {}
+
+  '@getalby/lightning-tools@6.0.0': {}
 
   '@getalby/sdk@5.1.2(typescript@5.8.3)':
     dependencies:

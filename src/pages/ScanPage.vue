@@ -3,7 +3,7 @@
     <q-page-container>
       <q-page class="full-height">
         <q-dialog v-model="showAddFederation" position="bottom">
-          <AddFederation @close="onAddFederationClose" :initial-invite-code="detectedContent"/>
+          <AddFederation @close="onAddFederationClose" :initial-invite-code="detectedContent" />
         </q-dialog>
 
         <div class="camera-container">

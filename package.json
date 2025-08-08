@@ -23,7 +23,7 @@
   "dependencies": {
     "@fedimint/core-web": "^0.0.11",
     "@getalby/bitcoin-connect": "^3.9.2",
-    "@getalby/lightning-tools": "^5.2.1",
+    "@getalby/lightning-tools": "^6.0.0",
     "@nostr-dev-kit/ndk": "^2.14.33",
     "@quasar/extras": "^1.17.0",
     "@vueuse/core": "^13.6.0",
