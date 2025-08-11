@@ -1,11 +1,10 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import type { JSONValue, MSats } from '@fedimint/core-web'
+import type { MSats } from '@fedimint/core-web'
 import { FedimintWallet } from '@fedimint/core-web'
 import { useFederationStore } from './federation'
 import { ref } from 'vue'
 import type {
   Federation,
-  FederationConfig,
   FederationMeta,
   ModuleConfig,
 } from 'src/components/models'
@@ -129,28 +128,62 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
-    async getFederationByInviteCode(inviteCode: string): Promise<Federation | undefined> {
-      const tmpWallet = new FedimintWallet()
-      if (tmpWallet) {
-        await tmpWallet.joinFederation(inviteCode, inviteCode)
-        const federationId = await tmpWallet.federation.getFederationId()
-        const rawConfig = await tmpWallet.federation.getConfig()
-        if (!rawConfig) {
-          await this.deleteFederationData(inviteCode)
-          return undefined
-        }
-        const fediConfig = extractFederationInfo(rawConfig)
-        await this.deleteFederationData(inviteCode)
+    // async getFederationByInviteCode(inviteCode: string): Promise<Federation | undefined> {
+    //   const tmpWallet = new FedimintWallet()
+    //   if (tmpWallet) {
+    //     await tmpWallet.joinFederation(inviteCode, inviteCode)
+    //     const federationId = await tmpWallet.federation.getFederationId()
+    //     const rawConfig = await tmpWallet.federation.getConfig()
+    //     if (!rawConfig) {
+    //       await this.deleteFederationData(inviteCode)
+    //       return undefined
+    //     }
+    //     const fediConfig = extractFederationInfo(rawConfig)
+    //     await this.deleteFederationData(inviteCode)
 
-        return {
-          title: fediConfig.federationName,
-          inviteCode: inviteCode,
-          federationId: federationId,
-          metaUrl: fediConfig.metaUrl || '',
-          modules: fediConfig.modules,
-        } satisfies Federation
+    //     return {
+    //       title: fediConfig.federationName,
+    //       inviteCode: inviteCode,
+    //       federationId: federationId,
+    //       metaUrl: fediConfig.metaUrl || '',
+    //       modules: fediConfig.modules,
+    //     } satisfies Federation
+    //   }
+    //   return undefined
+    // },
+
+    async previewFederation(inviteCode: string): Promise<Federation | undefined> {
+      const  result =  await this.wallet?.previewFederation(inviteCode)
+      if (!result) {
+        return undefined
       }
-      return undefined
+
+      const { config, federation_id } = result
+      console.log('Previewed federation config:', federation_id)
+
+      const typedConfig = config as {
+        global?: {
+          meta?: {
+            federation_name?: string
+            meta_external_url?: string
+          }
+        }
+        modules?: Record<string, unknown>
+      }
+
+      const { meta = {}, modules = {} } = config as { meta?: Record<string, unknown>, modules?: Record<string, unknown> }
+
+        const federationName =
+          (typedConfig)?.global?.meta?.federation_name || 'Unknown Federation'
+
+      return {
+        title: federationName,
+        inviteCode: inviteCode,
+        federationId: federation_id,
+        metaUrl: meta.meta_external_url as string || '',
+        modules: Object.values(modules) as ModuleConfig[],
+        metadata: meta as FederationMeta
+      } satisfies Federation
     },
   },
 })
@@ -158,32 +191,32 @@ if (import.meta.hot) {
   import.meta.hot.accept(acceptHMRUpdate(useWalletStore, import.meta.hot))
 }
 
-function extractFederationInfo(config: JSONValue): {
-  federationName: string
-  metaUrl?: string
-  modules: ModuleConfig[]
-} {
-  const typedConfig = config as unknown as FederationConfig
-  const {
-    meta: { federation_name, meta_external_url },
-    modules,
-  } = typedConfig
+// function extractFederationInfo(config: JSONValue): {
+//   federationName: string
+//   metaUrl?: string
+//   modules: ModuleConfig[]
+// } {
+//   const typedConfig = config as unknown as FederationConfig
+//   const {
+//     meta: { federation_name, meta_external_url },
+//     modules,
+//   } = typedConfig
 
-  // Convert modules object with numeric keys to an array
-  const moduleArray: ModuleConfig[] = modules
-    ? Object.values(modules).map((module) => ({
-        config: module.config,
-        kind: module.kind,
-        version: {
-          major: module.version.major,
-          minor: module.version.minor,
-        },
-      }))
-    : []
+//   // Convert modules object with numeric keys to an array
+//   const moduleArray: ModuleConfig[] = modules
+//     ? Object.values(modules).map((module) => ({
+//         config: module.config,
+//         kind: module.kind,
+//         version: {
+//           major: module.version.major,
+//           minor: module.version.minor,
+//         },
+//       }))
+//     : []
 
-  return {
-    federationName: federation_name,
-    metaUrl: meta_external_url,
-    modules: moduleArray,
-  }
-}
+//   return {
+//     federationName: federation_name,
+//     metaUrl: meta_external_url,
+//     modules: moduleArray,
+//   }
+// }
