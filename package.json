@@ -77,6 +77,7 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@parcel/watcher",
       "@swc/core",
       "bufferutil",
       "es5-ext",

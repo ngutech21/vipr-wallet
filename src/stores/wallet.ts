@@ -110,6 +110,7 @@ export const useWalletStore = defineStore('wallet', {
 
     async getMetadata(federation: Federation): Promise<FederationMeta | undefined> {
       if (!federation.metaUrl) {
+        console.warn('No metaUrl provided for federation:', federation)
         return undefined
       }
       try {
@@ -159,7 +160,7 @@ export const useWalletStore = defineStore('wallet', {
       }
 
       const { config, federation_id } = result
-      console.log('Previewed federation config:', federation_id)
+      console.log('Previewed federation config:', federation_id, config)
 
       const typedConfig = config as {
         global?: {
@@ -171,18 +172,43 @@ export const useWalletStore = defineStore('wallet', {
         modules?: Record<string, unknown>
       }
 
-      const { meta = {}, modules = {} } = config as { meta?: Record<string, unknown>, modules?: Record<string, unknown> }
 
-        const federationName =
+
+      const federationName =
           (typedConfig)?.global?.meta?.federation_name || 'Unknown Federation'
+
+      const metaExternalUrl = typedConfig?.global?.meta?.meta_external_url as string
+      const modules = config?.modules || {}
+
+      let meta : FederationMeta
+
+      if (metaExternalUrl) {
+        try {
+          const response = await fetch(metaExternalUrl)
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+          const data = await response.json()
+          console.log('Fetched metadata:', data)
+          meta = Object.values(data)[0] as FederationMeta
+          console.log('Parsed metadata:', meta)
+        } catch (error) {
+          console.error('Failed to fetch metadata:', error)
+          return undefined
+        }
+      }else {
+        meta = {}
+      }
+
 
       return {
         title: federationName,
         inviteCode: inviteCode,
-        federationId: federation_id,
-        metaUrl: meta.meta_external_url as string || '',
+        federationId: federation_id.trim(),
+        metaUrl: metaExternalUrl,
         modules: Object.values(modules) as ModuleConfig[],
-        metadata: meta as FederationMeta
+        metadata: meta
       } satisfies Federation
     },
   },
