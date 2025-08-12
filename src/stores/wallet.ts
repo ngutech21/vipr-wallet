@@ -129,32 +129,9 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
-    // async getFederationByInviteCode(inviteCode: string): Promise<Federation | undefined> {
-    //   const tmpWallet = new FedimintWallet()
-    //   if (tmpWallet) {
-    //     await tmpWallet.joinFederation(inviteCode, inviteCode)
-    //     const federationId = await tmpWallet.federation.getFederationId()
-    //     const rawConfig = await tmpWallet.federation.getConfig()
-    //     if (!rawConfig) {
-    //       await this.deleteFederationData(inviteCode)
-    //       return undefined
-    //     }
-    //     const fediConfig = extractFederationInfo(rawConfig)
-    //     await this.deleteFederationData(inviteCode)
-
-    //     return {
-    //       title: fediConfig.federationName,
-    //       inviteCode: inviteCode,
-    //       federationId: federationId,
-    //       metaUrl: fediConfig.metaUrl || '',
-    //       modules: fediConfig.modules,
-    //     } satisfies Federation
-    //   }
-    //   return undefined
-    // },
 
     async previewFederation(inviteCode: string): Promise<Federation | undefined> {
-      const  result =  await this.wallet?.previewFederation(inviteCode)
+      const result = await this.wallet?.previewFederation(inviteCode)
       if (!result) {
         return undefined
       }
