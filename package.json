@@ -55,7 +55,7 @@
     "globals": "^16.3.0",
     "pinia": "^3.0.3",
     "prettier": "^3.6.2",
-    "typescript": "~5.8.3",
+    "typescript": "~5.9.2",
     "vite": "^6.3.5",
     "vite-plugin-checker": "^0.10.2",
     "vite-plugin-top-level-await": "^1.6.0",
