@@ -3,11 +3,7 @@ import type { MSats } from '@fedimint/core-web'
 import { FedimintWallet } from '@fedimint/core-web'
 import { useFederationStore } from './federation'
 import { ref } from 'vue'
-import type {
-  Federation,
-  FederationMeta,
-  ModuleConfig,
-} from 'src/components/models'
+import type { Federation, FederationMeta, ModuleConfig } from 'src/components/models'
 
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
@@ -129,7 +125,6 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
-
     async previewFederation(inviteCode: string): Promise<Federation | undefined> {
       const result = await this.wallet?.previewFederation(inviteCode)
       if (!result) {
@@ -149,15 +144,12 @@ export const useWalletStore = defineStore('wallet', {
         modules?: Record<string, unknown>
       }
 
-
-
-      const federationName =
-          (typedConfig)?.global?.meta?.federation_name || 'Unknown Federation'
+      const federationName = typedConfig?.global?.meta?.federation_name || 'Unknown Federation'
 
       const metaExternalUrl = typedConfig?.global?.meta?.meta_external_url as string
       const modules = config?.modules || {}
 
-      let meta : FederationMeta
+      let meta: FederationMeta
 
       if (metaExternalUrl) {
         try {
@@ -174,10 +166,9 @@ export const useWalletStore = defineStore('wallet', {
           console.error('Failed to fetch metadata:', error)
           return undefined
         }
-      }else {
+      } else {
         meta = {}
       }
-
 
       return {
         title: federationName,
@@ -185,7 +176,7 @@ export const useWalletStore = defineStore('wallet', {
         federationId: federation_id.trim(),
         metaUrl: metaExternalUrl,
         modules: Object.values(modules) as ModuleConfig[],
-        metadata: meta
+        metadata: meta,
       } satisfies Federation
     },
   },
