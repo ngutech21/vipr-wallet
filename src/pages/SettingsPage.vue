@@ -161,6 +161,31 @@
         </q-card>
       </q-expansion-item>
 
+      <q-expansion-item
+  expand-separator
+  icon="code"
+  label="Source Code"
+  caption="View the project on GitHub"
+  header-class="settings-header"
+  expand-icon-class="text-primary"
+>
+  <q-card>
+    <q-card-section>
+      <div class="text-subtitle2 q-mb-sm">
+        Built with ❤️ as free and open source software - check it out on GitHub
+      </div>
+      <q-btn
+        label="Open GitHub Repository"
+        icon="open_in_new"
+        color="primary"
+        :href="'https://github.com/ngutech21/vipr-wallet'"
+        target="_blank"
+        class="full-width"
+      />
+    </q-card-section>
+  </q-card>
+</q-expansion-item>
+
       <!-- Danger Zone -->
       <q-expansion-item
         expand-separator
