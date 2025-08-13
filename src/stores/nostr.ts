@@ -129,24 +129,19 @@ async function processFederationEvent(
       return
     }
 
-    const federation = await walletStore.getFederationByInviteCode(inviteCode)
+    const federation = await walletStore.previewFederation(inviteCode)
     if (federation === undefined) {
-      console.error('>>> Failed to load Wallet for federation:', federationId)
+      console.error('>>> Failed to preview federation:', federationId)
       return
     }
 
-    // metadata is optional
-    const meta = await walletStore.getMetadata(federation)
-    if (meta === undefined) {
-      console.warn('Failed to fetch metadata for federation:', inviteCode)
-    } else {
-      federation.metadata = meta
+    if (!discoveredFederations.some((f) => f.federationId === federation.federationId)) {
+      discoveredFederations.push(federation)
+      discoveredFederations.sort((a, b) => {
+        return (a.title || '').localeCompare(b.title || '')
+      })
     }
 
-    discoveredFederations.push(federation)
-    discoveredFederations.sort((a, b) => {
-      return (a.title || '').localeCompare(b.title || '')
-    })
     store.isDiscoveringFederations = false
   } catch (error) {
     console.error('Error processing federationEvent:', event, error)

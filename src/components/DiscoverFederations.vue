@@ -59,14 +59,12 @@
 import { computed, watch } from 'vue'
 import { useNostrStore } from 'src/stores/nostr'
 import { useFederationStore } from 'src/stores/federation'
-import { useWalletStore } from 'src/stores/wallet'
 import ModalCard from 'src/components/ModalCard.vue'
 import { Loading, Notify } from 'quasar'
 import type { Federation } from 'src/components/models'
 import { getErrorMessage } from 'src/utils/error'
 
 const nostr = useNostrStore()
-const walletStore = useWalletStore()
 const federationStore = useFederationStore()
 const isDiscovering = computed(() => nostr.isDiscoveringFederations)
 
@@ -114,7 +112,7 @@ async function addFederation(federation: Federation) {
   Loading.show({ message: 'Adding Federation' })
 
   try {
-    if (federationStore.federations.some((f) => f.inviteCode === federation.inviteCode)) {
+    if (federationStore.federations.some((f) => f.federationId === federation.federationId)) {
       Notify.create({
         message: 'Federation already exists',
         color: 'negative',
@@ -125,25 +123,17 @@ async function addFederation(federation: Federation) {
       return
     }
 
-    const validFederation = await walletStore.getFederationByInviteCode(federation.inviteCode)
-    if (validFederation) {
-      const meta = await walletStore.getMetadata(validFederation)
-      if (meta) {
-        validFederation.metadata = meta
-      }
+    federationStore.addFederation(federation)
+    await federationStore.selectFederation(federation)
 
-      federationStore.addFederation(validFederation)
-      await federationStore.selectFederation(validFederation)
-
-      Notify.create({
-        message: 'Federation added successfully',
-        color: 'positive',
-        icon: 'check',
-        position: 'top',
-        timeout: 3000,
-      })
-      emit('close')
-    }
+    Notify.create({
+      message: 'Federation added successfully',
+      color: 'positive',
+      icon: 'check',
+      position: 'top',
+      timeout: 3000,
+    })
+    emit('close')
   } catch (error) {
     console.error('Failed to add federation:', error)
     Notify.create({
