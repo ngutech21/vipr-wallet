@@ -184,33 +184,3 @@ export const useWalletStore = defineStore('wallet', {
 if (import.meta.hot) {
   import.meta.hot.accept(acceptHMRUpdate(useWalletStore, import.meta.hot))
 }
-
-// function extractFederationInfo(config: JSONValue): {
-//   federationName: string
-//   metaUrl?: string
-//   modules: ModuleConfig[]
-// } {
-//   const typedConfig = config as unknown as FederationConfig
-//   const {
-//     meta: { federation_name, meta_external_url },
-//     modules,
-//   } = typedConfig
-
-//   // Convert modules object with numeric keys to an array
-//   const moduleArray: ModuleConfig[] = modules
-//     ? Object.values(modules).map((module) => ({
-//         config: module.config,
-//         kind: module.kind,
-//         version: {
-//           major: module.version.major,
-//           minor: module.version.minor,
-//         },
-//       }))
-//     : []
-
-//   return {
-//     federationName: federation_name,
-//     metaUrl: meta_external_url,
-//     modules: moduleArray,
-//   }
-// }
