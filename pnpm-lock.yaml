@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       '@fedimint/core-web':
-        specifier: 0.0.11
-        version: 0.0.11
+        specifier: 0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3
+        version: 0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3
       '@getalby/bitcoin-connect':
         specifier: ^3.9.2
         version: 3.9.2(react@19.1.1)(typescript@5.9.2)
@@ -855,11 +855,11 @@ packages:
     resolution: {integrity: sha512-Z5kJ+wU3oA7MMIqVR9tyZRtjYPr4OC004Q4Rw7pgOKUOKkJfZ3O24nz3WYfGRpMDNmcOi3TwQOmgm7B7Tpii0w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@fedimint/core-web@0.0.11':
-    resolution: {integrity: sha512-7Sx9gg43JzrobFg+GDAn75hctQ4i9/STXY6D7ZKQkP5YbWvsuz5zaz7WIfQIq+JLIQY9BMIMDQiFc6cTzNH9qQ==}
+  '@fedimint/core-web@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3':
+    resolution: {integrity: sha512-1Yr7YZk0RR8hDw/Z6Z3jJtW0maAqq+YS8ykAVd/bFBdLZmKiob1c5FJv39fh7TMdmLXs/T6R3BCVJhPdTcqQDg==}
 
-  '@fedimint/fedimint-client-wasm-bundler@0.0.3':
-    resolution: {integrity: sha512-6YKr+OjlFIy7RyGqNo2mTbNW6UoyC7M/UOJtqok//PdOEQbaZYGI23qFASHMnJLJQFmHK9xi9IfrF44jwo2ofg==}
+  '@fedimint/fedimint-client-wasm-bundler@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3':
+    resolution: {integrity: sha512-HdFiDW/nkgEDMdus9bMJqQjryfTy3+s00qmzQIi3D9i7EAVLvEdnEriRL99urr93NyB+lF9EqyuKZM9IbHPa0A==}
 
   '@getalby/bitcoin-connect@3.9.2':
     resolution: {integrity: sha512-TlwlWvnWHgGSph0T7mRHFB5eIhgdG5bAzXw0Y8kBM3muiXgp9mJEvFmyjdGoPfEV6qk1fQblxPqK9hp1svrJzQ==}
@@ -5503,11 +5503,11 @@ snapshots:
       '@eslint/core': 0.15.2
       levn: 0.4.1
 
-  '@fedimint/core-web@0.0.11':
+  '@fedimint/core-web@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3':
     dependencies:
-      '@fedimint/fedimint-client-wasm-bundler': 0.0.3
+      '@fedimint/fedimint-client-wasm-bundler': 0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3
 
-  '@fedimint/fedimint-client-wasm-bundler@0.0.3': {}
+  '@fedimint/fedimint-client-wasm-bundler@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3': {}
 
   '@getalby/bitcoin-connect@3.9.2(react@19.1.1)(typescript@5.9.2)':
     dependencies:
