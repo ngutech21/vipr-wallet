@@ -5,9 +5,9 @@
         clickable
         v-ripple
         v-for="transaction in recentTransactions"
-        :key="String(transaction.id)"
+        :key="String(transaction.txId)"
         class="transaction-item"
-        @click="viewTransactionDetails(transaction.id)"
+        @click="viewTransactionDetails(transaction.txId)"
       >
         <q-item-section avatar>
           <q-icon
@@ -20,7 +20,7 @@
         <q-item-section>
           <q-item-label>{{ transaction.type === 'send' ? 'Sent' : 'Received' }}</q-item-label>
           <q-item-label caption>{{
-            date.formatDate(transaction.createdAt, 'MMMM D, YYYY - h:mm A')
+            date.formatDate(transaction.timestamp, 'MMMM D, YYYY - h:mm A')
           }}</q-item-label>
         </q-item-section>
 
@@ -51,20 +51,35 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useTransactionsStore } from 'src/stores/transactions'
+import { onMounted, ref } from 'vue'
 import { QIcon } from 'quasar'
 import { date } from 'quasar'
 import { useRouter } from 'vue-router'
+import { useWalletStore } from 'src/stores/wallet'
+import type { LightningAmountTransaction } from './models'
 
-const transactionsStore = useTransactionsStore()
 
+const walletStore = useWalletStore()
 const router = useRouter()
-const recentTransactions = computed(() => transactionsStore.recentTransactionsBySelectedFederation)
+const recentTransactions = ref<LightningAmountTransaction[]>([])
+const isLoading = ref(false)
+
 
 onMounted(async () => {
-  await transactionsStore.loadAllTransactions()
+  await loadTransactions()
 })
+
+async function loadTransactions() {
+  try {
+    isLoading.value = true
+    recentTransactions.value = await walletStore.getTransactions()
+  } catch (error) {
+    console.error('Failed to load transactions:', error)
+    recentTransactions.value = []
+  } finally {
+    isLoading.value = false
+  }
+}
 
 async function viewTransactionDetails(id: string) {
   await router.push(`/transaction/${id}`)

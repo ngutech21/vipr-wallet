@@ -58,10 +58,11 @@
               </div>
 
               <q-badge
-                :color="getStatusColor(transaction.status)"
+                :color="getStatusColor(transaction.outcome)"
                 class="status-badge q-pa-sm text-caption"
+                v-if="transaction.outcome"
               >
-                {{ transaction.status.toUpperCase() }}
+                {{ transaction.outcome.toUpperCase() }}
               </q-badge>
             </div>
 
@@ -70,17 +71,18 @@
 
             <div class="detail-row">
               <div class="label">Created on</div>
-              <div class="value">{{ formatDate(transaction.createdAt) }}</div>
+              <div class="value">{{ formatDate(transaction.timestamp) }}</div>
             </div>
 
             <!-- Additional details based on transaction type -->
             <q-separator class="q-my-md" />
 
-            <!-- Memo if available -->
-            <div v-if="transaction.memo" class="detail-row">
+            <!-- Memo if available FIXME -->
+
+            <!-- <div v-if="transaction.memo" class="detail-row">
               <div class="label">Memo</div>
-              <div class="value">{{ transaction.memo }}</div>
-            </div>
+              <div class="value">{{ transaction.invoice }}</div>
+            </div> -->
 
             <div class="detail-row">
               <div class="label">Federation</div>
@@ -92,17 +94,17 @@
             <!-- Fee for sent transactions -->
             <q-separator
               class="q-my-md"
-              v-if="transaction.type === 'send' && transaction.feeInMsats"
+              v-if="transaction.type === 'send' && transaction.fee"
             />
-            <div v-if="transaction.type === 'send' && transaction.feeInMsats" class="detail-row">
+            <div v-if="transaction.type === 'send' && transaction.fee" class="detail-row">
               <div class="label">Fee</div>
-              <div class="value">{{ formatMsats(transaction.feeInMsats) }} sats</div>
+              <div class="value">{{ formatMsats(transaction.fee) }} sats</div>
             </div>
 
             <q-separator class="q-my-md" />
             <div class="detail-row">
               <div class="label">Transaction ID</div>
-              <div class="value text-caption">{{ transaction.id }}</div>
+              <div class="value text-caption">{{ transaction.txId }}</div>
             </div>
 
             <!-- Lightning invoice section -->
@@ -134,18 +136,18 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTransactionsStore } from 'src/stores/transactions'
 import { Notify } from 'quasar'
-import type { AnyTransaction } from 'src/components/models'
+import type { LightningAmountTransaction } from 'src/components/models'
 import { useFederationStore } from 'src/stores/federation'
 import { date } from 'quasar'
+import { useWalletStore } from 'src/stores/wallet'
 
 const route = useRoute()
 const router = useRouter()
-const transactionsStore = useTransactionsStore()
 const federationStore = useFederationStore()
+const walletStore = useWalletStore()
 
-const transaction = ref<AnyTransaction | null>(null)
+const transaction = ref<LightningAmountTransaction | null>(null)
 const loading = ref(true)
 const error = ref('')
 
@@ -154,6 +156,9 @@ async function navigateBack() {
 }
 
 onMounted(async () => {
+
+  const allTransactions = await walletStore.getTransactions()
+
   try {
     const transactionId = route.params.id as string
 
@@ -163,21 +168,13 @@ onMounted(async () => {
       return
     }
 
-    const allTransactions = transactionsStore.allTransactions
-    const foundTransaction = allTransactions.find((tx) => tx.id === transactionId)
+
+    const foundTransaction = allTransactions.find((tx) => tx.txId === transactionId)
 
     if (foundTransaction) {
       transaction.value = foundTransaction
     } else {
-      await transactionsStore.loadAllTransactions()
-      const refreshedTransactions = transactionsStore.allTransactions
-      const refreshedTransaction = refreshedTransactions.find((tx) => tx.id === transactionId)
-
-      if (refreshedTransaction) {
-        transaction.value = refreshedTransaction
-      } else {
-        error.value = 'Transaction not found'
-      }
+      console.warn('Transaction not found in initial load:', transactionId)
     }
   } catch (err) {
     error.value = 'Error loading transaction details'
@@ -204,18 +201,20 @@ function formatMsats(msats: number): string {
   return Math.round(msats / 1000).toLocaleString()
 }
 
-function formatDate(param: Date): string {
+function formatDate(param: number): string {
   return date.formatDate(param, 'MMMM D, YYYY - h:mm A')
 }
 
 function getStatusColor(status: string): string {
   switch (status) {
-    case 'completed':
+    case 'claimed':
+    case 'success':
+    case 'funded':
       return 'positive'
+    case 'created':
     case 'pending':
       return 'warning'
-    case 'failed':
-    case 'expired':
+    case 'unexpected_error':
       return 'negative'
     default:
       return 'grey'

@@ -1,3 +1,5 @@
+import type { LightningTransaction } from "@fedimint/core-web"
+
 export type Federation = {
   title: string
   inviteCode: string
@@ -78,3 +80,11 @@ export type LightningSendTransaction = BaseTransaction & {
 export type AnyTransaction =
   | (LightningReceiveTransaction & { type: 'receive' })
   | (LightningSendTransaction & { type: 'send' })
+
+
+  export interface LightningAmountTransaction extends LightningTransaction {
+    federationId: string
+    amountInSats: number
+    amountInFiat: number
+    fiatCurrency: 'usd' | 'eur' | 'gbp'
+  }

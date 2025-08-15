@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import type { Federation } from 'src/components/models'
 import { useWalletStore } from './wallet'
 import { useLocalStorage } from '@vueuse/core'
-import { useTransactionsStore } from './transactions'
+
 
 export const useFederationStore = defineStore('federation', {
   state: () => ({
@@ -20,12 +20,6 @@ export const useFederationStore = defineStore('federation', {
       this.federations.push(newFedi)
     },
     deleteFederation(federationId: string) {
-      const transactionsStore = useTransactionsStore()
-
-      transactionsStore
-        .deleteTransactionsByFederationId(federationId)
-        .catch((err) => console.error('Failed to delete federation transactions:', err))
-
       this.federations = this.federations.filter((f) => f.federationId !== federationId)
       if (this.selectedFederationId === federationId) {
         this.selectedFederationId = null
