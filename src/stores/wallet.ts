@@ -1,9 +1,10 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import type { MSats } from '@fedimint/core-web'
+import type {  MSats, Transactions } from '@fedimint/core-web'
 import { FedimintWallet } from '@fedimint/core-web'
 import { useFederationStore } from './federation'
 import { ref } from 'vue'
 import type { Federation, FederationMeta, ModuleConfig } from 'src/components/models'
+
 
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
@@ -66,6 +67,16 @@ export const useWalletStore = defineStore('wallet', {
       }
       return amount
     },
+
+    async getTransactions(): Promise<Transactions[]> {
+  try {
+    const transactions = await this.wallet?.federation.listTransactions(10)
+    return transactions || [] // Handle undefined case
+  } catch (error) {
+    console.error('Error fetching transactions:', error)
+    return [] // Return empty array on error
+  }
+},
 
     async deleteFederationData(federationId: string): Promise<void> {
       try {
@@ -184,33 +195,3 @@ export const useWalletStore = defineStore('wallet', {
 if (import.meta.hot) {
   import.meta.hot.accept(acceptHMRUpdate(useWalletStore, import.meta.hot))
 }
-
-// function extractFederationInfo(config: JSONValue): {
-//   federationName: string
-//   metaUrl?: string
-//   modules: ModuleConfig[]
-// } {
-//   const typedConfig = config as unknown as FederationConfig
-//   const {
-//     meta: { federation_name, meta_external_url },
-//     modules,
-//   } = typedConfig
-
-//   // Convert modules object with numeric keys to an array
-//   const moduleArray: ModuleConfig[] = modules
-//     ? Object.values(modules).map((module) => ({
-//         config: module.config,
-//         kind: module.kind,
-//         version: {
-//           major: module.version.major,
-//           minor: module.version.minor,
-//         },
-//       }))
-//     : []
-
-//   return {
-//     federationName: federation_name,
-//     metaUrl: meta_external_url,
-//     modules: moduleArray,
-//   }
-// }

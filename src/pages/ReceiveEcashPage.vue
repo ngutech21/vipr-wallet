@@ -60,19 +60,14 @@ import { ref } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useQuasar, Loading } from 'quasar'
 import { useRouter } from 'vue-router'
-import { useTransactionsStore } from 'src/stores/transactions'
-import { useFederationStore } from 'src/stores/federation'
 import { getErrorMessage } from 'src/utils/error'
-import { useLightningStore } from 'src/stores/lightning'
+
 
 const ecashToken = ref('')
 const isProcessing = ref(false)
 const $q = useQuasar()
 const router = useRouter()
 const walletStore = useWalletStore()
-const transactionsStore = useTransactionsStore()
-const federationsStore = useFederationStore()
-const lightningStore = useLightningStore()
 
 async function pasteFromClipboard() {
   try {
@@ -99,20 +94,7 @@ async function redeemEcash() {
       return
     }
 
-    const amountInSats = amountMSats / 1_000
 
-    const selectedFederationId = federationsStore.selectedFederation?.federationId ?? ''
-
-    // FIXME use different type for ecash transactions
-    await transactionsStore.addReceiveTransaction({
-      amountInSats,
-      createdAt: new Date(),
-      invoice: 'received ecash offline',
-      status: 'completed',
-      amountInFiat: await lightningStore.satsToFiat(amountInSats),
-      fiatCurrency: 'usd',
-      federationId: selectedFederationId,
-    })
 
     // Navigate back to home
     await router.push({

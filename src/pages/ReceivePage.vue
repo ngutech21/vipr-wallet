@@ -115,10 +115,8 @@ import QrcodeVue from 'qrcode.vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { Loading, useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
-import { useTransactionsStore } from 'src/stores/transactions'
 import { useShare } from '@vueuse/core'
 import { init, requestProvider } from '@getalby/bitcoin-connect'
-import { useLightningStore } from 'src/stores/lightning'
 import { useFederationStore } from 'src/stores/federation'
 import { logger } from 'workbox-core/_private'
 
@@ -128,12 +126,10 @@ const store = useWalletStore()
 const amountInput = ref<HTMLInputElement | null>(null)
 const $q = useQuasar()
 const router = useRouter()
-const transactionsStore = useTransactionsStore()
 const lnExpiry = 60 * 20 // 20 minutes
 const countdown = ref(lnExpiry)
 const isWaiting = ref(false)
 const isLeaving = ref(false) // New flag to control transition
-const lightningStore = useLightningStore()
 const { share, isSupported } = useShare()
 const isCreatingInvoice = ref(false)
 const federationStore = useFederationStore()
@@ -213,7 +209,6 @@ async function onRequest() {
     return
   }
 
-  const selectedFederationId = federationStore.selectedFederation?.federationId ?? ''
 
   if (amount.value < 1) {
     return
@@ -250,15 +245,6 @@ async function onRequest() {
       )
       console.log('Received invoice:', lnReceiveState)
 
-      await transactionsStore.addReceiveTransaction({
-        amountInSats: amount.value,
-        createdAt: new Date(),
-        invoice: invoice.invoice,
-        status: 'completed',
-        amountInFiat: await lightningStore.satsToFiat(amount.value),
-        fiatCurrency: 'usd',
-        federationId: selectedFederationId,
-      })
       await store.updateBalance()
 
       await router.push({
