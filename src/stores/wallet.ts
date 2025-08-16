@@ -1,9 +1,10 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import type { MSats } from '@fedimint/core-web'
+import type {  MSats, Transactions } from '@fedimint/core-web'
 import { FedimintWallet } from '@fedimint/core-web'
 import { useFederationStore } from './federation'
 import { ref } from 'vue'
 import type { Federation, FederationMeta, ModuleConfig } from 'src/components/models'
+
 
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
@@ -66,6 +67,16 @@ export const useWalletStore = defineStore('wallet', {
       }
       return amount
     },
+
+    async getTransactions(): Promise<Transactions[]> {
+  try {
+    const transactions = await this.wallet?.federation.listTransactions(10)
+    return transactions || [] // Handle undefined case
+  } catch (error) {
+    console.error('Error fetching transactions:', error)
+    return [] // Return empty array on error
+  }
+},
 
     async deleteFederationData(federationId: string): Promise<void> {
       try {

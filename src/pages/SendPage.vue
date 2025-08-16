@@ -111,8 +111,6 @@ import VerifyPayment from 'components/VerifyPayment.vue'
 import type { Bolt11Invoice } from 'src/components/models'
 import { useRoute, useRouter } from 'vue-router'
 import type { SendRouteQuery } from 'src/types/vue-router'
-import { useTransactionsStore } from 'src/stores/transactions'
-import { useFederationStore } from 'src/stores/federation'
 import { getErrorMessage } from 'src/utils/error'
 import { LightningAddress } from '@getalby/lightning-tools'
 
@@ -126,8 +124,6 @@ const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()
 const query = route.query as SendRouteQuery
-const transactionsStore = useTransactionsStore()
-const federationsStore = useFederationStore()
 const invoiceAmount = ref(0)
 const invoiceMemo = ref('')
 const lnAddress = ref<LightningAddress | null>(null)
@@ -247,16 +243,6 @@ async function payInvoice() {
     const paymentResult = await store.wallet?.lightning.payInvoice(lightningInvoice.value)
 
     const amountInSats = decodedInvoice.value?.amount ? decodedInvoice.value.amount : 0
-    await transactionsStore.addSendTransaction({
-      amountInSats,
-      federationId: federationsStore.selectedFederation?.federationId ?? 'unknown',
-      createdAt: new Date(),
-      invoice: lightningInvoice.value,
-      status: 'completed',
-      amountInFiat: await lightningStore.satsToFiat(amountInSats),
-      fiatCurrency: 'usd',
-      ...(paymentResult?.fee !== undefined ? { feeInMsats: paymentResult.fee } : {}),
-    })
 
     await store.updateBalance()
 

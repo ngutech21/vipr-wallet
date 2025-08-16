@@ -30,16 +30,16 @@
           <!-- Transaction content -->
           <div v-else-if="transaction" class="transaction-content q-pa-md">
             <!-- Amount section -->
-            <div class="amount-section text-center q-py-lg">
+            <div class="amount-section text-center q-py-lg" v-if="transaction.kind === 'ln'">
               <div
                 class="text-h4 text-weight-bold"
                 :class="transaction.type === 'send' ? 'text-negative' : 'text-positive'"
               >
                 {{ transaction.type === 'receive' ? '+' : '-'
-                }}{{ formatSats(transaction.amountInSats) }}
+                }}{{   amountInSats(transaction as LightningTransaction)  }}
               </div>
               <div class="text-caption text-grey">
-                ≈ ${{ transaction.amountInFiat.toFixed(2) }} {{ transaction.fiatCurrency }}
+                ≈ ${{ amountInFiat(transaction as LightningTransaction) }} {{ 'usd' }}
               </div>
             </div>
 
@@ -47,21 +47,23 @@
             <div class="row items-center justify-between q-mb-lg">
               <div class="transaction-type">
                 <q-icon
-                  :name="transaction.type === 'receive' ? 'arrow_downward' : 'arrow_upward'"
-                  :class="transaction.type === 'receive' ? 'text-positive' : 'text-accent'"
-                  size="2rem"
+            :name="transaction.type === 'send' ? 'arrow_upward' : 'arrow_downward'"
+            :color="transaction.type === 'send' ? 'negative' : 'positive'"
+            size="2rem"
                   class="q-mr-sm"
-                />
+          />
+
                 <span class="text-subtitle1">
-                  {{ transaction.type === 'receive' ? 'Received' : 'Sent' }}
+                  {{ transaction.type === 'send' ? 'Sent' : 'Received' }}
                 </span>
               </div>
 
               <q-badge
-                :color="getStatusColor(transaction.status)"
+                :color="getStatusColor(transaction.outcome)"
                 class="status-badge q-pa-sm text-caption"
+                v-if="transaction.outcome"
               >
-                {{ transaction.status.toUpperCase() }}
+                {{ transaction.outcome.toUpperCase() }}
               </q-badge>
             </div>
 
@@ -70,17 +72,18 @@
 
             <div class="detail-row">
               <div class="label">Created on</div>
-              <div class="value">{{ formatDate(transaction.createdAt) }}</div>
+              <div class="value">{{ formatDate(transaction.timestamp) }}</div>
             </div>
 
             <!-- Additional details based on transaction type -->
             <q-separator class="q-my-md" />
 
-            <!-- Memo if available -->
-            <div v-if="transaction.memo" class="detail-row">
+            <!-- Memo if available FIXME -->
+
+            <!-- <div v-if="transaction.memo" class="detail-row">
               <div class="label">Memo</div>
-              <div class="value">{{ transaction.memo }}</div>
-            </div>
+              <div class="value">{{ transaction.invoice }}</div>
+            </div> -->
 
             <div class="detail-row">
               <div class="label">Federation</div>
@@ -92,17 +95,17 @@
             <!-- Fee for sent transactions -->
             <q-separator
               class="q-my-md"
-              v-if="transaction.type === 'send' && transaction.feeInMsats"
+              v-if="transaction.type === 'send' && transaction.fee"
             />
-            <div v-if="transaction.type === 'send' && transaction.feeInMsats" class="detail-row">
+            <div v-if="transaction.type === 'send' && transaction.fee" class="detail-row">
               <div class="label">Fee</div>
-              <div class="value">{{ formatMsats(transaction.feeInMsats) }} sats</div>
+              <div class="value">{{ formatMsats(transaction.fee) }} sats</div>
             </div>
 
-            <q-separator class="q-my-md" />
+            <q-separator class="q-my-md" v-if="transaction.kind === 'ln'"/>
             <div class="detail-row">
               <div class="label">Transaction ID</div>
-              <div class="value text-caption">{{ transaction.id }}</div>
+              <div class="value text-caption">{{ (transaction as LightningTransaction).txId }}</div>
             </div>
 
             <!-- Lightning invoice section -->
@@ -119,9 +122,9 @@
               />
             </div>
 
-            <div class="invoice-section q-mt-sm">
+            <div class="invoice-section q-mt-sm" v-if="transaction.kind === 'ln' && (transaction as LightningTransaction).invoice">
               <div class="invoice-container">
-                <div class="invoice-text text-caption">{{ transaction.invoice }}</div>
+                <div class="invoice-text text-caption">{{ (transaction as LightningTransaction).invoice }}</div>
               </div>
             </div>
           </div>
@@ -134,18 +137,20 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTransactionsStore } from 'src/stores/transactions'
 import { Notify } from 'quasar'
-import type { AnyTransaction } from 'src/components/models'
 import { useFederationStore } from 'src/stores/federation'
 import { date } from 'quasar'
+import { useWalletStore } from 'src/stores/wallet'
+import type { LightningTransaction, Transactions } from '@fedimint/core-web'
+import { useLightningStore } from 'src/stores/lightning'
 
 const route = useRoute()
 const router = useRouter()
-const transactionsStore = useTransactionsStore()
 const federationStore = useFederationStore()
+const walletStore = useWalletStore()
+const lightningStore = useLightningStore()
 
-const transaction = ref<AnyTransaction | null>(null)
+const transaction = ref<Transactions | null>(null)
 const loading = ref(true)
 const error = ref('')
 
@@ -153,31 +158,39 @@ async function navigateBack() {
   await router.push('/')
 }
 
-onMounted(async () => {
-  try {
-    const transactionId = route.params.id as string
+function amountInSats(tx: LightningTransaction): string {
+      const invoice = lightningStore.decodeInvoice(tx.invoice)
+      return invoice.amount.toLocaleString()
+}
 
-    if (!transactionId) {
+
+async function amountInFiat(tx: LightningTransaction): Promise<string> {
+      const invoice = lightningStore.decodeInvoice(tx.invoice)
+      const fiatValue = await lightningStore.satsToFiat(invoice.amount)
+      return fiatValue.toFixed(2)
+}
+
+
+onMounted(async () => {
+
+  const allTransactions = await walletStore.getTransactions()
+
+  try {
+    const operationId = route.params.id as string
+
+    if (!operationId) {
       error.value = 'Transaction ID is missing'
       loading.value = false
       return
     }
 
-    const allTransactions = transactionsStore.allTransactions
-    const foundTransaction = allTransactions.find((tx) => tx.id === transactionId)
+
+    const foundTransaction = allTransactions.find((tx) => tx.operationId === operationId)
 
     if (foundTransaction) {
       transaction.value = foundTransaction
     } else {
-      await transactionsStore.loadAllTransactions()
-      const refreshedTransactions = transactionsStore.allTransactions
-      const refreshedTransaction = refreshedTransactions.find((tx) => tx.id === transactionId)
-
-      if (refreshedTransaction) {
-        transaction.value = refreshedTransaction
-      } else {
-        error.value = 'Transaction not found'
-      }
+      console.warn('Transaction not found in initial load:', operationId)
     }
   } catch (err) {
     error.value = 'Error loading transaction details'
@@ -189,33 +202,28 @@ onMounted(async () => {
 
 // Get federation title for sent transactions
 const federationTitle = computed(() => {
-  const federation = federationStore.federations.find(
-    (f) => f.federationId === transaction.value?.federationId,
-  )
-
-  return federation?.title || transaction.value?.federationId
+   return federationStore.selectedFederation?.title || ''
 })
-// Helper functions
-function formatSats(sats: number): string {
-  return sats.toLocaleString() + ' sats'
-}
+
 
 function formatMsats(msats: number): string {
   return Math.round(msats / 1000).toLocaleString()
 }
 
-function formatDate(param: Date): string {
+function formatDate(param: number): string {
   return date.formatDate(param, 'MMMM D, YYYY - h:mm A')
 }
 
 function getStatusColor(status: string): string {
   switch (status) {
-    case 'completed':
+    case 'claimed':
+    case 'success':
+    case 'funded':
       return 'positive'
+    case 'created':
     case 'pending':
       return 'warning'
-    case 'failed':
-    case 'expired':
+    case 'unexpected_error':
       return 'negative'
     default:
       return 'grey'
@@ -223,8 +231,8 @@ function getStatusColor(status: string): string {
 }
 
 async function copyInvoice() {
-  if (transaction.value) {
-    await navigator.clipboard.writeText(transaction.value.invoice)
+  if (transaction.value && transaction.value.kind === 'ln' && (transaction.value as LightningTransaction).invoice) {
+    await navigator.clipboard.writeText((transaction.value as LightningTransaction).invoice)
     Notify.create({
       message: 'Invoice copied to clipboard',
       color: 'positive',
