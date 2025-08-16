@@ -30,16 +30,16 @@
           <!-- Transaction content -->
           <div v-else-if="transaction" class="transaction-content q-pa-md">
             <!-- Amount section -->
-            <div class="amount-section text-center q-py-lg">
+            <div class="amount-section text-center q-py-lg" v-if="transaction.kind === 'ln'">
               <div
                 class="text-h4 text-weight-bold"
                 :class="transaction.type === 'send' ? 'text-negative' : 'text-positive'"
               >
                 {{ transaction.type === 'receive' ? '+' : '-'
-                }}{{ formatSats(transaction.amountInSats) }}
+                }}{{   amountInSats(transaction as LightningTransaction)  }}
               </div>
               <div class="text-caption text-grey">
-                ≈ ${{ transaction.amountInFiat.toFixed(2) }} {{ transaction.fiatCurrency }}
+                ≈ ${{ amountInFiat(transaction as LightningTransaction) }} {{ 'usd' }}
               </div>
             </div>
 
@@ -47,13 +47,14 @@
             <div class="row items-center justify-between q-mb-lg">
               <div class="transaction-type">
                 <q-icon
-                  :name="transaction.type === 'receive' ? 'arrow_downward' : 'arrow_upward'"
-                  :class="transaction.type === 'receive' ? 'text-positive' : 'text-accent'"
-                  size="2rem"
+            :name="transaction.type === 'send' ? 'arrow_upward' : 'arrow_downward'"
+            :color="transaction.type === 'send' ? 'negative' : 'positive'"
+            size="2rem"
                   class="q-mr-sm"
-                />
+          />
+
                 <span class="text-subtitle1">
-                  {{ transaction.type === 'receive' ? 'Received' : 'Sent' }}
+                  {{ transaction.type === 'send' ? 'Sent' : 'Received' }}
                 </span>
               </div>
 
@@ -101,10 +102,10 @@
               <div class="value">{{ formatMsats(transaction.fee) }} sats</div>
             </div>
 
-            <q-separator class="q-my-md" />
+            <q-separator class="q-my-md" v-if="transaction.kind === 'ln'"/>
             <div class="detail-row">
               <div class="label">Transaction ID</div>
-              <div class="value text-caption">{{ transaction.txId }}</div>
+              <div class="value text-caption">{{ (transaction as LightningTransaction).txId }}</div>
             </div>
 
             <!-- Lightning invoice section -->
@@ -121,9 +122,9 @@
               />
             </div>
 
-            <div class="invoice-section q-mt-sm">
+            <div class="invoice-section q-mt-sm" v-if="transaction.kind === 'ln' && (transaction as LightningTransaction).invoice">
               <div class="invoice-container">
-                <div class="invoice-text text-caption">{{ transaction.invoice }}</div>
+                <div class="invoice-text text-caption">{{ (transaction as LightningTransaction).invoice }}</div>
               </div>
             </div>
           </div>
@@ -137,17 +138,19 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Notify } from 'quasar'
-import type { LightningAmountTransaction } from 'src/components/models'
 import { useFederationStore } from 'src/stores/federation'
 import { date } from 'quasar'
 import { useWalletStore } from 'src/stores/wallet'
+import type { LightningTransaction, Transactions } from '@fedimint/core-web'
+import { useLightningStore } from 'src/stores/lightning'
 
 const route = useRoute()
 const router = useRouter()
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
+const lightningStore = useLightningStore()
 
-const transaction = ref<LightningAmountTransaction | null>(null)
+const transaction = ref<Transactions | null>(null)
 const loading = ref(true)
 const error = ref('')
 
@@ -155,26 +158,39 @@ async function navigateBack() {
   await router.push('/')
 }
 
+function amountInSats(tx: LightningTransaction): string {
+      const invoice = lightningStore.decodeInvoice(tx.invoice)
+      return invoice.amount.toLocaleString()
+}
+
+
+async function amountInFiat(tx: LightningTransaction): Promise<string> {
+      const invoice = lightningStore.decodeInvoice(tx.invoice)
+      const fiatValue = await lightningStore.satsToFiat(invoice.amount)
+      return fiatValue.toFixed(2)
+}
+
+
 onMounted(async () => {
 
   const allTransactions = await walletStore.getTransactions()
 
   try {
-    const transactionId = route.params.id as string
+    const operationId = route.params.id as string
 
-    if (!transactionId) {
+    if (!operationId) {
       error.value = 'Transaction ID is missing'
       loading.value = false
       return
     }
 
 
-    const foundTransaction = allTransactions.find((tx) => tx.txId === transactionId)
+    const foundTransaction = allTransactions.find((tx) => tx.operationId === operationId)
 
     if (foundTransaction) {
       transaction.value = foundTransaction
     } else {
-      console.warn('Transaction not found in initial load:', transactionId)
+      console.warn('Transaction not found in initial load:', operationId)
     }
   } catch (err) {
     error.value = 'Error loading transaction details'
@@ -186,16 +202,9 @@ onMounted(async () => {
 
 // Get federation title for sent transactions
 const federationTitle = computed(() => {
-  const federation = federationStore.federations.find(
-    (f) => f.federationId === transaction.value?.federationId,
-  )
-
-  return federation?.title || transaction.value?.federationId
+   return federationStore.selectedFederation?.title || ''
 })
-// Helper functions
-function formatSats(sats: number): string {
-  return sats.toLocaleString() + ' sats'
-}
+
 
 function formatMsats(msats: number): string {
   return Math.round(msats / 1000).toLocaleString()
@@ -222,8 +231,8 @@ function getStatusColor(status: string): string {
 }
 
 async function copyInvoice() {
-  if (transaction.value) {
-    await navigator.clipboard.writeText(transaction.value.invoice)
+  if (transaction.value && transaction.value.kind === 'ln' && (transaction.value as LightningTransaction).invoice) {
+    await navigator.clipboard.writeText((transaction.value as LightningTransaction).invoice)
     Notify.create({
       message: 'Invoice copied to clipboard',
       color: 'positive',

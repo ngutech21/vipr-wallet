@@ -1,10 +1,10 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import type { LightningTransaction, MSats } from '@fedimint/core-web'
+import type {  MSats, Transactions } from '@fedimint/core-web'
 import { FedimintWallet } from '@fedimint/core-web'
 import { useFederationStore } from './federation'
 import { ref } from 'vue'
-import type { Federation, FederationMeta, LightningAmountTransaction, ModuleConfig } from 'src/components/models'
-import { useLightningStore } from './lightning'
+import type { Federation, FederationMeta, ModuleConfig } from 'src/components/models'
+
 
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
@@ -68,66 +68,15 @@ export const useWalletStore = defineStore('wallet', {
       return amount
     },
 
-    async getTransactions(): Promise<LightningAmountTransaction[]> {
-      const lightningStore = useLightningStore()
-      const enhancedTransactions: LightningAmountTransaction[] = []
-
-      try {
-        const transactions = await this.wallet?.federation.listTransactions(10)
-        console.log('Raw transactions:', transactions)
-
-        for (const tx of transactions || []) {
-          switch (tx.kind) {
-            case 'ln': {
-              const lightningTx = tx as LightningTransaction
-
-              const federationId = (await this.wallet?.federation.getFederationId()) || ''
-              if (lightningTx.invoice) {
-                try {
-                  const invoice = lightningStore.decodeInvoice(lightningTx.invoice)
-                  const fiatValue = await lightningStore.satsToFiat(invoice.amount)
-
-
-                  // Create enhanced transaction
-                  const enhancedTx: LightningAmountTransaction = {
-                    ...lightningTx, // Spread all original properties
-                    amountInSats: invoice.amount, // Add decoded amount
-                    amountInFiat: fiatValue, // Add fiat value
-                    fiatCurrency: 'usd', // Add currency
-                    federationId: federationId,
-                  }
-
-                  enhancedTransactions.push(enhancedTx)
-
-                } catch (error) {
-                  console.error('Error parsing invoice:', error)
-
-                  // Still add the transaction without amount if decoding fails
-                  const enhancedTx: LightningAmountTransaction = {
-                    ...lightningTx,
-                    amountInSats: 0,
-                    amountInFiat: 0,
-                    fiatCurrency: 'usd',
-                    federationId: federationId
-                  }
-                  enhancedTransactions.push(enhancedTx)
-                }
-              }
-              break
-            }
-
-            default:
-              console.log('Unknown transaction type:', tx)
-          }
-        }
-
-        console.log('Enhanced transactions:', enhancedTransactions)
-        return enhancedTransactions
-      } catch (error) {
-        console.error('Error fetching transactions:', error)
-        return []
-      }
-    },
+    async getTransactions(): Promise<Transactions[]> {
+  try {
+    const transactions = await this.wallet?.federation.listTransactions(10)
+    return transactions || [] // Handle undefined case
+  } catch (error) {
+    console.error('Error fetching transactions:', error)
+    return [] // Return empty array on error
+  }
+},
 
     async deleteFederationData(federationId: string): Promise<void> {
       try {

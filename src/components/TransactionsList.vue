@@ -5,9 +5,9 @@
         clickable
         v-ripple
         v-for="transaction in recentTransactions"
-        :key="String(transaction.txId)"
+        :key="String(transaction.operationId)"
         class="transaction-item"
-        @click="viewTransactionDetails(transaction.txId)"
+        @click="viewTransactionDetails(transaction.operationId)"
       >
         <q-item-section avatar>
           <q-icon
@@ -18,22 +18,23 @@
         </q-item-section>
 
         <q-item-section>
-          <q-item-label>{{ transaction.type === 'send' ? 'Sent' : 'Received' }}</q-item-label>
+          <q-item-label>{{ transaction.type === 'send'  ? 'Sent' : 'Received' }}</q-item-label>
           <q-item-label caption>{{
             date.formatDate(transaction.timestamp, 'MMMM D, YYYY - h:mm A')
           }}</q-item-label>
         </q-item-section>
 
-        <q-item-section side>
+
+        <q-item-section side v-if="transaction.kind === 'ln'">
           <div
             class="transaction-amount"
             :class="transaction.type === 'send' ? 'text-negative' : 'text-positive'"
           >
             {{ transaction.type === 'send' ? '- ' : '+ ' }}
-            {{ transaction.amountInSats.toLocaleString() }} sats
+            {{  amountInSats(transaction as LightningTransaction) }} sats
           </div>
           <div class="text-caption text-grey">
-            ≈ ${{ transaction.amountInFiat.toFixed(2) }} {{ transaction.fiatCurrency }}
+            ≈ ${{ amountInFiat(transaction as LightningTransaction) }} {{ 'usd' }}
           </div>
         </q-item-section>
 
@@ -56,14 +57,16 @@ import { QIcon } from 'quasar'
 import { date } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useWalletStore } from 'src/stores/wallet'
-import type { LightningAmountTransaction } from './models'
+import type { LightningTransaction, Transactions } from '@fedimint/core-web'
+import { useLightningStore } from 'src/stores/lightning'
 
 
 const walletStore = useWalletStore()
 const router = useRouter()
-const recentTransactions = ref<LightningAmountTransaction[]>([])
+const recentTransactions = ref<Transactions[]>([])
 const isLoading = ref(false)
 
+const lightningStore = useLightningStore()
 
 onMounted(async () => {
   await loadTransactions()
@@ -80,6 +83,22 @@ async function loadTransactions() {
     isLoading.value = false
   }
 }
+
+
+// FIXME create component for this
+function amountInSats(tx: LightningTransaction): string {
+      const invoice = lightningStore.decodeInvoice(tx.invoice)
+      return invoice.amount.toLocaleString()
+}
+
+
+async function amountInFiat(tx: LightningTransaction): Promise<string> {
+      const invoice = lightningStore.decodeInvoice(tx.invoice)
+      const fiatValue = await lightningStore.satsToFiat(invoice.amount)
+      return fiatValue.toFixed(2)
+}
+
+
 
 async function viewTransactionDetails(id: string) {
   await router.push(`/transaction/${id}`)

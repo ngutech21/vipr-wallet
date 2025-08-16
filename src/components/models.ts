@@ -1,4 +1,3 @@
-import type { LightningTransaction } from "@fedimint/core-web"
 
 export type Federation = {
   title: string
@@ -55,36 +54,3 @@ export type Bolt11Invoice = {
   description: string | null
 }
 
-export type BaseTransaction = {
-  id: string
-  createdAt: Date
-  amountInSats: number
-  amountInFiat: number
-  fiatCurrency: 'usd' | 'eur' | 'gbp'
-  federationId: string
-}
-
-export type LightningReceiveTransaction = BaseTransaction & {
-  invoice: string
-  status: 'pending' | 'completed' | 'expired'
-  memo?: string
-}
-
-export type LightningSendTransaction = BaseTransaction & {
-  invoice: string
-  feeInMsats?: number
-  status: 'pending' | 'completed' | 'failed'
-  memo?: string
-}
-
-export type AnyTransaction =
-  | (LightningReceiveTransaction & { type: 'receive' })
-  | (LightningSendTransaction & { type: 'send' })
-
-
-  export interface LightningAmountTransaction extends LightningTransaction {
-    federationId: string
-    amountInSats: number
-    amountInFiat: number
-    fiatCurrency: 'usd' | 'eur' | 'gbp'
-  }
