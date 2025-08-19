@@ -42,6 +42,7 @@ export type FederationMeta = {
   preview_message?: string
   popup_end_timestamp?: string
   popup_countdown_message?: string
+  vetted_gateways?: string[]
 }
 
 export type Bolt11Invoice = {

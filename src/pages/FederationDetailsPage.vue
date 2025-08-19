@@ -110,6 +110,38 @@
               </q-card-section>
             </q-card>
 
+            <!-- Vetted Gateways Card -->
+            <div class="text-subtitle1 q-mb-xs" v-if="hasVettedGateways">Gateways</div>
+            <q-card flat class="q-mb-md" v-if="hasVettedGateways">
+              <q-card-section>
+                <q-list>
+                  <q-item
+                    v-for="(gateway, index) in vettedGateways"
+                    :key="gateway"
+                    class="q-py-sm"
+                  >
+                    <q-item-section avatar>
+                      <q-icon name="router" color="primary" />
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>Gateway {{ index + 1 }}</q-item-label>
+                      <q-item-label caption class="text-mono">{{ gateway }}</q-item-label>
+                    </q-item-section>
+                    <q-item-section side>
+                      <q-chip
+                        color="positive"
+                        text-color="black"
+                        size="sm"
+                        icon="verified"
+                      >
+                        Vetted
+                      </q-chip>
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-card-section>
+            </q-card>
+
             <div class="text-subtitle1 q-mb-xs" v-if="hasMessages">Messages</div>
             <q-card flat class="q-mb-md" v-if="hasMessages">
               <q-card-section>
@@ -166,6 +198,8 @@
                 </q-list>
               </q-card-section>
             </q-card>
+
+
 
             <!-- Actions Card -->
 
@@ -231,7 +265,29 @@ const federation = federationStore.federations.find((f) => f.federationId === ro
 const confirmLeave = ref(false)
 
 const hasMessages = computed(() => {
+  console.log('Checking for messages in federation metadata:', federation)
   return federation?.metadata?.preview_message || federation?.metadata?.popup_countdown_message
+})
+
+const hasVettedGateways = computed(() => {
+  return federation?.metadata?.vetted_gateways && federation.metadata.vetted_gateways.length > 0
+})
+
+const vettedGateways = computed(() => {
+  if (!federation?.metadata?.vetted_gateways) return []
+
+  // If vetted_gateways is a string (JSON), parse it
+  if (typeof federation.metadata.vetted_gateways === 'string') {
+    try {
+      return JSON.parse(federation.metadata.vetted_gateways) as string[]
+    } catch (error) {
+      console.error('Error parsing vetted_gateways:', error)
+      return []
+    }
+  }
+
+  // If it's already an array, return it
+  return federation.metadata.vetted_gateways
 })
 
 function formatDate(timestamp: string) {
@@ -259,5 +315,10 @@ async function leaveFederation() {
 }
 .q-card-section {
   padding: 16px;
+}
+.text-mono {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85em;
+  word-break: break-all;
 }
 </style>
