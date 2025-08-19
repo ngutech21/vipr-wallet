@@ -3,7 +3,6 @@ import type { Federation } from 'src/components/models'
 import { useWalletStore } from './wallet'
 import { useLocalStorage } from '@vueuse/core'
 
-
 export const useFederationStore = defineStore('federation', {
   state: () => ({
     federations: useLocalStorage<Federation[]>('vipr.federations', []),

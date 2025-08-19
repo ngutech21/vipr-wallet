@@ -21,7 +21,11 @@
       <q-item-label caption class="text-grey-6">
         {{ formatAddress(transaction.onchainAddress) }}
       </q-item-label>
-      <q-item-label caption v-if="transaction.outcome && transaction.outcome !== 'Confirmed'" class="text-orange">
+      <q-item-label
+        caption
+        v-if="transaction.outcome && transaction.outcome !== 'Confirmed'"
+        class="text-orange"
+      >
         Status: {{ formatOutcome(transaction.outcome) }}
       </q-item-label>
     </q-item-section>
@@ -34,12 +38,8 @@
         {{ transaction.type === 'withdraw' ? '- ' : '+ ' }}
         {{ amountInSats }} sats
       </div>
-      <div class="text-caption text-grey">
-        ≈ ${{ amountInFiat }} {{ 'usd' }}
-      </div>
-      <div class="text-caption text-grey">
-        Fee: {{ feeInSats }} sats
-      </div>
+      <div class="text-caption text-grey">≈ ${{ amountInFiat }} {{ 'usd' }}</div>
+      <div class="text-caption text-grey">Fee: {{ feeInSats }} sats</div>
     </q-item-section>
 
     <q-item-section side>

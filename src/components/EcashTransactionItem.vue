@@ -6,11 +6,7 @@
     @click="$emit('click', transaction.operationId)"
   >
     <q-item-section avatar>
-      <q-icon
-        :name="getTransactionIcon()"
-        :color="getTransactionColor()"
-        size="md"
-      />
+      <q-icon :name="getTransactionIcon()" :color="getTransactionColor()" size="md" />
     </q-item-section>
 
     <q-item-section>
@@ -24,16 +20,11 @@
     </q-item-section>
 
     <q-item-section side>
-      <div
-        class="transaction-amount"
-        :class="getAmountClass()"
-      >
+      <div class="transaction-amount" :class="getAmountClass()">
         {{ getAmountPrefix() }}
         {{ amountInSats }} sats
       </div>
-      <div class="text-caption text-grey">
-        ≈ ${{ amountInFiat }} {{ 'usd' }}
-      </div>
+      <div class="text-caption text-grey">≈ ${{ amountInFiat }} {{ 'usd' }}</div>
     </q-item-section>
 
     <q-item-section side>
@@ -118,7 +109,7 @@ function getAmountPrefix(): string {
 }
 
 function formatOutcome(outcome: string): string {
-  return outcome.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  return outcome.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
 }
 </script>
 

@@ -8,9 +8,7 @@
       >
         {{ transaction.type === 'deposit' ? '+' : '-' }}{{ amountInSats }}
       </div>
-      <div class="text-caption text-grey">
-        ≈ ${{ amountInFiat }} USD
-      </div>
+      <div class="text-caption text-grey">≈ ${{ amountInFiat }} USD</div>
     </div>
 
     <!-- Transaction type and status badge -->
@@ -55,14 +53,7 @@
     <q-separator class="q-my-md" />
     <div class="detail-row">
       <div class="label">Bitcoin Address</div>
-      <q-btn
-        flat
-        dense
-        round
-        icon="content_copy"
-        @click="copyAddress"
-        class="copy-button"
-      />
+      <q-btn flat dense round icon="content_copy" @click="copyAddress" class="copy-button" />
     </div>
 
     <div class="address-section q-mt-sm">
@@ -81,8 +72,13 @@
     <!-- Net Amount -->
     <q-separator class="q-my-md" />
     <div class="detail-row">
-      <div class="label">{{ transaction.type === 'withdraw' ? 'Net Withdrawn' : 'Net Deposited' }}</div>
-      <div class="value" :class="transaction.type === 'withdraw' ? 'text-negative' : 'text-positive'">
+      <div class="label">
+        {{ transaction.type === 'withdraw' ? 'Net Withdrawn' : 'Net Deposited' }}
+      </div>
+      <div
+        class="value"
+        :class="transaction.type === 'withdraw' ? 'text-negative' : 'text-positive'"
+      >
         {{ transaction.type === 'withdraw' ? '-' : '+' }}{{ netAmountInSats }} sats
       </div>
     </div>

@@ -209,7 +209,6 @@ async function onRequest() {
     return
   }
 
-
   if (amount.value < 1) {
     return
   }

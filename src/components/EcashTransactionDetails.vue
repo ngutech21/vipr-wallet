@@ -2,15 +2,10 @@
   <div class="transaction-content q-pa-md">
     <!-- Amount section -->
     <div class="amount-section text-center q-py-lg">
-      <div
-        class="text-h4 text-weight-bold"
-        :class="getAmountClass()"
-      >
+      <div class="text-h4 text-weight-bold" :class="getAmountClass()">
         {{ getAmountPrefix() }}{{ amountInSats }}
       </div>
-      <div class="text-caption text-grey">
-        ≈ ${{ amountInFiat }} USD
-      </div>
+      <div class="text-caption text-grey">≈ ${{ amountInFiat }} USD</div>
     </div>
 
     <!-- Transaction type and status badge -->
@@ -62,14 +57,7 @@
     <q-separator class="q-my-md" v-if="transaction.notes" />
     <div v-if="transaction.notes" class="detail-row">
       <div class="label">Notes</div>
-      <q-btn
-        flat
-        dense
-        round
-        icon="content_copy"
-        @click="copyNotes"
-        class="copy-button"
-      />
+      <q-btn flat dense round icon="content_copy" @click="copyNotes" class="copy-button" />
     </div>
 
     <div v-if="transaction.notes" class="notes-section q-mt-sm">
@@ -163,7 +151,7 @@ function formatDate(timestamp: number): string {
 
 function formatOutcome(outcome: string | undefined): string {
   if (!outcome) return ''
-  return outcome.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  return outcome.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
 }
 
 function getStatusColor(status: string | undefined): string {

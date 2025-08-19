@@ -14,7 +14,9 @@
     </q-item-section>
 
     <q-item-section>
-      <q-item-label>{{ transaction.type === 'send' ? 'Sent Lightning' : 'Received Lightning' }}</q-item-label>
+      <q-item-label>{{
+        transaction.type === 'send' ? 'Sent Lightning' : 'Received Lightning'
+      }}</q-item-label>
       <q-item-label caption>{{
         date.formatDate(transaction.timestamp, 'MMMM D, YYYY - h:mm A')
       }}</q-item-label>
@@ -31,9 +33,7 @@
         {{ transaction.type === 'send' ? '- ' : '+ ' }}
         {{ amountInSats }} sats
       </div>
-      <div class="text-caption text-grey">
-        ≈ ${{ amountInFiat }} {{ 'usd' }}
-      </div>
+      <div class="text-caption text-grey">≈ ${{ amountInFiat }} {{ 'usd' }}</div>
       <div v-if="transaction.fee" class="text-caption text-grey">
         Fee: {{ transaction.fee }} sats
       </div>
@@ -88,7 +88,7 @@ onMounted(async () => {
 
 function formatOutcome(outcome: string | undefined): string {
   if (!outcome) return ''
-  return outcome.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  return outcome.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
 }
 </script>
 

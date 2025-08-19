@@ -8,9 +8,7 @@
       >
         {{ transaction.type === 'receive' ? '+' : '-' }}{{ amountInSats }}
       </div>
-      <div class="text-caption text-grey">
-        ≈ ${{ amountInFiat }} USD
-      </div>
+      <div class="text-caption text-grey">≈ ${{ amountInFiat }} USD</div>
     </div>
 
     <!-- Transaction type and status badge -->
@@ -83,14 +81,7 @@
     <q-separator class="q-my-md" />
     <div class="detail-row">
       <div class="label">Lightning Invoice</div>
-      <q-btn
-        flat
-        dense
-        round
-        icon="content_copy"
-        @click="copyInvoice"
-        class="copy-button"
-      />
+      <q-btn flat dense round icon="content_copy" @click="copyInvoice" class="copy-button" />
     </div>
 
     <div class="invoice-section q-mt-sm">
@@ -148,7 +139,7 @@ function formatDate(timestamp: number): string {
 }
 
 function formatOutcome(outcome: string): string {
-  return outcome.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  return outcome.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
 }
 
 function getStatusColor(status: string): string {

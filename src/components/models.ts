@@ -1,4 +1,3 @@
-
 export type Federation = {
   title: string
   inviteCode: string
@@ -53,4 +52,3 @@ export type Bolt11Invoice = {
   expiry: number | undefined
   description: string | null
 }
-

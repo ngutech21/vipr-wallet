@@ -62,7 +62,6 @@ import { useQuasar, Loading } from 'quasar'
 import { useRouter } from 'vue-router'
 import { getErrorMessage } from 'src/utils/error'
 
-
 const ecashToken = ref('')
 const isProcessing = ref(false)
 const $q = useQuasar()
@@ -93,8 +92,6 @@ async function redeemEcash() {
     if (amountMSats === 0) {
       return
     }
-
-
 
     // Navigate back to home
     await router.push({
