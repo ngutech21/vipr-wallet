@@ -1,47 +1,24 @@
 <template>
   <div class="q-ml-md q-mr-md q-pt-md">
     <ul class="transaction-list-container">
-      <q-item
-        clickable
-        v-ripple
-        v-for="transaction in recentTransactions"
-        :key="String(transaction.operationId)"
-        class="transaction-item"
-        @click="viewTransactionDetails(transaction.operationId)"
-      >
-        <q-item-section avatar>
-          <q-icon
-            :name="transaction.type === 'send' ? 'arrow_upward' : 'arrow_downward'"
-            :color="transaction.type === 'send' ? 'negative' : 'positive'"
-            size="md"
-          />
-        </q-item-section>
+      <template v-for="transaction in recentTransactions" :key="String(transaction.operationId)">
+        <LightningTransactionItem
+          v-if="transaction.kind === 'ln'"
+          :transaction="transaction as import('@fedimint/core-web').LightningTransaction"
+          @click="viewTransactionDetails"
+        />
+        <EcashTransactionItem
+          v-else-if="transaction.kind === 'mint'"
+          :transaction="transaction as import('@fedimint/core-web').EcashTransaction"
+          @click="viewTransactionDetails"
+        />
+        <WalletTransactionItem
+          v-else-if="transaction.kind === 'wallet'"
+          :transaction="transaction as import('@fedimint/core-web').WalletTransaction"
+          @click="viewTransactionDetails"
+        />
+      </template>
 
-        <q-item-section>
-          <q-item-label>{{ transaction.type === 'send'  ? 'Sent' : 'Received' }}</q-item-label>
-          <q-item-label caption>{{
-            date.formatDate(transaction.timestamp, 'MMMM D, YYYY - h:mm A')
-          }}</q-item-label>
-        </q-item-section>
-
-
-        <q-item-section side v-if="transaction.kind === 'ln'">
-          <div
-            class="transaction-amount"
-            :class="transaction.type === 'send' ? 'text-negative' : 'text-positive'"
-          >
-            {{ transaction.type === 'send' ? '- ' : '+ ' }}
-            {{  amountInSats(transaction as LightningTransaction) }} sats
-          </div>
-          <div class="text-caption text-grey">
-            ≈ ${{ amountInFiat(transaction as LightningTransaction) }} {{ 'usd' }}
-          </div>
-        </q-item-section>
-
-        <q-item-section side>
-          <q-icon name="chevron_right" color="grey-6" />
-        </q-item-section>
-      </q-item>
       <q-item v-if="recentTransactions.length === 0" class="text-center">
         <q-item-section>
           <p class="text-grey-6">No transactions yet</p>
@@ -53,20 +30,17 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { QIcon } from 'quasar'
-import { date } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useWalletStore } from 'src/stores/wallet'
-import type { LightningTransaction, Transactions } from '@fedimint/core-web'
-import { useLightningStore } from 'src/stores/lightning'
-
+import type { Transactions } from '@fedimint/core-web'
+import LightningTransactionItem from './LightningTransactionItem.vue'
+import EcashTransactionItem from './EcashTransactionItem.vue'
+import WalletTransactionItem from './WalletTransactionItem.vue'
 
 const walletStore = useWalletStore()
 const router = useRouter()
 const recentTransactions = ref<Transactions[]>([])
 const isLoading = ref(false)
-
-const lightningStore = useLightningStore()
 
 onMounted(async () => {
   await loadTransactions()
@@ -83,22 +57,6 @@ async function loadTransactions() {
     isLoading.value = false
   }
 }
-
-
-// FIXME create component for this
-function amountInSats(tx: LightningTransaction): string {
-      const invoice = lightningStore.decodeInvoice(tx.invoice)
-      return invoice.amount.toLocaleString()
-}
-
-
-async function amountInFiat(tx: LightningTransaction): Promise<string> {
-      const invoice = lightningStore.decodeInvoice(tx.invoice)
-      const fiatValue = await lightningStore.satsToFiat(invoice.amount)
-      return fiatValue.toFixed(2)
-}
-
-
 
 async function viewTransactionDetails(id: string) {
   await router.push(`/transaction/${id}`)
