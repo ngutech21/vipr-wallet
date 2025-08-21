@@ -299,15 +299,25 @@ function formatDate(timestamp: string) {
   }
 }
 
+// ...existing code...
+
 async function leaveFederation() {
-  if (federation) {
+  if (!federation) return
+
+  try {
     await walletStore.closeWallet()
-    federationStore.deleteFederation(federation.federationId)
+    await new Promise(resolve => setTimeout(resolve, 100))
     await walletStore.deleteFederationData(federation.federationId)
+    federationStore.deleteFederation(federation.federationId)
     await federationStore.selectFederation(undefined)
+    await router.push('/federations')
+  } catch (error) {
+    console.error('Error leaving federation:', error)
     await router.push('/federations')
   }
 }
+
+// ...existing code...
 </script>
 <style scoped>
 .q-card {
