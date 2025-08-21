@@ -1,5 +1,6 @@
 <template>
   <q-item
+    v-if="hasValidOutcome"
     clickable
     v-ripple
     class="transaction-item"
@@ -64,6 +65,10 @@ defineEmits<{
 const lightningStore = useLightningStore()
 const amountInFiat = ref<string>('0.00')
 
+
+const hasValidOutcome = computed(() => {
+  return Boolean(props.transaction.outcome?.trim())
+})
 const amountInSats = computed(() => {
   try {
     const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
@@ -75,6 +80,7 @@ const amountInSats = computed(() => {
 })
 
 onMounted(async () => {
+  console.log('tx', props.transaction)
   try {
     const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
     const sats = Math.floor(invoice.amount / 1000)
