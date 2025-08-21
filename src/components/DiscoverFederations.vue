@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, watch, onUnmounted } from 'vue'
 import { useNostrStore } from 'src/stores/nostr'
 import { useFederationStore } from 'src/stores/federation'
 import ModalCard from 'src/components/ModalCard.vue'
@@ -84,6 +84,8 @@ watch(
   async (isVisible) => {
     if (isVisible) {
       await discoverFederations()
+    } else {
+      nostr.stopDiscoveringFederations()
     }
   },
   { immediate: true },
@@ -93,6 +95,11 @@ watch(
 function isAdded(federation: Federation): boolean {
   return federationStore.federations.some((f) => f.federationId === federation.federationId)
 }
+
+// Cleanup when component is unmounted
+onUnmounted(() => {
+  nostr.stopDiscoveringFederations()
+})
 
 async function discoverFederations() {
   try {
@@ -133,6 +140,7 @@ async function addFederation(federation: Federation) {
       position: 'top',
       timeout: 3000,
     })
+    nostr.stopDiscoveringFederations()
     emit('close')
   } catch (error) {
     console.error('Failed to add federation:', error)

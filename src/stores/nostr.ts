@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { useLocalStorage } from '@vueuse/core'
-import type { NDKEvent, NDKFilter } from '@nostr-dev-kit/ndk'
+import type { NDKEvent, NDKFilter, NDKSubscription } from '@nostr-dev-kit/ndk'
 import NDK from '@nostr-dev-kit/ndk'
 import type { Federation } from 'src/components/models'
 import { Nip87Kinds } from 'src/types/nip87'
@@ -24,6 +24,7 @@ export const useNostrStore = defineStore('nostr', {
     ndk: null as NDK | null,
     discoveredFederations: [] as Federation[],
     isDiscoveringFederations: false,
+    federationSubscription: null as NDKSubscription | null,
   }),
 
   getters: {},
@@ -96,12 +97,24 @@ export const useNostrStore = defineStore('nostr', {
       const mintInfoFilter: NDKFilter = {
         kinds: [Nip87Kinds.FediInfo],
       } as unknown as NDKFilter
-      const sub = this.ndk?.subscribe(mintInfoFilter, { closeOnEose: false })
 
-      // Process event synchronously, but handle async operations properly
-      sub?.on('event', (event) => {
-        void processFederationEvent(this.discoveredFederations, this, event)
-      })
+      if (this.ndk) {
+        this.federationSubscription = this.ndk.subscribe(mintInfoFilter, { closeOnEose: false })
+
+        // Process event synchronously, but handle async operations properly
+        this.federationSubscription?.on('event', (event) => {
+          void processFederationEvent(this.discoveredFederations, this, event)
+        })
+      }
+    },
+
+    stopDiscoveringFederations() {
+      console.log('Stopping federation discovery')
+      if (this.federationSubscription) {
+        this.federationSubscription.stop()
+        this.federationSubscription = null
+      }
+      this.isDiscoveringFederations = false
     },
   },
 })
@@ -114,6 +127,7 @@ async function processFederationEvent(
   if (event.kind !== Nip87Kinds.FediInfo) return
 
   try {
+    console.log('Processing federationEvent:', event.id, event.created_at)
     // Get invite code
     const inviteTags = event.getMatchingTags('u')
     const inviteCode = inviteTags[0]?.[1]
