@@ -15,8 +15,8 @@ importers:
         specifier: 0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3
         version: 0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3
       '@getalby/bitcoin-connect':
-        specifier: ^3.9.3
-        version: 3.9.3(react@19.1.1)(typescript@5.9.2)
+        specifier: ^3.10.0
+        version: 3.10.0(react@19.1.1)(typescript@5.9.2)
       '@getalby/lightning-tools':
         specifier: ^6.0.0
         version: 6.0.0
@@ -861,8 +861,8 @@ packages:
   '@fedimint/fedimint-client-wasm-bundler@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3':
     resolution: {integrity: sha512-HdFiDW/nkgEDMdus9bMJqQjryfTy3+s00qmzQIi3D9i7EAVLvEdnEriRL99urr93NyB+lF9EqyuKZM9IbHPa0A==}
 
-  '@getalby/bitcoin-connect@3.9.3':
-    resolution: {integrity: sha512-FofuzD92yXzSjwsHybubgl+HiJEMykAsz2lmD4q6J7jiGTu1LNUploknUUjgsdM9tzNCTl2Tz/mA6usATmtWeg==}
+  '@getalby/bitcoin-connect@3.10.0':
+    resolution: {integrity: sha512-6UXeu0SzEmw4Fhyw9jP6PMH7dqHYQTdmdziUPxv4HE8xMO6Q+g5xPbPrK9R36ASB7P680JCQRnoJiltgP3fwLA==}
 
   '@getalby/lightning-tools@5.2.1':
     resolution: {integrity: sha512-dxOmJLJAh6qJ8rsbA5/Bwj7MSI9X3RkxxqmCedl5rfP+yKwNSdfu8i4EiCZN/tk2hNBJb8GHSCcPRNZfwfmEHg==}
@@ -5509,7 +5509,7 @@ snapshots:
 
   '@fedimint/fedimint-client-wasm-bundler@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3': {}
 
-  '@getalby/bitcoin-connect@3.9.3(react@19.1.1)(typescript@5.9.2)':
+  '@getalby/bitcoin-connect@3.10.0(react@19.1.1)(typescript@5.9.2)':
     dependencies:
       '@getalby/lightning-tools': 5.2.1
       '@getalby/sdk': 5.1.2(typescript@5.9.2)
