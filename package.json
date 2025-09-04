@@ -29,7 +29,7 @@
     "@vueuse/core": "^13.8.0",
     "bech32": "^2.0.0",
     "idb": "^8.0.3",
-    "js-confetti": "^0.12.0",
+    "js-confetti": "^0.13.1",
     "qrcode.vue": "^3.6.0",
     "quasar": "^2.18.2",
     "register-service-worker": "^1.7.2",
