@@ -36,8 +36,8 @@ importers:
         specifier: ^8.0.3
         version: 8.0.3
       js-confetti:
-        specifier: ^0.12.0
-        version: 0.12.0
+        specifier: ^0.13.1
+        version: 0.13.1
       qrcode.vue:
         specifier: ^3.6.0
         version: 3.6.0(vue@3.5.21(typescript@5.9.2))
@@ -3052,8 +3052,8 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
-  js-confetti@0.12.0:
-    resolution: {integrity: sha512-1R0Akxn3Zn82pMqW65N1V2NwKkZJ75bvBN/VAb36Ya0YHwbaSiAJZVRr/19HBxH/O8x2x01UFAbYI18VqlDN6g==}
+  js-confetti@0.13.1:
+    resolution: {integrity: sha512-Kau3apum0zYIvELfZv0lL5VY7dvzpbKi4Oq0XdfjDKdNZc/O+IeGRyLEej7GJ/1APbASvb+ZTWDxmTxxSFkTOg==}
 
   js-cookie@3.0.5:
     resolution: {integrity: sha512-cEiJEAEoIbWfCZYKWhVwFuvPX1gETRYPw6LlaTKoxD3s2AkXzkCjnp6h0V77ozyqj0jakteJ4YqDJT830+lVGw==}
@@ -7925,7 +7925,7 @@ snapshots:
       js-cookie: 3.0.5
       nopt: 7.2.1
 
-  js-confetti@0.12.0: {}
+  js-confetti@0.13.1: {}
 
   js-cookie@3.0.5: {}
 
