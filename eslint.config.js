@@ -80,6 +80,9 @@ export default [
 
       // allow debugger during development only
       'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+
+      // Prevent console usage - critical for security in a wallet app
+      // 'no-console': 'error',
     },
   },
 

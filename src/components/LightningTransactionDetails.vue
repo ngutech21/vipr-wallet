@@ -98,6 +98,7 @@ import { date, Notify } from 'quasar'
 import { useFederationStore } from 'src/stores/federation'
 import { useLightningStore } from 'src/stores/lightning'
 import type { LightningTransaction } from '@fedimint/core-web'
+import { logger } from 'src/services/logger'
 
 interface Props {
   transaction: LightningTransaction
@@ -114,7 +115,7 @@ const amountInSats = computed(() => {
     const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
     return invoice.amount.toLocaleString()
   } catch (error) {
-    console.error('Failed to decode invoice:', error)
+    logger.error('Failed to decode Lightning invoice', error)
     return '0'
   }
 })
@@ -129,7 +130,7 @@ onMounted(async () => {
     const fiatValue = await lightningStore.satsToFiat(invoice.amount)
     amountInFiat.value = fiatValue.toFixed(2)
   } catch (error) {
-    console.error('Failed to convert to fiat:', error)
+    logger.error('Failed to convert amount to fiat', error)
     amountInFiat.value = '0.00'
   }
 })
@@ -167,7 +168,7 @@ async function copyInvoice() {
       position: 'top',
     })
   } catch (error) {
-    console.error('Failed to copy invoice:', error)
+    logger.error('Failed to copy Lightning invoice to clipboard', error)
     Notify.create({
       message: 'Failed to copy invoice',
       color: 'negative',

@@ -118,7 +118,7 @@ import { useRouter } from 'vue-router'
 import { useShare } from '@vueuse/core'
 import { init, requestProvider } from '@getalby/bitcoin-connect'
 import { useFederationStore } from 'src/stores/federation'
-import { logger } from 'workbox-core/_private'
+import { logger } from 'src/services/logger'
 
 const amount = ref<number>(0)
 const qrData = ref('')
@@ -190,13 +190,13 @@ onMounted(() => {
 async function payWithBitcoinConnect() {
   const provider = await requestProvider()
   Loading.show({ message: 'Paying with connected Bitcoin Wallet' })
-  const { preimage } = await provider.sendPayment(qrData.value)
-  console.log('preimage:', preimage)
+  await provider.sendPayment(qrData.value)
+  logger.logTransaction('Payment sent via Bitcoin Connect')
   Loading.hide()
 }
 
 async function shareQrcode() {
-  console.log('Sharing QR code...')
+  logger.ui.debug('Sharing Lightning invoice')
   await share({
     title: 'Lightning Invoice for ${amount.value} sats',
     text: qrData.value,
@@ -222,7 +222,7 @@ async function onRequest() {
     }
   }, 1000)
 
-  console.log('Requesting amount:', amount.value)
+  logger.logTransaction('Creating Lightning invoice', { amount: amount.value })
   const invoiceAmount = amount.value * 1_000
 
   const invoice = await store.wallet?.lightning.createInvoice(
@@ -230,19 +230,19 @@ async function onRequest() {
     'minting ecash',
     lnExpiry,
   )
-  console.log('Invoice:', invoice)
+  logger.logTransaction('Invoice created successfully')
 
   if (invoice) {
     qrData.value = invoice.invoice
     isWaiting.value = true
-    console.log('Invoice:', invoice.invoice)
+    logger.logTransaction('Waiting for Lightning payment')
 
     try {
-      const lnReceiveState = await store.wallet?.lightning.waitForReceive(
+      await store.wallet?.lightning.waitForReceive(
         invoice.operation_id,
         lnExpiry * 1_000,
       )
-      console.log('Received invoice:', lnReceiveState)
+      logger.logTransaction('Lightning payment received successfully')
 
       await store.updateBalance()
 
