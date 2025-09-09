@@ -51,6 +51,7 @@ import { computed, ref, onMounted } from 'vue'
 import { date } from 'quasar'
 import { useLightningStore } from 'src/stores/lightning'
 import type { LightningTransaction } from '@fedimint/core-web'
+import { logger } from 'src/services/logger'
 
 interface Props {
   transaction: LightningTransaction
@@ -74,20 +75,20 @@ const amountInSats = computed(() => {
     const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
     return invoice.amount.toLocaleString()
   } catch (error) {
-    console.error('Failed to decode invoice:', error)
+    logger.error('Failed to decode Lightning invoice', error)
     return '0'
   }
 })
 
 onMounted(async () => {
-  console.log('tx', props.transaction)
+  logger.lightning.debug('Lightning transaction item mounted', { invoice: props.transaction.invoice.substring(0, 20) + '...' })
   try {
     const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
     const sats = Math.floor(invoice.amount / 1000)
     const fiatValue = await lightningStore.satsToFiat(sats)
     amountInFiat.value = fiatValue.toFixed(2)
   } catch (error) {
-    console.error('Failed to convert to fiat:', error)
+    logger.error('Failed to convert Lightning amount to fiat', error)
     amountInFiat.value = '0.00'
   }
 })

@@ -56,6 +56,7 @@ import type { Transactions } from '@fedimint/core-web'
 import LightningTransactionDetails from 'src/components/LightningTransactionDetails.vue'
 import EcashTransactionDetails from 'src/components/EcashTransactionDetails.vue'
 import WalletTransactionDetails from 'src/components/WalletTransactionDetails.vue'
+import { logger } from 'src/services/logger'
 
 const route = useRoute()
 const router = useRouter()
@@ -86,12 +87,12 @@ onMounted(async () => {
     if (foundTransaction) {
       transaction.value = foundTransaction
     } else {
-      console.warn('Transaction not found in initial load:', operationId)
+      logger.warn('Transaction not found in initial load', { operationId })
       error.value = 'Transaction not found'
     }
   } catch (err) {
     error.value = 'Error loading transaction details'
-    console.error('Error in transaction details:', err)
+    logger.error('Error loading transaction details', err)
   } finally {
     loading.value = false
   }

@@ -75,6 +75,7 @@
 import { useFederationStore } from 'src/stores/federation'
 import type { Federation } from './models'
 import { storeToRefs } from 'pinia'
+import { logger } from 'src/services/logger'
 
 const store = useFederationStore()
 const { federations, selectedFederation } = storeToRefs(store)
@@ -83,7 +84,7 @@ async function selectFederation(fedi: Federation) {
   try {
     await store.selectFederation(fedi)
   } catch (error) {
-    console.error('Error selecting federation:', error)
+    logger.error('Failed to select federation', error)
   }
 }
 

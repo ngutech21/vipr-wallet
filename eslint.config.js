@@ -82,7 +82,7 @@ export default [
       'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
 
       // Prevent console usage - critical for security in a wallet app
-      // 'no-console': 'error',
+      'no-console': 'error',
     },
   },
 

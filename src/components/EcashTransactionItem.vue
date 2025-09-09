@@ -38,6 +38,7 @@ import { computed, ref, onMounted } from 'vue'
 import { date } from 'quasar'
 import { useLightningStore } from 'src/stores/lightning'
 import type { EcashTransaction } from '@fedimint/core-web'
+import { logger } from 'src/services/logger'
 
 interface Props {
   transaction: EcashTransaction
@@ -62,7 +63,7 @@ onMounted(async () => {
     const fiatValue = await lightningStore.satsToFiat(sats)
     amountInFiat.value = fiatValue.toFixed(2)
   } catch (error) {
-    console.error('Failed to convert to fiat:', error)
+    logger.error('Failed to convert ecash amount to fiat', error)
     amountInFiat.value = '0.00'
   }
 })

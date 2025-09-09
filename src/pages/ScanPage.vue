@@ -51,6 +51,7 @@ import { useRouter } from 'vue-router'
 import type { SendRouteQuery } from 'src/types/vue-router'
 import AddFederation from 'src/components/AddFederation.vue'
 import { Notify } from 'quasar'
+import { logger } from 'src/services/logger'
 
 const detectedContent = ref<string | null>('')
 const router = useRouter()
@@ -59,7 +60,7 @@ const hasTorch = ref(false)
 const showAddFederation = ref(false)
 
 function onCameraOn(capabilities: unknown) {
-  console.log('>>>>>>> capabilities ', capabilities)
+  logger.scanner.debug('Camera capabilities detected', { capabilities })
   hasTorch.value = (capabilities as { torch?: boolean }).torch ?? false
 }
 
@@ -77,7 +78,7 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
   const code = detectedCodes[0]
   if (!code) return
 
-  console.log('Detected code:', code.rawValue)
+  logger.scanner.debug('Code detected', { rawValue: code.rawValue })
   detectedContent.value = code.rawValue
 
   const cleanCode = code.rawValue.toLocaleLowerCase()
@@ -95,12 +96,12 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
         name: 'send',
         query: { invoice } as SendRouteQuery,
       })
-      .catch(console.error)
+      .catch(error => logger.error('Failed to navigate to send page', error))
   }
 }
 
 function onError(error: EmittedError) {
-  console.error('error in camera:', error)
+  logger.error('Camera error occurred', error)
   Notify.create({
     message: error.message,
     color: 'negative',
@@ -109,8 +110,8 @@ function onError(error: EmittedError) {
 }
 
 function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingContext2D) {
-  console.log('Painting outline:', {
-    codes: detectedCodes,
+  logger.scanner.debug('Painting QR code outline', {
+    codesCount: detectedCodes.length,
     canvas: { width: ctx.canvas.width, height: ctx.canvas.height },
   })
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)

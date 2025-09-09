@@ -255,6 +255,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFormatters } from '../utils/formatter'
+import { logger } from 'src/services/logger'
 
 const { formatNumber } = useFormatters()
 const route = useRoute()
@@ -265,7 +266,7 @@ const federation = federationStore.federations.find((f) => f.federationId === ro
 const confirmLeave = ref(false)
 
 const hasMessages = computed(() => {
-  console.log('Checking for messages in federation metadata:', federation)
+  logger.federation.debug('Checking for messages in federation metadata', { federation })
   return federation?.metadata?.preview_message || federation?.metadata?.popup_countdown_message
 })
 
@@ -281,7 +282,7 @@ const vettedGateways = computed(() => {
     try {
       return JSON.parse(federation.metadata.vetted_gateways) as string[]
     } catch (error) {
-      console.error('Error parsing vetted_gateways:', error)
+      logger.error('Failed to parse vetted_gateways JSON', error)
       return []
     }
   }
@@ -294,7 +295,7 @@ function formatDate(timestamp: string) {
   try {
     return new Date(timestamp).toLocaleString()
   } catch (e) {
-    console.error('Error parsing date:', e)
+    logger.error('Failed to parse metadata date', e)
     return timestamp
   }
 }
@@ -312,7 +313,7 @@ async function leaveFederation() {
     await federationStore.selectFederation(undefined)
     await router.push('/federations')
   } catch (error) {
-    console.error('Error leaving federation:', error)
+    logger.error('Failed to leave federation', error)
     await router.push('/federations')
   }
 }

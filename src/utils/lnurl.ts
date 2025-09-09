@@ -1,4 +1,5 @@
 import { bech32 } from 'bech32'
+import { logger } from 'src/services/logger'
 import { Buffer } from 'buffer'
 
 function decodeLnurl(lnurl: string): string {
@@ -32,7 +33,7 @@ async function getLnurlPayParams(lnurl: string) {
 
     return json
   } catch (error) {
-    console.error('LNURL error:', error)
+    logger.error('LNURL request failed', error)
     throw error
   }
 }
@@ -41,7 +42,7 @@ export async function requestInvoice(lnurl: string, amountSat: number): Promise<
   const params = await getLnurlPayParams(lnurl)
   const amountMsat = amountSat * 1_000
 
-  console.log('Requesting invoice for', params)
+  logger.lightning.debug('Requesting LNURL invoice', { params, amountSat })
 
   try {
     // Create the callback URL with the amount parameter
@@ -64,7 +65,7 @@ export async function requestInvoice(lnurl: string, amountSat: number): Promise<
 
     return json.pr
   } catch (error) {
-    console.error('Invoice request error:', error)
+    logger.error('LNURL invoice request failed', error)
     throw error
   }
 }

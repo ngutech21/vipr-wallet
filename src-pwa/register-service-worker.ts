@@ -12,27 +12,27 @@ register(process.env.SERVICE_WORKER_FILE, {
   // registrationOptions: { scope: './' },
 
   ready(/* registration */) {
-    // console.log('Service worker is active.')
+    // Service worker is active
   },
 
   registered(/* registration */) {
-    // console.log('Service worker has been registered.')
+    // Service worker has been registered
   },
 
   cached(/* registration */) {
-    // console.log('Content has been cached for offline use.')
+    // Content has been cached for offline use
   },
 
   updatefound(/* registration */) {
-    // console.log('New content is downloading.')
+    // New content is downloading
   },
 
   updated(/* registration */) {
-    // console.log('updated.')
+    // Content updated
   },
 
   offline() {
-    // console.log('No internet connection found. App is running in offline mode.')
+    // No internet connection found. App is running in offline mode
   },
 
   error(/* err */) {
