@@ -36,6 +36,7 @@ import type { Transactions } from '@fedimint/core-web'
 import LightningTransactionItem from './LightningTransactionItem.vue'
 import EcashTransactionItem from './EcashTransactionItem.vue'
 import WalletTransactionItem from './WalletTransactionItem.vue'
+import { logger } from 'src/services/logger'
 
 const walletStore = useWalletStore()
 const router = useRouter()
@@ -51,7 +52,7 @@ async function loadTransactions() {
     isLoading.value = true
     recentTransactions.value = await walletStore.getTransactions()
   } catch (error) {
-    console.error('Failed to load transactions:', error)
+    logger.error('Failed to load transactions', error)
     recentTransactions.value = []
   } finally {
     isLoading.value = false

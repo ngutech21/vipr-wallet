@@ -222,6 +222,7 @@ import BuildInfo from 'src/components/BuildInfo.vue'
 import { Dialog, Loading, Notify } from 'quasar'
 import { getErrorMessage } from 'src/utils/error'
 import { useNostrStore } from 'src/stores/nostr'
+import { logger } from 'src/services/logger'
 import { computed, ref, watch } from 'vue'
 import {
   getConnectorConfig,
@@ -250,7 +251,7 @@ function configureBitcoinConnect() {
 }
 
 function deleteData() {
-  console.log('Deleting data...')
+  logger.ui.debug('User initiated data deletion')
   Dialog.create({
     title: 'Delete Data',
     message: 'Are you sure you want to delete all data?',
@@ -272,7 +273,7 @@ function deleteData() {
         return Promise.all(deletePromises)
       })
       .catch((error) => {
-        console.error('Error deleting data:', error)
+        logger.error('Failed to delete user data', error)
         Notify.create({
           type: 'negative',
           message: `Error deleting data ${getErrorMessage(error)}`,
@@ -338,7 +339,7 @@ async function checkForUpdates() {
       })
     }
   } catch (error) {
-    console.error('Error checking for updates:', error)
+    logger.error('Failed to check for app updates', error)
     Notify.create({
       message: 'Error checking for updates',
       color: 'negative',
@@ -353,7 +354,7 @@ async function clearServiceWorkerCaches() {
   if ('caches' in window) {
     const cacheNames = await caches.keys()
     await Promise.all(cacheNames.map((name) => caches.delete(name)))
-    console.log('All service worker caches cleared')
+    logger.pwa.debug('Service worker caches cleared', { cacheCount: cacheNames.length })
   }
 }
 

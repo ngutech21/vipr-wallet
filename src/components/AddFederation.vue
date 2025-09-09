@@ -41,6 +41,7 @@ import { useFederationStore } from 'src/stores/federation'
 import ModalCard from 'src/components/ModalCard.vue'
 import { Loading, Notify } from 'quasar'
 import { getErrorMessage } from 'src/utils/error'
+import { logger } from 'src/services/logger'
 
 const walletStore = useWalletStore()
 const federationStore = useFederationStore()
@@ -72,7 +73,7 @@ function onClose() {
 
 async function pasteFromClipboard() {
   await navigator.clipboard.readText().then((text) => {
-    console.log('Pasted from clipboard:', text)
+    logger.ui.debug('Federation invite code pasted from clipboard', { text })
     inviteCode.value = text
   })
 }
@@ -81,7 +82,7 @@ async function addFederation() {
   Loading.show({ message: 'Adding Federation' })
 
   try {
-    console.log('Adding federation:', inviteCode.value)
+    logger.federation.debug('Adding federation', { inviteCode: inviteCode.value })
 
     if (federationStore.federations.some((f) => f.inviteCode === inviteCode.value)) {
       Notify.create({

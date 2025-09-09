@@ -63,6 +63,7 @@ import ModalCard from 'src/components/ModalCard.vue'
 import { Loading, Notify } from 'quasar'
 import type { Federation } from 'src/components/models'
 import { getErrorMessage } from 'src/utils/error'
+import { logger } from 'src/services/logger'
 
 const nostr = useNostrStore()
 const federationStore = useFederationStore()
@@ -105,7 +106,7 @@ async function discoverFederations() {
   try {
     await nostr.discoverFederations()
   } catch (error) {
-    console.error('Failed to discover federations:', error)
+    logger.error('Failed to discover federations', error)
     Notify.create({
       message: `Failed to discover federations ${getErrorMessage(error)}`,
       color: 'negative',
@@ -143,7 +144,7 @@ async function addFederation(federation: Federation) {
     nostr.stopDiscoveringFederations()
     emit('close')
   } catch (error) {
-    console.error('Failed to add federation:', error)
+    logger.error('Failed to add federation', error)
     Notify.create({
       message: `Failed to add federation: ${getErrorMessage(error)}`,
       color: 'negative',

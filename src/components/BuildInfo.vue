@@ -13,5 +13,5 @@ const buildTime = import.meta.env.VITE_BUILD_TIME
 const isDev = import.meta.env.DEV
 const envDebug = computed(() => JSON.stringify(import.meta.env, null, 2))
 
-console.log('ENV:', import.meta.env) // Debug log
+// Environment variables are displayed in the component UI
 </script>

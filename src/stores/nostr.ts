@@ -5,6 +5,7 @@ import NDK from '@nostr-dev-kit/ndk'
 import type { Federation } from 'src/components/models'
 import { Nip87Kinds } from 'src/types/nip87'
 import { useWalletStore } from './wallet'
+import { logger } from 'src/services/logger'
 
 const DEFAULT_RELAYS = [
   'wss://nostr.mutinywallet.com/',
@@ -79,12 +80,12 @@ export const useNostrStore = defineStore('nostr', {
           connectionPromise,
         ])
 
-        console.log('NDK initialized ', this.ndk.explicitRelayUrls)
+        logger.nostr.debug('NDK initialized', { relayUrls: this.ndk.explicitRelayUrls })
 
         // Give time for more relays to connect
         await new Promise((resolve) => setTimeout(resolve, 1000))
       } catch (error) {
-        console.error('Failed to initialize NDK', error)
+        logger.error('Failed to initialize NDK', error)
       }
     },
 
@@ -109,7 +110,7 @@ export const useNostrStore = defineStore('nostr', {
     },
 
     stopDiscoveringFederations() {
-      console.log('Stopping federation discovery')
+      logger.nostr.debug('Stopping federation discovery')
       if (this.federationSubscription) {
         this.federationSubscription.stop()
         this.federationSubscription = null
@@ -127,7 +128,7 @@ async function processFederationEvent(
   if (event.kind !== Nip87Kinds.FediInfo) return
 
   try {
-    console.log('Processing federationEvent:', event.id, event.created_at)
+    logger.nostr.debug('Processing federation event', { eventId: event.id, createdAt: event.created_at })
     // Get invite code
     const inviteTags = event.getMatchingTags('u')
     const inviteCode = inviteTags[0]?.[1]
@@ -139,13 +140,13 @@ async function processFederationEvent(
     if (!federationId) return
 
     if (discoveredFederations.some((f) => f.federationId === federationId)) {
-      console.log('Federation already discovered:', federationId)
+      logger.nostr.debug('Federation already discovered', { federationId })
       return
     }
 
     const federation = await walletStore.previewFederation(inviteCode)
     if (federation === undefined) {
-      console.error('>>> Failed to preview federation:', federationId)
+      logger.error('Failed to preview federation', { federationId })
       return
     }
 
@@ -158,6 +159,6 @@ async function processFederationEvent(
 
     store.isDiscoveringFederations = false
   } catch (error) {
-    console.error('Error processing federationEvent:', event, error)
+    logger.error('Error processing federation event', { eventId: event.id, error })
   }
 }

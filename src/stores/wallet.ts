@@ -4,6 +4,7 @@ import { FedimintWallet } from '@fedimint/core-web'
 import { useFederationStore } from './federation'
 import { ref } from 'vue'
 import type { Federation, FederationMeta, ModuleConfig } from 'src/components/models'
+import { logger } from 'src/services/logger'
 
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
@@ -21,7 +22,9 @@ export const useWalletStore = defineStore('wallet', {
       const selectedFederation = federationStore.selectedFederation
 
       if (selectedFederation) {
-        console.log('Opening wallet for federation', selectedFederation.federationId)
+        logger.logWalletOperation('Opening wallet for federation', {
+          federationId: selectedFederation.federationId,
+        })
 
         const walletIsOpen = this.wallet?.isOpen()
         if (
@@ -35,12 +38,14 @@ export const useWalletStore = defineStore('wallet', {
         if (!this.wallet?.isOpen()) {
           const walletOpened = await this.wallet?.open(selectedFederation.federationId)
           if (!walletOpened) {
-            console.log('Joining federation', selectedFederation.federationId)
-            const joined = await this.wallet?.joinFederation(
+            logger.logWalletOperation('Joining federation', {
+              federationId: selectedFederation.federationId,
+            })
+            await this.wallet?.joinFederation(
               selectedFederation.inviteCode,
               selectedFederation.federationId,
             )
-            console.log('Joined federation', joined)
+            logger.logWalletOperation('Federation joined successfully')
           }
         }
         await this.updateBalance()
@@ -60,8 +65,8 @@ export const useWalletStore = defineStore('wallet', {
       if (opsId) {
         this.wallet?.mint.subscribeReissueExternalNotes(opsId, (_state) => {
           this.updateBalance()
-            .then(() => console.log('Balance updated after state change'))
-            .catch((err) => console.error('Error updating balance:', err))
+            .then(() => logger.logWalletOperation('Balance updated after ecash redemption'))
+            .catch((err) => logger.error('Error updating balance after ecash redemption', err))
         })
       }
       return amount
@@ -72,7 +77,7 @@ export const useWalletStore = defineStore('wallet', {
         const transactions = await this.wallet?.federation.listTransactions(10)
         return transactions || [] // Handle undefined case
       } catch (error) {
-        console.error('Error fetching transactions:', error)
+        logger.error('Failed to fetch transactions', error)
         return [] // Return empty array on error
       }
     },
@@ -93,12 +98,12 @@ export const useWalletStore = defineStore('wallet', {
           }
 
           deleteRequest.onsuccess = () => {
-            console.log(`Successfully deleted database ${federationId}`)
+            logger.logWalletOperation('Federation database deleted successfully')
             resolve()
           }
         })
       } catch (error) {
-        console.error('Error deleting federation data:', error)
+        logger.error('Failed to delete federation data', error)
         throw error
       }
     },
@@ -116,21 +121,21 @@ export const useWalletStore = defineStore('wallet', {
 
     async getMetadata(federation: Federation): Promise<FederationMeta | undefined> {
       if (!federation.metaUrl) {
-        console.warn('No metaUrl provided for federation:', federation)
+        logger.warn('No metaUrl provided for federation')
         return undefined
       }
       try {
         const response = await fetch(federation.metaUrl)
-        console.log('federation url', federation.metaUrl)
+        logger.logFederation('Fetching federation metadata', undefined)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
         const data = await response.json()
-        console.log('Fetched metadata:', data)
+        logger.logFederation('Metadata fetched successfully')
         const metadata = Object.values(data)[0] as FederationMeta
         return metadata
       } catch (error) {
-        console.error('Failed to fetch metadata:', error)
+        logger.error('Failed to fetch federation metadata', error)
         return undefined
       }
     },
@@ -142,7 +147,7 @@ export const useWalletStore = defineStore('wallet', {
       }
 
       const { config, federation_id } = result
-      console.log('Previewed federation config:', federation_id, config)
+      logger.logFederation('Federation preview successful', federation_id)
 
       const typedConfig = config as {
         global?: {
@@ -169,11 +174,11 @@ export const useWalletStore = defineStore('wallet', {
             throw new Error(`HTTP error! status: ${response.status}`)
           }
           const data = await response.json()
-          console.log('Fetched metadata:', data)
+          logger.logFederation('External metadata fetched')
           meta = Object.values(data)[0] as FederationMeta
-          console.log('Parsed metadata:', meta)
+          logger.logFederation('External metadata parsed')
         } catch (error) {
-          console.error('Failed to fetch metadata:', error)
+          logger.error('Failed to fetch external metadata', error)
           return undefined
         }
       } else {

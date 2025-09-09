@@ -74,6 +74,7 @@ import { date, Notify } from 'quasar'
 import { useFederationStore } from 'src/stores/federation'
 import { useLightningStore } from 'src/stores/lightning'
 import type { EcashTransaction } from '@fedimint/core-web'
+import { logger } from 'src/services/logger'
 
 interface Props {
   transaction: EcashTransaction
@@ -99,7 +100,7 @@ onMounted(async () => {
     const fiatValue = await lightningStore.satsToFiat(sats)
     amountInFiat.value = fiatValue.toFixed(2)
   } catch (error) {
-    console.error('Failed to convert to fiat:', error)
+    logger.error('Failed to convert amount to fiat', error)
     amountInFiat.value = '0.00'
   }
 })
@@ -182,7 +183,7 @@ async function copyNotes() {
         position: 'top',
       })
     } catch (error) {
-      console.error('Failed to copy notes:', error)
+      logger.error('Failed to copy ecash notes to clipboard', error)
       Notify.create({
         message: 'Failed to copy notes',
         color: 'negative',

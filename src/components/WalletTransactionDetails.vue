@@ -91,6 +91,7 @@ import { date, Notify } from 'quasar'
 import { useFederationStore } from 'src/stores/federation'
 import { useLightningStore } from 'src/stores/lightning'
 import type { WalletTransaction } from '@fedimint/core-web'
+import { logger } from 'src/services/logger'
 
 interface Props {
   transaction: WalletTransaction
@@ -127,7 +128,7 @@ onMounted(async () => {
     const fiatValue = await lightningStore.satsToFiat(sats)
     amountInFiat.value = fiatValue.toFixed(2)
   } catch (error) {
-    console.error('Failed to convert to fiat:', error)
+    logger.error('Failed to convert amount to fiat', error)
     amountInFiat.value = '0.00'
   }
 })
@@ -166,7 +167,7 @@ async function copyAddress() {
       position: 'top',
     })
   } catch (error) {
-    console.error('Failed to copy address:', error)
+    logger.error('Failed to copy address to clipboard', error)
     Notify.create({
       message: 'Failed to copy address',
       color: 'negative',
