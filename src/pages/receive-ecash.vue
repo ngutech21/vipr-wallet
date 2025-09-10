@@ -56,6 +56,10 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: 'ReceiveEcashPage'
+})
+
 import { ref } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useQuasar, Loading } from 'quasar'
@@ -95,7 +99,7 @@ async function redeemEcash() {
 
     // Navigate back to home
     await router.push({
-      name: 'received-lightning',
+      path: '/received-lightning',
       query: { amount: amountMSats / 1_000 },
     })
   } catch (error) {

@@ -103,6 +103,10 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: 'SendPage'
+})
+
 import { ref, watch } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useLightningStore } from 'src/stores/lightning'
@@ -247,7 +251,7 @@ async function payInvoice() {
     await store.updateBalance()
 
     await router.push({
-      name: 'sent-lightning',
+      path: '/sent-lightning',
       query: { amount: amountInSats, fee: paymentResult?.fee },
     })
   } catch (error) {

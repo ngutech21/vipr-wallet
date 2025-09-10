@@ -49,6 +49,10 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: 'TransactionDetailsPage'
+})
+
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useWalletStore } from 'src/stores/wallet'
@@ -74,7 +78,7 @@ onMounted(async () => {
   const allTransactions = await walletStore.getTransactions()
 
   try {
-    const operationId = route.params.id as string
+    const operationId = (route.params as { id: string }).id
 
     if (!operationId) {
       error.value = 'Transaction ID is missing'

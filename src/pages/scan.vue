@@ -44,6 +44,10 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: 'ScanPage'
+})
+
 import { QrcodeStream } from 'vue-qrcode-reader'
 import type { DetectedBarcode, EmittedError } from 'vue-qrcode-reader'
 import { ref } from 'vue'
@@ -93,7 +97,7 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
     const invoice = stripLightningPrefix(cleanCode)
     await router
       .push({
-        name: 'send',
+        path: '/send',
         query: { invoice } as SendRouteQuery,
       })
       .catch(error => logger.error('Failed to navigate to send page', error))

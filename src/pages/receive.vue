@@ -110,6 +110,10 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: 'ReceivePage'
+})
+
 import { ref, onMounted, computed } from 'vue'
 import QrcodeVue from 'qrcode.vue'
 import { useWalletStore } from 'src/stores/wallet'
@@ -247,7 +251,7 @@ async function onRequest() {
       await store.updateBalance()
 
       await router.push({
-        name: 'received-lightning',
+        path: '/received-lightning',
         query: { amount: amount.value.toString() },
       })
     } catch (e) {

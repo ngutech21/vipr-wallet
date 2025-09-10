@@ -1,5 +1,7 @@
 <template>
-  <q-page class="column">
+  <q-layout view="lHh Lpr lFf">
+    <q-page-container>
+      <q-page class="column">
     <q-dialog
       v-model="showSelection"
       position="bottom"
@@ -88,11 +90,17 @@
         </div>
       </div>
     </q-page-sticky>
-  </q-page>
+      </q-page>
+    </q-page-container>
+  </q-layout>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+
+defineOptions({
+  name: 'IndexPage'
+})
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import TransactionsList from 'src/components/TransactionsList.vue'

@@ -1,5 +1,7 @@
 <template>
-  <q-page class="dark-gradient">
+  <q-layout view="lHh Lpr lFf">
+    <q-page-container>
+      <q-page class="dark-gradient">
     <q-toolbar class="header-section q-mb-md">
       <q-toolbar-title class="text-center">Settings</q-toolbar-title>
     </q-toolbar>
@@ -212,11 +214,17 @@
         </q-card>
       </q-expansion-item>
     </div>
-  </q-page>
+      </q-page>
+    </q-page-container>
+  </q-layout>
 </template>
 
 <script setup lang="ts">
-import { version } from '../../package.json'
+defineOptions({
+  name: 'SettingsPage'
+})
+
+import { version } from '../../../package.json'
 import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'
 import { Dialog, Loading, Notify } from 'quasar'

@@ -250,11 +250,15 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: 'FederationDetailsPage'
+})
+
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
-import { useFormatters } from '../utils/formatter'
+import { useFormatters } from '../../utils/formatter'
 import { logger } from 'src/services/logger'
 
 const { formatNumber } = useFormatters()
@@ -262,7 +266,7 @@ const route = useRoute()
 const router = useRouter()
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
-const federation = federationStore.federations.find((f) => f.federationId === route.params.id)
+const federation = federationStore.federations.find((f) => f.federationId === (route.params as { id: string }).id)
 const confirmLeave = ref(false)
 
 const hasMessages = computed(() => {

@@ -1,3 +1,5 @@
+/// <reference types="unplugin-vue-router/client" />
+
 declare namespace NodeJS {
   interface ProcessEnv {
     NODE_ENV: string

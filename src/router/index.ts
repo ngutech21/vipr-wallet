@@ -4,8 +4,8 @@ import {
   createRouter,
   createWebHashHistory,
   createWebHistory,
-} from 'vue-router'
-import routes from './routes'
+} from 'vue-router/auto'
+import { routes } from 'vue-router/auto-routes'
 
 /*
  * If not building with SSR mode, you can
