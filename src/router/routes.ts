@@ -4,56 +4,56 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/IndexPage.vue') }],
+    children: [{ path: '', component: () => import('pages/index.vue') }],
   },
   {
     path: '/scan',
-    component: () => import('pages/ScanPage.vue'),
+    component: () => import('pages/scan.vue'),
   },
   {
     path: '/receive',
-    component: () => import('pages/ReceivePage.vue'),
+    component: () => import('pages/receive.vue'),
   },
   {
     path: '/receive-ecash',
-    component: () => import('pages/ReceiveEcashPage.vue'),
+    component: () => import('pages/receive-ecash.vue'),
   },
   {
     path: '/received-lightning',
     name: 'received-lightning',
-    component: () => import('pages/ReceivedLightningSuccessPage.vue'),
+    component: () => import('pages/received-lightning.vue'),
   },
   {
     path: '/sent-lightning',
     name: 'sent-lightning',
-    component: () => import('pages/SentLightningSuccessPage.vue'),
+    component: () => import('pages/sent-lightning.vue'),
   },
   {
     path: '/send',
     name: 'send' as keyof RouteQuery,
-    component: () => import('pages/SendPage.vue'),
+    component: () => import('pages/send.vue'),
   },
 
   {
     path: '/settings',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/SettingsPage.vue') }],
+    children: [{ path: '', component: () => import('pages/settings/index.vue') }],
   },
 
   {
     path: '/federations',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/FederationsPage.vue') }],
+    children: [{ path: '', component: () => import('pages/federations/index.vue') }],
   },
   {
     path: '/federation/:id',
     name: 'federation-details',
-    component: () => import('pages/FederationDetailsPage.vue'),
+    component: () => import('pages/federation/[id].vue'),
   },
   {
     path: '/transaction/:id',
     name: 'transaction-details',
-    component: () => import('pages/TransactionDetailsPage.vue'),
+    component: () => import('pages/transaction/[id].vue'),
   },
 
   // Always leave this as last one,
