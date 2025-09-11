@@ -10,10 +10,12 @@
     </q-dialog>
 
     <q-page-container>
-      <router-view />
+      <!-- <q-page class="dark-gradient"> -->
+      <slot />
+      <!-- </q-page> -->
     </q-page-container>
 
-    <q-footer class="text-white footer-container ios-safe-area dark-bg">
+    <q-footer v-if="showFooter" class="text-white footer-container ios-safe-area dark-bg">
       <q-tabs
         no-caps
         indicator-color="transparent"
@@ -57,6 +59,7 @@ const currentTab = computed(() => {
   if (route.path === '/settings') return 'settings'
   return null
 })
+const showFooter = computed(() => route.meta?.hideBottomNav !== true)
 </script>
 
 <style scoped>

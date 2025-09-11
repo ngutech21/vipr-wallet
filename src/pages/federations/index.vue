@@ -1,7 +1,5 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-page-container>
-      <q-page>
+  <q-page>
     <q-dialog
       v-model="showSelection"
       position="bottom"
@@ -34,14 +32,12 @@
         <q-btn fab icon="add" color="primary" @click="showSelection = true" />
       </q-page-sticky>
     </div>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+  </q-page>
 </template>
 
 <script setup lang="ts">
 defineOptions({
-  name: 'FederationsPage'
+  name: 'FederationsPage',
 })
 
 import FederationList from 'src/components/FederationList.vue'

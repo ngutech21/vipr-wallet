@@ -1,51 +1,52 @@
+<route lang="yaml">
+meta:
+  hideBottomNav: true
+</route>
+
 <template>
-  <q-layout view="lHh Lpr lFf" class="scan-page">
-    <q-page-container>
-      <q-page class="full-height">
-        <q-dialog v-model="showAddFederation" position="bottom">
-          <AddFederation @close="onAddFederationClose" :initial-invite-code="detectedContent" />
-        </q-dialog>
+  <q-page class="full-height">
+    <q-dialog v-model="showAddFederation" position="bottom">
+      <AddFederation @close="onAddFederationClose" :initial-invite-code="detectedContent" />
+    </q-dialog>
 
-        <div class="camera-container">
-          <qrcode-stream
-            @detect="onDetect"
-            @cameraOn="onCameraOn"
-            @error="onError"
-            :track="paintOutline"
-            :torch="torchActive"
-            :formats="['qr_code']"
-          />
+    <div class="camera-container">
+      <qrcode-stream
+        @detect="onDetect"
+        @cameraOn="onCameraOn"
+        @error="onError"
+        :track="paintOutline"
+        :torch="torchActive"
+        :formats="['qr_code']"
+      />
 
-          <div class="scan-overlay">
-            <div class="targeting-frame"></div>
-          </div>
-        </div>
+      <div class="scan-overlay">
+        <div class="targeting-frame"></div>
+      </div>
+    </div>
 
-        <div class="action-bar top-bar q-px-md q-py-sm">
-          <q-btn round flat color="white" icon="arrow_back" :to="'/'" class="q-mr-md" />
-          <div class="text-white text-subtitle1 text-weight-medium">Scan QR Code</div>
-        </div>
+    <div class="action-bar top-bar q-px-md q-py-sm">
+      <q-btn round flat color="white" icon="arrow_back" :to="'/'" class="q-mr-md" />
+      <div class="text-white text-subtitle1 text-weight-medium">Scan QR Code</div>
+    </div>
 
-        <div class="action-bar bottom-bar q-px-md q-py-sm">
-          <div class="detected-text text-white text-caption text-weight-medium">
-            {{ detectedContent || 'No QR code detected' }}
-          </div>
-          <q-toggle
-            v-model="torchActive"
-            color="orange"
-            icon="flashlight_on"
-            checked-icon="flashlight_off"
-            :disable="!hasTorch"
-          />
-        </div>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+    <div class="action-bar bottom-bar q-px-md q-py-sm">
+      <div class="detected-text text-white text-caption text-weight-medium">
+        {{ detectedContent || 'No QR code detected' }}
+      </div>
+      <q-toggle
+        v-model="torchActive"
+        color="orange"
+        icon="flashlight_on"
+        checked-icon="flashlight_off"
+        :disable="!hasTorch"
+      />
+    </div>
+  </q-page>
 </template>
 
 <script setup lang="ts">
 defineOptions({
-  name: 'ScanPage'
+  name: 'ScanPage',
 })
 
 import { QrcodeStream } from 'vue-qrcode-reader'
@@ -100,7 +101,7 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
         path: '/send',
         query: { invoice } as SendRouteQuery,
       })
-      .catch(error => logger.error('Failed to navigate to send page', error))
+      .catch((error) => logger.error('Failed to navigate to send page', error))
   }
 }
 

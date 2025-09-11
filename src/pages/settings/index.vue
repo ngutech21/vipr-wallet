@@ -1,7 +1,5 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-page-container>
-      <q-page class="dark-gradient">
+  <q-page class="dark-gradient">
     <q-toolbar class="header-section q-mb-md">
       <q-toolbar-title class="text-center">Settings</q-toolbar-title>
     </q-toolbar>
@@ -214,14 +212,12 @@
         </q-card>
       </q-expansion-item>
     </div>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+  </q-page>
 </template>
 
 <script setup lang="ts">
 defineOptions({
-  name: 'SettingsPage'
+  name: 'SettingsPage',
 })
 
 import { version } from '../../../package.json'

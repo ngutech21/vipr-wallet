@@ -4,60 +4,56 @@
     enter-active-class="animated slideInRight"
     leave-active-class="animated slideOutRight"
   >
-    <q-layout view="lHh Lpr lFf">
-      <q-page-container>
-        <q-page class="column dark-gradient">
-          <q-toolbar class="header-section">
-            <q-btn flat round icon="arrow_back" :to="'/'" />
-            <q-toolbar-title class="text-center no-wrap">Receive Offline</q-toolbar-title>
-            <div class="q-ml-md" style="width: 40px"></div>
-          </q-toolbar>
+    <q-page class="column dark-gradient">
+      <q-toolbar class="header-section">
+        <q-btn flat round icon="arrow_back" :to="'/'" />
+        <q-toolbar-title class="text-center no-wrap">Receive Offline</q-toolbar-title>
+        <div class="q-ml-md" style="width: 40px"></div>
+      </q-toolbar>
 
-          <div class="q-px-md q-pt-md">
-            <q-card flat class="glass-effect q-mb-md">
-              <q-card-section>
-                <q-input
-                  v-model="ecashToken"
-                  filled
-                  autogrow
-                  dense
-                  dark
-                  type="textarea"
-                  placeholder="Paste eCash token here"
-                  class="custom-input"
-                >
-                  <template v-slot:after>
-                    <q-btn round dense flat icon="content_paste" @click="pasteFromClipboard" />
-                  </template>
-                </q-input>
-              </q-card-section>
-            </q-card>
+      <div class="q-px-md q-pt-md">
+        <q-card flat class="glass-effect q-mb-md">
+          <q-card-section>
+            <q-input
+              v-model="ecashToken"
+              filled
+              autogrow
+              dense
+              dark
+              type="textarea"
+              placeholder="Paste eCash token here"
+              class="custom-input"
+            >
+              <template v-slot:after>
+                <q-btn round dense flat icon="content_paste" @click="pasteFromClipboard" />
+              </template>
+            </q-input>
+          </q-card-section>
+        </q-card>
 
-            <div class="q-mt-lg">
-              <q-btn
-                label="Receive eCash"
-                color="primary"
-                class="full-width q-py-sm"
-                size="lg"
-                :loading="isProcessing"
-                :disable="!ecashToken.trim()"
-                @click="redeemEcash"
-              >
-                <template v-slot:loading>
-                  <q-spinner-dots color="white" />
-                </template>
-              </q-btn>
-            </div>
-          </div>
-        </q-page>
-      </q-page-container>
-    </q-layout>
+        <div class="q-mt-lg">
+          <q-btn
+            label="Receive eCash"
+            color="primary"
+            class="full-width q-py-sm"
+            size="lg"
+            :loading="isProcessing"
+            :disable="!ecashToken.trim()"
+            @click="redeemEcash"
+          >
+            <template v-slot:loading>
+              <q-spinner-dots color="white" />
+            </template>
+          </q-btn>
+        </div>
+      </div>
+    </q-page>
   </transition>
 </template>
 
 <script setup lang="ts">
 defineOptions({
-  name: 'ReceiveEcashPage'
+  name: 'ReceiveEcashPage',
 })
 
 import { ref } from 'vue'

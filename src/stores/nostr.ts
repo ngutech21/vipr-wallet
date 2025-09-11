@@ -128,7 +128,10 @@ async function processFederationEvent(
   if (event.kind !== Nip87Kinds.FediInfo) return
 
   try {
-    logger.nostr.debug('Processing federation event', { eventId: event.id, createdAt: event.created_at })
+    logger.nostr.debug('Processing federation event', {
+      eventId: event.id,
+      createdAt: event.created_at,
+    })
     // Get invite code
     const inviteTags = event.getMatchingTags('u')
     const inviteCode = inviteTags[0]?.[1]

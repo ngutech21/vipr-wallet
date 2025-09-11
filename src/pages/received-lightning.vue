@@ -1,34 +1,23 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-page-container>
-      <q-page class="page-container">
-        <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+  <q-page class="page-container">
+    <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
 
-        <div class="content-container">
-          <q-btn
-            flat
-            round
-            color="white"
-            icon="close"
-            class="absolute-top-right q-ma-md"
-            :to="'/'"
-          />
+    <div class="content-container">
+      <q-btn flat round color="white" icon="close" class="absolute-top-right q-ma-md" :to="'/'" />
 
-          <div class="text-center text-white">
-            <q-icon name="check_circle" size="4em" />
-            <div class="text-h4 q-mt-md">Payment Received!</div>
-            <div class="text-h3 q-mt-lg">{{ formatNumber(amount) }} sats</div>
-            <q-btn flat color="white" class="q-mt-xl" :to="'/'" label="Back to Home" />
-          </div>
-        </div>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+      <div class="text-center text-white">
+        <q-icon name="check_circle" size="4em" />
+        <div class="text-h4 q-mt-md">Payment Received!</div>
+        <div class="text-h3 q-mt-lg">{{ formatNumber(amount) }} sats</div>
+        <q-btn flat color="white" class="q-mt-xl" :to="'/'" label="Back to Home" />
+      </div>
+    </div>
+  </q-page>
 </template>
 
 <script setup lang="ts">
 defineOptions({
-  name: 'ReceivedLightningPage'
+  name: 'ReceivedLightningPage',
 })
 
 import { onMounted, onUnmounted, ref } from 'vue'

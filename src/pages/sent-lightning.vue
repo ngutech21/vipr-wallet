@@ -1,50 +1,39 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-page-container>
-      <q-page class="page-container">
-        <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+  <q-page class="page-container">
+    <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
 
-        <div class="content-container q-pa-md">
-          <q-btn
-            flat
-            round
-            color="white"
-            icon="close"
-            class="absolute-top-right q-ma-md"
-            :to="'/'"
-          />
+    <div class="content-container q-pa-md">
+      <q-btn flat round color="white" icon="close" class="absolute-top-right q-ma-md" :to="'/'" />
 
-          <div class="success-icon-container">
-            <q-icon name="check_circle" size="4em" color="positive" />
+      <div class="success-icon-container">
+        <q-icon name="check_circle" size="4em" color="positive" />
+      </div>
+      <div class="text-h4 text-weight-bold q-mt-lg gradient-text">Payment Successful!</div>
+      <q-card class="payment-card q-mt-lg q-pa-md">
+        <div class="row justify-between items-center q-py-sm">
+          <div class="text-subtitle1 text-weight-medium">Amount</div>
+          <div class="text-h5 text-weight-bold">
+            {{ formatNumber(amount) }} <span class="text-caption">sats</span>
           </div>
-          <div class="text-h4 text-weight-bold q-mt-lg gradient-text">Payment Successful!</div>
-          <q-card class="payment-card q-mt-lg q-pa-md">
-            <div class="row justify-between items-center q-py-sm">
-              <div class="text-subtitle1 text-weight-medium">Amount</div>
-              <div class="text-h5 text-weight-bold">
-                {{ formatNumber(amount) }} <span class="text-caption">sats</span>
-              </div>
-            </div>
-
-            <q-separator class="q-my-sm opacity-4" />
-
-            <div class="row justify-between items-center q-py-sm">
-              <div class="text-subtitle1 text-weight-medium">Network Fee</div>
-              <div class="text-subtitle1 text-weight-bold">
-                {{ formatNumber(fee) }} <span class="text-caption">mSats</span>
-              </div>
-            </div>
-          </q-card>
-          <q-btn flat color="white" class="q-mt-xl" :to="'/'" label="Back to Home" />
         </div>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+
+        <q-separator class="q-my-sm opacity-4" />
+
+        <div class="row justify-between items-center q-py-sm">
+          <div class="text-subtitle1 text-weight-medium">Network Fee</div>
+          <div class="text-subtitle1 text-weight-bold">
+            {{ formatNumber(fee) }} <span class="text-caption">mSats</span>
+          </div>
+        </div>
+      </q-card>
+      <q-btn flat color="white" class="q-mt-xl" :to="'/'" label="Back to Home" />
+    </div>
+  </q-page>
 </template>
 
 <script setup lang="ts">
 defineOptions({
-  name: 'SentLightningPage'
+  name: 'SentLightningPage',
 })
 
 import { onMounted, onUnmounted, ref } from 'vue'
