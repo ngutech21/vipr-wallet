@@ -36,6 +36,10 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: 'FederationsPage',
+})
+
 import FederationList from 'src/components/FederationList.vue'
 import { ref } from 'vue'
 import AddFederationSelection from 'src/components/AddFederationSelection.vue'

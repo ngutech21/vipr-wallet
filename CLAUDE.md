@@ -9,29 +9,34 @@ Vipr-Wallet is a Progressive Web App (PWA) that serves as an ecash wallet for Fe
 ## Development Commands
 
 ### Core Commands
+
 - `pnpm dev` - Start development server with hot reload (opens in Firefox by default)
 - `pnpm build` - Build for production (PWA mode)
 - `pnpm build-docker` - Build Docker image
 
 ### Code Quality
+
 - `pnpm lint` - Run ESLint on source files
-- `pnpm format` - Format code with Prettier  
+- `pnpm format` - Format code with Prettier
 - `pnpm typecheck` - Run Vue TypeScript compiler checks
 - `pnpm final-check` - Run all checks: format, lint, typecheck, and tests
 
 ### Testing
+
 - `pnpm test` - Run unit tests (alias for `pnpm test:unit`)
 - `pnpm test:unit` - Run Vitest unit tests in watch mode
 - `pnpm test:unit:ci` - Run tests once (CI mode)
 - `pnpm test:unit:ui` - Run tests with Vitest UI
 
 ### Package Management
+
 - `pnpm install` - Install dependencies
 - `pnpm postinstall` - Prepare Quasar (runs automatically after install)
 
 ## Architecture Overview
 
 ### Framework Stack
+
 - **Frontend**: Vue 3 with Composition API + TypeScript
 - **UI Framework**: Quasar Framework (Material Design components)
 - **State Management**: Pinia stores with localStorage persistence
@@ -40,12 +45,15 @@ Vipr-Wallet is a Progressive Web App (PWA) that serves as an ecash wallet for Fe
 - **Testing**: Vitest with Vue Test Utils
 
 ### Key Dependencies
+
 - `@fedimint/core-web` - Core Fedimint SDK for wallet operations
 - `@getalby/bitcoin-connect` & `@getalby/lightning-tools` - Lightning connectivity
 - `@nostr-dev-kit/ndk` - Nostr protocol integration
 - `@vueuse/core` - Vue composition utilities
+- `@unplugin-vue-router` - Routing
 
 ### Core Store Architecture
+
 Located in `src/stores/`:
 
 1. **WalletStore** (`wallet.ts`) - Core wallet operations using FedimintWallet
@@ -62,6 +70,7 @@ Located in `src/stores/`:
 4. **NostrStore** (`nostr.ts`) - Nostr protocol integration
 
 ### Application Structure
+
 - `src/boot/fedimint.ts` - App initialization, wallet setup on boot
 - `src/components/` - Reusable Vue components (modals, transaction items, etc.)
 - `src/pages/` - Route-level page components
@@ -70,6 +79,7 @@ Located in `src/stores/`:
 - `src/services/logger.ts` - Logging service using consola
 
 ### Build Configuration
+
 - **Quasar Config** (`quasar.config.ts`) - Main build configuration
   - PWA mode with service worker
   - WASM and top-level await support for Fedimint integration
@@ -79,6 +89,7 @@ Located in `src/stores/`:
 - **Target**: Modern browsers (ES2022, Firefox 115+, Chrome 115+, Safari 15+)
 
 ### Development Notes
+
 - Uses pnpm for package management
 - ESLint with Vue and TypeScript configurations (flat config)
 - Prettier for code formatting
@@ -87,6 +98,7 @@ Located in `src/stores/`:
 - Firefox as default development browser
 
 ### Key Implementation Patterns
+
 - Pinia stores use localStorage for persistence via `@vueuse/core`
 - Fedimint wallet operations are async and handle federation switching
 - Components follow Quasar Material Design patterns
@@ -97,6 +109,7 @@ Located in `src/stores/`:
 ### MCP Tools for Development
 
 #### Context7 Server for API Documentation
+
 - ALWAYS use the Context7 MCP server when requiring API documentation for libraries
 - Use `resolve-library-id` first to get the correct library ID, then `get-library-docs` to fetch documentation
 - This provides up-to-date documentation and code examples for all project dependencies

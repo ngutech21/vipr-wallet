@@ -28,16 +28,16 @@ class WalletLogger {
     // Check for explicit log level in environment variable
     if (import.meta.env.VITE_LOG_LEVEL) {
       const levels: Record<string, number> = {
-        'silent': 0,
-        'error': 1,
-        'warn': 2,
-        'info': 3,
-        'debug': 4,
-        'trace': 5
+        silent: 0,
+        error: 1,
+        warn: 2,
+        info: 3,
+        debug: 4,
+        trace: 5,
       }
       return levels[import.meta.env.VITE_LOG_LEVEL] ?? (this.isProd ? 1 : 4)
     }
-    
+
     // Default: errors only in production, verbose in development
     return this.isProd ? 1 : 4
   }
@@ -45,7 +45,7 @@ class WalletLogger {
   constructor() {
     // Allow override via environment variable or default to prod/dev detection
     const logLevel = this.getLogLevel()
-    
+
     this.logger = consola.create({
       level: logLevel,
       formatOptions: {
@@ -81,7 +81,10 @@ class WalletLogger {
   /**
    * Log transactions without exposing payment details in production
    */
-  logTransaction(action: string, data?: { invoice?: string; amount?: number; [key: string]: unknown }) {
+  logTransaction(
+    action: string,
+    data?: { invoice?: string; amount?: number; [key: string]: unknown },
+  ) {
     if (this.isProd) {
       // Never log invoices, amounts, or payment details in production
       this.transaction.info(action)
@@ -124,11 +127,12 @@ class WalletLogger {
    */
   error(message: string, error?: unknown) {
     // Convert unknown errors to Error instances for better logging
-    const errorObj = error instanceof Error 
-      ? error 
-      : error 
-        ? new Error(typeof error === 'string' ? error : JSON.stringify(error))
-        : undefined
+    const errorObj =
+      error instanceof Error
+        ? error
+        : error
+          ? new Error(typeof error === 'string' ? error : JSON.stringify(error))
+          : undefined
     this.logger.error(message, errorObj)
 
     if (this.isProd && errorObj) {

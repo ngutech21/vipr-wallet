@@ -66,7 +66,6 @@ defineEmits<{
 const lightningStore = useLightningStore()
 const amountInFiat = ref<string>('0.00')
 
-
 const hasValidOutcome = computed(() => {
   return Boolean(props.transaction.outcome?.trim())
 })
@@ -81,7 +80,9 @@ const amountInSats = computed(() => {
 })
 
 onMounted(async () => {
-  logger.lightning.debug('Lightning transaction item mounted', { invoice: props.transaction.invoice.substring(0, 20) + '...' })
+  logger.lightning.debug('Lightning transaction item mounted', {
+    invoice: props.transaction.invoice.substring(0, 20) + '...',
+  })
   try {
     const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
     const sats = Math.floor(invoice.amount / 1000)

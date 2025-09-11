@@ -10,10 +10,12 @@
     </q-dialog>
 
     <q-page-container>
-      <router-view />
+      <!-- <q-page class="dark-gradient"> -->
+      <slot />
+      <!-- </q-page> -->
     </q-page-container>
 
-    <q-footer class="text-white footer-container ios-safe-area dark-bg">
+    <q-footer v-if="showFooter" class="text-white footer-container ios-safe-area dark-bg">
       <q-tabs
         no-caps
         indicator-color="transparent"
@@ -22,19 +24,19 @@
         :model-value="currentTab"
         align="justify"
       >
-        <q-route-tab name="home" icon="home" label="Home" :to="'/'" :ripple="false" />
+        <q-route-tab name="home" icon="home" label="Home" :to="{ name: '/' }" :ripple="false" />
         <q-route-tab
           name="federations"
           icon="account_balance"
           label="Federations"
-          :to="'/federations'"
+          :to="{ name: '/federations/' }"
           :ripple="false"
         />
         <q-route-tab
           name="settings"
           icon="settings"
           label="Settings"
-          :to="'/settings'"
+          :to="{ name: '/settings/' }"
           :ripple="false"
         />
       </q-tabs>
@@ -44,7 +46,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute } from 'vue-router/auto'
 import AddFederation from 'src/components/AddFederation.vue'
 
 const showAddFederationOverlay = ref(false)
@@ -52,11 +54,18 @@ const showAddFederationOverlay = ref(false)
 const route = useRoute()
 
 const currentTab = computed(() => {
-  if (route.path === '/') return 'home'
-  if (route.path === '/federations') return 'federations'
-  if (route.path === '/settings') return 'settings'
-  return null
+  switch (route.name) {
+    case '/':
+      return 'home'
+    case '/federations/':
+      return 'federations'
+    case '/settings/':
+      return 'settings'
+    default:
+      return null
+  }
 })
+const showFooter = computed(() => route.meta?.hideBottomNav !== true)
 </script>
 
 <style scoped>

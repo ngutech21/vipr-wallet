@@ -1,3 +1,8 @@
+<route lang="yaml">
+meta:
+  hideBottomNav: true
+</route>
+
 <template>
   <transition
     appear
@@ -5,116 +10,111 @@
     leave-active-class="animated slideOutLeft"
   >
     <!-- Only render layout if not leaving -->
-    <q-layout v-if="!isLeaving" view="lHh Lpr lFf">
-      <q-page-container>
-        <q-page class="dark-gradient">
-          <q-toolbar class="header-section">
-            <q-btn flat round icon="arrow_back" @click="goBack" />
-            <q-toolbar-title class="text-center no-wrap">Receive</q-toolbar-title>
-            <div class="q-ml-md" style="width: 40px"></div>
-          </q-toolbar>
 
-          <div class="flex flex-center full-width">
-            <div v-if="!qrData" class="amount-entry-container q-pa-lg glass-effect">
-              <div class="text-h6 q-mb-md text-center">Enter Amount</div>
+    <q-page class="dark-gradient">
+      <q-toolbar class="header-section">
+        <q-btn flat round icon="arrow_back" @click="goBack" />
+        <q-toolbar-title class="text-center no-wrap">Receive</q-toolbar-title>
+        <div class="q-ml-md" style="width: 40px"></div>
+      </q-toolbar>
 
-              <q-input
-                filled
-                v-model.number="amount"
-                label="Amount (Sats)"
-                type="number"
-                ref="amountInput"
-                class="no-spinner q-mb-lg"
-                readonly
-                :rules="[(val) => val > 0 || 'Enter a positive amount']"
-              />
+      <div class="flex flex-center full-width">
+        <div v-if="!qrData" class="amount-entry-container q-pa-lg glass-effect">
+          <div class="text-h6 q-mb-md text-center">Enter Amount</div>
 
-              <!-- Preset amount buttons -->
-              <div class="row q-col-gutter-sm q-mb-lg">
-                <div class="col-4" v-for="(button, index) in keypadButtons" :key="index">
-                  <q-btn
-                    outline
-                    color="white"
-                    class="full-width"
-                    :icon="button.icon"
-                    :label="button.label"
-                    @click="button.handler"
-                  />
-                </div>
-              </div>
+          <q-input
+            filled
+            v-model.number="amount"
+            label="Amount (Sats)"
+            type="number"
+            ref="amountInput"
+            class="no-spinner q-mb-lg"
+            readonly
+            :rules="[(val) => val > 0 || 'Enter a positive amount']"
+          />
 
+          <!-- Preset amount buttons -->
+          <div class="row q-col-gutter-sm q-mb-lg">
+            <div class="col-4" v-for="(button, index) in keypadButtons" :key="index">
               <q-btn
-                label="Create Invoice"
-                color="primary"
+                outline
+                color="white"
                 class="full-width"
-                :disable="amount <= 0"
-                @click="onRequest"
-                icon="bolt"
-                :loading="isCreatingInvoice"
-              >
-                <template v-slot:loading>
-                  <q-spinner-dots color="white" />
-                </template>
-                <q-icon name="bolt" class="q-ml-sm" />
-              </q-btn>
+                :icon="button.icon"
+                :label="button.label"
+                @click="button.handler"
+              />
             </div>
           </div>
 
-          <!-- QR Code Card -->
-          <div class="column items-center justify-center">
-            <q-card v-if="qrData" class="qr-card">
-              <q-card-section class="qr-container">
-                <qrcode-vue
-                  :value="qrData"
-                  level="M"
-                  render-as="svg"
-                  :size="0"
-                  class="responsive-qr"
-                />
-              </q-card-section>
-              <q-separator />
-              <q-card-section>
-                <div class="row items-center q-gutter-sm">
-                  <q-input v-model="qrData" readonly class="col" />
-                  <q-btn icon="content_copy" flat @click="copyToClipboard" />
-                  <q-btn icon="share" flat @click="shareQrcode" v-if="isSupported" />
-                </div>
-              </q-card-section>
-            </q-card>
-          </div>
+          <q-btn
+            label="Create Invoice"
+            color="primary"
+            class="full-width"
+            :disable="amount <= 0"
+            @click="onRequest"
+            icon="bolt"
+            :loading="isCreatingInvoice"
+          >
+            <template v-slot:loading>
+              <q-spinner-dots color="white" />
+            </template>
+            <q-icon name="bolt" class="q-ml-sm" />
+          </q-btn>
+        </div>
+      </div>
 
-          <!-- Payment Status -->
-          <div v-if="qrData" class="column items-center justify-center q-mt-xs">
-            <span class="highlight">{{ formattedCountdown }}</span>
-            <span class="countdown-text">
-              Waiting for Lightning payment...
-              <q-spinner v-if="isWaiting" size="20px" class="q-ml-sm" />
-            </span>
-          </div>
+      <!-- QR Code Card -->
+      <div class="column items-center justify-center">
+        <q-card v-if="qrData" class="qr-card">
+          <q-card-section class="qr-container">
+            <qrcode-vue :value="qrData" level="M" render-as="svg" :size="0" class="responsive-qr" />
+          </q-card-section>
+          <q-separator />
+          <q-card-section>
+            <div class="row items-center q-gutter-sm">
+              <q-input v-model="qrData" readonly class="col" />
+              <q-btn icon="content_copy" flat @click="copyToClipboard" />
+              <q-btn icon="share" flat @click="shareQrcode" v-if="isSupported" />
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
 
-          <!-- Request button -->
-          <!-- <q-btn label="Create Invoice" color="primary" @click="onRequest" v-if="!qrData" /> -->
-          <div class="row justify-center q-mt-lg">
-            <q-btn
-              v-if="qrData"
-              label="Pay with Bitcoin Wallet"
-              color="primary"
-              icon="account_balance_wallet"
-              @click="payWithBitcoinConnect"
-            />
-          </div>
-        </q-page>
-      </q-page-container>
-    </q-layout>
+      <!-- Payment Status -->
+      <div v-if="qrData" class="column items-center justify-center q-mt-xs">
+        <span class="highlight">{{ formattedCountdown }}</span>
+        <span class="countdown-text">
+          Waiting for Lightning payment...
+          <q-spinner v-if="isWaiting" size="20px" class="q-ml-sm" />
+        </span>
+      </div>
+
+      <!-- Request button -->
+      <!-- <q-btn label="Create Invoice" color="primary" @click="onRequest" v-if="!qrData" /> -->
+      <div class="row justify-center q-mt-lg">
+        <q-btn
+          v-if="qrData"
+          label="Pay with Bitcoin Wallet"
+          color="primary"
+          icon="account_balance_wallet"
+          @click="payWithBitcoinConnect"
+        />
+      </div>
+    </q-page>
   </transition>
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: 'ReceivePage',
+})
+
 import { ref, onMounted, computed } from 'vue'
 import QrcodeVue from 'qrcode.vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { Loading, useQuasar } from 'quasar'
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router/auto'
 import { useShare } from '@vueuse/core'
 import { init, requestProvider } from '@getalby/bitcoin-connect'
 import { useFederationStore } from 'src/stores/federation'
@@ -238,16 +238,13 @@ async function onRequest() {
     logger.logTransaction('Waiting for Lightning payment')
 
     try {
-      await store.wallet?.lightning.waitForReceive(
-        invoice.operation_id,
-        lnExpiry * 1_000,
-      )
+      await store.wallet?.lightning.waitForReceive(invoice.operation_id, lnExpiry * 1_000)
       logger.logTransaction('Lightning payment received successfully')
 
       await store.updateBalance()
 
       await router.push({
-        name: 'received-lightning',
+        name: '/received-lightning',
         query: { amount: amount.value.toString() },
       })
     } catch (e) {
@@ -276,7 +273,7 @@ async function copyToClipboard() {
 async function goBack() {
   isLeaving.value = true
   await new Promise((resolve) => setTimeout(resolve, 500)) // delay to allow the animation to play
-  await router.push({ path: '/' })
+  await router.push({ name: '/' })
 }
 </script>
 

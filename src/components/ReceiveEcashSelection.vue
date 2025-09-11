@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router/auto'
 import ModalCard from './ModalCard.vue'
 
 const router = useRouter()
@@ -46,12 +46,12 @@ const emit = defineEmits<{
 
 async function onReceiveLightning() {
   emit('close')
-  await router.push('/receive')
+  await router.push({ name: '/receive' })
 }
 
 async function onReceiveOffline() {
   emit('close')
-  await router.push('/receive-ecash')
+  await router.push({ name: '/receive-ecash' })
 }
 </script>
 

@@ -3,7 +3,7 @@ import { useWalletStore } from 'src/stores/wallet'
 import { defineBoot } from '#q-app/wrappers'
 import { Loading } from 'quasar'
 
-export default defineBoot(async ({ app, router, store }) => {
+export default defineBoot(async ({ app, router }) => {
   Loading.show()
   const walletStore = useWalletStore()
   walletStore.initWallet()

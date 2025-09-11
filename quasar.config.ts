@@ -4,6 +4,7 @@
 import { defineConfig } from '#q-app/wrappers'
 import wasm from 'vite-plugin-wasm'
 import topLevelAwait from 'vite-plugin-top-level-await'
+import VueRouter from 'unplugin-vue-router/vite'
 import fs from 'node:fs'
 import { loadEnv } from 'vite'
 
@@ -59,6 +60,11 @@ export default defineConfig((_ctx) => {
         return {
           define: envVars,
           plugins: [
+            VueRouter({
+              routesFolder: 'src/pages',
+              extensions: ['.vue'],
+              dts: true,
+            }),
             wasm(),
             topLevelAwait(), // Optional
           ],

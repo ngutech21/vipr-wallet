@@ -4,105 +4,106 @@
     enter-active-class="animated slideInLeft"
     leave-active-class="animated slideOutLeft"
   >
-    <q-layout view="lHh Lpr lFf">
-      <q-page-container>
-        <q-page class="column dark-gradient">
-          <q-toolbar class="header-section">
-            <q-btn flat round icon="arrow_back" :to="'/'" />
-            <q-toolbar-title class="text-center no-wrap">Send</q-toolbar-title>
-            <div class="q-ml-md" style="width: 40px"></div>
-          </q-toolbar>
-          <div class="q-px-md">
-            <!-- Payment input section -->
-            <template v-if="!decodedInvoice">
-              <q-card flat class="glass-effect q-mb-md">
-                <q-card-section>
-                  <q-input
-                    v-model="lightningInvoice"
-                    filled
-                    autogrow
-                    dense
-                    dark
-                    type="textarea"
-                    placeholder="Enter Lightning Invoice, Address or LNURL"
-                    class="custom-input"
-                  >
-                    <template v-slot:after>
-                      <q-btn round dense flat icon="qr_code_scanner" @click="openScanner" />
-                    </template>
-                  </q-input>
-                </q-card-section>
-              </q-card>
+    <q-page class="column dark-gradient">
+      <q-toolbar class="header-section">
+        <q-btn flat round icon="arrow_back" :to="{ name: '/' }" />
+        <q-btn flat round icon="arrow_back" :to="'/'" />
+        <q-toolbar-title class="text-center no-wrap">Send</q-toolbar-title>
+        <div class="q-ml-md" style="width: 40px"></div>
+      </q-toolbar>
+      <div class="q-px-md">
+        <!-- Payment input section -->
+        <template v-if="!decodedInvoice">
+          <q-card flat class="glass-effect q-mb-md">
+            <q-card-section>
+              <q-input
+                v-model="lightningInvoice"
+                filled
+                autogrow
+                dense
+                dark
+                type="textarea"
+                placeholder="Enter Lightning Invoice, Address or LNURL"
+                class="custom-input"
+              >
+                <template v-slot:after>
+                  <q-btn round dense flat icon="qr_code_scanner" @click="openScanner" />
+                </template>
+              </q-input>
+            </q-card-section>
+          </q-card>
 
-              <!-- Amount input section (for lightning address) -->
-              <q-slide-transition>
-                <q-card v-if="amountRequired" flat bordered class="glass-effect q-mb-md">
-                  <q-card-section>
-                    <div class="text-subtitle2 text-grey q-mb-sm">Payment Details</div>
+          <!-- Amount input section (for lightning address) -->
+          <q-slide-transition>
+            <q-card v-if="amountRequired" flat bordered class="glass-effect q-mb-md">
+              <q-card-section>
+                <div class="text-subtitle2 text-grey q-mb-sm">Payment Details</div>
 
-                    <div class="row q-col-gutter-md">
-                      <div class="col-12">
-                        <q-input
-                          filled
-                          dense
-                          dark
-                          v-model.number="invoiceAmount"
-                          label="Amount in sats"
-                          type="number"
-                          class="custom-input"
-                        />
-                      </div>
-                    </div>
+                <div class="row q-col-gutter-md">
+                  <div class="col-12">
+                    <q-input
+                      filled
+                      dense
+                      dark
+                      v-model.number="invoiceAmount"
+                      label="Amount in sats"
+                      type="number"
+                      class="custom-input"
+                    />
+                  </div>
+                </div>
 
-                    <div class="row q-col-gutter-md q-mt-md" v-if="lnAddress">
-                      <div class="col-12">
-                        <q-input
-                          filled
-                          dense
-                          dark
-                          v-model="invoiceMemo"
-                          label="Memo (optional)"
-                          class="custom-input"
-                        />
-                      </div>
-                    </div>
-                  </q-card-section>
-                </q-card>
-              </q-slide-transition>
+                <div class="row q-col-gutter-md q-mt-md" v-if="lnAddress">
+                  <div class="col-12">
+                    <q-input
+                      filled
+                      dense
+                      dark
+                      v-model="invoiceMemo"
+                      label="Memo (optional)"
+                      class="custom-input"
+                    />
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card>
+          </q-slide-transition>
 
-              <!-- Action button -->
-              <div class="q-mt-lg">
-                <q-btn
-                  :label="amountRequired ? 'Create Invoice' : 'Continue'"
-                  color="primary"
-                  class="full-width q-py-sm"
-                  size="lg"
-                  :loading="isProcessing"
-                  @click="amountRequired ? createInvoice() : decodeInvoice()"
-                >
-                  <!-- :disable="!isValidInput" -->
-                  <template v-slot:loading>
-                    <q-spinner-dots color="white" />
-                  </template>
-                </q-btn>
-              </div>
-            </template>
-
-            <!-- Show payment verification component if invoice is decoded -->
-            <VerifyPayment
-              v-else
-              :decoded-invoice="decodedInvoice"
-              @cancel="decodedInvoice = null"
-              @pay="payInvoice"
-            />
+          <!-- Action button -->
+          <div class="q-mt-lg">
+            <q-btn
+              :label="amountRequired ? 'Create Invoice' : 'Continue'"
+              color="primary"
+              class="full-width q-py-sm"
+              size="lg"
+              :loading="isProcessing"
+              @click="amountRequired ? createInvoice() : decodeInvoice()"
+            >
+              <!-- :disable="!isValidInput" -->
+              <template v-slot:loading>
+                <q-spinner-dots color="white" />
+              </template>
+            </q-btn>
           </div>
-        </q-page>
-      </q-page-container>
-    </q-layout>
+        </template>
+
+        <!-- Show payment verification component if invoice is decoded -->
+        <VerifyPayment
+          v-else
+          :decoded-invoice="decodedInvoice"
+          @cancel="decodedInvoice = null"
+          @pay="payInvoice"
+        />
+      </div>
+    </q-page>
   </transition>
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: 'SendPage',
+})
+
 import { ref, watch } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useLightningStore } from 'src/stores/lightning'
@@ -157,7 +158,7 @@ watch(
 )
 
 async function openScanner() {
-  await router.push('/scan')
+  await router.push( { name: '/scan' })
 }
 
 async function createInvoice() {
@@ -247,7 +248,7 @@ async function payInvoice() {
     await store.updateBalance()
 
     await router.push({
-      name: 'sent-lightning',
+      path: '/sent-lightning',
       query: { amount: amountInSats, fee: paymentResult?.fee },
     })
   } catch (error) {

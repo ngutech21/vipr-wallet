@@ -93,6 +93,10 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+
+defineOptions({
+  name: 'IndexPage',
+})
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import TransactionsList from 'src/components/TransactionsList.vue'

@@ -216,7 +216,11 @@
 </template>
 
 <script setup lang="ts">
-import { version } from '../../package.json'
+defineOptions({
+  name: 'SettingsPage',
+})
+
+import { version } from '../../../package.json'
 import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'
 import { Dialog, Loading, Notify } from 'quasar'
