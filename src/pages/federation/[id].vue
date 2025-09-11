@@ -7,7 +7,7 @@
   >
     <q-page>
       <q-toolbar class="header-section">
-        <q-btn flat round icon="arrow_back" :to="'/federations'" />
+        <q-btn flat round icon="arrow_back" :to="{ name: '/federations/' }" />
         <q-toolbar-title class="text-center no-wrap">Federation Details</q-toolbar-title>
         <div class="q-ml-md" style="width: 40px"></div>
       </q-toolbar>
@@ -227,7 +227,7 @@ defineOptions({
 })
 
 import { ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router/auto'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFormatters } from '../../utils/formatter'
@@ -289,10 +289,10 @@ async function leaveFederation() {
     await walletStore.deleteFederationData(federation.federationId)
     federationStore.deleteFederation(federation.federationId)
     await federationStore.selectFederation(undefined)
-    await router.push('/federations')
+    await router.push({ name: '/federations/' })
   } catch (error) {
     logger.error('Failed to leave federation', error)
-    await router.push('/federations')
+    await router.push({ name: '/federations/' })
   }
 }
 

@@ -25,7 +25,7 @@ meta:
     </div>
 
     <div class="action-bar top-bar q-px-md q-py-sm">
-      <q-btn round flat color="white" icon="arrow_back" :to="'/'" class="q-mr-md" />
+      <q-btn round flat color="white" icon="arrow_back" :to="{ name: '/' }" class="q-mr-md" />
       <div class="text-white text-subtitle1 text-weight-medium">Scan QR Code</div>
     </div>
 
@@ -52,7 +52,7 @@ defineOptions({
 import { QrcodeStream } from 'vue-qrcode-reader'
 import type { DetectedBarcode, EmittedError } from 'vue-qrcode-reader'
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router/auto'
 import type { SendRouteQuery } from 'src/types/vue-router'
 import AddFederation from 'src/components/AddFederation.vue'
 import { Notify } from 'quasar'
@@ -75,7 +75,7 @@ function stripLightningPrefix(value: string): string {
 
 async function onAddFederationClose() {
   showAddFederation.value = false
-  await router.push('/')
+  await router.push({ name: '/' })
 }
 
 async function onDetect(detectedCodes: DetectedBarcode[]) {
@@ -98,7 +98,7 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
     const invoice = stripLightningPrefix(cleanCode)
     await router
       .push({
-        path: '/send',
+        name: '/send',
         query: { invoice } as SendRouteQuery,
       })
       .catch((error) => logger.error('Failed to navigate to send page', error))

@@ -1,3 +1,8 @@
+<route lang="yaml">
+meta:
+  hideBottomNav: true
+</route>
+
 <template>
   <transition
     appear
@@ -6,7 +11,7 @@
   >
     <q-page class="column dark-gradient">
       <q-toolbar class="header-section">
-        <q-btn flat round icon="arrow_back" :to="'/'" />
+        <q-btn flat round icon="arrow_back" :to="{ name: '/' }" />
         <q-toolbar-title class="text-center no-wrap">Receive Offline</q-toolbar-title>
         <div class="q-ml-md" style="width: 40px"></div>
       </q-toolbar>
@@ -59,7 +64,7 @@ defineOptions({
 import { ref } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useQuasar, Loading } from 'quasar'
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router/auto'
 import { getErrorMessage } from 'src/utils/error'
 
 const ecashToken = ref('')
@@ -95,7 +100,7 @@ async function redeemEcash() {
 
     // Navigate back to home
     await router.push({
-      path: '/received-lightning',
+      name: '/received-lightning',
       query: { amount: amountMSats / 1_000 },
     })
   } catch (error) {

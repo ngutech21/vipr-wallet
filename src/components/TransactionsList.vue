@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router/auto'
 import { useWalletStore } from 'src/stores/wallet'
 import type { Transactions } from '@fedimint/core-web'
 import LightningTransactionItem from './LightningTransactionItem.vue'
@@ -60,7 +60,7 @@ async function loadTransactions() {
 }
 
 async function viewTransactionDetails(id: string) {
-  await router.push(`/transaction/${id}`)
+  await router.push({ name: '/transaction/[id]', params: { id } })
 }
 </script>
 

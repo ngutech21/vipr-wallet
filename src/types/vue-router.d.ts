@@ -9,7 +9,8 @@ export interface SendRouteQuery {
 // Augment the vue-router module
 declare module 'vue-router' {
   interface RouteMeta {
-    requiresAuth?: boolean
+    hideBottomNav?: boolean
+    title?: string
   }
 
   interface RouteQuery {

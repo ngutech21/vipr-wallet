@@ -1,3 +1,8 @@
+<route lang="yaml">
+meta:
+  hideBottomNav: true
+</route>
+
 <template>
   <transition
     appear
@@ -109,7 +114,7 @@ import { ref, onMounted, computed } from 'vue'
 import QrcodeVue from 'qrcode.vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { Loading, useQuasar } from 'quasar'
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router/auto'
 import { useShare } from '@vueuse/core'
 import { init, requestProvider } from '@getalby/bitcoin-connect'
 import { useFederationStore } from 'src/stores/federation'
@@ -239,7 +244,7 @@ async function onRequest() {
       await store.updateBalance()
 
       await router.push({
-        path: '/received-lightning',
+        name: '/received-lightning',
         query: { amount: amount.value.toString() },
       })
     } catch (e) {
@@ -268,7 +273,7 @@ async function copyToClipboard() {
 async function goBack() {
   isLeaving.value = true
   await new Promise((resolve) => setTimeout(resolve, 500)) // delay to allow the animation to play
-  await router.push({ path: '/' })
+  await router.push({ name: '/' })
 }
 </script>
 

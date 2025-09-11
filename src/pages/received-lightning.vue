@@ -1,15 +1,20 @@
+<route lang="yaml">
+meta:
+  hideBottomNav: true
+</route>
+
 <template>
   <q-page class="page-container">
     <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
 
     <div class="content-container">
-      <q-btn flat round color="white" icon="close" class="absolute-top-right q-ma-md" :to="'/'" />
+      <q-btn flat round color="white" icon="close" class="absolute-top-right q-ma-md" :to="{ name: '/' }" />
 
       <div class="text-center text-white">
         <q-icon name="check_circle" size="4em" />
         <div class="text-h4 q-mt-md">Payment Received!</div>
         <div class="text-h3 q-mt-lg">{{ formatNumber(amount) }} sats</div>
-        <q-btn flat color="white" class="q-mt-xl" :to="'/'" label="Back to Home" />
+        <q-btn flat color="white" class="q-mt-xl" :to="{ name: '/' }" label="Back to Home" />
       </div>
     </div>
   </q-page>
@@ -21,7 +26,7 @@ defineOptions({
 })
 
 import { onMounted, onUnmounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute } from 'vue-router/auto'
 import JSConfetti from 'js-confetti'
 import { useFormatters } from '../utils/formatter'
 

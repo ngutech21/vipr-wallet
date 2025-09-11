@@ -50,7 +50,7 @@ defineOptions({
 })
 
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router/auto'
 import { useWalletStore } from 'src/stores/wallet'
 import type { Transactions } from '@fedimint/core-web'
 import LightningTransactionDetails from 'src/components/LightningTransactionDetails.vue'
@@ -67,7 +67,7 @@ const loading = ref(true)
 const error = ref('')
 
 async function navigateBack() {
-  await router.push('/')
+  await router.push({ name: '/' })
 }
 
 onMounted(async () => {
