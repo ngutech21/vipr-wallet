@@ -1,5 +1,5 @@
 <template>
-  <q-page class="dark-gradient">
+  <q-page class="dark-gradient" data-testid="settings-page">
     <q-toolbar class="header-section q-mb-md">
       <q-toolbar-title class="text-center">Settings</q-toolbar-title>
     </q-toolbar>

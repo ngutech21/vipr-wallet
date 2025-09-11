@@ -158,7 +158,7 @@ watch(
 )
 
 async function openScanner() {
-  await router.push( { name: '/scan' })
+  await router.push({ name: '/scan' })
 }
 
 async function createInvoice() {

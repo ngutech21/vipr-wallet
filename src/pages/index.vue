@@ -1,5 +1,5 @@
 <template>
-  <q-page class="column">
+  <q-page class="column" data-testid="home-page">
     <q-dialog
       v-model="showSelection"
       position="bottom"

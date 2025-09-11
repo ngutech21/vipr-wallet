@@ -8,7 +8,14 @@ meta:
     <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
 
     <div class="content-container">
-      <q-btn flat round color="white" icon="close" class="absolute-top-right q-ma-md" :to="{ name: '/' }" />
+      <q-btn
+        flat
+        round
+        color="white"
+        icon="close"
+        class="absolute-top-right q-ma-md"
+        :to="{ name: '/' }"
+      />
 
       <div class="text-center text-white">
         <q-icon name="check_circle" size="4em" />

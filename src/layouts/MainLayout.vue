@@ -24,13 +24,21 @@
         :model-value="currentTab"
         align="justify"
       >
-        <q-route-tab name="home" icon="home" label="Home" :to="{ name: '/' }" :ripple="false" />
+        <q-route-tab
+          name="home"
+          icon="home"
+          label="Home"
+          :to="{ name: '/' }"
+          :ripple="false"
+          data-testid="nav-home"
+        />
         <q-route-tab
           name="federations"
           icon="account_balance"
           label="Federations"
           :to="{ name: '/federations/' }"
           :ripple="false"
+          data-testid="nav-federations"
         />
         <q-route-tab
           name="settings"
@@ -38,6 +46,7 @@
           label="Settings"
           :to="{ name: '/settings/' }"
           :ripple="false"
+          data-testid="nav-settings"
         />
       </q-tabs>
     </q-footer>

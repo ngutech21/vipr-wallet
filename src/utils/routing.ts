@@ -14,7 +14,7 @@ export function navigateTo<T extends RouteName>(
     params?: RouteParams<T>
     query?: Record<string, string | undefined>
     hash?: string
-  }
+  },
 ): RouteLocationRaw {
   return {
     name,
@@ -27,7 +27,7 @@ export function navigateTo<T extends RouteName>(
 // Helper to check if we're on a specific route
 export function isRoute<T extends RouteName>(
   routeName: string | symbol | null | undefined,
-  expectedRoute: T
+  expectedRoute: T,
 ): routeName is T {
   return routeName === expectedRoute
 }
@@ -50,11 +50,8 @@ export const ROUTES = {
 
 // Type guard for checking if a route has params
 export function hasRouteParams<T extends RouteName>(
-  routeName: T
+  routeName: T,
 ): routeName is T & { params: NonNullable<RouteParams<T>> } {
-  const routesWithParams: RouteName[] = [
-    '/federation/[id]',
-    '/transaction/[id]',
-  ]
+  const routesWithParams: RouteName[] = ['/federation/[id]', '/transaction/[id]']
   return routesWithParams.includes(routeName)
 }

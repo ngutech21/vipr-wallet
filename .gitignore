@@ -5,6 +5,9 @@ node_modules
 certs
 .direnv
 
+test-results
+playwright-report
+
 # Quasar core related directories
 .quasar
 /dist

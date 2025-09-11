@@ -32,3 +32,6 @@ jobs:
 
       - name: Run Vitest
         run: pnpm test:unit:ci
+      
+      - name: Run Playwright
+        run: pnpm test:e2e
