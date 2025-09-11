@@ -34,7 +34,7 @@ jobs:
         run: pnpm test:unit:ci
       
       - name: Install playwright browsers
-        run: pnpm exec playwright install
+        run: pnpm exec playwright install --with-deps
 
       - name: Run Playwright
         run: pnpm test:e2e

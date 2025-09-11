@@ -113,3 +113,15 @@ Located in `src/stores/`:
 - ALWAYS use the Context7 MCP server when requiring API documentation for libraries
 - Use `resolve-library-id` first to get the correct library ID, then `get-library-docs` to fetch documentation
 - This provides up-to-date documentation and code examples for all project dependencies
+
+#### Playwright MCP Server for E2E Testing
+
+- Use the Playwright MCP server for end-to-end testing and browser automation
+- Available tools include:
+  - `browser_navigate` - Navigate to URLs
+  - `browser_snapshot` - Take accessibility snapshots (preferred over screenshots)
+  - `browser_click`, `browser_type`, `browser_fill_form` - Interact with page elements
+  - `browser_wait_for` - Wait for conditions or text to appear/disappear
+  - `browser_evaluate` - Execute JavaScript in the browser context
+- Perfect for testing PWA functionality, user flows, and UI interactions
+- Use `browser_snapshot` to understand page structure before interacting with elements
