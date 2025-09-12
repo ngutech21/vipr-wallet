@@ -83,6 +83,42 @@ export default [
 
       // Prevent console usage - critical for security in a wallet app
       'no-console': 'error',
+
+      // Dead code detection rules
+      'no-unreachable': 'warn',
+      'no-unused-expressions': 'warn',
+      'no-useless-return': 'warn',
+
+      // Critical security rules - prevent code injection
+      'no-eval': 'error',
+      'no-implied-eval': 'error',
+      'no-new-func': 'error',
+      'no-script-url': 'error',
+
+      // XSS and DOM manipulation protection
+      'no-inner-html': 'off', // Vue handles this safely
+      'vue/no-v-html': 'error', // Prevent v-html usage without sanitization
+      'vue/no-v-text-v-html-on-component': 'error',
+
+      // Security best practices
+      'no-var': 'error',
+      'prefer-const': 'error',
+      'no-with': 'error',
+      'no-void': 'error',
+      'no-proto': 'error',
+      'no-iterator': 'error',
+      'no-labels': 'error',
+
+      // Prevent potentially dangerous operations
+      'no-new-wrappers': 'error',
+      'no-extend-native': 'error',
+      'no-native-reassign': 'error',
+      
+      // Async/Promise best practices for wallet operations
+      'no-async-promise-executor': 'error',
+      'no-await-in-loop': 'warn',
+      'no-promise-executor-return': 'error',
+      'require-atomic-updates': 'error',
     },
   },
 

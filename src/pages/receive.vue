@@ -272,7 +272,7 @@ async function copyToClipboard() {
 
 async function goBack() {
   isLeaving.value = true
-  await new Promise((resolve) => setTimeout(resolve, 500)) // delay to allow the animation to play
+  await new Promise((resolve) => { setTimeout(resolve, 500) }) // delay to allow the animation to play
   await router.push({ name: '/' })
 }
 </script>

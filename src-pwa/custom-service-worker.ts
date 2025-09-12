@@ -36,7 +36,9 @@ if (process.env.MODE !== 'ssr' || process.env.PROD) {
 // registration.waiting.postMessage({type: 'SKIP_WAITING'})
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
-    void self.skipWaiting()
+    self.skipWaiting().catch(() => {
+      // Ignore errors from skipWaiting
+    })
   }
 })
 

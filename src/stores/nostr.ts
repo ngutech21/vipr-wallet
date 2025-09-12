@@ -70,20 +70,22 @@ export const useNostrStore = defineStore('nostr', {
         })
 
         // Start connection
-        void this.ndk?.connect()
+        this.ndk?.connect().catch(() => {
+          // Connection errors are handled by the race condition below
+        })
 
         // Wait for either timeout or connection
         await Promise.race([
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Connection timeout')), 10000),
-          ),
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Connection timeout')), 10000)
+          }),
           connectionPromise,
         ])
 
         logger.nostr.debug('NDK initialized', { relayUrls: this.ndk.explicitRelayUrls })
 
         // Give time for more relays to connect
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        await new Promise((resolve) => { setTimeout(resolve, 1000) })
       } catch (error) {
         logger.error('Failed to initialize NDK', error)
       }
@@ -104,7 +106,9 @@ export const useNostrStore = defineStore('nostr', {
 
         // Process event synchronously, but handle async operations properly
         this.federationSubscription?.on('event', (event) => {
-          void processFederationEvent(this.discoveredFederations, this, event)
+          processFederationEvent(this.discoveredFederations, this, event).catch((error) => {
+            logger.error('Failed to process federation event', error)
+          })
         })
       }
     },

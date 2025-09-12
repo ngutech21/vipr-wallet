@@ -49,18 +49,22 @@ onMounted(() => {
   })
 
   // Initial celebration
-  void jsConfetti.addConfetti({
+  jsConfetti.addConfetti({
     emojis: ['⚡', '₿', '✨'],
     emojiSize: 70,
     confettiNumber: 80,
+  }).catch(() => {
+    // Ignore confetti errors
   })
 
   // Periodic small bursts
   animationInterval = window.setInterval(() => {
-    void jsConfetti?.addConfetti({
+    jsConfetti?.addConfetti({
       emojis: ['⚡', '₿', '✨'],
       emojiSize: 50,
       confettiNumber: 20,
+    }).catch(() => {
+      // Ignore confetti errors
     })
   }, 500)
 

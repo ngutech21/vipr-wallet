@@ -169,8 +169,10 @@ async function createInvoice() {
       const invoice = await requestInvoice(lightningInvoice.value, invoiceAmount.value)
 
       if (invoice) {
-        lightningInvoice.value = invoice
-        decodedInvoice.value = lightningStore.decodeInvoice(lightningInvoice.value)
+        const newInvoice = invoice
+        // eslint-disable-next-line require-atomic-updates
+        lightningInvoice.value = newInvoice
+        decodedInvoice.value = lightningStore.decodeInvoice(newInvoice)
       }
     } else {
       const invoice = await lnAddress?.value?.requestInvoice({
@@ -179,8 +181,9 @@ async function createInvoice() {
       })
 
       if (invoice) {
-        lightningInvoice.value = invoice.paymentRequest
-        decodedInvoice.value = lightningStore.decodeInvoice(lightningInvoice.value)
+        const paymentRequest = invoice.paymentRequest
+        lightningInvoice.value = paymentRequest
+        decodedInvoice.value = lightningStore.decodeInvoice(paymentRequest)
       }
     }
   } catch (error) {

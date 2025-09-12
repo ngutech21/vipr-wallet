@@ -285,7 +285,7 @@ async function leaveFederation() {
 
   try {
     await walletStore.closeWallet()
-    await new Promise((resolve) => setTimeout(resolve, 100))
+    await new Promise((resolve) => { setTimeout(resolve, 100) })
     await walletStore.deleteFederationData(federation.federationId)
     federationStore.deleteFederation(federation.federationId)
     await federationStore.selectFederation(undefined)
