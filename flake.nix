@@ -1,28 +1,53 @@
 {
   description = "Vipr-Wallet development environment";
+  
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    fedimint = {
+      url = "github:fedimint/fedimint/v0.7.2";
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, ... }:
+  outputs = { self, nixpkgs, flake-utils,fedimint, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs {
+        pinnedNixpkgs = fedimint.inputs.nixpkgs;
+        pkgs = import pinnedNixpkgs {
           inherit system;
+          overlays = [ fedimint.overlays.all ];
         };
       in
       {
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
+            fedimint.packages.${system}.devimint
+            fedimint.packages.${system}.gateway-pkgs
+            fedimint.packages.${system}.fedimint-pkgs
+            fedimint.packages.${system}.fedimint-recurringd
+            pkgs.bitcoind
+            pkgs.electrs
+            pkgs.jq
+            pkgs.lnd
+            pkgs.netcat
+            pkgs.perl
+            pkgs.esplora-electrs
+            pkgs.procps
+            pkgs.which
+            pkgs.git
+
             nodejs_22
             nodePackages.pnpm
             nodePackages.typescript
             mkcert
+            pkgs.playwright-driver.browsers
           ];
 
           shellHook = ''
+            export PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright-driver.browsers}
+            export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+
             echo "Vipr-Wallet development environment"
             echo "Node.js $(node --version)"
             echo "pnpm $(pnpm --version)"
@@ -57,6 +82,7 @@
             echo "HTTPS_KEY=$HTTPS_KEY"
             echo "HTTPS_CERT=$HTTPS_CERT"
             
+            
             echo ""
             echo "Run 'pnpm install' to set up dependencies"
             echo "Then 'pnpm dev' to start the development server with HTTPS"
@@ -64,4 +90,11 @@
         };
       }
     );
+    nixConfig = {
+      allow-dirty = true;
+      extra-substituters = [ "https://fedimint.cachix.org" ];
+      extra-trusted-public-keys = [
+        "fedimint.cachix.org-1:FpJJjy1iPVlvyv4OMiN5y9+/arFLPcnZhZVVCHCDYTs="
+    ];
+  };
 }
