@@ -272,7 +272,9 @@ function deleteData() {
           return
         }
         const deletePromises = databases
-          .filter((db): db is IDBDatabaseInfo & { name: string } => db.name != null && db.name !== '')
+          .filter(
+            (db): db is IDBDatabaseInfo & { name: string } => db.name != null && db.name !== '',
+          )
           .map((db) => indexedDB.deleteDatabase(db.name))
         return Promise.all(deletePromises)
       })

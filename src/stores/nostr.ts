@@ -85,7 +85,9 @@ export const useNostrStore = defineStore('nostr', {
         logger.nostr.debug('NDK initialized', { relayUrls: this.ndk.explicitRelayUrls })
 
         // Give time for more relays to connect
-        await new Promise((resolve) => { setTimeout(resolve, 1000) })
+        await new Promise((resolve) => {
+          setTimeout(resolve, 1000)
+        })
       } catch (error) {
         logger.error('Failed to initialize NDK', error)
       }

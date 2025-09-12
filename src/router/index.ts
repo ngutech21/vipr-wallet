@@ -17,11 +17,12 @@ import { routes } from 'vue-router/auto-routes'
  */
 
 export default defineRouter(function (/* { store, ssrContext } */) {
-  const createHistory = process.env.SERVER === 'true'
-    ? createMemoryHistory
-    : process.env.VUE_ROUTER_MODE === 'history'
-      ? createWebHistory
-      : createWebHashHistory
+  const createHistory =
+    process.env.SERVER === 'true'
+      ? createMemoryHistory
+      : process.env.VUE_ROUTER_MODE === 'history'
+        ? createWebHistory
+        : createWebHashHistory
 
   const Router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),

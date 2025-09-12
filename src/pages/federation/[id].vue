@@ -245,11 +245,17 @@ const confirmLeave = ref(false)
 
 const hasMessages = computed(() => {
   logger.federation.debug('Checking for messages in federation metadata', { federation })
-  return (federation?.metadata?.preview_message != null && federation.metadata.preview_message !== '') || (federation?.metadata?.popup_countdown_message != null && federation.metadata.popup_countdown_message !== '')
+  return (
+    (federation?.metadata?.preview_message != null && federation.metadata.preview_message !== '') ||
+    (federation?.metadata?.popup_countdown_message != null &&
+      federation.metadata.popup_countdown_message !== '')
+  )
 })
 
 const hasVettedGateways = computed(() => {
-  return federation?.metadata?.vetted_gateways != null && federation.metadata.vetted_gateways.length > 0
+  return (
+    federation?.metadata?.vetted_gateways != null && federation.metadata.vetted_gateways.length > 0
+  )
 })
 
 const vettedGateways = computed(() => {
@@ -285,7 +291,9 @@ async function leaveFederation() {
 
   try {
     await walletStore.closeWallet()
-    await new Promise((resolve) => { setTimeout(resolve, 100) })
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100)
+    })
     await walletStore.deleteFederationData(federation.federationId)
     federationStore.deleteFederation(federation.federationId)
     await federationStore.selectFederation(undefined)

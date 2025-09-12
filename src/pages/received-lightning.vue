@@ -49,23 +49,27 @@ onMounted(() => {
   })
 
   // Initial celebration
-  jsConfetti.addConfetti({
-    emojis: ['⚡', '₿', '✨'],
-    emojiSize: 70,
-    confettiNumber: 80,
-  }).catch(() => {
-    // Ignore confetti errors
-  })
+  jsConfetti
+    .addConfetti({
+      emojis: ['⚡', '₿', '✨'],
+      emojiSize: 70,
+      confettiNumber: 80,
+    })
+    .catch(() => {
+      // Ignore confetti errors
+    })
 
   // Periodic small bursts
   animationInterval = window.setInterval(() => {
-    jsConfetti?.addConfetti({
-      emojis: ['⚡', '₿', '✨'],
-      emojiSize: 50,
-      confettiNumber: 20,
-    }).catch(() => {
-      // Ignore confetti errors
-    })
+    jsConfetti
+      ?.addConfetti({
+        emojis: ['⚡', '₿', '✨'],
+        emojiSize: 50,
+        confettiNumber: 20,
+      })
+      .catch(() => {
+        // Ignore confetti errors
+      })
   }, 500)
 
   // Stop periodic bursts after 2 seconds

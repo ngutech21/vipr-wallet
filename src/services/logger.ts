@@ -90,12 +90,16 @@ class WalletLogger {
       this.transaction.info(action)
     } else {
       // In dev, log but truncate sensitive strings
-      const sanitized = data != null
-        ? {
-            ...data,
-            invoice: data.invoice != null && data.invoice !== '' ? `${data.invoice.substring(0, 20)}...` : undefined,
-          }
-        : undefined
+      const sanitized =
+        data != null
+          ? {
+              ...data,
+              invoice:
+                data.invoice != null && data.invoice !== ''
+                  ? `${data.invoice.substring(0, 20)}...`
+                  : undefined,
+            }
+          : undefined
       this.transaction.debug(action, sanitized)
     }
   }

@@ -111,7 +111,7 @@ export default [
       'no-new-wrappers': 'error',
       'no-extend-native': 'error',
       'no-native-reassign': 'error',
-      
+
       // Async/Promise best practices for wallet operations
       'no-async-promise-executor': 'error',
       'no-await-in-loop': 'warn',
@@ -125,12 +125,15 @@ export default [
       '@typescript-eslint/no-misused-promises': 'error', // Prevent promise misuse
       '@typescript-eslint/no-explicit-any': 'warn', // Discourage 'any' type
       '@typescript-eslint/no-non-null-assertion': 'warn', // Discourage non-null assertions (!)
-      '@typescript-eslint/strict-boolean-expressions': ['warn', {
-        allowString: false,
-        allowNumber: true,
-        allowNullableObject: false,
-        allowNullableBoolean: true,
-      }],
+      '@typescript-eslint/strict-boolean-expressions': [
+        'warn',
+        {
+          allowString: false,
+          allowNumber: true,
+          allowNullableObject: false,
+          allowNullableBoolean: true,
+        },
+      ],
     },
   },
 

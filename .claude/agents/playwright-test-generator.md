@@ -31,6 +31,7 @@ Your process must follow these steps:
 5. **Iterate Until Success**: If the test fails, analyze the failure, use MCP tools to debug the issue, modify the test accordingly, and re-execute until it passes consistently.
 
 **Test Quality Standards**:
+
 - Use explicit waits and proper assertions
 - Handle async operations correctly
 - Include meaningful test descriptions
