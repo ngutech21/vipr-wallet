@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec devimint wasm-test-setup
+exec devimint wasm-test-setup --exec bash
