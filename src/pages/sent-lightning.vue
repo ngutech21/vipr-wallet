@@ -87,7 +87,7 @@ onMounted(() => {
 
   // Stop periodic bursts after 2 seconds
   setTimeout(() => {
-    if (animationInterval) {
+    if (animationInterval != null) {
       clearInterval(animationInterval)
       animationInterval = null
     }
@@ -95,7 +95,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (animationInterval) {
+  if (animationInterval != null) {
     clearInterval(animationInterval)
   }
   jsConfetti = null

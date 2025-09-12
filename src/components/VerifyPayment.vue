@@ -64,7 +64,7 @@ defineEmits<{
 }>()
 
 const formatExpiry = computed(() => {
-  if (!props.decodedInvoice.expiry) return 'Unknown'
+  if (props.decodedInvoice.expiry == null || props.decodedInvoice.expiry === 0) return 'Unknown'
   const date = new Date((props.decodedInvoice.timestamp + props.decodedInvoice.expiry) * 1000)
   return date.toLocaleString()
 })

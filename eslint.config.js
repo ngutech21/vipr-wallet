@@ -76,8 +76,6 @@ export default [
 
     // add your custom rules here
     rules: {
-      'prefer-promise-reject-errors': 'off',
-
       // allow debugger during development only
       'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
 
@@ -119,6 +117,20 @@ export default [
       'no-await-in-loop': 'warn',
       'no-promise-executor-return': 'error',
       'require-atomic-updates': 'error',
+      'prefer-promise-reject-errors': 'error', // Changed from 'off' to 'error' for proper error handling
+
+      // Critical Type Safety Rules - prevent runtime errors
+      '@typescript-eslint/no-floating-promises': 'error', // Ensure promises are handled
+      '@typescript-eslint/await-thenable': 'error', // Only await actual promises
+      '@typescript-eslint/no-misused-promises': 'error', // Prevent promise misuse
+      '@typescript-eslint/no-explicit-any': 'warn', // Discourage 'any' type
+      '@typescript-eslint/no-non-null-assertion': 'warn', // Discourage non-null assertions (!)
+      '@typescript-eslint/strict-boolean-expressions': ['warn', {
+        allowString: false,
+        allowNumber: true,
+        allowNullableObject: false,
+        allowNullableBoolean: true,
+      }],
     },
   },
 

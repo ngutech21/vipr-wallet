@@ -24,7 +24,7 @@ cleanupOutdatedCaches()
 
 // Non-SSR fallbacks to index.html
 // Production SSR fallbacks to offline.html (except for dev)
-if (process.env.MODE !== 'ssr' || process.env.PROD) {
+if (process.env.MODE !== 'ssr' || process.env.PROD === 'true') {
   registerRoute(
     new NavigationRoute(createHandlerBoundToURL(process.env.PWA_FALLBACK_HTML), {
       denylist: [new RegExp(process.env.PWA_SERVICE_WORKER_REGEX), /workbox-(.)*\.js$/],
@@ -35,7 +35,7 @@ if (process.env.MODE !== 'ssr' || process.env.PROD) {
 // This allows the web app to trigger skipWaiting via
 // registration.waiting.postMessage({type: 'SKIP_WAITING'})
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
+  if (event.data != null && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting().catch(() => {
       // Ignore errors from skipWaiting
     })

@@ -87,7 +87,7 @@ async function pasteFromClipboard() {
 }
 
 async function redeemEcash() {
-  if (!ecashToken.value.trim()) return
+  if (ecashToken.value.trim() === '') return
 
   try {
     isProcessing.value = true

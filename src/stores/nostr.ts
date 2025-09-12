@@ -101,7 +101,7 @@ export const useNostrStore = defineStore('nostr', {
         kinds: [Nip87Kinds.FediInfo],
       } as unknown as NDKFilter
 
-      if (this.ndk) {
+      if (this.ndk != null) {
         this.federationSubscription = this.ndk.subscribe(mintInfoFilter, { closeOnEose: false })
 
         // Process event synchronously, but handle async operations properly
@@ -115,7 +115,7 @@ export const useNostrStore = defineStore('nostr', {
 
     stopDiscoveringFederations() {
       logger.nostr.debug('Stopping federation discovery')
-      if (this.federationSubscription) {
+      if (this.federationSubscription != null) {
         this.federationSubscription.stop()
         this.federationSubscription = null
       }
@@ -139,12 +139,12 @@ async function processFederationEvent(
     // Get invite code
     const inviteTags = event.getMatchingTags('u')
     const inviteCode = inviteTags[0]?.[1]
-    if (!inviteCode) return
+    if (inviteCode == null || inviteCode === '') return
 
     // Get federation ID
     const fedTags = event.getMatchingTags('d')
     const federationId = fedTags[0]?.[1]
-    if (!federationId) return
+    if (federationId == null || federationId === '') return
 
     if (discoveredFederations.some((f) => f.federationId === federationId)) {
       logger.nostr.debug('Federation already discovered', { federationId })
@@ -160,7 +160,7 @@ async function processFederationEvent(
     if (!discoveredFederations.some((f) => f.federationId === federation.federationId)) {
       discoveredFederations.push(federation)
       discoveredFederations.sort((a, b) => {
-        return (a.title || '').localeCompare(b.title || '')
+        return (a.title ?? '').localeCompare(b.title ?? '')
       })
     }
 

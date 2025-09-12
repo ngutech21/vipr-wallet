@@ -239,7 +239,7 @@ const connectedProvider = ref('')
 
 function updateConnectedProvider() {
   const config = getConnectorConfig()
-  connectedProvider.value = config?.connectorName || ''
+  connectedProvider.value = config?.connectorName ?? ''
 }
 
 onDisconnected(() => {
@@ -272,7 +272,7 @@ function deleteData() {
           return
         }
         const deletePromises = databases
-          .filter((db): db is IDBDatabaseInfo & { name: string } => !!db.name)
+          .filter((db): db is IDBDatabaseInfo & { name: string } => db.name != null && db.name !== '')
           .map((db) => indexedDB.deleteDatabase(db.name))
         return Promise.all(deletePromises)
       })
@@ -311,7 +311,7 @@ async function checkForUpdates() {
 
     const registration = await navigator.serviceWorker.getRegistration()
 
-    if (!registration) {
+    if (registration == null) {
       Notify.create({
         message: 'Service Worker not registered',
         color: 'warning',
@@ -324,7 +324,7 @@ async function checkForUpdates() {
     await registration.update()
 
     // Then check if we have a waiting worker
-    if (registration.waiting) {
+    if (registration.waiting != null) {
       Dialog.create({
         title: 'Update Available',
         message: 'A new version is available. Update now?',
@@ -378,7 +378,7 @@ watch(
 )
 
 const isValidRelayUrl = computed(() => {
-  return newRelay.value && newRelay.value.startsWith('wss://')
+  return newRelay.value !== '' && newRelay.value.startsWith('wss://')
 })
 
 // function updatePubkey() {

@@ -25,7 +25,7 @@ export const useFederationStore = defineStore('federation', {
       }
     },
     async selectFederation(fedi: Federation | undefined) {
-      this.selectedFederationId = fedi?.federationId || null
+      this.selectedFederationId = fedi?.federationId ?? null
       const walletStore = useWalletStore()
       await walletStore.openWallet()
     },

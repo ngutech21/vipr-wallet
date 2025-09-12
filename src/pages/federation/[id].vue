@@ -245,15 +245,15 @@ const confirmLeave = ref(false)
 
 const hasMessages = computed(() => {
   logger.federation.debug('Checking for messages in federation metadata', { federation })
-  return federation?.metadata?.preview_message || federation?.metadata?.popup_countdown_message
+  return (federation?.metadata?.preview_message != null && federation.metadata.preview_message !== '') || (federation?.metadata?.popup_countdown_message != null && federation.metadata.popup_countdown_message !== '')
 })
 
 const hasVettedGateways = computed(() => {
-  return federation?.metadata?.vetted_gateways && federation.metadata.vetted_gateways.length > 0
+  return federation?.metadata?.vetted_gateways != null && federation.metadata.vetted_gateways.length > 0
 })
 
 const vettedGateways = computed(() => {
-  if (!federation?.metadata?.vetted_gateways) return []
+  if (federation?.metadata?.vetted_gateways == null) return []
 
   // If vetted_gateways is a string (JSON), parse it
   if (typeof federation.metadata.vetted_gateways === 'string') {
@@ -281,7 +281,7 @@ function formatDate(timestamp: string) {
 // ...existing code...
 
 async function leaveFederation() {
-  if (!federation) return
+  if (federation == null) return
 
   try {
     await walletStore.closeWallet()

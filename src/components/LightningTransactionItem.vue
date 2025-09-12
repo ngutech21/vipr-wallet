@@ -95,7 +95,7 @@ onMounted(async () => {
 })
 
 function formatOutcome(outcome: string | undefined): string {
-  if (!outcome) return ''
+  if (outcome == null || outcome === '') return ''
   return outcome.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
 }
 </script>

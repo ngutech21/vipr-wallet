@@ -55,13 +55,13 @@ const props = defineProps<{
 }>()
 
 // Change to initialize from prop if available
-const inviteCode = ref(props.initialInviteCode || '')
+const inviteCode = ref(props.initialInviteCode ?? '')
 
 // Watch for changes to the prop to update the local ref
 watch(
   () => props.initialInviteCode,
   (newCode) => {
-    if (newCode) {
+    if (newCode != null && newCode !== '') {
       inviteCode.value = newCode
     }
   },
@@ -95,10 +95,10 @@ async function addFederation() {
       return
     }
     const federation = await walletStore.previewFederation(inviteCode.value)
-    if (federation) {
+    if (federation != null) {
       const meta = await walletStore.getMetadata(federation)
       // FIXME is this redundant?
-      federation.metadata = meta || {}
+      federation.metadata = meta ?? {}
       federationStore.addFederation(federation)
       await federationStore.selectFederation(federation)
     }

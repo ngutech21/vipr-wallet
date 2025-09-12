@@ -165,10 +165,10 @@ async function createInvoice() {
   try {
     isProcessing.value = true
 
-    if (!lnAddress.value) {
+    if (lnAddress.value == null) {
       const invoice = await requestInvoice(lightningInvoice.value, invoiceAmount.value)
 
-      if (invoice) {
+      if (invoice !== '') {
         const newInvoice = invoice
         // eslint-disable-next-line require-atomic-updates
         lightningInvoice.value = newInvoice
@@ -180,7 +180,7 @@ async function createInvoice() {
         comment: invoiceMemo.value,
       })
 
-      if (invoice) {
+      if (invoice != null) {
         const paymentRequest = invoice.paymentRequest
         lightningInvoice.value = paymentRequest
         decodedInvoice.value = lightningStore.decodeInvoice(paymentRequest)
@@ -206,7 +206,7 @@ async function decodeInvoice() {
     lnAddress.value = new LightningAddress(lightningInvoice.value)
     try {
       await lnAddress.value.fetchWithProxy()
-      if (!lnAddress.value.lnurlpData) {
+      if (lnAddress.value.lnurlpData == null) {
         amountRequired.value = false
         lnAddress.value = null
         $q.notify({
@@ -246,7 +246,7 @@ async function payInvoice() {
 
     const paymentResult = await store.wallet?.lightning.payInvoice(lightningInvoice.value)
 
-    const amountInSats = decodedInvoice.value?.amount ? decodedInvoice.value.amount : 0
+    const amountInSats = decodedInvoice.value?.amount ?? 0
 
     await store.updateBalance()
 

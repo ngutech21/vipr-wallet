@@ -161,12 +161,12 @@ function deleteLastDigit() {
 
   let currentAmount = amount.value.toString()
   currentAmount = currentAmount.slice(0, -1)
-  amount.value = currentAmount ? Number(currentAmount) : 0
+  amount.value = currentAmount !== '' ? Number(currentAmount) : 0
 }
 
 function appendDigit(digit: number) {
   // Convert current amount to string, remove any decimals, append the digit, convert back to number
-  const currentAmount = amount.value || 0
+  const currentAmount = amount.value ?? 0
   const newValue = Number(currentAmount.toString().replace(/\.\d*$/, '') + digit.toString())
   amount.value = newValue
 }
@@ -182,7 +182,7 @@ onMounted(() => {
     appName: 'Vipr Wallet',
   })
 
-  if (amountInput.value) {
+  if (amountInput.value != null) {
     amountInput.value.focus()
   }
 })
@@ -232,7 +232,7 @@ async function onRequest() {
   )
   logger.logTransaction('Invoice created successfully')
 
-  if (invoice) {
+  if (invoice != null) {
     qrData.value = invoice.invoice
     isWaiting.value = true
     logger.logTransaction('Waiting for Lightning payment')

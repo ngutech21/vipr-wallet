@@ -13,7 +13,7 @@ export const useWalletStore = defineStore('wallet', {
   }),
   actions: {
     initWallet() {
-      if (!this.wallet) {
+      if (this.wallet == null) {
         this.wallet = new FedimintWallet()
       }
     },
@@ -21,7 +21,7 @@ export const useWalletStore = defineStore('wallet', {
       const federationStore = useFederationStore()
       const selectedFederation = federationStore.selectedFederation
 
-      if (selectedFederation) {
+      if (selectedFederation != null) {
         logger.logWalletOperation('Opening wallet for federation', {
           federationId: selectedFederation.federationId,
         })
@@ -62,7 +62,7 @@ export const useWalletStore = defineStore('wallet', {
     async redeemEcash(tokens: string): Promise<MSats | undefined> {
       const amount = await this.wallet?.mint.parseNotes(tokens)
       const opsId = await this.wallet?.mint.reissueExternalNotes(tokens)
-      if (opsId) {
+      if (opsId != null && opsId !== '') {
         this.wallet?.mint.subscribeReissueExternalNotes(opsId, (_state) => {
           this.updateBalance()
             .then(() => logger.logWalletOperation('Balance updated after ecash redemption'))
@@ -75,7 +75,7 @@ export const useWalletStore = defineStore('wallet', {
     async getTransactions(): Promise<Transactions[]> {
       try {
         const transactions = await this.wallet?.federation.listTransactions(10)
-        return transactions || [] // Handle undefined case
+        return transactions ?? [] // Handle undefined case
       } catch (error) {
         logger.error('Failed to fetch transactions', error)
         return [] // Return empty array on error
@@ -112,7 +112,7 @@ export const useWalletStore = defineStore('wallet', {
       await this.openWallet()
     },
     async updateBalance() {
-      if (this.wallet) {
+      if (this.wallet != null) {
         this.balance = ((await this.wallet.balance.getBalance()) ?? 0) / 1_000
       } else {
         this.balance = 0
@@ -120,7 +120,7 @@ export const useWalletStore = defineStore('wallet', {
     },
 
     async getMetadata(federation: Federation): Promise<FederationMeta | undefined> {
-      if (!federation.metaUrl) {
+      if (federation.metaUrl == null || federation.metaUrl === '') {
         logger.warn('No metaUrl provided for federation')
         return undefined
       }
@@ -142,7 +142,7 @@ export const useWalletStore = defineStore('wallet', {
 
     async previewFederation(inviteCode: string): Promise<Federation | undefined> {
       const result = await this.wallet?.previewFederation(inviteCode)
-      if (!result) {
+      if (result == null) {
         return undefined
       }
 
@@ -159,14 +159,14 @@ export const useWalletStore = defineStore('wallet', {
         modules?: Record<string, unknown>
       }
 
-      const federationName = typedConfig?.global?.meta?.federation_name || 'Unknown Federation'
+      const federationName = typedConfig?.global?.meta?.federation_name ?? 'Unknown Federation'
 
       const metaExternalUrl = typedConfig?.global?.meta?.meta_external_url as string
-      const modules = config?.modules || {}
+      const modules = config?.modules ?? {}
 
       let meta: FederationMeta
 
-      if (metaExternalUrl) {
+      if (metaExternalUrl != null && metaExternalUrl !== '') {
         try {
           const response = await fetch(metaExternalUrl)
 
@@ -196,6 +196,6 @@ export const useWalletStore = defineStore('wallet', {
     },
   },
 })
-if (import.meta.hot) {
+if (import.meta.hot != null) {
   import.meta.hot.accept(acceptHMRUpdate(useWalletStore, import.meta.hot))
 }

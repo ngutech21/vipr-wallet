@@ -119,7 +119,7 @@ const netAmountInSats = computed(() => {
 })
 
 const federationTitle = computed(() => {
-  return federationStore.selectedFederation?.title || 'Unknown Federation'
+  return federationStore.selectedFederation?.title ?? 'Unknown Federation'
 })
 
 onMounted(async () => {
@@ -142,7 +142,7 @@ function formatOutcome(outcome: string): string {
 }
 
 function getStatusColor(status: string | undefined): string {
-  if (!status) return 'grey'
+  if (status == null || status === '') return 'grey'
 
   switch (status) {
     case 'Confirmed':

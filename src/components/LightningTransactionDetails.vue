@@ -121,7 +121,7 @@ const amountInSats = computed(() => {
 })
 
 const federationTitle = computed(() => {
-  return federationStore.selectedFederation?.title || 'Unknown Federation'
+  return federationStore.selectedFederation?.title ?? 'Unknown Federation'
 })
 
 onMounted(async () => {

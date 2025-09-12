@@ -26,7 +26,7 @@ class WalletLogger {
    */
   private getLogLevel(): number {
     // Check for explicit log level in environment variable
-    if (import.meta.env.VITE_LOG_LEVEL) {
+    if (import.meta.env.VITE_LOG_LEVEL != null && import.meta.env.VITE_LOG_LEVEL !== '') {
       const levels: Record<string, number> = {
         silent: 0,
         error: 1,
@@ -90,10 +90,10 @@ class WalletLogger {
       this.transaction.info(action)
     } else {
       // In dev, log but truncate sensitive strings
-      const sanitized = data
+      const sanitized = data != null
         ? {
             ...data,
-            invoice: data.invoice ? `${data.invoice.substring(0, 20)}...` : undefined,
+            invoice: data.invoice != null && data.invoice !== '' ? `${data.invoice.substring(0, 20)}...` : undefined,
           }
         : undefined
       this.transaction.debug(action, sanitized)
@@ -130,12 +130,12 @@ class WalletLogger {
     const errorObj =
       error instanceof Error
         ? error
-        : error
+        : error != null
           ? new Error(typeof error === 'string' ? error : JSON.stringify(error))
           : undefined
     this.logger.error(message, errorObj)
 
-    if (this.isProd && errorObj) {
+    if (this.isProd && errorObj != null) {
       // In production, send to error tracking service (e.g., Sentry)
       // this.sendToErrorTracking(errorObj)
     }

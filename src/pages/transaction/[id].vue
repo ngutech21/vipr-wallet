@@ -76,7 +76,7 @@ onMounted(async () => {
   try {
     const operationId = (route.params as { id: string }).id
 
-    if (!operationId) {
+    if (operationId === '') {
       error.value = 'Transaction ID is missing'
       loading.value = false
       return
@@ -84,7 +84,7 @@ onMounted(async () => {
 
     const foundTransaction = allTransactions.find((tx) => tx.operationId === operationId)
 
-    if (foundTransaction) {
+    if (foundTransaction != null) {
       transaction.value = foundTransaction
     } else {
       logger.warn('Transaction not found in initial load', { operationId })

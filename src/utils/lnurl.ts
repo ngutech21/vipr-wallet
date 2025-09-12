@@ -23,8 +23,8 @@ async function getLnurlPayParams(lnurl: string) {
     const data = await res.json()
     const json = JSON.parse(data.contents)
 
-    if (data.status === 'ERROR' || data.reason || data.error) {
-      throw new Error(`LNURL error: ${data.reason || data.error || 'Unknown error'}`)
+    if (data.status === 'ERROR' || data.reason != null || data.error != null) {
+      throw new Error(`LNURL error: ${data.reason ?? data.error ?? 'Unknown error'}`)
     }
 
     if (json.tag !== 'payRequest') {
@@ -55,11 +55,11 @@ export async function requestInvoice(lnurl: string, amountSat: number): Promise<
     const data = await res.json()
     const json = JSON.parse(data.contents)
 
-    if (data.error) {
-      throw new Error(`Invoice error: ${data.error || 'Unknown error'}`)
+    if (data.error != null) {
+      throw new Error(`Invoice error: ${data.error ?? 'Unknown error'}`)
     }
 
-    if (!json.pr) {
+    if (json.pr == null) {
       throw new Error('Error creating invoice: ' + JSON.stringify(json))
     }
 

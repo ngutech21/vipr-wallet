@@ -22,7 +22,9 @@ Vipr-Wallet is a Progressive Web App (PWA) that serves as an ecash wallet for Fe
 - `pnpm final-check` - Run all checks: format, lint, typecheck, and tests
 
 ### Testing
+Playwright is configured in `playwright.config.ts` (tests live under `tests/e2e`).
 
+- `pnpm playwright install` – Install/update Playwright browsers (run once or after upgrades)
 - `pnpm test` - Run unit tests (alias for `pnpm test:unit`)
 - `pnpm test:unit` - Run Vitest unit tests in watch mode
 - `pnpm test:unit:ci` - Run tests once (CI mode)
@@ -42,7 +44,7 @@ Vipr-Wallet is a Progressive Web App (PWA) that serves as an ecash wallet for Fe
 - **State Management**: Pinia stores with localStorage persistence
 - **Build Tool**: Vite with Quasar CLI
 - **PWA**: Workbox for service worker generation
-- **Testing**: Vitest with Vue Test Utils
+- **Testing**: Vitest with Vue Test Utils and playwright for end to end testing
 
 ### Key Dependencies
 

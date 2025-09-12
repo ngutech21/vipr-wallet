@@ -91,7 +91,7 @@ const amountInSats = computed(() => {
 })
 
 const federationTitle = computed(() => {
-  return federationStore.selectedFederation?.title || 'Unknown Federation'
+  return federationStore.selectedFederation?.title ?? 'Unknown Federation'
 })
 
 onMounted(async () => {
@@ -151,12 +151,12 @@ function formatDate(timestamp: number): string {
 }
 
 function formatOutcome(outcome: string | undefined): string {
-  if (!outcome) return ''
+  if (outcome == null || outcome === '') return ''
   return outcome.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
 }
 
 function getStatusColor(status: string | undefined): string {
-  if (!status) return 'grey'
+  if (status == null || status === '') return 'grey'
 
   switch (status.toLowerCase()) {
     case 'success':
@@ -174,7 +174,7 @@ function getStatusColor(status: string | undefined): string {
 }
 
 async function copyNotes() {
-  if (props.transaction.notes) {
+  if (props.transaction.notes != null && props.transaction.notes !== '') {
     try {
       await navigator.clipboard.writeText(props.transaction.notes)
       Notify.create({

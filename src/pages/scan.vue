@@ -81,7 +81,7 @@ async function onAddFederationClose() {
 async function onDetect(detectedCodes: DetectedBarcode[]) {
   // Process only the first detected code
   const code = detectedCodes[0]
-  if (!code) return
+  if (code == null) return
 
   logger.scanner.debug('Code detected', { rawValue: code.rawValue })
   detectedContent.value = code.rawValue

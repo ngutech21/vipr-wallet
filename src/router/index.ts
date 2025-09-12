@@ -17,7 +17,7 @@ import { routes } from 'vue-router/auto-routes'
  */
 
 export default defineRouter(function (/* { store, ssrContext } */) {
-  const createHistory = process.env.SERVER
+  const createHistory = process.env.SERVER === 'true'
     ? createMemoryHistory
     : process.env.VUE_ROUTER_MODE === 'history'
       ? createWebHistory
