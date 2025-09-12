@@ -1,5 +1,5 @@
-import { consola } from 'consola'
-import type { ConsolaInstance } from 'consola'
+import { consola, type ConsolaInstance } from 'consola'
+
 
 /**
  * Security-conscious logger for the Vipr wallet application.

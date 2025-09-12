@@ -49,8 +49,7 @@ defineOptions({
   name: 'ScanPage',
 })
 
-import { QrcodeStream } from 'vue-qrcode-reader'
-import type { DetectedBarcode, EmittedError } from 'vue-qrcode-reader'
+import { QrcodeStream, type DetectedBarcode, type EmittedError } from 'vue-qrcode-reader'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router/auto'
 import type { SendRouteQuery } from 'src/types/vue-router'

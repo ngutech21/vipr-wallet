@@ -107,6 +107,12 @@ export default [
       'no-iterator': 'error',
       'no-labels': 'error',
 
+      // Code cleanliness
+      'no-lonely-if': 'warn', // Suggest else if instead of lonely if
+      //'no-nested-ternary': 'warn', // Avoid nested ternary operators
+      'prefer-template': 'warn', // Use template literals
+      'no-duplicate-imports': 'error', // Prevent duplicate imports
+
       // // Vue best practices
       // 'vue/component-name-in-template-casing': ['error', 'PascalCase'],
       // 'vue/component-definition-name-casing': ['error', 'PascalCase'],
@@ -143,6 +149,18 @@ export default [
       'no-promise-executor-return': 'error',
       'require-atomic-updates': 'error',
       'prefer-promise-reject-errors': 'error', // Changed from 'off' to 'error' for proper error handling
+
+      'no-throw-literal': 'error',
+
+      // Comparison and equality
+      //'eqeqeq': ['error', 'always'], // Require === and !==
+      'no-self-compare': 'error', // Disallow x === x
+      'no-constant-binary-expression': 'error', // Detect always true/false conditions
+
+      // Variable safety
+      'no-use-before-define': ['error', { functions: false, classes: true, variables: true }],
+      'no-shadow': 'error', // Prevent variable shadowing
+      'no-undef-init': 'error', // Disallow initializing to undefined
 
       // Critical Type Safety Rules - prevent runtime errors
       '@typescript-eslint/no-floating-promises': 'error', // Ensure promises are handled

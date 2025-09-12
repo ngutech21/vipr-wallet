@@ -1,6 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import type { MSats, Transactions } from '@fedimint/core-web'
-import { FedimintWallet } from '@fedimint/core-web'
+import { FedimintWallet, type MSats, type Transactions } from '@fedimint/core-web'
 import { useFederationStore } from './federation'
 import { ref } from 'vue'
 import type { Federation, FederationMeta, ModuleConfig } from 'src/components/models'

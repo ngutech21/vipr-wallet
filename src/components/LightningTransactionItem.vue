@@ -81,7 +81,7 @@ const amountInSats = computed(() => {
 
 onMounted(async () => {
   logger.lightning.debug('Lightning transaction item mounted', {
-    invoice: props.transaction.invoice.substring(0, 20) + '...',
+    invoice: `${props.transaction.invoice.substring(0, 20)  }...`,
   })
   try {
     const invoice = lightningStore.decodeInvoice(props.transaction.invoice)

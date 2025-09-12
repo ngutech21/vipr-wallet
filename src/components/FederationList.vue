@@ -94,7 +94,7 @@ function isSelected(fedi: Federation): boolean {
 
 function truncateId(id: string): string {
   if (id.length <= 12) return id
-  return id.substring(0, 6) + '...' + id.substring(id.length - 6)
+  return `${id.substring(0, 6)  }...${  id.substring(id.length - 6)}`
 }
 </script>
 

@@ -28,7 +28,7 @@ async function getLnurlPayParams(lnurl: string) {
     }
 
     if (json.tag !== 'payRequest') {
-      throw new Error('LNURL is not a valid payRequest Typ: ' + JSON.stringify(data))
+      throw new Error(`LNURL is not a valid payRequest Typ: ${  JSON.stringify(data)}`)
     }
 
     return json
@@ -60,7 +60,7 @@ export async function requestInvoice(lnurl: string, amountSat: number): Promise<
     }
 
     if (json.pr == null) {
-      throw new Error('Error creating invoice: ' + JSON.stringify(json))
+      throw new Error(`Error creating invoice: ${  JSON.stringify(json)}`)
     }
 
     return json.pr

@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { useLocalStorage } from '@vueuse/core'
-import type { NDKEvent, NDKFilter, NDKSubscription } from '@nostr-dev-kit/ndk'
-import NDK from '@nostr-dev-kit/ndk'
+import NDK, { type NDKEvent, type NDKFilter, type NDKSubscription } from '@nostr-dev-kit/ndk'
 import type { Federation } from 'src/components/models'
 import { Nip87Kinds } from 'src/types/nip87'
 import { useWalletStore } from './wallet'
