@@ -33,7 +33,7 @@ export default [
    * pluginVue.configs["flat/recommended"]
    *   -> Above, plus rules to enforce subjective community defaults to ensure consistency.
    */
-  ...pluginVue.configs['flat/essential'],
+  ...pluginVue.configs['flat/strongly-recommended'],
 
   {
     files: ['**/*.ts', '**/*.vue'],
@@ -106,6 +106,31 @@ export default [
       'no-proto': 'error',
       'no-iterator': 'error',
       'no-labels': 'error',
+
+      // // Vue best practices
+      // 'vue/component-name-in-template-casing': ['error', 'PascalCase'],
+      // 'vue/component-definition-name-casing': ['error', 'PascalCase'],
+      // 'vue/custom-event-name-casing': ['error', 'camelCase'],
+      // 'vue/define-macros-order': ['error', {
+      //   'order': ['defineOptions', 'defineProps', 'defineEmits', 'defineSlots']
+      // }],
+      // 'vue/define-props-declaration': ['error', 'type-based'],
+      // 'vue/define-emits-declaration': ['error', 'type-based'],
+      // 'vue/no-unused-refs': 'warn',
+      'vue/no-useless-template-attributes': 'error',
+      // 'vue/no-static-inline-styles': 'warn',
+      // 'vue/prefer-separate-static-class': 'error',
+      // 'vue/prefer-true-attribute-shorthand': 'error',
+      // 'vue/require-macro-variable-name': 'error',
+      // 'vue/block-order': ['error', {
+      //   'order': ['script', 'template', 'style']
+      // }],
+      'vue/component-api-style': ['error', ['script-setup']],
+      // 'vue/enforce-style-attribute': ['error', { 'allow': ['scoped', 'module'] }],
+      // 'vue/no-ref-object-reactivity-loss': 'error',
+      // 'vue/no-setup-props-reactivity-loss': 'error',
+      'vue/prefer-define-options': 'error',
+      'vue/require-typed-ref': 'error',
 
       // Prevent potentially dangerous operations
       'no-new-wrappers': 'error',

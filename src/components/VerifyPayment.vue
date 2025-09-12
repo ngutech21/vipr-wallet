@@ -33,7 +33,7 @@
         left-color="transparent"
         class="no-border payment-slider"
       >
-        <template v-slot:left>
+        <template #left>
           <div class="full-height full-width row justify-end items-center">
             <q-icon name="check" size="32px" color="white" />
           </div>

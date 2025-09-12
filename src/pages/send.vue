@@ -26,7 +26,7 @@
                 placeholder="Enter Lightning Invoice, Address or LNURL"
                 class="custom-input"
               >
-                <template v-slot:after>
+                <template #after>
                   <q-btn round dense flat icon="qr_code_scanner" @click="openScanner" />
                 </template>
               </q-input>
@@ -80,7 +80,7 @@
               @click="amountRequired ? createInvoice() : decodeInvoice()"
             >
               <!-- :disable="!isValidInput" -->
-              <template v-slot:loading>
+              <template #loading>
                 <q-spinner-dots color="white" />
               </template>
             </q-btn>

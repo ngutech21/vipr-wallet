@@ -29,7 +29,7 @@ meta:
               placeholder="Paste eCash token here"
               class="custom-input"
             >
-              <template v-slot:after>
+              <template #after>
                 <q-btn round dense flat icon="content_paste" @click="pasteFromClipboard" />
               </template>
             </q-input>
@@ -46,7 +46,7 @@ meta:
             :disable="!ecashToken.trim()"
             @click="redeemEcash"
           >
-            <template v-slot:loading>
+            <template #loading>
               <q-spinner-dots color="white" />
             </template>
           </q-btn>

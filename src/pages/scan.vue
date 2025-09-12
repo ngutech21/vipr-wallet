@@ -12,7 +12,7 @@ meta:
     <div class="camera-container">
       <qrcode-stream
         @detect="onDetect"
-        @cameraOn="onCameraOn"
+        @camera-on="onCameraOn"
         @error="onError"
         :track="paintOutline"
         :torch="torchActive"

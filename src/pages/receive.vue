@@ -56,7 +56,7 @@ meta:
             icon="bolt"
             :loading="isCreatingInvoice"
           >
-            <template v-slot:loading>
+            <template #loading>
               <q-spinner-dots color="white" />
             </template>
             <q-icon name="bolt" class="q-ml-sm" />
