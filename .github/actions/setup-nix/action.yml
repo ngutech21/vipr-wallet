@@ -3,10 +3,7 @@
 name: Setup Nix
 description: Sets up nix for running tests with devimint
 
-inputs:
-  cachix_auth_token:
-    description: 'Cachix authentication token'
-    required: true
+
 
 runs:
   using: 'composite'

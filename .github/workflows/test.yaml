@@ -19,11 +19,17 @@ jobs:
       - name: Setup Nix
         uses: ./.github/actions/setup-nix
 
-      - name: Install dependencies
-        run: pnpm install
+      - name: Setup Nix shell and run commands
+        run: |
+          # Install dependencies
+          pnpm install
 
-      - name: Run Vitest
-        run: pnpm test:unit:ci
-      
-      - name: Run Playwright
-        run: pnpm test:e2e
+          # Build packages
+          pnpm build
+
+          pnpm test:unit:ci
+
+          # Run e2e tests in the nix dev shell
+          nix develop --accept-flake-config --command pnpm test:e2e
+
+
