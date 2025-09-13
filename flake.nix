@@ -28,14 +28,14 @@
             fedimint.packages.${system}.fedimint-recurringd
             pkgs.bitcoind
             pkgs.electrs
-            pkgs.jq
             pkgs.lnd
-            pkgs.netcat
-            pkgs.perl
             pkgs.esplora-electrs
-            pkgs.procps
-            pkgs.which
-            pkgs.git
+            #pkgs.jq
+            #pkgs.netcat
+            #pkgs.perl
+            #pkgs.procps
+            #pkgs.which
+            #pkgs.git
 
             nodejs_22
             nodePackages.pnpm
