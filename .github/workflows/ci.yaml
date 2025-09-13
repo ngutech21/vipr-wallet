@@ -16,9 +16,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup Nix
-        uses: ./.github/actions/setup-nix
-
       - name: Install dependencies
         run: pnpm install
 
