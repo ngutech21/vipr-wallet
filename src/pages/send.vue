@@ -7,7 +7,6 @@
     <q-page class="column dark-gradient">
       <q-toolbar class="header-section">
         <q-btn flat round icon="arrow_back" :to="{ name: '/' }" />
-        <q-btn flat round icon="arrow_back" :to="'/'" />
         <q-toolbar-title class="text-center no-wrap">Send</q-toolbar-title>
         <div class="q-ml-md" style="width: 40px"></div>
       </q-toolbar>
