@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { Quasar } from 'quasar'
 import { createTestingPinia } from '@pinia/testing'
 import FederationList from 'src/components/FederationList.vue'
 import { useFederationStore } from 'src/stores/federation'
-import { vi } from 'vitest'
+
 
 describe('FederationList.vue', () => {
   it('renders federation name and handles store interactions', async () => {
