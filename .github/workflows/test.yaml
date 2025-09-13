@@ -19,17 +19,13 @@ jobs:
       - name: Setup Nix
         uses: ./.github/actions/setup-nix
 
-      - name: Setup Nix shell and run commands
+      - name: Build & Test (inside dev shell)
         run: |
-          # Install dependencies
-          pnpm install
-
-          # Build packages
-          pnpm build
-
-          pnpm test:unit:ci
-
-          # Run e2e tests in the nix dev shell
-          nix develop --accept-flake-config --command pnpm test:e2e
+          nix develop --accept-flake-config -c bash -euo pipefail -c "
+            pnpm install
+            pnpm build
+            pnpm test:unit:ci
+            pnpm test:e2e
+          "
 
 
