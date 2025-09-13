@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec devimint wasm-test-setup --exec bash
+exec devimint wasm-test-setup --exec "$@"
