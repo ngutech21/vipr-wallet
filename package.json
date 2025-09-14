@@ -22,6 +22,7 @@
     "test:e2e": "pnpm run test:setup playwright test",
     "test:e2e:headed": "playwright test --headed",
     "typecheck": "exec vue-tsc --noEmit",
+    "run-devimint": "pnpm run test:setup playwright test",
     "final-check": "pnpm format && pnpm lint && pnpm typecheck && pnpm test:unit:ci && pnpm test:e2e",
     "build-docker": "docker build -t vipr-wallet ."
   },

@@ -1,5 +1,5 @@
 <template>
-  <ModalCard title="Add Federation">
+  <ModalCard title="Add Federation" data-testid="add-federation-form">
     <q-form ref="federationForm" class="q-pa-md" @submit.prevent="addFederation">
       <q-input
         filled
@@ -7,6 +7,7 @@
         label="Enter Fedimint Invitecode"
         :rules="[(val) => !!val || 'Invitecode is required']"
         type="textarea"
+        data-testid="invite-code-input"
       />
 
       <div class="row justify-between full-width q-mt-none">

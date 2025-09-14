@@ -22,7 +22,8 @@ export class FaucetService {
   async payFaucetInvoice(invoice: string) {
     const res = await fetch(`${this.FAUCET_URL}/pay`, {
       method: 'POST',
-      body: invoice,
+      body: invoice.trim(),
+      headers: { 'Content-Type': 'text/plain' },
     })
     if (res.ok) {
       return await res.text()

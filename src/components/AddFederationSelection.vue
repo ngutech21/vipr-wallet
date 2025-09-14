@@ -1,6 +1,6 @@
 <template>
-  <ModalCard title="Join a federation">
-    <div class="q-pa-md">
+  <ModalCard title="Join a federation" data-testid="join-federation-selection">
+    <div class="q-pa-md" >
       <div class="row q-col-gutter-md">
         <div class="col-12">
           <q-card class="cursor-pointer" v-ripple @click="onDiscover">
@@ -17,7 +17,7 @@
         </div>
 
         <div class="col-12">
-          <q-card class="cursor-pointer" v-ripple @click="onAdd">
+          <q-card class="cursor-pointer" v-ripple @click="onAdd" data-testid="join-trusted-federation-card">
             <q-card-section class="row">
               <q-icon name="add_circle" size="48px" color="primary" class="col-2" />
               <div class="col-10">

@@ -3,7 +3,7 @@
     <div class="q-pa-md">
       <div class="row q-col-gutter-md">
         <div class="col-12">
-          <q-card class="cursor-pointer" v-ripple @click="onReceiveLightning">
+          <q-card class="cursor-pointer" v-ripple @click="onReceiveLightning" data-testid="receive-lightning-card">
             <q-card-section class="row">
               <q-icon name="flash_on" size="48px" color="warning" class="col-2" />
               <div class="col-10">
