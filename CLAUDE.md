@@ -31,6 +31,7 @@ Playwright is configured in `playwright.config.ts` (tests live under `tests/e2e`
 - `pnpm test:unit` - Run Vitest unit tests in watch mode
 - `pnpm test:unit:ci` - Run tests once (CI mode)
 - `pnpm test:unit:ui` - Run tests with Vitest UI
+- `nix develop --accept-flake-config --command pnpm test:e2e` - Run end to end tests using playwright in nix dev shell
 
 ### Package Management
 

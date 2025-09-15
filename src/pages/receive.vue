@@ -31,6 +31,7 @@ meta:
             class="no-spinner q-mb-lg"
             readonly
             :rules="[(val) => val > 0 || 'Enter a positive amount']"
+            data-testid="amount-input"
           />
 
           <!-- Preset amount buttons -->
