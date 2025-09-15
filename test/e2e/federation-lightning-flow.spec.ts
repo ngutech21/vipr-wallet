@@ -86,7 +86,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       await page.locator('[data-testid="receive-lightning-card"]').click()
 
       // Wait for receive page to load
-      await page.waitForSelector('text=Enter Amount')
+      await page.waitForSelector('[data-testid="amount-input"]', { timeout: 5000 })
     })
 
     // Step 6: Create invoice for 1000 sats
@@ -119,7 +119,6 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
 
     // // Step 7: Pay invoice using faucet
     await test.step('Pay invoice using faucet', async () => {
-      console.log('Invoice:', invoice)
       // Pay the invoice using faucet service
       const _paymentResult = await faucet.payFaucetInvoice(invoice)
 
