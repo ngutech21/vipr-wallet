@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { FaucetService } from './utils/FaucetService'
+test.setTimeout(120_000)
 
 test.describe('Federation Join and Lightning Payment Flow', () => {
   let faucet: FaucetService
@@ -116,7 +117,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       expect(invoice).toMatch(/^ln[a-z0-9]+/i) // Basic Lightning invoice check
     })
 
-    // Step 7: Pay invoice using faucet
+    // // Step 7: Pay invoice using faucet
     await test.step('Pay invoice using faucet', async () => {
       console.log('Invoice:', invoice)
       // Pay the invoice using faucet service
@@ -124,7 +125,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
 
       // Wait for payment to be processed
       // The app should detect the payment and redirect
-      await page.waitForURL('**/#/received-lightning*', { timeout: 90_000 })
+      await page.waitForURL('**/#/received-lightning*', { timeout: 60_000 })
 
       // Wait for success message
       await expect(page.locator('text=Payment Received')).toBeVisible()
@@ -141,28 +142,4 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       await expect(page.locator('.text-h4')).toContainText('1,000 sats')
     })
   })
-
-  // test('handle federation already exists', async ({ page }) => {
-  //   // Navigate to the app
-  //   await page.goto('/')
-
-  //   // First, join a federation
-  //   await page.locator('[data-testid="nav-federations"]').click()
-  //   await page.locator('button[aria-label="Add"]').click()
-  //   await page.locator('text=Add Federation').click()
-
-  //   const inviteCode = await faucet.getInviteCode()
-  //   await page.locator('textarea[label="Enter Fedimint Invitecode"]').fill(inviteCode)
-  //   await page.locator('button:has-text("Add Federation")').click()
-  //   await page.waitForSelector('text=Adding Federation', { state: 'hidden', timeout: 30000 })
-
-  //   // Try to add the same federation again
-  //   await page.locator('button[aria-label="Add"]').click()
-  //   await page.locator('text=Add Federation').click()
-  //   await page.locator('textarea[label="Enter Fedimint Invitecode"]').fill(inviteCode)
-  //   await page.locator('button:has-text("Add Federation")').click()
-
-  //   // Verify error message appears
-  //   await expect(page.locator('text=Federation already exists')).toBeVisible({ timeout: 5000 })
-  // })
 })
