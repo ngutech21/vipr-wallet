@@ -19,9 +19,21 @@ jobs:
       - name: Setup Nix
         uses: ./.github/actions/setup-nix
 
+      - name: Configure GitHub authentication for Nix
+        run: |
+          # Configure netrc for GitHub authentication
+          echo "machine api.github.com login x password ${{ secrets.GITHUB_TOKEN }}" >> ~/.netrc
+          echo "machine github.com login x password ${{ secrets.GITHUB_TOKEN }}" >> ~/.netrc
+          chmod 600 ~/.netrc
+
+          # Configure git to use the token
+          git config --global url."https://x:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
       - name: Build & Test (inside dev shell)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NIX_CONFIG: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
         run: |
           nix develop --accept-flake-config -c bash <<'EOF'
           set -euo pipefail
