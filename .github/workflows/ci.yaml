@@ -38,3 +38,7 @@ jobs:
 
       - name: Build frontend
         run: pnpm build
+      
+      - name: Run unit tests
+        run: pnpm test:unit:ci
+      

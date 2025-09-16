@@ -29,9 +29,6 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm build
 
-          echo "--- Running unit tests ---"
-          pnpm test:unit:ci
-
           echo "--- Running e2e tests ---"
           pnpm test:e2e || { ec=$?; echo "E2E failed (exit $ec)"; exit $ec; }
 
