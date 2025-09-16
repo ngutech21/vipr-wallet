@@ -19,6 +19,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     // Step 1: Navigate to Federations page
     await test.step('Navigate to Federations page', async () => {
       await page.locator('[data-testid="nav-federations"]').click()
+      await page.waitForLoadState('networkidle')
       await expect(page).toHaveURL(/#\/federations$/)
       await expect(page.locator('[data-testid="federations-page"]')).toBeVisible()
     })
@@ -55,9 +56,11 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
 
       // Click Add Federation button
       await page.locator('button:has-text("Add Federation")').click()
+      await page.waitForLoadState('networkidle')
 
       // Wait for loading to complete
       await page.waitForSelector('text=Adding Federation', { state: 'hidden', timeout: 30000 })
+
 
       // Verify we're back on the federations page with the new federation
       await expect(page.locator('[data-testid="federations-page"]')).toBeVisible()
@@ -66,6 +69,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     // Step 4: Navigate back to home page
     await test.step('Navigate to home page', async () => {
       await page.locator('[data-testid="nav-home"]').click()
+      await page.waitForLoadState('networkidle')
       await expect(page).toHaveURL(/#\/$/)
       await expect(page.locator('[data-testid="home-page"]')).toBeVisible()
 
@@ -87,8 +91,17 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       // Click on Receive Lightning option
       await page.locator('[data-testid="receive-lightning-card"]').click()
 
+      // Wait for modal to close completely
+      await page.waitForSelector('text=Receive eCash', { state: 'hidden', timeout: 10000 })
+
+      // Wait for navigation to receive page
+      await page.waitForURL('**/#/receive', { timeout: 10000 })
+
+      // Wait for page to fully load
+      await page.waitForLoadState('networkidle')
+
       // Wait for receive page to load
-      await page.waitForSelector('[data-testid="amount-input"]', { timeout: 5000 })
+      await page.waitForSelector('[data-testid="amount-input"]', { timeout: 10000 })
     })
 
     // Step 6: Create invoice for 1000 sats
@@ -128,6 +141,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       // The app should detect the payment and redirect
       await page.waitForURL('**/#/received-lightning*', { timeout: 60_000 })
 
+
       // Wait for success message
       await expect(page.locator('text=Payment Received')).toBeVisible()
       await expect(page.locator('text=1,000 sats')).toBeVisible()
@@ -137,6 +151,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     await test.step('Verify balance updated', async () => {
       // Navigate back to home
       await page.locator('[data-testid="back-home-button"]').click()
+      await page.waitForLoadState('networkidle')
       await expect(page).toHaveURL(/#\/$/)
 
       // Verify balance shows 1000 sats
