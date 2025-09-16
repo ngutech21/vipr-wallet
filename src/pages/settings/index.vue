@@ -224,7 +224,6 @@ import { version } from '../../../package.json'
 import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'
 import { Dialog, Loading, Notify } from 'quasar'
-import { getErrorMessage } from 'src/utils/error'
 import { useNostrStore } from 'src/stores/nostr'
 import { logger } from 'src/services/logger'
 import { computed, ref, watch } from 'vue'
@@ -263,38 +262,12 @@ function deleteData() {
     ok: { label: 'Delete', color: 'negative' },
     cancel: true,
   }).onOk(() => {
-    Loading.show({ message: 'Deleting data...' })
     localStorage.clear()
-    indexedDB
-      .databases()
-      .then((databases) => {
-        if (databases.length === 0) {
-          return
-        }
-        const deletePromises = databases
-          .filter(
-            (db): db is IDBDatabaseInfo & { name: string } => db.name != null && db.name !== '',
-          )
-          .map((db) => indexedDB.deleteDatabase(db.name))
-        return Promise.all(deletePromises)
-      })
-      .catch((error) => {
-        logger.error('Failed to delete user data', error)
-        Notify.create({
-          type: 'negative',
-          message: `Error deleting data ${getErrorMessage(error)}`,
-          position: 'top',
-        })
-      })
-      .finally(() => {
-        window.location.reload()
-        Loading.hide()
-        Notify.create({
-          type: 'positive',
-          message: 'Data deleted successfully',
-          position: 'top',
-        })
-      })
+    Notify.create({
+      type: 'positive',
+      message: 'Data deleted successfully',
+      position: 'top',
+    })
   })
 }
 async function checkForUpdates() {

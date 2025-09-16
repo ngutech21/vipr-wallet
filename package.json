@@ -24,7 +24,7 @@
     "typecheck": "exec vue-tsc --noEmit",
     "run-devimint": "pnpm run test:setup playwright test",
     "final-check": "pnpm format && pnpm lint && pnpm typecheck && pnpm test:unit:ci && pnpm test:e2e",
-    "build-docker": "docker build -t vipr-wallet ."
+    "build:docker": "docker build -t vipr-wallet ."
   },
   "dependencies": {
     "@fedimint/core-web": "0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3",
@@ -35,7 +35,6 @@
     "@vueuse/core": "^13.9.0",
     "bech32": "^2.0.0",
     "consola": "^3.4.2",
-    "idb": "^8.0.3",
     "js-confetti": "^0.13.1",
     "qrcode.vue": "^3.6.0",
     "quasar": "^2.18.2",
