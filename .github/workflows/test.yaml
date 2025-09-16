@@ -20,6 +20,8 @@ jobs:
         uses: ./.github/actions/setup-nix
 
       - name: Build & Test (inside dev shell)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           nix develop --accept-flake-config -c bash <<'EOF'
           set -euo pipefail
