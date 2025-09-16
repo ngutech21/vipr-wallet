@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test'
 import { FaucetService } from './utils/FaucetService'
+
 test.setTimeout(120_000)
 
 test.describe('Federation Join and Lightning Payment Flow', () => {
+
   let faucet: FaucetService
 
   test.beforeEach(() => {

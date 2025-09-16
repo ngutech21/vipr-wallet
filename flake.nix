@@ -4,19 +4,25 @@
 
   inputs = {
     # Follow fedimint's pinned nixpkgs (nixos-24.11) for cache hits
-    fedimint.url = "github:fedimint/fedimint/v0.7.2";
+    fedimint.url = "github:fedimint/fedimint/v0.8.1";
     nixpkgs.follows = "fedimint/nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
   };
 
-  outputs = { self, nixpkgs, flake-utils,fedimint, ... }:
+  outputs = { self, nixpkgs, flake-utils, fedimint, nixpkgs-unstable, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pinnedNixpkgs = fedimint.inputs.nixpkgs;
-        pkgs = import pinnedNixpkgs {
+        pkgs = import fedimint.inputs.nixpkgs {
           inherit system;
-          overlays = [ fedimint.overlays.all ];
+          overlays = [
+            # Only include the esplora-electrs overlay (which you need)
+            # Skip darwin-compile-fixes (causes the env attribute error)
+            (import "${fedimint}/nix/overlays/esplora-electrs.nix")
+          ];
         };
+        # Get latest playwright from unstable
+        pkgs-unstable = import nixpkgs-unstable { inherit system; };
       in
       {
         devShells.default = pkgs.mkShell {
@@ -29,22 +35,25 @@
             pkgs.electrs
             pkgs.lnd
             pkgs.esplora-electrs
-            #pkgs.jq
-            #pkgs.netcat
-            #pkgs.perl
-            #pkgs.procps
-            #pkgs.which
-            #pkgs.git
+            # pkgs.jq
+            # pkgs.netcat
+            # pkgs.perl
+            # pkgs.procps
+            # pkgs.which
+            # pkgs.git
 
             nodejs_22
             nodePackages.pnpm
             nodePackages.typescript
             mkcert
             pkgs.playwright-driver.browsers
+          ]++ [
+            # Use latest playwright from unstable
+            pkgs-unstable.playwright-driver.browsers
           ];
 
           shellHook = ''
-            export PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright-driver.browsers}
+            export PLAYWRIGHT_BROWSERS_PATH=${pkgs-unstable.playwright-driver.browsers}
             export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
 
             echo "Vipr-Wallet development environment"
@@ -52,6 +61,10 @@
             echo "pnpm $(pnpm --version)"
             echo "TypeScript $(tsc --version)"
             
+            # Check what playwright version nix provides
+            echo "Nix Playwright version: ${pkgs-unstable.playwright-driver.version}"
+            
+
             # Create certs directory if it doesn't exist
             #mkdir -p certs
             
@@ -91,6 +104,7 @@
     );
     nixConfig = {
       allow-dirty = true;
+      warn-dirty = false; 
       extra-substituters = [ "https://fedimint.cachix.org" ];
       extra-trusted-public-keys = [
         "fedimint.cachix.org-1:FpJJjy1iPVlvyv4OMiN5y9+/arFLPcnZhZVVCHCDYTs="
