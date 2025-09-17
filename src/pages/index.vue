@@ -77,12 +77,14 @@
             color="primary"
             :to="'/send'"
             :disable="totalBalance <= 0"
+            data-testid="send-ecash-button"
           />
-          <q-btn label="" color="primary" icon="qr_code_scanner" :to="'/scan'" />
+          <q-btn label="" color="primary" icon="qr_code_scanner" :to="'/scan'" data-testid="scan-button" />
           <q-btn
             label="Receive"
             icon="arrow_downward"
             color="primary"
+            data-testid="receive-ecash-button"
             @click="showReceiveEcashSelection = true"
           />
         </div>

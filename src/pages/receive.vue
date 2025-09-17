@@ -56,6 +56,7 @@ meta:
             @click="onRequest"
             icon="bolt"
             :loading="isCreatingInvoice"
+            data-testid="create-invoice-button"
           >
             <template #loading>
               <q-spinner-dots color="white" />
