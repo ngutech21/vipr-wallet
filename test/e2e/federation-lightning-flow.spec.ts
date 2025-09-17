@@ -28,6 +28,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     await test.step('Open Add Federation dialog', async () => {
       // Click the FAB button to open federation selection
       await page.locator('[data-testid="add-federation-button"]').click()
+      await page.waitForLoadState('networkidle')
 
 
 
@@ -36,6 +37,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
 
       // Click on "Add Federation" option to open the add federation form
       await page.locator('[data-testid="join-trusted-federation-card"]').click()
+      await page.waitForLoadState('networkidle')
 
       // Wait for the form to be visible
       await page.waitForSelector('[data-testid="add-federation-form"]', { timeout: 5000 })
@@ -84,12 +86,14 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     await test.step('Start receive flow', async () => {
       // Click Receive button
       await page.locator('button:has-text("Receive")').click()
+      await page.waitForLoadState('networkidle')
 
       // Wait for receive selection dialog
       await page.waitForSelector('text=Receive eCash', { timeout: 5000 })
 
       // Click on Receive Lightning option
       await page.locator('[data-testid="receive-lightning-card"]').click()
+      await page.waitForLoadState('networkidle')
 
       // Wait for modal to close completely
       await page.waitForSelector('text=Receive eCash', { state: 'hidden', timeout: 10000 })
@@ -97,8 +101,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       // Wait for navigation to receive page
       await page.waitForURL('**/#/receive', { timeout: 10000 })
 
-      // Wait for page to fully load
-      await page.waitForLoadState('networkidle')
+
 
       // Wait for receive page to load
       await page.waitForSelector('[data-testid="amount-input"]', { timeout: 10000 })
@@ -120,6 +123,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
 
       // Click Create Invoice button
       await page.locator('button:has-text("Create Invoice")').click()
+      await page.waitForLoadState('networkidle')
 
       // Wait for QR code to appear
       await page.waitForSelector('.qr-card', { timeout: 10000 })

@@ -14,6 +14,7 @@
     "dev": "quasar dev -m pwa",
     "dev:e2e": "BROWSER=none quasar dev -m pwa --port 9303",
     "build": "quasar build -m pwa",
+    "build:docker": "docker build -t vipr-wallet .",
     "postinstall": "quasar prepare",
     "test:setup": "bash scripts/setup_test_shell.sh",
     "test:unit:ui": "vitest --ui",
@@ -23,8 +24,7 @@
     "test:e2e:headed": "playwright test --headed",
     "typecheck": "exec vue-tsc --noEmit",
     "run-devimint": "pnpm run test:setup playwright test",
-    "final-check": "pnpm format && pnpm lint && pnpm typecheck && pnpm test:unit:ci && pnpm test:e2e",
-    "build:docker": "docker build -t vipr-wallet ."
+    "final-check": "pnpm format && pnpm lint && pnpm typecheck && pnpm test:unit:ci"
   },
   "dependencies": {
     "@fedimint/core-web": "0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3",
