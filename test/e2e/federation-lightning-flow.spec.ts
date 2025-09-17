@@ -7,8 +7,34 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
 
   let faucet: FaucetService
 
-  test.beforeEach(() => {
+  test.beforeEach(async ({ page }) => {
     faucet = new FaucetService()
+
+    // Capture console logs
+    page.on('console', msg => {
+      console.log(`Browser console [${msg.type()}]:`, msg.text())
+    })
+
+    // Capture page errors
+    page.on('pageerror', error => {
+      console.error('Page error:', error.message)
+      console.error('Stack:', error.stack)
+    })
+
+    // Add script to catch unhandled errors in the browser
+    await page.addInitScript(() => {
+      window.addEventListener('error', (e) => {
+        console.error('Uncaught error:', e.message, e.filename, e.lineno, e.colno)
+        console.error('Stack:', e.error?.stack)
+      })
+
+      window.addEventListener('unhandledrejection', (e) => {
+        console.error('Unhandled promise rejection:', e.reason)
+        if (e.reason?.stack) {
+          console.error('Stack:', e.reason.stack)
+        }
+      })
+    })
   })
 
   test('join federation and receive lightning payment', async ({ page }) => {

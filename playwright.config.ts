@@ -28,6 +28,8 @@ export default defineConfig({
     headless: true,
     ignoreHTTPSErrors: true,
 
+    viewport: { width: 1280, height: 720 },
+
     actionTimeout: 30_000,
     navigationTimeout: 60_000,
   },
@@ -45,8 +47,8 @@ export default defineConfig({
     command: 'BROWSER=none quasar dev -m pwa --port 9303',
     url: 'http://127.0.0.1:9303',
     reuseExistingServer: !isCI,
-    //timeout: 180_000, // allow cold Nix start
-    stdout: 'pipe',
-    stderr: 'pipe',
+    timeout: 120_000, // allow cold Nix start
+    stdout: 'ignore',
+    stderr: 'ignore',
   },
 })
