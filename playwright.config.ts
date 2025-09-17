@@ -30,16 +30,13 @@ export default defineConfig({
 
     actionTimeout: 30_000,
     navigationTimeout: 60_000,
-
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'mobile-chrome',
-      use: {
-        ...devices['Pixel 7'],
-      },
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
 
