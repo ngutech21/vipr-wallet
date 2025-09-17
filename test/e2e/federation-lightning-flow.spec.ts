@@ -20,6 +20,8 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     await test.step('Navigate to Federations page', async () => {
       await page.locator('[data-testid="nav-federations"]').click()
       await page.waitForLoadState('networkidle')
+
+      await page.waitForURL('**/#/federations', { timeout: 10_000 })
       await expect(page).toHaveURL(/#\/federations$/)
       await expect(page.locator('[data-testid="federations-page"]')).toBeVisible()
     })

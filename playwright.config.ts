@@ -27,6 +27,10 @@ export default defineConfig({
     trace: 'on-first-retry',
     headless: true,
     ignoreHTTPSErrors: true,
+
+    actionTimeout: 30_000,
+    navigationTimeout: 60_000,
+
   },
 
   /* Configure projects for major browsers */
