@@ -70,7 +70,7 @@
     "vite-plugin-top-level-await": "^1.6.0",
     "vite-plugin-wasm": "^3.5.0",
     "vitest": "^3.2.4",
-    "vue-tsc": "^3.0.7",
+    "vue-tsc": "^3.0.8",
     "workbox-build": "^7.3.0",
     "workbox-cacheable-response": "^7.3.0",
     "workbox-core": "^7.3.0",
