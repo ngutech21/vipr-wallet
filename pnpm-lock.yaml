@@ -67,8 +67,8 @@ importers:
         specifier: ^1.0.2
         version: 1.0.2(pinia@3.0.3(typescript@5.9.2)(vue@3.5.22(typescript@5.9.2)))
       '@playwright/test':
-        specifier: 1.54.1
-        version: 1.54.1
+        specifier: 1.55.1
+        version: 1.55.1
       '@quasar/app-vite':
         specifier: ^2.4.0
         version: 2.4.0(@types/node@24.5.2)(eslint@9.36.0)(pinia@3.0.3(typescript@5.9.2)(vue@3.5.22(typescript@5.9.2)))(quasar@2.18.5)(rollup@2.79.2)(sass@1.93.2)(terser@5.44.0)(tsx@4.20.6)(typescript@5.9.2)(vue-router@4.5.1(vue@3.5.22(typescript@5.9.2)))(vue@3.5.22(typescript@5.9.2))(workbox-build@7.3.0)(yaml@2.8.1)
@@ -862,6 +862,7 @@ packages:
 
   '@fedimint/core-web@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3':
     resolution: {integrity: sha512-1Yr7YZk0RR8hDw/Z6Z3jJtW0maAqq+YS8ykAVd/bFBdLZmKiob1c5FJv39fh7TMdmLXs/T6R3BCVJhPdTcqQDg==}
+    deprecated: '@fedimint/core-web has been renamed to @fedimint/core. Please update your dependencies to use the new package.'
 
   '@fedimint/fedimint-client-wasm-bundler@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3':
     resolution: {integrity: sha512-HdFiDW/nkgEDMdus9bMJqQjryfTy3+s00qmzQIi3D9i7EAVLvEdnEriRL99urr93NyB+lF9EqyuKZM9IbHPa0A==}
@@ -1083,8 +1084,8 @@ packages:
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
-  '@playwright/test@1.54.1':
-    resolution: {integrity: sha512-FS8hQ12acieG2dYSksmLOF7BNxnVf2afRJdCuM1eMSxj6QTSE6G4InGF7oApGgDb65MX7AwMVlIkpru0yZA4Xw==}
+  '@playwright/test@1.55.1':
+    resolution: {integrity: sha512-IVAh/nOJaw6W9g+RJVlIQJ6gSiER+ae6mKQ5CX1bERzQgbC1VSeBlwdvczT7pxb0GWiyrxH4TGKbMfDb4Sq/ig==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -3565,13 +3566,13 @@ packages:
   pkg-types@2.3.0:
     resolution: {integrity: sha512-SIqCzDRg0s9npO5XQ3tNZioRY1uK06lA41ynBC1YmFTmnY6FjUjVt6s4LoADmwoig1qqD0oK8h1p/8mlMx8Oig==}
 
-  playwright-core@1.54.1:
-    resolution: {integrity: sha512-Nbjs2zjj0htNhzgiy5wu+3w09YetDx5pkrpI/kZotDlDUaYk0HVA5xrBVPdow4SAUIlhgKcJeJg4GRKW6xHusA==}
+  playwright-core@1.55.1:
+    resolution: {integrity: sha512-Z6Mh9mkwX+zxSlHqdr5AOcJnfp+xUWLCt9uKV18fhzA8eyxUd8NUWzAjxUh55RZKSYwDGX0cfaySdhZJGMoJ+w==}
     engines: {node: '>=18'}
     hasBin: true
 
-  playwright@1.54.1:
-    resolution: {integrity: sha512-peWpSwIBmSLi6aW2auvrUtf2DqY16YYcCMO8rTVx486jKmDTJg7UAhyrraP98GB8BoPURZP8+nxO7TSd4cPr5g==}
+  playwright@1.55.1:
+    resolution: {integrity: sha512-cJW4Xd/G3v5ovXtJJ52MAOclqeac9S/aGGgRzLabuF8TnIb6xHvMzKIa6JmrRzUkeXJgfL1MhukP0NK6l39h3A==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -5824,9 +5825,9 @@ snapshots:
 
   '@pkgr/core@0.2.9': {}
 
-  '@playwright/test@1.54.1':
+  '@playwright/test@1.55.1':
     dependencies:
-      playwright: 1.54.1
+      playwright: 1.55.1
 
   '@pnpm/config.env-replace@1.1.0': {}
 
@@ -8465,11 +8466,11 @@ snapshots:
       exsolve: 1.0.7
       pathe: 2.0.3
 
-  playwright-core@1.54.1: {}
+  playwright-core@1.55.1: {}
 
-  playwright@1.54.1:
+  playwright@1.55.1:
     dependencies:
-      playwright-core: 1.54.1
+      playwright-core: 1.55.1
     optionalDependencies:
       fsevents: 2.3.2
 
