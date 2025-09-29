@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       '@fedimint/core-web':
-        specifier: 0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3
-        version: 0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3
+        specifier: 0.0.0-dev-recovery-f92131bde4b3ae5ef951de8668d8b304b4ab736a
+        version: 0.0.0-dev-recovery-f92131bde4b3ae5ef951de8668d8b304b4ab736a(@tauri-apps/api@2.8.0)
       '@getalby/bitcoin-connect':
         specifier: ^3.10.0
         version: 3.10.0(react@19.1.1)(typescript@5.9.2)
@@ -860,11 +860,16 @@ packages:
     resolution: {integrity: sha512-Z5kJ+wU3oA7MMIqVR9tyZRtjYPr4OC004Q4Rw7pgOKUOKkJfZ3O24nz3WYfGRpMDNmcOi3TwQOmgm7B7Tpii0w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@fedimint/core-web@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3':
-    resolution: {integrity: sha512-1Yr7YZk0RR8hDw/Z6Z3jJtW0maAqq+YS8ykAVd/bFBdLZmKiob1c5FJv39fh7TMdmLXs/T6R3BCVJhPdTcqQDg==}
+  '@fedimint/core-web@0.0.0-dev-recovery-f92131bde4b3ae5ef951de8668d8b304b4ab736a':
+    resolution: {integrity: sha512-av6P43lsn5yRE/Vbh64y3b0d/00ZMhPAuwHftbRsHMEISWxfnaDroP20ylUxUqS4DNMSW3Bv84k+ZB1EhhIOnw==}
+    peerDependencies:
+      '@tauri-apps/api': ^2.0.0
+    peerDependenciesMeta:
+      '@tauri-apps/api':
+        optional: true
 
-  '@fedimint/fedimint-client-wasm-bundler@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3':
-    resolution: {integrity: sha512-HdFiDW/nkgEDMdus9bMJqQjryfTy3+s00qmzQIi3D9i7EAVLvEdnEriRL99urr93NyB+lF9EqyuKZM9IbHPa0A==}
+  '@fedimint/fedimint-client-wasm-bundler@0.0.0-dev-recovery-f92131bde4b3ae5ef951de8668d8b304b4ab736a':
+    resolution: {integrity: sha512-2unCougk2ADespijwbvsEhL0dxAKwFzrJ7R+okYtKipIasXw5zRltGGwi7gWO13qQgYBkzGM6G27buoJH8uB9Q==}
 
   '@getalby/bitcoin-connect@3.10.0':
     resolution: {integrity: sha512-6UXeu0SzEmw4Fhyw9jP6PMH7dqHYQTdmdziUPxv4HE8xMO6Q+g5xPbPrK9R36ASB7P680JCQRnoJiltgP3fwLA==}
@@ -1440,6 +1445,9 @@ packages:
   '@szmarczak/http-timer@5.0.1':
     resolution: {integrity: sha512-+PmQX0PiAYPMeVYe237LJAYvOMYW1j2rH5YROyS3b4CTVJum34HfRvKvAzozHAQG0TnHNdUfY9nCeUyRAs//cw==}
     engines: {node: '>=14.16'}
+
+  '@tauri-apps/api@2.8.0':
+    resolution: {integrity: sha512-ga7zdhbS2GXOMTIZRT0mYjKJtR9fivsXzsyq5U3vjDL0s6DTMwYRm0UHNjzTY5dh4+LSC68Sm/7WEiimbQNYlw==}
 
   '@types/body-parser@1.19.6':
     resolution: {integrity: sha512-HLFeCYgz89uk22N5Qg3dvGvsv46B8GLvKKo1zKG4NybA8U2DiEO3w9lqGg29t/tfLRJpJ6iQxnVw4OnB7MoM9g==}
@@ -4468,6 +4476,10 @@ packages:
     resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
     hasBin: true
 
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
+
   uuid@13.0.0:
     resolution: {integrity: sha512-XQegIaBTVUjSHliKqcnFqYypAd4S+WCYt5NIeRs6w/UAry7z8Y9j5ZwRRL4kzq9U3sD6v+85er9FvkEaBpji2w==}
     hasBin: true
@@ -5623,11 +5635,14 @@ snapshots:
       '@eslint/core': 0.15.2
       levn: 0.4.1
 
-  '@fedimint/core-web@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3':
+  '@fedimint/core-web@0.0.0-dev-recovery-f92131bde4b3ae5ef951de8668d8b304b4ab736a(@tauri-apps/api@2.8.0)':
     dependencies:
-      '@fedimint/fedimint-client-wasm-bundler': 0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3
+      '@fedimint/fedimint-client-wasm-bundler': 0.0.0-dev-recovery-f92131bde4b3ae5ef951de8668d8b304b4ab736a
+      uuid: 11.1.0
+    optionalDependencies:
+      '@tauri-apps/api': 2.8.0
 
-  '@fedimint/fedimint-client-wasm-bundler@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3': {}
+  '@fedimint/fedimint-client-wasm-bundler@0.0.0-dev-recovery-f92131bde4b3ae5ef951de8668d8b304b4ab736a': {}
 
   '@getalby/bitcoin-connect@3.10.0(react@19.1.1)(typescript@5.9.2)':
     dependencies:
@@ -6168,6 +6183,9 @@ snapshots:
   '@szmarczak/http-timer@5.0.1':
     dependencies:
       defer-to-connect: 2.0.1
+
+  '@tauri-apps/api@2.8.0':
+    optional: true
 
   '@types/body-parser@1.19.6':
     dependencies:
@@ -9425,6 +9443,8 @@ snapshots:
   utils-merge@1.0.1: {}
 
   uuid@10.0.0: {}
+
+  uuid@11.1.0: {}
 
   uuid@13.0.0: {}
 

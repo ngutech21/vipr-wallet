@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fedimint SDK Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background-color: #1e1e1e;
+            color: #fff;
+        }
+        h1 {
+            color: #4fc3f7;
+        }
+        #output {
+            background-color: #2e2e2e;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        code {
+            background-color: #333;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #4fc3f7;
+            word-break: break-all;
+        }
+        .success {
+            color: #4caf50;
+        }
+        .error {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fedimint SDK Test</h1>
+    <div id="output">
+        <p>Starting test...</p>
+    </div>
+    <script type="module" src="./src/utils/test-wallet.ts"></script>
+</body>
+</html>

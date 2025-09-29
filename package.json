@@ -22,12 +22,13 @@
     "test:unit:ci": "vitest run",
     "test:e2e": "pnpm run test:setup playwright test",
     "test:e2e:headed": "playwright test --headed",
+    "test:sdk": "vite serve --config vite.config.test.ts",
     "typecheck": "exec vue-tsc --noEmit",
     "run-devimint": "pnpm run test:setup playwright test",
     "final-check": "pnpm format && pnpm lint && pnpm typecheck && pnpm test:unit:ci"
   },
   "dependencies": {
-    "@fedimint/core-web": "0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3",
+    "@fedimint/core-web": "0.0.0-dev-recovery-f92131bde4b3ae5ef951de8668d8b304b4ab736a",
     "@getalby/bitcoin-connect": "^3.10.0",
     "@getalby/lightning-tools": "^6.0.0",
     "@nostr-dev-kit/ndk": "^2.14.35",
