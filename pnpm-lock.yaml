@@ -11,9 +11,9 @@ importers:
 
   .:
     dependencies:
-      '@fedimint/core-web':
-        specifier: 0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3
-        version: 0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3
+      '@fedimint/core':
+        specifier: 0.1.1
+        version: 0.1.1
       '@getalby/bitcoin-connect':
         specifier: ^3.10.0
         version: 3.10.0(react@19.1.1)(typescript@5.9.2)
@@ -860,11 +860,11 @@ packages:
     resolution: {integrity: sha512-Z5kJ+wU3oA7MMIqVR9tyZRtjYPr4OC004Q4Rw7pgOKUOKkJfZ3O24nz3WYfGRpMDNmcOi3TwQOmgm7B7Tpii0w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@fedimint/core-web@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3':
-    resolution: {integrity: sha512-1Yr7YZk0RR8hDw/Z6Z3jJtW0maAqq+YS8ykAVd/bFBdLZmKiob1c5FJv39fh7TMdmLXs/T6R3BCVJhPdTcqQDg==}
+  '@fedimint/core@0.1.1':
+    resolution: {integrity: sha512-gZ61MXmvvV4mOTw1nSoJdMbQCCHHPEia4jbdEHadp6/vBACBG1o4wvVPcjmI0ibkC6Ie5nlXm/A5phkQIgOAFg==}
 
-  '@fedimint/fedimint-client-wasm-bundler@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3':
-    resolution: {integrity: sha512-HdFiDW/nkgEDMdus9bMJqQjryfTy3+s00qmzQIi3D9i7EAVLvEdnEriRL99urr93NyB+lF9EqyuKZM9IbHPa0A==}
+  '@fedimint/types@0.0.2':
+    resolution: {integrity: sha512-5HkzOEMLVh2vJzZu+s9v+WuQccTCyPWgZj3fgBhEPt3btHG9WGZnVDDsnqKObcsbL+NoLTMu26FZJIEgxEqldg==}
 
   '@getalby/bitcoin-connect@3.10.0':
     resolution: {integrity: sha512-6UXeu0SzEmw4Fhyw9jP6PMH7dqHYQTdmdziUPxv4HE8xMO6Q+g5xPbPrK9R36ASB7P680JCQRnoJiltgP3fwLA==}
@@ -5614,11 +5614,11 @@ snapshots:
       '@eslint/core': 0.15.2
       levn: 0.4.1
 
-  '@fedimint/core-web@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3':
+  '@fedimint/core@0.1.1':
     dependencies:
-      '@fedimint/fedimint-client-wasm-bundler': 0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3
+      '@fedimint/types': 0.0.2
 
-  '@fedimint/fedimint-client-wasm-bundler@0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3': {}
+  '@fedimint/types@0.0.2': {}
 
   '@getalby/bitcoin-connect@3.10.0(react@19.1.1)(typescript@5.9.2)':
     dependencies:

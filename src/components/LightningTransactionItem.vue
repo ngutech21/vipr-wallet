@@ -50,7 +50,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { date } from 'quasar'
 import { useLightningStore } from 'src/stores/lightning'
-import type { LightningTransaction } from '@fedimint/core-web'
+import type { LightningTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
 
 interface Props {

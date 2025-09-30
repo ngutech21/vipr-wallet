@@ -90,7 +90,7 @@ import { computed, ref, onMounted } from 'vue'
 import { date, Notify } from 'quasar'
 import { useFederationStore } from 'src/stores/federation'
 import { useLightningStore } from 'src/stores/lightning'
-import type { WalletTransaction } from '@fedimint/core-web'
+import type { WalletTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
 
 interface Props {

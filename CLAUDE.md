@@ -51,7 +51,7 @@ Playwright is configured in `playwright.config.ts` (tests live under `tests/e2e`
 
 ### Key Dependencies
 
-- `@fedimint/core-web` - Core Fedimint SDK for wallet operations
+- `@fedimint/core` - Core Fedimint SDK for wallet operations
 - `@getalby/bitcoin-connect` & `@getalby/lightning-tools` - Lightning connectivity
 - `@nostr-dev-kit/ndk` - Nostr protocol integration
 - `@vueuse/core` - Vue composition utilities

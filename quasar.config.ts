@@ -77,7 +77,7 @@ export default defineConfig((_ctx) => {
             ],
           },
           optimizeDeps: {
-            exclude: ['@fedimint/core-web'],
+            exclude: ['@fedimint/core'],
           },
         }
       },

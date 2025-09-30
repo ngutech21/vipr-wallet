@@ -29,15 +29,15 @@
       <template v-if="transaction">
         <LightningTransactionDetails
           v-if="transaction.kind === 'ln'"
-          :transaction="transaction as import('@fedimint/core-web').LightningTransaction"
+          :transaction="transaction as import('@fedimint/core').LightningTransaction"
         />
         <EcashTransactionDetails
           v-else-if="transaction.kind === 'mint'"
-          :transaction="transaction as import('@fedimint/core-web').EcashTransaction"
+          :transaction="transaction as import('@fedimint/core').EcashTransaction"
         />
         <WalletTransactionDetails
           v-else-if="transaction.kind === 'wallet'"
-          :transaction="transaction as import('@fedimint/core-web').WalletTransaction"
+          :transaction="transaction as import('@fedimint/core').WalletTransaction"
         />
       </template>
     </q-page>
@@ -52,7 +52,7 @@ defineOptions({
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router/auto'
 import { useWalletStore } from 'src/stores/wallet'
-import type { Transactions } from '@fedimint/core-web'
+import type { Transactions } from '@fedimint/core'
 import LightningTransactionDetails from 'src/components/LightningTransactionDetails.vue'
 import EcashTransactionDetails from 'src/components/EcashTransactionDetails.vue'
 import WalletTransactionDetails from 'src/components/WalletTransactionDetails.vue'
