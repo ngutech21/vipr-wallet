@@ -27,7 +27,7 @@
     "final-check": "pnpm format && pnpm lint && pnpm typecheck && pnpm test:unit:ci"
   },
   "dependencies": {
-    "@fedimint/core-web": "0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3",
+    "@fedimint/core-web": "0.1.1",
     "@getalby/bitcoin-connect": "^3.10.0",
     "@getalby/lightning-tools": "^6.0.0",
     "@nostr-dev-kit/ndk": "^2.14.36",
