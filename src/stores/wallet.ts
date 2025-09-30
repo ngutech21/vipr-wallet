@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { FedimintWallet, type MSats, type Transactions } from '@fedimint/core-web'
+import { WalletDirector, type MSats, type Transactions } from '@fedimint/core-web'
 import { useFederationStore } from './federation'
 import { ref } from 'vue'
 import type { Federation, FederationMeta, ModuleConfig } from 'src/components/models'
@@ -7,13 +7,14 @@ import { logger } from 'src/services/logger'
 
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
-    wallet: null as FedimintWallet | null,
+    wallet: null as WalletDirector | null,
     balance: ref(0),
   }),
   actions: {
     initWallet() {
       if (this.wallet == null) {
-        this.wallet = new FedimintWallet()
+        initializeDirector()
+        this.wallet = WalletDirector.in
       }
     },
     async openWallet() {
