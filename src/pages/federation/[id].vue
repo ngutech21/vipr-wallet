@@ -55,8 +55,8 @@
           </q-card-section>
         </q-card>
 
-        <div class="text-subtitle1 q-mb-xs">Details</div>
-        <q-card flat class="q-mb-md" v-if="federation?.metadata">
+        <div class="text-subtitle1 q-mb-xs" v-if="hasMetadata">Details</div>
+        <q-card flat class="q-mb-md" v-if="hasMetadata">
           <q-card-section>
             <q-list>
               <q-item v-if="federation?.metadata?.max_balance_msats">
@@ -243,6 +243,10 @@ const federation = federationStore.federations.find(
 )
 const confirmLeave = ref(false)
 
+const hasMetadata = computed(() => {
+  return federation?.metadata != null && Object.keys(federation.metadata).length > 0
+})
+
 const hasMessages = computed(() => {
   logger.federation.debug('Checking for messages in federation metadata', { federation })
   return (
@@ -261,7 +265,6 @@ const hasVettedGateways = computed(() => {
 const vettedGateways = computed(() => {
   if (federation?.metadata?.vetted_gateways == null) return []
 
-  // If vetted_gateways is a string (JSON), parse it
   if (typeof federation.metadata.vetted_gateways === 'string') {
     try {
       return JSON.parse(federation.metadata.vetted_gateways) as string[]
@@ -271,7 +274,6 @@ const vettedGateways = computed(() => {
     }
   }
 
-  // If it's already an array, return it
   return federation.metadata.vetted_gateways
 })
 
@@ -284,7 +286,6 @@ function formatDate(timestamp: string) {
   }
 }
 
-// ...existing code...
 
 async function leaveFederation() {
   if (federation == null) return
@@ -304,7 +305,6 @@ async function leaveFederation() {
   }
 }
 
-// ...existing code...
 </script>
 <style scoped>
 .q-card {
