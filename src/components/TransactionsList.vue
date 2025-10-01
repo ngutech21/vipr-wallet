@@ -4,17 +4,17 @@
       <template v-for="transaction in recentTransactions" :key="String(transaction.operationId)">
         <LightningTransactionItem
           v-if="transaction.kind === 'ln'"
-          :transaction="transaction as import('@fedimint/core').LightningTransaction"
+          :transaction="transaction as LightningTransaction"
           @click="viewTransactionDetails"
         />
         <EcashTransactionItem
           v-else-if="transaction.kind === 'mint'"
-          :transaction="transaction as import('@fedimint/core').EcashTransaction"
+          :transaction="transaction as EcashTransaction"
           @click="viewTransactionDetails"
         />
         <WalletTransactionItem
           v-else-if="transaction.kind === 'wallet'"
-          :transaction="transaction as import('@fedimint/core').WalletTransaction"
+          :transaction="transaction as WalletTransaction"
           @click="viewTransactionDetails"
         />
       </template>
@@ -32,7 +32,12 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router/auto'
 import { useWalletStore } from 'src/stores/wallet'
-import type { Transactions } from '@fedimint/core'
+import type {
+  Transactions,
+  LightningTransaction,
+  EcashTransaction,
+  WalletTransaction,
+} from '@fedimint/core'
 import LightningTransactionItem from './LightningTransactionItem.vue'
 import EcashTransactionItem from './EcashTransactionItem.vue'
 import WalletTransactionItem from './WalletTransactionItem.vue'
@@ -62,6 +67,11 @@ async function loadTransactions() {
 async function viewTransactionDetails(id: string) {
   await router.push({ name: '/transaction/[id]', params: { id } })
 }
+
+defineExpose({
+  recentTransactions,
+  isLoading,
+})
 </script>
 
 <style scoped>
