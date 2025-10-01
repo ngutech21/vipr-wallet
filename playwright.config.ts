@@ -1,6 +1,5 @@
 import { defineConfig, devices } from '@playwright/test'
 
-
 const isCI = process.env.CI !== undefined && process.env.CI !== '' && process.env.CI !== 'false'
 
 /**

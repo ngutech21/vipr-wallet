@@ -6,7 +6,6 @@ import { ref } from 'vue'
 import type { Federation, FederationMeta, ModuleConfig } from 'src/components/models'
 import { logger } from 'src/services/logger'
 
-
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
     director: null as WalletDirector | null,
@@ -39,7 +38,6 @@ export const useWalletStore = defineStore('wallet', {
         if (this.director == null) {
           this.initDirector()
         }
-
 
         // Create wallet if none exists
         if (this.wallet == null && this.director != null) {

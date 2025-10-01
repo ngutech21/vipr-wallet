@@ -29,7 +29,13 @@
       <FederationList />
 
       <q-page-sticky position="bottom-right" :offset="[30, 30]">
-        <q-btn fab icon="add" color="primary" @click="showSelection = true" data-testid="add-federation-button"/>
+        <q-btn
+          fab
+          icon="add"
+          color="primary"
+          @click="showSelection = true"
+          data-testid="add-federation-button"
+        />
       </q-page-sticky>
     </div>
   </q-page>

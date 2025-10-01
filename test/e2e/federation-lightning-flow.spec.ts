@@ -4,7 +4,6 @@ import { FaucetService } from './utils/FaucetService'
 test.setTimeout(120_000)
 
 test.describe('Federation Join and Lightning Payment Flow', () => {
-
   let faucet: FaucetService
 
   test.beforeEach(() => {
@@ -30,8 +29,6 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       await page.locator('[data-testid="add-federation-button"]').click()
       await page.waitForLoadState('networkidle')
 
-
-
       // Wait for the selection dialog to appear
       await page.waitForSelector('[data-testid="join-federation-selection"]', { timeout: 5000 })
 
@@ -41,8 +38,6 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
 
       // Wait for the form to be visible
       await page.waitForSelector('[data-testid="add-federation-form"]', { timeout: 5000 })
-
-
     })
 
     // Step 3: Join federation using faucet invite code
@@ -62,7 +57,6 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
 
       // Wait for loading to complete
       await page.waitForSelector('text=Adding Federation', { state: 'hidden', timeout: 30000 })
-
 
       // Verify we're back on the federations page with the new federation
       await expect(page.locator('[data-testid="federations-page"]')).toBeVisible()
@@ -101,8 +95,6 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       // Wait for navigation to receive page
       await page.waitForURL('**/#/receive', { timeout: 10000 })
 
-
-
       // Wait for receive page to load
       await page.waitForSelector('[data-testid="amount-input"]', { timeout: 10000 })
     })
@@ -115,7 +107,6 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       await page.locator('button:has-text("0")').click()
       await page.locator('button:has-text("0")').click()
       await page.locator('button:has-text("0")').click()
-
 
       // Verify amount is 1000
       const amountInput = page.locator('[data-testid="amount-input"]')
@@ -144,7 +135,6 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       // Wait for payment to be processed
       // The app should detect the payment and redirect
       await page.waitForURL('**/#/received-lightning*', { timeout: 60_000 })
-
 
       // Wait for success message
       await expect(page.locator('text=Payment Received')).toBeVisible()
