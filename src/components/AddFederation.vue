@@ -29,7 +29,7 @@
         />
       </div>
       <div class="q-mt-xl">
-        <q-btn type="submit" label="Add Federation" color="primary" class="q-mt-md full-width" />
+        <q-btn type="submit" label="Add Federation" color="primary" class="q-mt-md full-width" data-testid="submit-federation-button"/>
       </div>
     </q-form>
   </ModalCard>
