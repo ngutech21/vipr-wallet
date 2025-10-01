@@ -96,6 +96,7 @@ async function addFederation() {
       return
     }
     const federation = await walletStore.previewFederation(inviteCode.value)
+    logger.federation.debug('Federation preview', { federation })
     if (federation != null) {
       const meta = await walletStore.getMetadata(federation)
       // FIXME is this redundant?
