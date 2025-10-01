@@ -1,4 +1,4 @@
-name: docker-push-dockerhub
+name: Build docker image and push to DockerHub & DigitalOcean
 
 on:
   push:
