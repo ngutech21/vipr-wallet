@@ -52,7 +52,7 @@
 import { computed } from 'vue'
 import { date } from 'quasar'
 import { useLightningStore } from 'src/stores/lightning'
-import type { WalletTransaction } from '@fedimint/core-web'
+import type { WalletTransaction } from '@fedimint/core'
 
 interface Props {
   transaction: WalletTransaction

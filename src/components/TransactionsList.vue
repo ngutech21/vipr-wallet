@@ -4,17 +4,17 @@
       <template v-for="transaction in recentTransactions" :key="String(transaction.operationId)">
         <LightningTransactionItem
           v-if="transaction.kind === 'ln'"
-          :transaction="transaction as import('@fedimint/core-web').LightningTransaction"
+          :transaction="transaction as import('@fedimint/core').LightningTransaction"
           @click="viewTransactionDetails"
         />
         <EcashTransactionItem
           v-else-if="transaction.kind === 'mint'"
-          :transaction="transaction as import('@fedimint/core-web').EcashTransaction"
+          :transaction="transaction as import('@fedimint/core').EcashTransaction"
           @click="viewTransactionDetails"
         />
         <WalletTransactionItem
           v-else-if="transaction.kind === 'wallet'"
-          :transaction="transaction as import('@fedimint/core-web').WalletTransaction"
+          :transaction="transaction as import('@fedimint/core').WalletTransaction"
           @click="viewTransactionDetails"
         />
       </template>
@@ -32,7 +32,7 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router/auto'
 import { useWalletStore } from 'src/stores/wallet'
-import type { Transactions } from '@fedimint/core-web'
+import type { Transactions } from '@fedimint/core'
 import LightningTransactionItem from './LightningTransactionItem.vue'
 import EcashTransactionItem from './EcashTransactionItem.vue'
 import WalletTransactionItem from './WalletTransactionItem.vue'

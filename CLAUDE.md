@@ -17,7 +17,7 @@ Vipr-Wallet is a Progressive Web App (PWA) that serves as an ecash wallet for Fe
 ### Code Quality
 
 - `pnpm lint` - Run ESLint on source files
-- `pnpm lint:fix` - Fix ESLint errors and warnings 
+- `pnpm lint:fix` - Fix ESLint errors and warnings
 - `pnpm format` - Format code with Prettier
 - `pnpm typecheck` - Run Vue TypeScript compiler checks
 - `pnpm final-check` - Run all checks: format, lint, typecheck, and tests
@@ -51,7 +51,7 @@ Playwright is configured in `playwright.config.ts` (tests live under `tests/e2e`
 
 ### Key Dependencies
 
-- `@fedimint/core-web` - Core Fedimint SDK for wallet operations
+- `@fedimint/core` - Core Fedimint SDK for wallet operations
 - `@getalby/bitcoin-connect` & `@getalby/lightning-tools` - Lightning connectivity
 - `@nostr-dev-kit/ndk` - Nostr protocol integration
 - `@vueuse/core` - Vue composition utilities

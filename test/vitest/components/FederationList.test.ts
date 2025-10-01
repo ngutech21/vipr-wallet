@@ -5,7 +5,6 @@ import { createTestingPinia } from '@pinia/testing'
 import FederationList from 'src/components/FederationList.vue'
 import { useFederationStore } from 'src/stores/federation'
 
-
 describe('FederationList.vue', () => {
   it('renders federation name and handles store interactions', async () => {
     // Mount with testing pinia instance

@@ -27,8 +27,9 @@
     "final-check": "pnpm format && pnpm lint && pnpm typecheck && pnpm test:unit:ci"
   },
   "dependencies": {
-    "@fedimint/core-web": "0.0.0-canary-5fb29a5c5da7822f15f56d422ef835278d47cbf3",
-    "@getalby/bitcoin-connect": "^3.10.0",
+    "@fedimint/core": "0.1.1",
+    "@fedimint/transport-web": "^0.1.0",
+    "@getalby/bitcoin-connect": "^3.11.0",
     "@getalby/lightning-tools": "^6.0.0",
     "@nostr-dev-kit/ndk": "^2.14.36",
     "@quasar/extras": "^1.17.0",
@@ -51,7 +52,7 @@
     "@quasar/app-vite": "^2.4.0",
     "@quasar/cli": "^2.5.0",
     "@quasar/quasar-app-extension-testing-unit-vitest": "^1.2.3",
-    "@types/node": "^24.5.2",
+    "@types/node": "^24.6.0",
     "@vitest/ui": "^3.2.4",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.6.0",

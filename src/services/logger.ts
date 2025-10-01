@@ -1,4 +1,3 @@
-
 // FIXME: Remove linter disable when the code is cleaned up
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import { consola, type ConsolaInstance } from 'consola'
@@ -40,10 +39,10 @@ function resolveLogLevel(): number {
       trace: 5,
     }
 
-     if (raw in levels) {
-       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-       return levels[raw]!
-     }
+    if (raw in levels) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return levels[raw]!
+    }
   }
   return IS_PROD ? 1 : 4
 }

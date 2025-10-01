@@ -4,5 +4,12 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "moduleResolution": "Bundler"
   },
-  "include": ["typed-router.d.ts", "src/**/*", "src/**/*.vue","test/e2e","test/vitest","playwright.config.ts"]
+  "include": [
+    "typed-router.d.ts",
+    "src/**/*",
+    "src/**/*.vue",
+    "test/e2e",
+    "test/vitest",
+    "playwright.config.ts"
+  ]
 }

@@ -21,7 +21,14 @@ meta:
         <q-icon name="check_circle" size="4em" />
         <div class="text-h4 q-mt-md">Payment Received!</div>
         <div class="text-h3 q-mt-lg">{{ formatNumber(amount) }} sats</div>
-        <q-btn flat color="white" class="q-mt-xl" :to="{ name: '/' }" label="Back to Home" data-testid="back-home-button"/>
+        <q-btn
+          flat
+          color="white"
+          class="q-mt-xl"
+          :to="{ name: '/' }"
+          label="Back to Home"
+          data-testid="back-home-button"
+        />
       </div>
     </div>
   </q-page>

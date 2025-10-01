@@ -1,5 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { FedimintWallet, type MSats, type Transactions } from '@fedimint/core-web'
+import { type FedimintWallet, WalletDirector, type MSats, type Transactions } from '@fedimint/core'
+import { WasmWorkerTransport } from '@fedimint/transport-web'
 import { useFederationStore } from './federation'
 import { ref } from 'vue'
 import type { Federation, FederationMeta, ModuleConfig } from 'src/components/models'
@@ -7,13 +8,21 @@ import { logger } from 'src/services/logger'
 
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
+    director: null as WalletDirector | null,
     wallet: null as FedimintWallet | null,
     balance: ref(0),
   }),
   actions: {
-    initWallet() {
-      if (this.wallet == null) {
-        this.wallet = new FedimintWallet()
+    initDirector() {
+      if (this.director == null) {
+        try {
+          this.director = new WalletDirector(new WasmWorkerTransport())
+          this.director.setLogLevel('debug')
+          logger.logWalletOperation('Wallet director initialized')
+        } catch (error) {
+          logger.error('Failed to initialize wallet director', error)
+          throw error
+        }
       }
     },
     async openWallet() {
@@ -25,13 +34,25 @@ export const useWalletStore = defineStore('wallet', {
           federationId: selectedFederation.federationId,
         })
 
+        // Ensure director is initialized
+        if (this.director == null) {
+          this.initDirector()
+        }
+
+        // Create wallet if none exists
+        if (this.wallet == null && this.director != null) {
+          this.wallet = await this.director.createWallet()
+        }
+
         const walletIsOpen = this.wallet?.isOpen()
         if (
           walletIsOpen &&
           (await this.wallet?.federation.getFederationId()) !== selectedFederation.federationId
         ) {
           await this.closeWallet()
-          this.wallet = new FedimintWallet()
+          if (this.director != null) {
+            this.wallet = await this.director.createWallet()
+          }
         }
 
         if (!this.wallet?.isOpen()) {
@@ -51,11 +72,12 @@ export const useWalletStore = defineStore('wallet', {
       } else {
         this.balance = 0
       }
-      // Update balance after opening the wallet
     },
     async closeWallet() {
-      await this.wallet?.cleanup()
-      this.wallet = null
+      if (this.wallet != null) {
+        await this.wallet.cleanup()
+        this.wallet = null
+      }
     },
 
     async redeemEcash(tokens: string): Promise<MSats | undefined> {
@@ -140,7 +162,7 @@ export const useWalletStore = defineStore('wallet', {
     },
 
     async previewFederation(inviteCode: string): Promise<Federation | undefined> {
-      const result = await this.wallet?.previewFederation(inviteCode)
+      const result = await this.director?.previewFederation(inviteCode)
       if (result == null) {
         return undefined
       }

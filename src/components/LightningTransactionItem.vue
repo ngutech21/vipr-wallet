@@ -50,7 +50,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { date } from 'quasar'
 import { useLightningStore } from 'src/stores/lightning'
-import type { LightningTransaction } from '@fedimint/core-web'
+import type { LightningTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
 
 interface Props {
@@ -81,7 +81,7 @@ const amountInSats = computed(() => {
 
 onMounted(async () => {
   logger.lightning.debug('Lightning transaction item mounted', {
-    invoice: `${props.transaction.invoice.substring(0, 20)  }...`,
+    invoice: `${props.transaction.invoice.substring(0, 20)}...`,
   })
   try {
     const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
