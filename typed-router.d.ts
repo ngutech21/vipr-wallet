@@ -25,6 +25,7 @@ declare module 'vue-router/auto-routes' {
     '/federations/': RouteRecordInfo<'/federations/', '/federations', Record<never, never>, Record<never, never>>,
     '/receive': RouteRecordInfo<'/receive', '/receive', Record<never, never>, Record<never, never>>,
     '/receive-ecash': RouteRecordInfo<'/receive-ecash', '/receive-ecash', Record<never, never>, Record<never, never>>,
+    '/receive-onchain': RouteRecordInfo<'/receive-onchain', '/receive-onchain', Record<never, never>, Record<never, never>>,
     '/received-lightning': RouteRecordInfo<'/received-lightning', '/received-lightning', Record<never, never>, Record<never, never>>,
     '/scan': RouteRecordInfo<'/scan', '/scan', Record<never, never>, Record<never, never>>,
     '/send': RouteRecordInfo<'/send', '/send', Record<never, never>, Record<never, never>>,
@@ -70,6 +71,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/receive-ecash.vue': {
       routes: '/receive-ecash'
+      views: never
+    }
+    'src/pages/receive-onchain.vue': {
+      routes: '/receive-onchain'
       views: never
     }
     'src/pages/received-lightning.vue': {

@@ -49,10 +49,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { date } from 'quasar'
 import { useLightningStore } from 'src/stores/lightning'
 import type { WalletTransaction } from '@fedimint/core'
+import { logger } from 'src/services/logger'
 
 interface Props {
   transaction: WalletTransaction
@@ -66,6 +67,8 @@ defineEmits<{
 
 const lightningStore = useLightningStore()
 
+const amountInFiat = ref<string>('0.00')
+
 const amountInSats = computed(() => {
   return Math.floor(props.transaction.amountMsats / 1000).toLocaleString()
 })
@@ -74,11 +77,19 @@ const feeInSats = computed(() => {
   return Math.floor(props.transaction.fee / 1000).toLocaleString()
 })
 
-async function amountInFiat(amountMsats: number): Promise<string> {
-  const sats = Math.floor(amountMsats / 1000)
-  const fiatValue = await lightningStore.satsToFiat(sats)
-  return fiatValue.toFixed(2)
-}
+
+onMounted(async () => {
+  try {
+    const sats = Math.floor(props.transaction.amountMsats / 1000)
+    const fiatValue = await lightningStore.satsToFiat(sats)
+    amountInFiat.value = fiatValue.toFixed(2)
+  } catch (error) {
+    logger.error('Failed to convert amount to fiat', error)
+    amountInFiat.value = '0.00'
+  }
+})
+
+
 
 function formatAddress(address: string): string {
   if (address.length <= 16) return address
