@@ -286,7 +286,6 @@ function formatDate(timestamp: string) {
   }
 }
 
-
 async function leaveFederation() {
   if (federation == null) return
 
@@ -304,7 +303,6 @@ async function leaveFederation() {
     await router.push({ name: '/federations/' })
   }
 }
-
 </script>
 <style scoped>
 .q-card {
