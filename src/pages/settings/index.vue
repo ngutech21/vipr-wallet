@@ -161,6 +161,32 @@
         </q-card>
       </q-expansion-item>
 
+      <!-- Personal Backup Section -->
+      <q-expansion-item
+        expand-separator
+        icon="shield"
+        label="Personal Backup"
+        caption="Backup your wallet with recovery words"
+        header-class="settings-header"
+        expand-icon-class="text-primary"
+      >
+        <q-card>
+          <q-card-section>
+            <div class="text-subtitle1 q-mb-md">
+              Create a backup of your wallet using recovery words. Write them down and store them
+              safely to recover your wallet if you lose access to this device.
+            </div>
+            <q-btn
+              label="Create Backup"
+              color="primary"
+              icon="backup"
+              :to="{ name: '/settings/backup' }"
+              class="full-width"
+            />
+          </q-card-section>
+        </q-card>
+      </q-expansion-item>
+
       <q-expansion-item
         expand-separator
         icon="code"
@@ -185,6 +211,8 @@
           </q-card-section>
         </q-card>
       </q-expansion-item>
+
+
 
       <!-- Danger Zone -->
       <q-expansion-item

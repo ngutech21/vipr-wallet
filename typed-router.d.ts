@@ -30,6 +30,8 @@ declare module 'vue-router/auto-routes' {
     '/send': RouteRecordInfo<'/send', '/send', Record<never, never>, Record<never, never>>,
     '/sent-lightning': RouteRecordInfo<'/sent-lightning', '/sent-lightning', Record<never, never>, Record<never, never>>,
     '/settings/': RouteRecordInfo<'/settings/', '/settings', Record<never, never>, Record<never, never>>,
+    '/settings/backup': RouteRecordInfo<'/settings/backup', '/settings/backup', Record<never, never>, Record<never, never>>,
+    '/settings/backup-words': RouteRecordInfo<'/settings/backup-words', '/settings/backup-words', Record<never, never>, Record<never, never>>,
     '/transaction/[id]': RouteRecordInfo<'/transaction/[id]', '/transaction/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
   }
 
@@ -90,6 +92,14 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/settings/index.vue': {
       routes: '/settings/'
+      views: never
+    }
+    'src/pages/settings/backup.vue': {
+      routes: '/settings/backup'
+      views: never
+    }
+    'src/pages/settings/backup-words.vue': {
+      routes: '/settings/backup-words'
       views: never
     }
     'src/pages/transaction/[id].vue': {
