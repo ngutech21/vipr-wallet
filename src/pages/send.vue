@@ -105,32 +105,31 @@ defineOptions({
 
 import { ref, watch } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
-import { useLightningStore } from 'src/stores/lightning'
 import { useQuasar, Loading } from 'quasar'
 import VerifyPayment from 'components/VerifyPayment.vue'
-import type { Bolt11Invoice } from 'src/components/models'
 import { useRoute, useRouter } from 'vue-router'
 import type { SendRouteQuery } from 'src/types/vue-router'
 import { getErrorMessage } from 'src/utils/error'
-import { LightningAddress } from '@getalby/lightning-tools'
-
-import { requestInvoice } from 'src/utils/lnurl'
+import { useInvoiceDecoding } from 'src/composables/useInvoiceDecoding'
 
 const lightningInvoice = ref('')
-const decodedInvoice = ref<Bolt11Invoice | null>(null)
 const store = useWalletStore()
-const lightningStore = useLightningStore()
 const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()
 const query = route.query as SendRouteQuery
 const invoiceAmount = ref(0)
 const invoiceMemo = ref('')
-const lnAddress = ref<LightningAddress | null>(null)
-const isProcessing = ref(false)
 
-// determine if the amount is required e.g. when paying a lightning address or lnurl-p
-const amountRequired = ref(false)
+// Use the invoice decoding composable
+const {
+  isProcessing,
+  amountRequired,
+  lnAddress,
+  decodedInvoice,
+  decodeInvoice: decodeInvoiceFromComposable,
+  createInvoiceFromInput,
+} = useInvoiceDecoding()
 
 // FIXME
 // Validate input before allowing to continue
@@ -156,86 +155,16 @@ watch(
   { immediate: true },
 )
 
+async function decodeInvoice() {
+  await decodeInvoiceFromComposable(lightningInvoice.value)
+}
+
 async function openScanner() {
   await router.push({ name: '/scan' })
 }
 
 async function createInvoice() {
-  try {
-    isProcessing.value = true
-
-    if (lnAddress.value == null) {
-      const invoice = await requestInvoice(lightningInvoice.value, invoiceAmount.value)
-
-      if (invoice !== '') {
-        const newInvoice = invoice
-        // eslint-disable-next-line require-atomic-updates
-        lightningInvoice.value = newInvoice
-        decodedInvoice.value = lightningStore.decodeInvoice(newInvoice)
-      }
-    } else {
-      const invoice = await lnAddress?.value?.requestInvoice({
-        satoshi: invoiceAmount.value,
-        comment: invoiceMemo.value,
-      })
-
-      if (invoice != null) {
-        const paymentRequest = invoice.paymentRequest
-        lightningInvoice.value = paymentRequest
-        decodedInvoice.value = lightningStore.decodeInvoice(paymentRequest)
-      }
-    }
-  } catch (error) {
-    $q.notify({
-      type: 'negative',
-      message: `Failed to create invoice: ${getErrorMessage(error)}`,
-      position: 'top',
-    })
-  } finally {
-    isProcessing.value = false
-    Loading.hide()
-  }
-}
-
-async function decodeInvoice() {
-  isProcessing.value = true
-
-  if (lightningInvoice.value.includes('@')) {
-    amountRequired.value = true
-    lnAddress.value = new LightningAddress(lightningInvoice.value)
-    try {
-      await lnAddress.value.fetchWithProxy()
-      if (lnAddress.value.lnurlpData == null) {
-        amountRequired.value = false
-        lnAddress.value = null
-        $q.notify({
-          type: 'negative',
-          message: 'Invalid lightning address',
-          position: 'top',
-        })
-      }
-    } catch (error) {
-      $q.notify({
-        type: 'negative',
-        message: `Failed to fetch lightning address: ${getErrorMessage(error)}`,
-        position: 'top',
-      })
-    }
-  } else if (lightningInvoice.value.toLowerCase().startsWith('lnurl1')) {
-    amountRequired.value = true
-  } else {
-    try {
-      decodedInvoice.value = lightningStore.decodeInvoice(lightningInvoice.value)
-    } catch (error) {
-      $q.notify({
-        type: 'negative',
-        message: `Failed to decode invoice: ${getErrorMessage(error)}`,
-        position: 'top',
-      })
-    }
-  }
-
-  isProcessing.value = false
+  await createInvoiceFromInput(lightningInvoice.value, invoiceAmount.value, invoiceMemo.value)
 }
 
 async function payInvoice() {
