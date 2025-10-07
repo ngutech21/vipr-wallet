@@ -15,6 +15,12 @@ export default defineConfig({
       'src/**/*.vitest.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
       'test/vitest/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
     ],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'lcov'],
+      include: ['src/**/*.{ts,vue}'],
+      exclude: ['node_modules/', 'test/', '**/*.spec.ts', '**/*.test.ts'],
+    },
   },
   resolve: {
     alias: {
