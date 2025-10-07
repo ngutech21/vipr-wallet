@@ -113,19 +113,17 @@ defineOptions({
 
 import { ref, onMounted, computed } from 'vue'
 import QrcodeVue from 'qrcode.vue'
-import { useWalletStore } from 'src/stores/wallet'
-import { Loading, useQuasar } from 'quasar'
+import { Loading } from 'quasar'
 import { useRouter } from 'vue-router/auto'
 import { useShare } from '@vueuse/core'
 import { init, requestProvider } from '@getalby/bitcoin-connect'
 import { useFederationStore } from 'src/stores/federation'
 import { logger } from 'src/services/logger'
+import { useLightningPayment } from 'src/composables/useLightningPayment'
 
 const amount = ref<number>(0)
 const qrData = ref('')
-const store = useWalletStore()
 const amountInput = ref<HTMLInputElement | null>(null)
-const $q = useQuasar()
 const router = useRouter()
 const lnExpiry = 60 * 20 // 20 minutes
 const countdown = ref(lnExpiry)
@@ -134,6 +132,9 @@ const isLeaving = ref(false) // New flag to control transition
 const { share, isSupported } = useShare()
 const isCreatingInvoice = ref(false)
 const federationStore = useFederationStore()
+
+// Use the lightning payment composable
+const { createInvoice, waitForInvoicePayment } = useLightningPayment()
 
 const keypadButtons = [
   // First row (1-3)
@@ -223,47 +224,31 @@ async function onRequest() {
     }
   }, 1000)
 
-  logger.logTransaction('Creating Lightning invoice', { amount: amount.value })
-  const invoiceAmount = amount.value * 1_000
+  const invoiceResult = await createInvoice(amount.value, 'minting ecash', lnExpiry)
 
-  const invoice = await store.wallet?.lightning.createInvoice(
-    invoiceAmount,
-    'minting ecash',
-    lnExpiry,
-  )
-  logger.logTransaction('Invoice created successfully')
-
-  if (invoice != null) {
-    qrData.value = invoice.invoice
+  if (
+    invoiceResult.success &&
+    invoiceResult.invoice != null &&
+    invoiceResult.invoice !== '' &&
+    invoiceResult.operationId != null &&
+    invoiceResult.operationId !== ''
+  ) {
+    qrData.value = invoiceResult.invoice
     isWaiting.value = true
-    logger.logTransaction('Waiting for Lightning payment')
 
-    try {
-      await store.wallet?.lightning.waitForReceive(invoice.operation_id, lnExpiry * 1_000)
-      logger.logTransaction('Lightning payment received successfully')
+    const waitResult = await waitForInvoicePayment(invoiceResult.operationId, lnExpiry * 1_000)
 
-      await store.updateBalance()
-
+    if (waitResult.success) {
       await router.push({
         name: '/received-lightning',
         query: { amount: amount.value.toString() },
       })
-    } catch (e) {
-      let errorMessage = 'An unknown error occurred.'
-      if (e instanceof Error) {
-        errorMessage = e.message
-      } else if (typeof e === 'string') {
-        errorMessage = e
-      }
-      $q.notify({
-        message: `Error receiving payment: ${errorMessage}`,
-        color: 'negative',
-        position: 'top',
-      })
-    } finally {
-      isWaiting.value = false
-      isCreatingInvoice.value = false
     }
+
+    isWaiting.value = false
+    isCreatingInvoice.value = false
+  } else {
+    isCreatingInvoice.value = false
   }
 }
 

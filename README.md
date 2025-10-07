@@ -30,7 +30,6 @@ A demo version of the wallet is available at [beta.vipr.cash](https://beta.vipr.
 
 ## ✨ Features
 
-
 ### General
 
 - [x] lightning send

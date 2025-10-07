@@ -104,17 +104,14 @@ defineOptions({
 })
 
 import { ref, watch } from 'vue'
-import { useWalletStore } from 'src/stores/wallet'
-import { useQuasar, Loading } from 'quasar'
 import VerifyPayment from 'components/VerifyPayment.vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { SendRouteQuery } from 'src/types/vue-router'
-import { getErrorMessage } from 'src/utils/error'
 import { useInvoiceDecoding } from 'src/composables/useInvoiceDecoding'
+import { useLightningPayment } from 'src/composables/useLightningPayment'
 
 const lightningInvoice = ref('')
-const store = useWalletStore()
-const $q = useQuasar()
+
 const route = useRoute()
 const router = useRouter()
 const query = route.query as SendRouteQuery
@@ -130,6 +127,9 @@ const {
   decodeInvoice: decodeInvoiceFromComposable,
   createInvoiceFromInput,
 } = useInvoiceDecoding()
+
+// Use the lightning payment composable
+const { payInvoice: payInvoiceFromComposable } = useLightningPayment()
 
 // FIXME
 // Validate input before allowing to continue
@@ -168,29 +168,15 @@ async function createInvoice() {
 }
 
 async function payInvoice() {
-  try {
-    isProcessing.value = true
-    Loading.show({ message: 'Processing payment...' })
+  const amountInSats = decodedInvoice.value?.amount ?? 0
 
-    const paymentResult = await store.wallet?.lightning.payInvoice(lightningInvoice.value)
+  const result = await payInvoiceFromComposable(lightningInvoice.value, amountInSats)
 
-    const amountInSats = decodedInvoice.value?.amount ?? 0
-
-    await store.updateBalance()
-
+  if (result.success) {
     await router.push({
       path: '/sent-lightning',
-      query: { amount: amountInSats, fee: paymentResult?.fee },
+      query: { amount: result.amountSats, fee: result.fee },
     })
-  } catch (error) {
-    $q.notify({
-      type: 'negative',
-      message: `Failed to pay invoice: ${getErrorMessage(error)}`,
-      position: 'top',
-    })
-  } finally {
-    isProcessing.value = false
-    Loading.hide()
   }
 }
 </script>

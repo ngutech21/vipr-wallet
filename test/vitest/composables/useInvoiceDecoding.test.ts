@@ -79,7 +79,7 @@ describe('useInvoiceDecoding', () => {
     it('should create an invoice from LNURL', async () => {
       const { createInvoiceFromInput, decodedInvoice } = useInvoiceDecoding()
 
-      const result = await createInvoiceFromInput('lnurl1...', 1000,"Test memo")
+      const result = await createInvoiceFromInput('lnurl1...', 1000, 'Test memo')
 
       expect(result).toBeDefined()
       expect(decodedInvoice.value).toBeDefined()
