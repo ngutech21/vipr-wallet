@@ -45,8 +45,8 @@ meta:
         </q-card>
 
         <div class="text-caption text-grey-6 text-center q-mb-lg">
-          Note: Recovery words are currently a placeholder feature. Full wallet recovery
-          will be available when the Fedimint SDK supports it.
+          Note: Recovery words are currently a placeholder feature. Full wallet recovery will be
+          available when the Fedimint SDK supports it.
         </div>
 
         <q-btn
@@ -58,13 +58,7 @@ meta:
           @click="showRecoveryWords"
         />
 
-        <q-btn
-          label="Cancel"
-          flat
-          color="grey-6"
-          class="full-width"
-          @click="goBack"
-        />
+        <q-btn label="Cancel" flat color="grey-6" class="full-width" @click="goBack" />
       </div>
     </div>
   </q-page>

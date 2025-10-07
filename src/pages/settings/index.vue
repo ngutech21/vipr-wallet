@@ -212,8 +212,6 @@
         </q-card>
       </q-expansion-item>
 
-
-
       <!-- Danger Zone -->
       <q-expansion-item
         expand-separator

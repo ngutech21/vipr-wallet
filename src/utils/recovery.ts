@@ -7,10 +7,30 @@
 
 // Placeholder word list for stub implementation
 const STUB_WORDS = [
-  'vipr', 'wallet', 'backup', 'fedimint', 'ecash', 'bitcoin',
-  'lightning', 'privacy', 'freedom', 'secure', 'crypto', 'network',
-  'example', 'sample', 'demo', 'test', 'mock', 'stub',
-  'alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta'
+  'vipr',
+  'wallet',
+  'backup',
+  'fedimint',
+  'ecash',
+  'bitcoin',
+  'lightning',
+  'privacy',
+  'freedom',
+  'secure',
+  'crypto',
+  'network',
+  'example',
+  'sample',
+  'demo',
+  'test',
+  'mock',
+  'stub',
+  'alpha',
+  'beta',
+  'gamma',
+  'delta',
+  'epsilon',
+  'zeta',
 ]
 
 /**

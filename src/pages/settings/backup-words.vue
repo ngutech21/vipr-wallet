@@ -48,8 +48,8 @@ meta:
                   Placeholder Recovery Words
                 </div>
                 <div class="text-caption">
-                  These are temporary placeholder words. Full recovery functionality
-                  will be available when the Fedimint SDK supports mnemonic generation.
+                  These are temporary placeholder words. Full recovery functionality will be
+                  available when the Fedimint SDK supports mnemonic generation.
                 </div>
               </div>
             </div>
@@ -112,7 +112,9 @@ async function goBack() {
 
 .word-card {
   border-radius: 8px;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .word-card:hover {
