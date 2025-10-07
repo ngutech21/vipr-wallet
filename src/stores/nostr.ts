@@ -15,8 +15,6 @@ const DEFAULT_RELAYS = [
   'wss://relay.primal.net',
 ]
 
-const walletStore = useWalletStore()
-
 export const useNostrStore = defineStore('nostr', {
   state: () => ({
     relays: useLocalStorage<string[]>('vipr.nostr.relays', DEFAULT_RELAYS),
@@ -152,6 +150,7 @@ async function processFederationEvent(
       return
     }
 
+    const walletStore = useWalletStore()
     const federation = await walletStore.previewFederation(inviteCode)
     if (federation === undefined) {
       logger.error('Failed to preview federation', { federationId })
