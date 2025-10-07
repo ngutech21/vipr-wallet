@@ -24,8 +24,8 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0
       '@nostr-dev-kit/ndk':
-        specifier: ^2.15.2
-        version: 2.15.2(nostr-tools@2.15.0(typescript@5.9.3))
+        specifier: ^2.16.1
+        version: 2.16.1(nostr-tools@2.15.0(typescript@5.9.3))
       '@quasar/extras':
         specifier: ^1.17.0
         version: 1.17.0
@@ -1015,8 +1015,8 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@nostr-dev-kit/ndk@2.15.2':
-    resolution: {integrity: sha512-GlvdkiKkqFC+cqOYXGx90NkExRRLXh/lKxfdJHfyUKZjNv2MZxp+VLDrxWgGndOkBDYSJTBbqJSE+Z3pVl/hYA==}
+  '@nostr-dev-kit/ndk@2.16.1':
+    resolution: {integrity: sha512-qfxS8rXJ4GNlQ7yOOJ1VjwhlVBvJx9l0J9cT07oLrFClLajBS32yD1Vl/NgBqcLJl/I9n4e3OwBOc7R6Ki7dZA==}
     engines: {node: '>=16'}
     peerDependencies:
       nostr-tools: ^2
@@ -6015,7 +6015,7 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
 
-  '@nostr-dev-kit/ndk@2.15.2(nostr-tools@2.15.0(typescript@5.9.3))':
+  '@nostr-dev-kit/ndk@2.16.1(nostr-tools@2.15.0(typescript@5.9.3))':
     dependencies:
       '@codesandbox/sandpack-client': 2.19.8
       '@noble/curves': 1.9.7
