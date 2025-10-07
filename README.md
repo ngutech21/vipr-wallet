@@ -1,5 +1,5 @@
 [![CI](https://github.com/ngutech21/vipr-wallet/actions/workflows/ci.yaml/badge.svg)](https://github.com/ngutech21/vipr-wallet/actions/workflows/ci.yaml)
-[![Tests](https://github.com/ngutech21/vipr-wallet/actions/workflows/test.yaml/badge.svg)](https://github.com/ngutech21/vipr-wallet/actions/workflows/e2e-test.yaml)
+[![Tests](https://github.com/ngutech21/vipr-wallet/actions/workflows/e2e-test.yaml/badge.svg)](https://github.com/ngutech21/vipr-wallet/actions/workflows/e2e-test.yaml)
 [![Coverage](https://img.shields.io/codecov/c/github/ngutech21/vipr-wallet)](https://app.codecov.io/gh/ngutech21/vipr-wallet/)
 
 ---
@@ -29,6 +29,7 @@ A demo version of the wallet is available at [beta.vipr.cash](https://beta.vipr.
 </div>
 
 ## ✨ Features
+
 
 ### General
 
