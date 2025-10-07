@@ -8,9 +8,7 @@ import { useLightningStore } from 'src/stores/lightning'
 import type { WalletTransaction } from '@fedimint/core'
 
 // Mock factory for creating test transactions
-const createMockTransaction = (
-  overrides: Partial<WalletTransaction> = {},
-): WalletTransaction =>
+const createMockTransaction = (overrides: Partial<WalletTransaction> = {}): WalletTransaction =>
   ({
     kind: 'wallet',
     operationId: 'wallet-op-123',

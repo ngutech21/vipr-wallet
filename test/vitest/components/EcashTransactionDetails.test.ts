@@ -459,7 +459,7 @@ describe('EcashTransactionDetails.vue', () => {
       })
     })
 
-    it('should not copy when notes are empty string', async () => {
+    it('should not copy when notes are empty string', () => {
       const transaction = createMockTransaction({ notes: '' })
       wrapper = createWrapper(transaction)
 
