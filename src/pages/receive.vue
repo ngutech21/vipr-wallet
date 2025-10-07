@@ -120,8 +120,8 @@ import { init, requestProvider } from '@getalby/bitcoin-connect'
 import { useFederationStore } from 'src/stores/federation'
 import { logger } from 'src/services/logger'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
+import { useNumericInput } from 'src/composables/useNumericInput'
 
-const amount = ref<number>(0)
 const qrData = ref('')
 const amountInput = ref<HTMLInputElement | null>(null)
 const router = useRouter()
@@ -136,42 +136,8 @@ const federationStore = useFederationStore()
 // Use the lightning payment composable
 const { createInvoice, waitForInvoicePayment } = useLightningPayment()
 
-const keypadButtons = [
-  // First row (1-3)
-  { label: '1', handler: () => appendDigit(1) },
-  { label: '2', handler: () => appendDigit(2) },
-  { label: '3', handler: () => appendDigit(3) },
-
-  // Second row (4-6)
-  { label: '4', handler: () => appendDigit(4) },
-  { label: '5', handler: () => appendDigit(5) },
-  { label: '6', handler: () => appendDigit(6) },
-
-  // Third row (7-9)
-  { label: '7', handler: () => appendDigit(7) },
-  { label: '8', handler: () => appendDigit(8) },
-  { label: '9', handler: () => appendDigit(9) },
-
-  // Fourth row (special buttons and 0)
-  { icon: 'clear', handler: () => (amount.value = 0) },
-  { label: '0', handler: () => appendDigit(0) },
-  { icon: 'backspace', handler: deleteLastDigit },
-]
-
-function deleteLastDigit() {
-  if (amount.value === 0) return
-
-  let currentAmount = amount.value.toString()
-  currentAmount = currentAmount.slice(0, -1)
-  amount.value = currentAmount !== '' ? Number(currentAmount) : 0
-}
-
-function appendDigit(digit: number) {
-  // Convert current amount to string, remove any decimals, append the digit, convert back to number
-  const currentAmount = amount.value ?? 0
-  const newValue = Number(currentAmount.toString().replace(/\.\d*$/, '') + digit.toString())
-  amount.value = newValue
-}
+// Use the numeric input composable
+const { value: amount, keypadButtons } = useNumericInput(0)
 
 const formattedCountdown = computed(() => {
   const minutes = Math.floor(countdown.value / 60)
