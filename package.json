@@ -7,8 +7,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
-    "lint:fix": "eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\" --fix",
+    "lint": "eslint -c ./eslint.config.js \"{src,test}/**/*.{ts,js,cjs,mjs,vue}\"",
+    "lint:fix": "eslint -c ./eslint.config.js \"{src,test}/**/*.{ts,js,cjs,mjs,vue}\" --fix",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "pnpm run test:unit:ci",
     "dev": "quasar dev -m pwa",
