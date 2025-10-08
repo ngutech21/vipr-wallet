@@ -191,6 +191,7 @@ describe('EcashTransactionDetails.vue', () => {
     })
 
     it('should format outcome text correctly with underscores', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const transaction = createMockTransaction({ outcome: 'user_canceled' as any })
       wrapper = createWrapper(transaction)
 
@@ -520,6 +521,7 @@ describe('EcashTransactionDetails.vue', () => {
       })
 
       it('should return account_balance_wallet for unknown type', () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const transaction = createMockTransaction({ type: 'unknown' as any })
         wrapper = createWrapper(transaction)
 
@@ -559,6 +561,7 @@ describe('EcashTransactionDetails.vue', () => {
       })
 
       it('should return "Ecash Transaction" for unknown type', () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const transaction = createMockTransaction({ type: 'unknown' as any })
         wrapper = createWrapper(transaction)
 
@@ -610,6 +613,7 @@ describe('EcashTransactionDetails.vue', () => {
       })
 
       it('should return grey for empty string status', () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const transaction = createMockTransaction({ outcome: '' as any })
         wrapper = createWrapper(transaction)
 

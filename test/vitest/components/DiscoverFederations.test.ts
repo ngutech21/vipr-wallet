@@ -56,7 +56,7 @@ describe('DiscoverFederations.vue', () => {
   })
 
   afterEach(() => {
-    if (wrapper) {
+    if (wrapper !== undefined) {
       wrapper.unmount()
     }
   })
@@ -169,6 +169,7 @@ describe('DiscoverFederations.vue', () => {
       await flushPromises()
 
       // Call addFederation directly since item is disabled
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const component = wrapper.vm as any
       await component.addFederation(federation)
       await flushPromises()
@@ -191,6 +192,7 @@ describe('DiscoverFederations.vue', () => {
       federationStore.federations = [federation]
       await flushPromises()
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const component = wrapper.vm as any
       await component.addFederation(federation)
       await flushPromises()
@@ -253,7 +255,7 @@ describe('DiscoverFederations.vue', () => {
     })
 
     it('should handle federations with very long IDs', async () => {
-      const longId = 'fed-' + 'a'.repeat(200)
+      const longId = `fed-${'a'.repeat(200)}`
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
       nostrStore.discoveredFederations = [
@@ -285,6 +287,7 @@ describe('DiscoverFederations.vue', () => {
       federationStore.federations = [federation]
       await flushPromises()
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const component = wrapper.vm as any
       expect(component.isAdded(federation)).toBe(true)
     })
@@ -296,6 +299,7 @@ describe('DiscoverFederations.vue', () => {
       federationStore.federations = []
       await flushPromises()
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const component = wrapper.vm as any
       expect(component.isAdded(federation)).toBe(false)
     })
@@ -308,6 +312,7 @@ describe('DiscoverFederations.vue', () => {
       federationStore.federations = [federation2]
       await flushPromises()
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const component = wrapper.vm as any
       expect(component.isAdded(federation1)).toBe(false)
     })

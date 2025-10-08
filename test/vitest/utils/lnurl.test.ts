@@ -10,7 +10,9 @@ vi.mock('bech32', () => ({
 }))
 
 describe('lnurl.ts', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let fetchMock: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let originalFetch: any
 
   beforeEach(() => {
@@ -42,6 +44,7 @@ describe('lnurl.ts', () => {
       vi.mocked(bech32.decode).mockReturnValue({
         prefix: 'lnurl',
         words: [1, 2, 3, 4],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
 
       // Mock fromWords to return bytes that Buffer.from will convert
@@ -85,6 +88,7 @@ describe('lnurl.ts', () => {
       vi.mocked(bech32.decode).mockReturnValue({
         prefix: 'lnurl',
         words: [1, 2, 3],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
       vi.mocked(bech32.fromWords).mockReturnValue(
         Array.from('https://example.com', (c) => c.charCodeAt(0)),
@@ -111,6 +115,7 @@ describe('lnurl.ts', () => {
       vi.mocked(bech32.decode).mockReturnValue({
         prefix: 'lnurl',
         words: [1, 2, 3],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
       vi.mocked(bech32.fromWords).mockReturnValue(
         Array.from('https://example.com', (c) => c.charCodeAt(0)),
@@ -139,6 +144,7 @@ describe('lnurl.ts', () => {
       vi.mocked(bech32.decode).mockReturnValue({
         prefix: 'lnurl',
         words: [1, 2, 3],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
       vi.mocked(bech32.fromWords).mockReturnValue(
         Array.from('https://example.com', (c) => c.charCodeAt(0)),
@@ -176,6 +182,7 @@ describe('lnurl.ts', () => {
       vi.mocked(bech32.decode).mockReturnValue({
         prefix: 'lnurl',
         words: [1, 2, 3],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
       vi.mocked(bech32.fromWords).mockReturnValue(
         Array.from('https://example.com', (c) => c.charCodeAt(0)),
@@ -216,6 +223,7 @@ describe('lnurl.ts', () => {
       vi.mocked(bech32.decode).mockReturnValue({
         prefix: 'lnurl',
         words: [1, 2, 3],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
       vi.mocked(bech32.fromWords).mockReturnValue(
         Array.from('https://example.com', (c) => c.charCodeAt(0)),

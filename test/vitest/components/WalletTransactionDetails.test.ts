@@ -200,6 +200,7 @@ describe('WalletTransactionDetails.vue', () => {
     })
 
     it('should return grey color for empty string status', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const transaction = createMockTransaction({ outcome: '' as any })
       wrapper = createWrapper(transaction)
 
