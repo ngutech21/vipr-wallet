@@ -6,8 +6,34 @@ test.setTimeout(120_000)
 test.describe('Federation Join and Lightning Payment Flow', () => {
   let faucet: FaucetService
 
-  test.beforeEach(() => {
+  test.beforeEach(async ({ page }) => {
     faucet = new FaucetService()
+
+    // Capture console logs
+    page.on('console', msg => {
+      console.log(`Browser console [${msg.type()}]:`, msg.text())
+    })
+
+    // Capture page errors
+    page.on('pageerror', error => {
+      console.error('Page error:', error.message)
+      console.error('Stack:', error.stack)
+    })
+
+    // Add script to catch unhandled errors in the browser
+    await page.addInitScript(() => {
+      window.addEventListener('error', (e) => {
+        console.error('Uncaught error:', e.message, e.filename, e.lineno, e.colno)
+        console.error('Stack:', e.error?.stack)
+      })
+
+      window.addEventListener('unhandledrejection', (e) => {
+        console.error('Unhandled promise rejection:', e.reason)
+        if (e.reason?.stack) {
+          console.error('Stack:', e.reason.stack)
+        }
+      })
+    })
   })
 
   test('join federation and receive lightning payment', async ({ page }) => {
@@ -19,6 +45,8 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     await test.step('Navigate to Federations page', async () => {
       await page.locator('[data-testid="nav-federations"]').click()
       await page.waitForLoadState('networkidle')
+
+      await page.waitForURL('**/#/federations', { timeout: 20_000 })
       await expect(page).toHaveURL(/#\/federations$/)
       await expect(page.locator('[data-testid="federations-page"]')).toBeVisible()
     })
@@ -47,16 +75,16 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       expect(inviteCode).toBeTruthy()
       expect(inviteCode.length).toBeGreaterThan(10)
 
-      // Fill in the invite code // [data-testid="invite-code-input"]
+      // Fill in the invite code
       const inviteCodeInput = page.locator('[data-testid="invite-code-input"]')
       await inviteCodeInput.fill(inviteCode)
 
       // Click Add Federation button
-      await page.locator('button:has-text("Add Federation")').click()
+      await page.locator('[data-testid="submit-federation-button"]').click()
       await page.waitForLoadState('networkidle')
 
       // Wait for loading to complete
-      await page.waitForSelector('text=Adding Federation', { state: 'hidden', timeout: 30000 })
+      await page.waitForSelector('.q-loading', { state: 'hidden', timeout: 30_000 })
 
       // Verify we're back on the federations page with the new federation
       await expect(page.locator('[data-testid="federations-page"]')).toBeVisible()
@@ -79,18 +107,20 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     // Step 5: Start receive flow
     await test.step('Start receive flow', async () => {
       // Click Receive button
-      await page.locator('button:has-text("Receive")').click()
-      await page.waitForLoadState('networkidle')
+      await page.locator('[data-testid="receive-ecash-button"]').click()
 
       // Wait for receive selection dialog
-      await page.waitForSelector('text=Receive eCash', { timeout: 5000 })
+      await page.waitForSelector('[data-testid="receive-ecash-selection-modal"]', { timeout: 5000 })
 
       // Click on Receive Lightning option
       await page.locator('[data-testid="receive-lightning-card"]').click()
       await page.waitForLoadState('networkidle')
 
       // Wait for modal to close completely
-      await page.waitForSelector('text=Receive eCash', { state: 'hidden', timeout: 10000 })
+      await page.waitForSelector('[data-testid="receive-ecash-selection-modal"]', {
+        state: 'hidden',
+        timeout: 10000,
+      })
 
       // Wait for navigation to receive page
       await page.waitForURL('**/#/receive', { timeout: 10000 })
@@ -113,7 +143,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       await expect(amountInput).toHaveValue('1000')
 
       // Click Create Invoice button
-      await page.locator('button:has-text("Create Invoice")').click()
+      await page.locator('[data-testid="create-invoice-button"]').click()
       await page.waitForLoadState('networkidle')
 
       // Wait for QR code to appear
