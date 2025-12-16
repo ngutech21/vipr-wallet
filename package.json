@@ -96,7 +96,8 @@
       "utf-8-validate"
     ],
     "overrides": {
-      "http-proxy-middleware": "^3.0.5"
+      "http-proxy-middleware": "^3.0.5",
+      "happy-dom": ">=20.0.2"
     }
   }
 }
