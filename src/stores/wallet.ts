@@ -5,6 +5,8 @@ import { useFederationStore } from './federation'
 import { ref } from 'vue'
 import type { Federation, FederationMeta, ModuleConfig } from 'src/components/models'
 import { logger } from 'src/services/logger'
+import { Notify } from 'quasar'
+
 
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
@@ -13,7 +15,7 @@ export const useWalletStore = defineStore('wallet', {
     balance: ref(0),
   }),
   actions: {
-    initDirector() {
+    async initDirector() {
       if (this.director == null) {
         try {
           this.director = new WalletDirector(new WasmWorkerTransport())
@@ -22,6 +24,40 @@ export const useWalletStore = defineStore('wallet', {
         } catch (error) {
           logger.error('Failed to initialize wallet director', error)
           throw error
+        }
+
+        await new Promise<void>((resolve) => {
+          setTimeout(() => resolve(), 500)
+        })
+        if (this.wallet == null) {
+          logger.logWalletOperation('open wallet')
+          this.wallet = await this.director.createWallet()
+          await this.wallet.open()
+        }
+
+        const oldMnemonic = await this.director?.getMnemonic()
+        logger.logWalletOperation(`Checking for existing mnemonic: ${oldMnemonic?.toString()}`)
+        if (oldMnemonic == null || oldMnemonic == undefined) {
+          const mnemonic = await this.director?.generateMnemonic()
+
+          logger.logWalletOperation(`New mnemonic generated: ${mnemonic?.toString()}`)
+          // show mnemonic to user
+          Notify.create({
+            message: `Your wallet mnemonic: ${mnemonic?.toString()}. Please store it securely!`,
+            color: 'orange',
+            position: 'top',
+            timeout: 0,
+            actions: [
+              {
+                label: 'Close',
+                color: 'white',
+                handler: () => {
+                  /* User dismissed the notification */
+                },
+              },
+            ],
+          })
+          logger.logWalletOperation('New wallet generated')
         }
       }
     },
@@ -34,15 +70,6 @@ export const useWalletStore = defineStore('wallet', {
           federationId: selectedFederation.federationId,
         })
 
-        // Ensure director is initialized
-        if (this.director == null) {
-          this.initDirector()
-        }
-
-        // Create wallet if none exists
-        if (this.wallet == null && this.director != null) {
-          this.wallet = await this.director.createWallet()
-        }
 
         const walletIsOpen = this.wallet?.isOpen()
         if (
@@ -50,9 +77,6 @@ export const useWalletStore = defineStore('wallet', {
           (await this.wallet?.federation.getFederationId()) !== selectedFederation.federationId
         ) {
           await this.closeWallet()
-          if (this.director != null) {
-            this.wallet = await this.director.createWallet()
-          }
         }
 
         if (!this.wallet?.isOpen()) {
@@ -94,6 +118,9 @@ export const useWalletStore = defineStore('wallet', {
     },
 
     async getTransactions(): Promise<Transactions[]> {
+      if (this.wallet?.isOpen() !== true) {
+        return []
+      }
       try {
         const transactions = await this.wallet?.federation.listTransactions(10)
         return transactions ?? [] // Handle undefined case
@@ -105,12 +132,11 @@ export const useWalletStore = defineStore('wallet', {
 
     async deleteFederationData(federationId: string): Promise<void> {
       try {
-        // Close the wallet first if it's open
         if (this.wallet?.isOpen()) {
           await this.closeWallet()
         }
 
-        // Delete the IndexedDB database
+        // FIXME is this still needed with the new Fedimint version?
         await new Promise<void>((resolve, reject) => {
           const deleteRequest = indexedDB.deleteDatabase(federationId)
 
@@ -159,6 +185,14 @@ export const useWalletStore = defineStore('wallet', {
         logger.error('Failed to fetch federation metadata', error)
         return undefined
       }
+    },
+
+    async getMnemonic(): Promise<string[] | undefined> {
+      const mnemonic = await this.director?.getMnemonic()
+      if (mnemonic == null) {
+        return undefined
+      }
+      return mnemonic
     },
 
     async previewFederation(inviteCode: string): Promise<Federation | undefined> {

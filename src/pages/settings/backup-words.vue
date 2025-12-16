@@ -76,13 +76,15 @@ defineOptions({
 
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router/auto'
-import { generateRecoveryWords } from 'src/utils/recovery'
+import { useWalletStore } from 'src/stores/wallet'
 
 const router = useRouter()
 const recoveryWords = ref<string[]>([])
+const walletStore = useWalletStore()
 
-onMounted(() => {
-  recoveryWords.value = generateRecoveryWords()
+onMounted(async () => {
+  const mnemonic = await walletStore.getMnemonic()
+  recoveryWords.value = mnemonic !== null && mnemonic !== undefined ? mnemonic : []
 })
 
 async function confirmBackup() {
