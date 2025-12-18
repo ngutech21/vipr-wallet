@@ -33,7 +33,7 @@
     "@getalby/lightning-tools": "^6.0.0",
     "@nostr-dev-kit/ndk": "^2.18.1",
     "@quasar/extras": "^1.17.0",
-    "@vueuse/core": "^13.9.0",
+    "@vueuse/core": "^14.1.0",
     "bech32": "^2.0.0",
     "consola": "^3.4.2",
     "js-confetti": "^0.13.1",
