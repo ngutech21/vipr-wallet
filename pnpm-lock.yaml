@@ -61,8 +61,8 @@ importers:
         specifier: ^5.7.3
         version: 5.7.3
       vue-router:
-        specifier: ~4.5.1
-        version: 4.5.1(vue@3.5.26(typescript@5.9.3))
+        specifier: ~4.6.4
+        version: 4.6.4(vue@3.5.26(typescript@5.9.3))
     devDependencies:
       '@eslint/js':
         specifier: ^9.39.2
@@ -75,7 +75,7 @@ importers:
         version: 1.56.1
       '@quasar/app-vite':
         specifier: '>=2.0.0 <2.4.0'
-        version: 2.3.0(@types/node@25.0.3)(eslint@9.39.2)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3)))(quasar@2.18.6)(rollup@2.79.2)(sass@1.96.0)(terser@5.44.1)(tsx@4.21.0)(typescript@5.9.3)(vue-router@4.5.1(vue@3.5.26(typescript@5.9.3)))(vue@3.5.26(typescript@5.9.3))(workbox-build@7.4.0)(yaml@2.8.2)
+        version: 2.3.0(@types/node@25.0.3)(eslint@9.39.2)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3)))(quasar@2.18.6)(rollup@2.79.2)(sass@1.96.0)(terser@5.44.1)(tsx@4.21.0)(typescript@5.9.3)(vue-router@4.6.4(vue@3.5.26(typescript@5.9.3)))(vue@3.5.26(typescript@5.9.3))(workbox-build@7.4.0)(yaml@2.8.2)
       '@quasar/cli':
         specifier: ^2.5.0
         version: 2.5.0
@@ -126,7 +126,7 @@ importers:
         version: 5.9.3
       unplugin-vue-router:
         specifier: ^0.15.0
-        version: 0.15.0(@vue/compiler-sfc@3.5.26)(typescript@5.9.3)(vue-router@4.5.1(vue@3.5.26(typescript@5.9.3)))(vue@3.5.26(typescript@5.9.3))
+        version: 0.15.0(@vue/compiler-sfc@3.5.26)(typescript@5.9.3)(vue-router@4.6.4(vue@3.5.26(typescript@5.9.3)))(vue@3.5.26(typescript@5.9.3))
       vite:
         specifier: ~6.3.7
         version: 6.3.7(@types/node@25.0.3)(sass-embedded@1.96.0)(sass@1.96.0)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
@@ -5010,10 +5010,10 @@ packages:
     resolution: {integrity: sha512-iSGko42FsEvdHyizBMBs/X+HMO9Z5ONDxjW+mQdoraOR5emRNedmjC5SEJdYzGz8ZP5ME3lwB4iHy3S7MOt5Qw==}
     engines: {node: '>=18.0.0'}
 
-  vue-router@4.5.1:
-    resolution: {integrity: sha512-ogAF3P97NPm8fJsE4by9dwSYtDwXIY1nFY9T6DyQnGHd1E2Da94w9JIolpe42LJGIl0DwOHBi8TcRPlPGwbTtw==}
+  vue-router@4.6.4:
+    resolution: {integrity: sha512-Hz9q5sa33Yhduglwz6g9skT8OBPii+4bFn88w6J+J4MfEo4KRRpmiNG/hHHkdbRFlLBOqxN8y8gf2Fb0MTUgVg==}
     peerDependencies:
-      vue: ^3.2.0
+      vue: ^3.5.0
 
   vue-tsc@3.1.8:
     resolution: {integrity: sha512-deKgwx6exIHeZwF601P1ktZKNF0bepaSN4jBU3AsbldPx9gylUc1JDxYppl82yxgkAgaz0Y0LCLOi+cXe9HMYA==}
@@ -6356,7 +6356,7 @@ snapshots:
 
   '@polka/url@1.0.0-next.29': {}
 
-  '@quasar/app-vite@2.3.0(@types/node@25.0.3)(eslint@9.39.2)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3)))(quasar@2.18.6)(rollup@2.79.2)(sass@1.96.0)(terser@5.44.1)(tsx@4.21.0)(typescript@5.9.3)(vue-router@4.5.1(vue@3.5.26(typescript@5.9.3)))(vue@3.5.26(typescript@5.9.3))(workbox-build@7.4.0)(yaml@2.8.2)':
+  '@quasar/app-vite@2.3.0(@types/node@25.0.3)(eslint@9.39.2)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3)))(quasar@2.18.6)(rollup@2.79.2)(sass@1.96.0)(terser@5.44.1)(tsx@4.21.0)(typescript@5.9.3)(vue-router@4.6.4(vue@3.5.26(typescript@5.9.3)))(vue@3.5.26(typescript@5.9.3))(workbox-build@7.4.0)(yaml@2.8.2)':
     dependencies:
       '@quasar/render-ssr-error': 1.0.3
       '@quasar/ssl-certificate': 1.0.0
@@ -6396,7 +6396,7 @@ snapshots:
       ts-essentials: 9.4.2(typescript@5.9.3)
       vite: 6.3.7(@types/node@25.0.3)(sass-embedded@1.96.0)(sass@1.96.0)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
       vue: 3.5.26(typescript@5.9.3)
-      vue-router: 4.5.1(vue@3.5.26(typescript@5.9.3))
+      vue-router: 4.6.4(vue@3.5.26(typescript@5.9.3))
       webpack-merge: 6.0.1
     optionalDependencies:
       eslint: 9.39.2
@@ -10136,7 +10136,7 @@ snapshots:
       pathe: 2.0.3
       picomatch: 4.0.3
 
-  unplugin-vue-router@0.15.0(@vue/compiler-sfc@3.5.26)(typescript@5.9.3)(vue-router@4.5.1(vue@3.5.26(typescript@5.9.3)))(vue@3.5.26(typescript@5.9.3)):
+  unplugin-vue-router@0.15.0(@vue/compiler-sfc@3.5.26)(typescript@5.9.3)(vue-router@4.6.4(vue@3.5.26(typescript@5.9.3)))(vue@3.5.26(typescript@5.9.3)):
     dependencies:
       '@vue-macros/common': 3.0.0-beta.16(vue@3.5.26(typescript@5.9.3))
       '@vue/compiler-sfc': 3.5.26
@@ -10156,7 +10156,7 @@ snapshots:
       unplugin-utils: 0.2.5
       yaml: 2.8.2
     optionalDependencies:
-      vue-router: 4.5.1(vue@3.5.26(typescript@5.9.3))
+      vue-router: 4.6.4(vue@3.5.26(typescript@5.9.3))
     transitivePeerDependencies:
       - typescript
       - vue
@@ -10370,7 +10370,7 @@ snapshots:
       barcode-detector: 2.2.2
       webrtc-adapter: 8.2.3
 
-  vue-router@4.5.1(vue@3.5.26(typescript@5.9.3)):
+  vue-router@4.6.4(vue@3.5.26(typescript@5.9.3)):
     dependencies:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.26(typescript@5.9.3)
