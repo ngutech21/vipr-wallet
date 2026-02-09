@@ -2,11 +2,9 @@
 FROM node:22-slim AS builder
 
 RUN corepack enable \
-    && corepack prepare pnpm@latest --activate \
+    && corepack prepare pnpm@10 --activate \
     && apt-get update \
-    && apt-get install -y python3 make g++ \
-    && echo "shamefully-hoist=true" > .npmrc \
-    && echo "node-linker=hoisted" >> .npmrc
+    && apt-get install -y python3 make g++
 
 WORKDIR /app
 
