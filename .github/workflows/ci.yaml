@@ -43,6 +43,9 @@ jobs:
       - name: Type check
         run: pnpm typecheck
 
+      - name: Check circular dependencies
+        run: pnpm dlx madge src --circular
+
       - name: Build frontend
         run: pnpm build
       
