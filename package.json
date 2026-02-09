@@ -67,7 +67,7 @@
     "tsx": "^4.21.0",
     "typescript": "~5.9.3",
     "unplugin-vue-router": "^0.15.0",
-    "vite": "~6.3.7",
+    "vite": "~6.4.1",
     "vite-plugin-checker": "^0.12.0",
     "vite-plugin-top-level-await": "^1.6.0",
     "vite-plugin-wasm": "^3.5.0",
