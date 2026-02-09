@@ -190,7 +190,7 @@ async function payWithBitcoinConnect() {
 async function shareQrcode() {
   logger.ui.debug('Sharing Lightning invoice')
   await share({
-    title: 'Lightning Invoice for ${amount.value} sats',
+    title: `Lightning Invoice for ${amount.value} sats`,
     text: qrData.value,
   })
 }
