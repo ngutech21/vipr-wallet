@@ -55,7 +55,7 @@
                 :color="isSelected(fedi) ? 'primary' : 'grey'"
                 size="sm"
                 class="q-mr-sm"
-                :to="`/federation/${encodeURIComponent(String(fedi.federationId))}`"
+                :to="{ name: '/federation/[id]', params: { id: String(fedi.federationId) } }"
               />
             </div>
           </q-item-section>
