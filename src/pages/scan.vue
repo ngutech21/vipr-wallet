@@ -52,7 +52,6 @@ defineOptions({
 import { QrcodeStream, type DetectedBarcode, type EmittedError } from 'vue-qrcode-reader'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import type { SendRouteQuery } from 'src/types/vue-router'
 import AddFederation from 'src/components/AddFederation.vue'
 import { Notify } from 'quasar'
 import { logger } from 'src/services/logger'
@@ -98,7 +97,7 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
     await router
       .push({
         name: '/send',
-        query: { invoice } as SendRouteQuery,
+        query: { invoice },
       })
       .catch((error) => logger.error('Failed to navigate to send page', error))
   }

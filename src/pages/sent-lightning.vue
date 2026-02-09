@@ -49,14 +49,25 @@ defineOptions({
 })
 
 import { onMounted, onUnmounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, type LocationQueryValue } from 'vue-router'
 import JSConfetti from 'js-confetti'
 import { useFormatters } from '../utils/formatter'
 
 const { formatNumber } = useFormatters()
-const route = useRoute()
-const amount = ref(parseInt(route.query.amount as string) || 0)
-const fee = ref(parseInt(route.query.fee as string) || 0)
+const route = useRoute('/sent-lightning')
+
+function getQueryNumber(value: LocationQueryValue | LocationQueryValue[] | undefined): number {
+  const firstValue = Array.isArray(value) ? value[0] : value
+  if (typeof firstValue !== 'string') {
+    return 0
+  }
+
+  const parsed = Number.parseInt(firstValue, 10)
+  return Number.isNaN(parsed) ? 0 : parsed
+}
+
+const amount = ref(getQueryNumber(route.query.amount))
+const fee = ref(getQueryNumber(route.query.fee))
 let jsConfetti: JSConfetti | null = null
 let animationInterval: number | null = null
 

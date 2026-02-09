@@ -106,13 +106,12 @@ defineOptions({
 import { ref, watch } from 'vue'
 import VerifyPayment from 'components/VerifyPayment.vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { SendRouteQuery } from 'src/types/vue-router'
 import { useInvoiceDecoding } from 'src/composables/useInvoiceDecoding'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
 
 const lightningInvoice = ref('')
 
-const route = useRoute()
+const route = useRoute('/send')
 const router = useRouter()
 const invoiceAmount = ref(0)
 const invoiceMemo = ref('')
@@ -141,13 +140,15 @@ const { payInvoice: payInvoiceFromComposable } = useLightningPayment()
 
 // Watch for query params
 watch(
-  () => (route.query as SendRouteQuery).invoice,
+  () => route.query.invoice,
   async (newInvoice) => {
-    if (typeof newInvoice === 'string') {
-      if (newInvoice.startsWith('web+lightning:') || newInvoice.startsWith('lightning:')) {
-        newInvoice = newInvoice.replace('web+lightning:', '').replace('lightning:', '')
+    const invoiceValue = Array.isArray(newInvoice) ? newInvoice[0] : newInvoice
+    if (typeof invoiceValue === 'string') {
+      if (invoiceValue.startsWith('web+lightning:') || invoiceValue.startsWith('lightning:')) {
+        lightningInvoice.value = invoiceValue.replace('web+lightning:', '').replace('lightning:', '')
+      } else {
+        lightningInvoice.value = invoiceValue
       }
-      lightningInvoice.value = newInvoice
       await decodeInvoice()
     }
   },

@@ -234,13 +234,11 @@ import { useFormatters } from '../../utils/formatter'
 import { logger } from 'src/services/logger'
 
 const { formatNumber } = useFormatters()
-const route = useRoute()
+const route = useRoute('/federation/[id]')
 const router = useRouter()
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
-const federation = federationStore.federations.find(
-  (f) => f.federationId === (route.params as { id: string }).id,
-)
+const federation = federationStore.federations.find((f) => f.federationId === route.params.id)
 const confirmLeave = ref(false)
 
 const hasMetadata = computed(() => {

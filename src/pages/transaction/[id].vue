@@ -58,7 +58,7 @@ import EcashTransactionDetails from 'src/components/EcashTransactionDetails.vue'
 import WalletTransactionDetails from 'src/components/WalletTransactionDetails.vue'
 import { logger } from 'src/services/logger'
 
-const route = useRoute()
+const route = useRoute('/transaction/[id]')
 const router = useRouter()
 const walletStore = useWalletStore()
 
@@ -74,7 +74,7 @@ onMounted(async () => {
   const allTransactions = await walletStore.getTransactions()
 
   try {
-    const operationId = (route.params as { id: string }).id
+    const operationId = route.params.id
 
     if (operationId === '') {
       error.value = 'Transaction ID is missing'
