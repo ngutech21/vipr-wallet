@@ -53,6 +53,7 @@ describe('DiscoverFederations.vue', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.clear()
   })
 
   afterEach(() => {
@@ -87,6 +88,18 @@ describe('DiscoverFederations.vue', () => {
       await flushPromises()
 
       expect(spy).not.toHaveBeenCalled()
+    })
+
+    it('should stop discovery when visible changes to false', async () => {
+      wrapper = createWrapper({ visible: true })
+      await flushPromises()
+      const nostrStore = useNostrStore()
+      const stopSpy = vi.spyOn(nostrStore, 'stopDiscoveringFederations')
+
+      await wrapper.setProps({ visible: false })
+      await flushPromises()
+
+      expect(stopSpy).toHaveBeenCalled()
     })
   })
 
@@ -159,6 +172,34 @@ describe('DiscoverFederations.vue', () => {
   })
 
   describe('Add Federation', () => {
+    it('should add and select federation successfully, then emit close', async () => {
+      const federation = createMockFederation()
+      wrapper = createWrapper()
+      const federationStore = useFederationStore()
+      const nostrStore = useNostrStore()
+      const addSpy = vi.spyOn(federationStore, 'addFederation')
+      const selectSpy = vi.spyOn(federationStore, 'selectFederation').mockResolvedValue()
+      const stopSpy = vi.spyOn(nostrStore, 'stopDiscoveringFederations')
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const component = wrapper.vm as any
+      await component.addFederation(federation)
+      await flushPromises()
+
+      expect(addSpy).toHaveBeenCalledWith(federation)
+      expect(selectSpy).toHaveBeenCalledWith(federation)
+      expect(stopSpy).toHaveBeenCalledTimes(1)
+      expect(wrapper.emitted('close')).toHaveLength(1)
+      expect(mockNotify).toHaveBeenCalledWith({
+        message: 'Federation added successfully',
+        color: 'positive',
+        icon: 'check',
+        position: 'top',
+        timeout: 3000,
+      })
+      expect(mockLoadingHide).toHaveBeenCalled()
+    })
+
     it('should show error notification when federation already exists', async () => {
       const federation = createMockFederation()
       wrapper = createWrapper()
@@ -198,6 +239,48 @@ describe('DiscoverFederations.vue', () => {
       await flushPromises()
 
       expect(wrapper.emitted('close')).toBeFalsy()
+    })
+
+    it('should show error notification when selecting federation fails', async () => {
+      const federation = createMockFederation()
+      wrapper = createWrapper()
+      const federationStore = useFederationStore()
+      federationStore.federations = []
+      vi.spyOn(federationStore, 'selectFederation').mockRejectedValue(new Error('select failed'))
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const component = wrapper.vm as any
+      await component.addFederation(federation)
+      await flushPromises()
+
+      expect(mockNotify).toHaveBeenCalledWith({
+        message: 'Failed to add federation: select failed',
+        color: 'negative',
+        icon: 'error',
+        timeout: 5000,
+        position: 'top',
+      })
+      expect(wrapper.emitted('close')).toBeFalsy()
+      expect(mockLoadingHide).toHaveBeenCalled()
+    })
+  })
+
+  describe('Discovery Error Handling', () => {
+    it('should notify when discoverFederations fails', async () => {
+      wrapper = createWrapper()
+      const nostrStore = useNostrStore()
+      vi.spyOn(nostrStore, 'discoverFederations').mockRejectedValue(new Error('boom'))
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const component = wrapper.vm as any
+      await component.discoverFederations()
+
+      expect(mockNotify).toHaveBeenCalledWith({
+        message: 'Failed to discover federations boom',
+        color: 'negative',
+        icon: 'error',
+        position: 'top',
+      })
     })
   })
 
@@ -315,6 +398,19 @@ describe('DiscoverFederations.vue', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const component = wrapper.vm as any
       expect(component.isAdded(federation1)).toBe(false)
+    })
+  })
+
+  describe('Unmount Cleanup', () => {
+    it('should stop discovery on unmount', async () => {
+      wrapper = createWrapper()
+      await flushPromises()
+      const nostrStore = useNostrStore()
+      const stopSpy = vi.spyOn(nostrStore, 'stopDiscoveringFederations')
+
+      wrapper.unmount()
+
+      expect(stopSpy).toHaveBeenCalled()
     })
   })
 })
