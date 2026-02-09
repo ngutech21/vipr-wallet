@@ -16,12 +16,11 @@ vi.mock('vue-router', () => ({
 
 vi.mock('quasar', async (importOriginal) => {
   const actual = await importOriginal()
-  return {
-    ...actual,
+  return Object.assign({}, actual, {
     Notify: {
       create: mockNotifyCreate,
     },
-  }
+  })
 })
 
 vi.mock('src/services/logger', () => ({

@@ -1,16 +1,27 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createMemoryHistory, createRouter, type Router, type RouteRecordRaw } from 'vue-router'
 
-
 // Define routes manually to match unplugin-vue-router structure
 const testRoutes: RouteRecordRaw[] = [
   { path: '/', name: '/', component: { template: '<div>Home</div>' } },
   { path: '/settings', name: '/settings/', component: { template: '<div>Settings</div>' } },
-  { path: '/federations', name: '/federations/', component: { template: '<div>Federations</div>' } },
+  {
+    path: '/federations',
+    name: '/federations/',
+    component: { template: '<div>Federations</div>' },
+  },
   { path: '/receive', name: '/receive', component: { template: '<div>Receive</div>' } },
   { path: '/send', name: '/send', component: { template: '<div>Send</div>' } },
-  { path: '/federation/:id', name: '/federation/[id]', component: { template: '<div>Federation</div>' } },
-  { path: '/transaction/:id', name: '/transaction/[id]', component: { template: '<div>Transaction</div>' } },
+  {
+    path: '/federation/:id',
+    name: '/federation/[id]',
+    component: { template: '<div>Federation</div>' },
+  },
+  {
+    path: '/transaction/:id',
+    name: '/transaction/[id]',
+    component: { template: '<div>Transaction</div>' },
+  },
   // Catch-all route - must be last
   { path: '/:path(.*)', name: 'not-found', component: { template: '<div>Not Found</div>' } },
 ]

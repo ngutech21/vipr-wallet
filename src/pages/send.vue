@@ -145,7 +145,9 @@ watch(
     const invoiceValue = Array.isArray(newInvoice) ? newInvoice[0] : newInvoice
     if (typeof invoiceValue === 'string') {
       if (invoiceValue.startsWith('web+lightning:') || invoiceValue.startsWith('lightning:')) {
-        lightningInvoice.value = invoiceValue.replace('web+lightning:', '').replace('lightning:', '')
+        lightningInvoice.value = invoiceValue
+          .replace('web+lightning:', '')
+          .replace('lightning:', '')
       } else {
         lightningInvoice.value = invoiceValue
       }

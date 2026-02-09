@@ -117,9 +117,12 @@ export default [
       // 'vue/component-name-in-template-casing': ['error', 'PascalCase'],
       // 'vue/component-definition-name-casing': ['error', 'PascalCase'],
       // 'vue/custom-event-name-casing': ['error', 'camelCase'],
-      'vue/multi-word-component-names': ['error', {
-        ignores: ['[...path]']
-      }],
+      'vue/multi-word-component-names': [
+        'error',
+        {
+          ignores: ['[...path]'],
+        },
+      ],
       // 'vue/define-macros-order': ['error', {
       //   'order': ['defineOptions', 'defineProps', 'defineEmits', 'defineSlots']
       // }],

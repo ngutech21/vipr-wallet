@@ -47,13 +47,12 @@ vi.mock('@getalby/bitcoin-connect', () => ({
 
 vi.mock('quasar', async (importOriginal) => {
   const actual = await importOriginal()
-  return {
-    ...actual,
+  return Object.assign({}, actual, {
     Loading: {
       show: vi.fn(),
       hide: vi.fn(),
     },
-  }
+  })
 })
 
 describe('ReceivePage timer lifecycle', () => {

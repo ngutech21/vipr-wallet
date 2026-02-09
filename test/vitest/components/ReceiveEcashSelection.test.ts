@@ -56,14 +56,14 @@ describe('ReceiveEcashSelection.vue', () => {
     it('should render description for Lightning option', () => {
       wrapper = createWrapper()
       expect(wrapper.text()).toContain(
-        'Generate a Lightning invoice to receive eCash directly from the Lightning network'
+        'Generate a Lightning invoice to receive eCash directly from the Lightning network',
       )
     })
 
     it('should render description for Offline eCash option', () => {
       wrapper = createWrapper()
       expect(wrapper.text()).toContain(
-        'Generate a QR code to receive eCash from another wallet without using the internet'
+        'Generate a QR code to receive eCash from another wallet without using the internet',
       )
     })
 
@@ -151,7 +151,6 @@ describe('ReceiveEcashSelection.vue', () => {
       expect(mockRouterPush).toHaveBeenCalledWith({ name: '/receive' })
       expect(mockRouterPush).toHaveBeenCalledTimes(1)
     })
-
   })
 
   describe('Offline eCash Option Interaction', () => {
