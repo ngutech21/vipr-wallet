@@ -16,6 +16,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Dependency review
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/dependency-review-action@v4
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -30,7 +34,8 @@ jobs:
       - name: Install dependencies
         # Enforce deterministic installs from pnpm-lock.yaml:
         # fail CI if package.json and lockfile are out of sync.
-        run: pnpm install --frozen-lockfile
+        # also fail on peer dependency incompatibilities.
+        run: pnpm install --frozen-lockfile --strict-peer-dependencies
 
       - name: Lint
         run: pnpm lint

@@ -10,7 +10,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --strict-peer-dependencies
 RUN pnpm build
 
 

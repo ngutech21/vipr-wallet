@@ -33,12 +33,11 @@ jobs:
           nix develop --accept-flake-config -c bash <<'EOF'
           set -euo pipefail
 
-          pnpm install --frozen-lockfile
+          pnpm install --frozen-lockfile --strict-peer-dependencies
           pnpm build
 
           echo "--- Running e2e tests ---"
           pnpm test:e2e || { ec=$?; echo "E2E failed (exit $ec)"; exit $ec; }
 
           EOF
-
 
