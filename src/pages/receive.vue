@@ -128,7 +128,6 @@ const router = useRouter()
 const lnExpiry = 60 * 20 // 20 minutes
 const countdown = ref(lnExpiry)
 const isWaiting = ref(false)
-const isLeaving = ref(false) // New flag to control transition
 const { share, isSupported } = useShare()
 const isCreatingInvoice = ref(false)
 const federationStore = useFederationStore()
@@ -242,7 +241,6 @@ async function copyToClipboard() {
 }
 
 async function goBack() {
-  isLeaving.value = true
   await new Promise((resolve) => {
     setTimeout(resolve, 500)
   }) // delay to allow the animation to play
