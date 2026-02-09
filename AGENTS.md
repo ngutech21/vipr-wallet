@@ -32,6 +32,7 @@ Playwright is configured in `playwright.config.ts` (tests live under `test/e2e`)
 - `pnpm test:unit:ci` - Run tests once (CI mode)
 - `pnpm test:unit:ui` - Run tests with Vitest UI
 - `nix develop --accept-flake-config --command pnpm test:e2e` - Run end to end tests using playwright in nix dev shell
+- After any updates (code, config, or dependencies), run tests and ensure they pass before finalizing changes.
 
 ### Package Management
 

@@ -217,15 +217,21 @@ describe('FederationList.vue', () => {
       wrapper = createWrapper({ federations: [federation] })
 
       const btn = wrapper.findComponent(QBtn)
-      expect(btn.props('to')).toBe('/federation/test123')
+      expect(btn.props('to')).toEqual({
+        name: '/federation/[id]',
+        params: { id: 'test123' },
+      })
     })
 
-    it('should properly encode special characters in federation ID for navigation', () => {
+    it('should pass federation ID as route params for navigation', () => {
       const federation = createMockFederation({ federationId: 'test/123#456' })
       wrapper = createWrapper({ federations: [federation] })
 
       const btn = wrapper.findComponent(QBtn)
-      expect(btn.props('to')).toBe('/federation/test%2F123%23456')
+      expect(btn.props('to')).toEqual({
+        name: '/federation/[id]',
+        params: { id: 'test/123#456' },
+      })
     })
   })
 
