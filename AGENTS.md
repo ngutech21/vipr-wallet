@@ -13,6 +13,7 @@ Vipr-Wallet is a Progressive Web App (PWA) that serves as an ecash wallet for Fe
 - `pnpm dev` - Start development server with hot reload (opens in Firefox by default)
 - `pnpm build` - Build for production (PWA mode)
 - `pnpm build:docker` - Build Docker image
+- Use `pnpm build:docker` as the standard way to build the Docker image for this project.
 
 ### Code Quality
 

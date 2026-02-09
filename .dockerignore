@@ -1,6 +1,5 @@
 # Node modules and lock files
 node_modules
-pnpm-lock.yaml
 npm-debug.log
 yarn.lock
 
