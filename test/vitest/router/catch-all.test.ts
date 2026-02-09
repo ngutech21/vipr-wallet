@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createMemoryHistory, createRouter, type Router, type RouteRecordRaw } from 'vue-router'
-import type { RouteNamedMap } from 'vue-router/auto-routes'
 
 
 // Define routes manually to match unplugin-vue-router structure
@@ -16,6 +15,11 @@ const testRoutes: RouteRecordRaw[] = [
   { path: '/:path(.*)', name: 'not-found', component: { template: '<div>Not Found</div>' } },
 ]
 
+function getRouteParam(params: unknown, key: string): string | undefined {
+  const value = (params as Record<string, string | string[] | undefined>)[key]
+  return Array.isArray(value) ? value[0] : value
+}
+
 describe('Router Catch-All Route', () => {
   let router: Router
 
@@ -30,25 +34,25 @@ describe('Router Catch-All Route', () => {
     it('should resolve /fld to the catch-all route', () => {
       const resolved = router.resolve('/fld')
       expect(resolved.name).toBe('not-found')
-      expect((resolved.params as RouteNamedMap['not-found']['params']).path).toBe('fld')
+      expect(getRouteParam(resolved.params, 'path')).toBe('fld')
     })
 
     it('should resolve /invalid to the catch-all route', () => {
       const resolved = router.resolve('/invalid')
       expect(resolved.name).toBe('not-found')
-      expect((resolved.params as RouteNamedMap['not-found']['params']).path).toBe('invalid')
+      expect(getRouteParam(resolved.params, 'path')).toBe('invalid')
     })
 
     it('should resolve deep non-existent paths to the catch-all route', () => {
       const resolved = router.resolve('/some/deep/nonexistent/path')
       expect(resolved.name).toBe('not-found')
-      expect((resolved.params as RouteNamedMap['not-found']['params']).path).toBe('some/deep/nonexistent/path')
+      expect(getRouteParam(resolved.params, 'path')).toBe('some/deep/nonexistent/path')
     })
 
     it('should resolve paths with special characters to the catch-all route', () => {
       const resolved = router.resolve('/test-123_path')
       expect(resolved.name).toBe('not-found')
-      expect((resolved.params as RouteNamedMap['not-found']['params']).path).toBe('test-123_path')
+      expect(getRouteParam(resolved.params, 'path')).toBe('test-123_path')
     })
   })
 
@@ -88,14 +92,14 @@ describe('Router Catch-All Route', () => {
     it('should resolve /federation/abc123 to the federation detail route', () => {
       const resolved = router.resolve('/federation/abc123')
       expect(resolved.name).toBe('/federation/[id]')
-      expect((resolved.params as RouteNamedMap['/federation/[id]']['params']).id).toBe('abc123')
+      expect(getRouteParam(resolved.params, 'id')).toBe('abc123')
       expect(resolved.name).not.toBe('not-found')
     })
 
     it('should resolve /transaction/tx456 to the transaction detail route', () => {
       const resolved = router.resolve('/transaction/tx456')
       expect(resolved.name).toBe('/transaction/[id]')
-      expect((resolved.params as RouteNamedMap['/transaction/[id]']['params']).id).toBe('tx456')
+      expect(getRouteParam(resolved.params, 'id')).toBe('tx456')
       expect(resolved.name).not.toBe('not-found')
     })
   })
