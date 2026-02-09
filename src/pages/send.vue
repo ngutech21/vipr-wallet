@@ -114,7 +114,6 @@ const lightningInvoice = ref('')
 
 const route = useRoute()
 const router = useRouter()
-const query = route.query as SendRouteQuery
 const invoiceAmount = ref(0)
 const invoiceMemo = ref('')
 
@@ -142,7 +141,7 @@ const { payInvoice: payInvoiceFromComposable } = useLightningPayment()
 
 // Watch for query params
 watch(
-  () => query.invoice,
+  () => (route.query as SendRouteQuery).invoice,
   async (newInvoice) => {
     if (typeof newInvoice === 'string') {
       if (newInvoice.startsWith('web+lightning:') || newInvoice.startsWith('lightning:')) {
