@@ -4,7 +4,7 @@ import {
   createRouter,
   createWebHashHistory,
   createWebHistory,
-} from 'vue-router/auto'
+} from 'vue-router'
 import { routes } from 'vue-router/auto-routes'
 
 /*

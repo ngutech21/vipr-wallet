@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router/auto'
+import { useRoute } from 'vue-router'
 import AddFederation from 'src/components/AddFederation.vue'
 
 const showAddFederationOverlay = ref(false)

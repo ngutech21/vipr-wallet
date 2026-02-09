@@ -100,6 +100,7 @@ Located in `src/stores/`:
 - Vitest for unit testing with happy-dom environment
 - HTTPS development server support via environment variables
 - Firefox as default development browser
+- Router import hint: import runtime APIs/composables from `vue-router` (e.g. `useRoute`, `useRouter`, `createRouter`) and keep generated route types/routes from `vue-router/auto-routes` only.
 
 ### Key Implementation Patterns
 

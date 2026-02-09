@@ -75,7 +75,7 @@ defineOptions({
 })
 
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router/auto'
+import { useRouter } from 'vue-router'
 import { generateRecoveryWords } from 'src/utils/recovery'
 
 const router = useRouter()

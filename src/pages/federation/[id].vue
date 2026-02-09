@@ -227,7 +227,7 @@ defineOptions({
 })
 
 import { ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router/auto'
+import { useRoute, useRouter } from 'vue-router'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFormatters } from '../../utils/formatter'

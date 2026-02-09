@@ -64,7 +64,7 @@ defineOptions({
 import { ref } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useQuasar, Loading } from 'quasar'
-import { useRouter } from 'vue-router/auto'
+import { useRouter } from 'vue-router'
 import { getErrorMessage } from 'src/utils/error'
 
 const ecashToken = ref('')

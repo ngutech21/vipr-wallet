@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router/auto'
+import { useRouter } from 'vue-router'
 import ModalCard from './ModalCard.vue'
 
 const router = useRouter()

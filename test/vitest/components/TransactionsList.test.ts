@@ -22,7 +22,7 @@ type TransactionsListExposed = {
 
 // Mock router
 const mockRouterPush = vi.fn()
-vi.mock('vue-router/auto', () => ({
+vi.mock('vue-router', () => ({
   useRouter: () => ({
     push: mockRouterPush,
   }),

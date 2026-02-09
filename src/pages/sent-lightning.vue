@@ -49,7 +49,7 @@ defineOptions({
 })
 
 import { onMounted, onUnmounted, ref } from 'vue'
-import { useRoute } from 'vue-router/auto'
+import { useRoute } from 'vue-router'
 import JSConfetti from 'js-confetti'
 import { useFormatters } from '../utils/formatter'
 

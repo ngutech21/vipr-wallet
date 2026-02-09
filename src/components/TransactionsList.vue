@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router/auto'
+import { useRouter } from 'vue-router'
 import { useWalletStore } from 'src/stores/wallet'
 import type {
   Transactions,

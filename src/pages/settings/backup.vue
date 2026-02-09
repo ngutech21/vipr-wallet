@@ -69,7 +69,7 @@ defineOptions({
   name: 'BackupIntroPage',
 })
 
-import { useRouter } from 'vue-router/auto'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 

@@ -50,7 +50,7 @@ defineOptions({
 })
 
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router/auto'
+import { useRoute, useRouter } from 'vue-router'
 import { useWalletStore } from 'src/stores/wallet'
 import type { Transactions } from '@fedimint/core'
 import LightningTransactionDetails from 'src/components/LightningTransactionDetails.vue'

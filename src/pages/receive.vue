@@ -114,7 +114,7 @@ defineOptions({
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import QrcodeVue from 'qrcode.vue'
 import { Loading } from 'quasar'
-import { useRouter } from 'vue-router/auto'
+import { useRouter } from 'vue-router'
 import { useShare } from '@vueuse/core'
 import { init, requestProvider } from '@getalby/bitcoin-connect'
 import { useFederationStore } from 'src/stores/federation'
