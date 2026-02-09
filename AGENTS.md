@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -24,11 +24,10 @@ Vipr-Wallet is a Progressive Web App (PWA) that serves as an ecash wallet for Fe
 
 ### Testing
 
-Playwright is configured in `playwright.config.ts` (tests live under `tests/e2e`).
+Playwright is configured in `playwright.config.ts` (tests live under `test/e2e`).
 
 - `pnpm playwright install` – Install/update Playwright browsers (run once or after upgrades)
-- `pnpm test` - Run unit tests (alias for `pnpm test:unit`)
-- `pnpm test:unit` - Run Vitest unit tests in watch mode
+- `pnpm test` - Run unit tests once (alias for `pnpm test:unit:ci`)
 - `pnpm test:unit:ci` - Run tests once (CI mode)
 - `pnpm test:unit:ui` - Run tests with Vitest UI
 - `nix develop --accept-flake-config --command pnpm test:e2e` - Run end to end tests using playwright in nix dev shell
@@ -116,7 +115,7 @@ Located in `src/stores/`:
 #### Context7 Server for API Documentation
 
 - ALWAYS use the Context7 MCP server when requiring API documentation for libraries
-- Use `resolve-library-id` first to get the correct library ID, then `get-library-docs` to fetch documentation
+- Use `resolve-library-id` first to get the correct library ID, then `query-docs` to fetch documentation
 - This provides up-to-date documentation and code examples for all project dependencies
 
 #### Playwright MCP Server for E2E Testing
