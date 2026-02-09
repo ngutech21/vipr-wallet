@@ -111,7 +111,7 @@ defineOptions({
   name: 'ReceivePage',
 })
 
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import QrcodeVue from 'qrcode.vue'
 import { Loading } from 'quasar'
 import { useRouter } from 'vue-router/auto'
@@ -139,6 +139,27 @@ const { createInvoice, waitForInvoicePayment } = useLightningPayment()
 // Use the numeric input composable
 const { value: amount, keypadButtons } = useNumericInput(0)
 
+let countdownInterval: ReturnType<typeof setInterval> | null = null
+
+function clearCountdownTimer() {
+  if (countdownInterval != null) {
+    clearInterval(countdownInterval)
+    countdownInterval = null
+  }
+}
+
+function startCountdownTimer() {
+  clearCountdownTimer()
+  countdown.value = lnExpiry
+  countdownInterval = setInterval(() => {
+    if (countdown.value > 0) {
+      countdown.value--
+    } else {
+      clearCountdownTimer()
+    }
+  }, 1000)
+}
+
 const formattedCountdown = computed(() => {
   const minutes = Math.floor(countdown.value / 60)
   const seconds = countdown.value % 60
@@ -153,6 +174,10 @@ onMounted(() => {
   if (amountInput.value != null) {
     amountInput.value.focus()
   }
+})
+
+onUnmounted(() => {
+  clearCountdownTimer()
 })
 
 async function payWithBitcoinConnect() {
@@ -181,40 +206,34 @@ async function onRequest() {
     return
   }
   isCreatingInvoice.value = true
+  startCountdownTimer()
 
-  const interval = setInterval(() => {
-    if (countdown.value > 0) {
-      countdown.value--
-    } else {
-      clearInterval(interval)
+  try {
+    const invoiceResult = await createInvoice(amount.value, 'minting ecash', lnExpiry)
+
+    if (
+      invoiceResult.success &&
+      invoiceResult.invoice != null &&
+      invoiceResult.invoice !== '' &&
+      invoiceResult.operationId != null &&
+      invoiceResult.operationId !== ''
+    ) {
+      qrData.value = invoiceResult.invoice
+      isWaiting.value = true
+
+      const waitResult = await waitForInvoicePayment(invoiceResult.operationId, lnExpiry * 1_000)
+
+      if (waitResult.success) {
+        await router.push({
+          name: '/received-lightning',
+          query: { amount: amount.value.toString() },
+        })
+      }
     }
-  }, 1000)
-
-  const invoiceResult = await createInvoice(amount.value, 'minting ecash', lnExpiry)
-
-  if (
-    invoiceResult.success &&
-    invoiceResult.invoice != null &&
-    invoiceResult.invoice !== '' &&
-    invoiceResult.operationId != null &&
-    invoiceResult.operationId !== ''
-  ) {
-    qrData.value = invoiceResult.invoice
-    isWaiting.value = true
-
-    const waitResult = await waitForInvoicePayment(invoiceResult.operationId, lnExpiry * 1_000)
-
-    if (waitResult.success) {
-      await router.push({
-        name: '/received-lightning',
-        query: { amount: amount.value.toString() },
-      })
-    }
-
+  } finally {
     isWaiting.value = false
     isCreatingInvoice.value = false
-  } else {
-    isCreatingInvoice.value = false
+    clearCountdownTimer()
   }
 }
 
