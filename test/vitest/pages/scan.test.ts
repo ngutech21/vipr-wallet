@@ -15,7 +15,7 @@ vi.mock('vue-router', () => ({
 }))
 
 vi.mock('quasar', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('quasar')>()
+  const actual = await importOriginal()
   return {
     ...actual,
     Notify: {

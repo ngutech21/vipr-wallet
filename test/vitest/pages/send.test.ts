@@ -21,7 +21,7 @@ vi.mock('src/composables/useInvoiceDecoding', () => ({
     isProcessing: ref(false),
     amountRequired: ref(false),
     lnAddress: ref(''),
-    decodedInvoice: ref(null),
+    decodedInvoice: ref<Record<string, unknown> | null>(null),
     decodeInvoice: mockDecodeInvoiceFromComposable,
     createInvoiceFromInput: mockCreateInvoiceFromInput,
   }),

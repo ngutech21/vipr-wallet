@@ -46,7 +46,7 @@ vi.mock('@getalby/bitcoin-connect', () => ({
 }))
 
 vi.mock('quasar', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('quasar')>()
+  const actual = await importOriginal()
   return {
     ...actual,
     Loading: {
