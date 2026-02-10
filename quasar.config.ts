@@ -27,7 +27,7 @@ export default defineConfig((_ctx) => {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['fedimint'],
+    boot: ['fedimint', 'icon-map'],
 
     htmlVariables: {
       viewport: 'width=device-width, initial-scale=1.0, viewport-fit=cover',
@@ -37,16 +37,8 @@ export default defineConfig((_ctx) => {
     css: ['app.scss'],
 
     // https://github.com/quasarframework/quasar/tree/dev/extras
-    extras: [
-      // 'ionicons-v4',
-      // 'mdi-v7',
-      // 'fontawesome-v6',
-      // 'eva-icons',
-      // 'themify',
-      // 'line-awesome',
-      // 'roboto-font-latin-ext', // this or either 'roboto-font', NEVER both!
-      'material-icons',
-    ],
+    // Using SVG icon mapping; no icon webfont extras required.
+    extras: [],
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#build
     build: {
@@ -156,7 +148,7 @@ export default defineConfig((_ctx) => {
         dark: true,
       },
 
-      // iconSet: 'material-icons', // Quasar icon set
+      iconSet: 'svg-material-icons', // Quasar icon set
       // lang: 'en-US', // Quasar language pack
 
       // For special cases outside of where the auto-import strategy can have an impact
