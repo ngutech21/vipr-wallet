@@ -6,6 +6,10 @@ const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockCreateInvoice = vi.hoisted(() => vi.fn())
 const mockWaitForInvoicePayment = vi.hoisted(() => vi.fn())
 const mockAmountRef = vi.hoisted(() => ({ value: 100, __v_isRef: true }))
+const mockRequestProvider = vi.hoisted(() => vi.fn())
+const mockLoadingShow = vi.hoisted(() => vi.fn())
+const mockLoadingHide = vi.hoisted(() => vi.fn())
+const mockNotifyCreate = vi.hoisted(() => vi.fn())
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({
@@ -42,15 +46,18 @@ vi.mock('@vueuse/core', () => ({
 
 vi.mock('@getalby/bitcoin-connect', () => ({
   init: vi.fn(),
-  requestProvider: vi.fn(),
+  requestProvider: mockRequestProvider,
 }))
 
 vi.mock('quasar', async (importOriginal) => {
   const actual = await importOriginal()
   return Object.assign({}, actual, {
     Loading: {
-      show: vi.fn(),
-      hide: vi.fn(),
+      show: mockLoadingShow,
+      hide: mockLoadingHide,
+    },
+    Notify: {
+      create: mockNotifyCreate,
     },
   })
 })
@@ -151,5 +158,34 @@ describe('ReceivePage timer lifecycle', () => {
 
     resolveCreateInvoice?.({ success: false })
     await requestPromise
+  })
+
+  it('always hides loading when bitcoin provider lookup fails', async () => {
+    mockRequestProvider.mockRejectedValueOnce(new Error('Provider unavailable'))
+
+    wrapper = createWrapper()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).payWithBitcoinConnect()
+    await flushPromises()
+
+    expect(mockLoadingShow).toHaveBeenCalledWith({
+      message: 'Paying with connected Bitcoin Wallet',
+    })
+    expect(mockLoadingHide).toHaveBeenCalledTimes(1)
+    expect(mockNotifyCreate).toHaveBeenCalledTimes(1)
+  })
+
+  it('always hides loading when provider payment fails', async () => {
+    const sendPayment = vi.fn().mockRejectedValueOnce(new Error('Payment failed'))
+    mockRequestProvider.mockResolvedValueOnce({ sendPayment })
+
+    wrapper = createWrapper()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).payWithBitcoinConnect()
+    await flushPromises()
+
+    expect(sendPayment).toHaveBeenCalledWith('')
+    expect(mockLoadingHide).toHaveBeenCalledTimes(1)
+    expect(mockNotifyCreate).toHaveBeenCalledTimes(1)
   })
 })
