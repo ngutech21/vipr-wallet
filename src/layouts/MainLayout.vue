@@ -113,4 +113,8 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
+
+:deep(.footer-container .q-tab--active) {
+  color: #a970ff !important;
+}
 </style>
