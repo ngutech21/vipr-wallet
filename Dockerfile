@@ -22,11 +22,12 @@ ENV BUILDTIME=${BUILDTIME}
 
 
 # Stage 2: Serve the app using Nginx
-FROM nginx:1-alpine-slim
+FROM alpine:3.21
 
-RUN mkdir -p /etc/nginx/conf.d
+RUN apk add --no-cache nginx nginx-mod-http-brotli \
+    && mkdir -p /usr/share/nginx/html /run/nginx /etc/nginx/http.d
 
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 
 # Create a non-root user and group
 RUN addgroup -S app && adduser -S -D -H -G app -s /sbin/nologin app
