@@ -170,9 +170,9 @@ export default defineConfig((_ctx) => {
       plugins: ['Notify', 'Loading', 'Dialog'],
     },
 
-    // animations: 'all', // --- includes all animations
     // https://v2.quasar.dev/options/animations
-    animations: 'all',
+    // Keep only animations actually used by route/page transitions.
+    animations: ['slideInLeft', 'slideOutLeft', 'slideInRight', 'slideOutRight'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#sourcefiles
     // sourceFiles: {
