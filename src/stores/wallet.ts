@@ -6,6 +6,10 @@ import { ref } from 'vue'
 import type { Federation, FederationMeta, ModuleConfig } from 'src/components/models'
 import { logger } from 'src/services/logger'
 
+const WALLET_OPEN_TIMEOUT_MS = 15_000
+const FEDERATION_JOIN_TIMEOUT_MS = 20_000
+const BALANCE_UPDATE_TIMEOUT_MS = 10_000
+
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
     director: null as WalletDirector | null,
@@ -13,6 +17,53 @@ export const useWalletStore = defineStore('wallet', {
     balance: ref(0),
   }),
   actions: {
+    async openWalletForFederation(selectedFederation: Federation) {
+      // Ensure director is initialized
+      if (this.director == null) {
+        this.initDirector()
+      }
+
+      // Create wallet if none exists
+      if (this.wallet == null && this.director != null) {
+        this.wallet = await this.director.createWallet()
+      }
+
+      const walletIsOpen = this.wallet?.isOpen()
+      if (
+        walletIsOpen &&
+        (await this.wallet?.federation.getFederationId()) !== selectedFederation.federationId
+      ) {
+        await this.closeWallet()
+        if (this.director != null) {
+          this.wallet = await this.director.createWallet()
+        }
+      }
+
+      if (!this.wallet?.isOpen()) {
+        const wallet = this.wallet
+        if (wallet == null) {
+          throw new Error('Wallet is not initialized')
+        }
+
+        const walletOpened = await withTimeout(
+          wallet.open(selectedFederation.federationId),
+          WALLET_OPEN_TIMEOUT_MS,
+          'wallet open',
+        )
+        if (!walletOpened) {
+          logger.logWalletOperation('Joining federation', {
+            federationId: selectedFederation.federationId,
+          })
+          await withTimeout(
+            wallet.joinFederation(selectedFederation.inviteCode, selectedFederation.federationId),
+            FEDERATION_JOIN_TIMEOUT_MS,
+            'federation join',
+          )
+          logger.logWalletOperation('Federation joined successfully')
+        }
+      }
+      await withTimeout(this.updateBalance(), BALANCE_UPDATE_TIMEOUT_MS, 'balance update')
+    },
     initDirector() {
       if (this.director == null) {
         try {
@@ -33,42 +84,23 @@ export const useWalletStore = defineStore('wallet', {
         logger.logWalletOperation('Opening wallet for federation', {
           federationId: selectedFederation.federationId,
         })
+        try {
+          await this.openWalletForFederation(selectedFederation)
+        } catch (error) {
+          if (!isRecoverableTransportError(error) && !isTimeoutError(error)) {
+            throw error
+          }
 
-        // Ensure director is initialized
-        if (this.director == null) {
-          this.initDirector()
-        }
+          logger.warn('Wallet transport entered an invalid RPC state; retrying open', {
+            federationId: selectedFederation.federationId,
+            reason: getErrorMessage(error),
+          })
 
-        // Create wallet if none exists
-        if (this.wallet == null && this.director != null) {
-          this.wallet = await this.director.createWallet()
-        }
-
-        const walletIsOpen = this.wallet?.isOpen()
-        if (
-          walletIsOpen &&
-          (await this.wallet?.federation.getFederationId()) !== selectedFederation.federationId
-        ) {
           await this.closeWallet()
-          if (this.director != null) {
-            this.wallet = await this.director.createWallet()
-          }
+          this.director = null
+          this.initDirector()
+          await this.openWalletForFederation(selectedFederation)
         }
-
-        if (!this.wallet?.isOpen()) {
-          const walletOpened = await this.wallet?.open(selectedFederation.federationId)
-          if (!walletOpened) {
-            logger.logWalletOperation('Joining federation', {
-              federationId: selectedFederation.federationId,
-            })
-            await this.wallet?.joinFederation(
-              selectedFederation.inviteCode,
-              selectedFederation.federationId,
-            )
-            logger.logWalletOperation('Federation joined successfully')
-          }
-        }
-        await this.updateBalance()
       } else {
         this.balance = 0
       }
@@ -217,6 +249,49 @@ export const useWalletStore = defineStore('wallet', {
     },
   },
 })
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message
+  }
+  if (typeof error === 'string') {
+    return error
+  }
+
+  try {
+    return JSON.stringify(error)
+  } catch {
+    return String(error)
+  }
+}
+
+function isRecoverableTransportError(error: unknown): boolean {
+  return /(rpc is not a function|unreachable executed|closure invoked recursively|after being dropped)/i.test(
+    getErrorMessage(error),
+  )
+}
+
+function isTimeoutError(error: unknown): boolean {
+  return /timed out/i.test(getErrorMessage(error))
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`${label} timed out after ${timeoutMs}ms`))
+    }, timeoutMs)
+  })
+
+  try {
+    return await Promise.race([promise, timeoutPromise])
+  } finally {
+    if (timeoutId != null) {
+      clearTimeout(timeoutId)
+    }
+  }
+}
+
 if (import.meta.hot != null) {
   import.meta.hot.accept(acceptHMRUpdate(useWalletStore, import.meta.hot))
 }

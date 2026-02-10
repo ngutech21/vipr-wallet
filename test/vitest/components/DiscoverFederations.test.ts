@@ -166,6 +166,46 @@ describe('DiscoverFederations.vue', () => {
   })
 
   describe('Loading State', () => {
+    it('should show initial searching state when discovering and no results are loaded yet', async () => {
+      wrapper = createWrapper()
+      const nostrStore = useNostrStore()
+      nostrStore.isDiscoveringFederations = true
+      nostrStore.discoveredFederations = []
+      nostrStore.discoveryCandidates = []
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Searching...')
+      expect(wrapper.text()).not.toContain('live updates on')
+    })
+
+    it('should show live status and stop action when discovering with loaded results', async () => {
+      wrapper = createWrapper()
+      const nostrStore = useNostrStore()
+      nostrStore.isDiscoveringFederations = true
+      nostrStore.discoveredFederations = [createMockFederation({ federationId: 'fed-1' })]
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('1 loaded, live updates on')
+      expect(wrapper.text()).toContain('Stop')
+      expect(wrapper.text()).not.toContain('Searching...')
+    })
+
+    it('should stop discovery when stop action is triggered', async () => {
+      wrapper = createWrapper()
+      const nostrStore = useNostrStore()
+      nostrStore.isDiscoveringFederations = true
+      nostrStore.discoveredFederations = [createMockFederation({ federationId: 'fed-1' })]
+      const stopSpy = vi.spyOn(nostrStore, 'stopDiscoveringFederations')
+      await flushPromises()
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const component = wrapper.vm as any
+      component.stopDiscovery()
+      await flushPromises()
+
+      expect(stopSpy).toHaveBeenCalled()
+    })
+
     it('should not show loading spinner when not discovering', async () => {
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
@@ -232,6 +272,7 @@ describe('DiscoverFederations.vue', () => {
       const selectSpy = vi.spyOn(federationStore, 'selectFederation').mockResolvedValue()
       const stopSpy = vi.spyOn(nostrStore, 'stopDiscoveringFederations')
       const joinSpy = vi.spyOn(nostrStore, 'setJoinInProgress')
+      const idleSpy = vi.spyOn(nostrStore, 'waitForPreviewQueueIdle').mockResolvedValue(true)
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const component = wrapper.vm as any
@@ -243,6 +284,7 @@ describe('DiscoverFederations.vue', () => {
       expect(stopSpy).not.toHaveBeenCalled()
       expect(joinSpy).toHaveBeenNthCalledWith(1, true)
       expect(joinSpy).toHaveBeenLastCalledWith(false)
+      expect(idleSpy).toHaveBeenCalled()
       expect(wrapper.emitted('close')).toBeFalsy()
       expect(mockNotify).toHaveBeenCalledWith({
         message: 'Federation added successfully',
@@ -301,6 +343,7 @@ describe('DiscoverFederations.vue', () => {
       const federationStore = useFederationStore()
       federationStore.federations = []
       vi.spyOn(federationStore, 'selectFederation').mockRejectedValue(new Error('select failed'))
+      const deleteSpy = vi.spyOn(federationStore, 'deleteFederation')
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const component = wrapper.vm as any
@@ -314,6 +357,7 @@ describe('DiscoverFederations.vue', () => {
         timeout: 5000,
         position: 'top',
       })
+      expect(deleteSpy).toHaveBeenCalledWith(federation.federationId)
       expect(wrapper.emitted('close')).toBeFalsy()
       expect(mockLoadingHide).toHaveBeenCalled()
     })

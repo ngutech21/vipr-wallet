@@ -24,6 +24,7 @@ const DEFAULT_RELAYS = [
 const DISCOVERY_PAGE_SIZE = 5
 const MAX_DISCOVERY_CACHE_SIZE = 50
 const PREVIEW_TIMEOUT_MS = 7_000
+const PREVIEW_QUEUE_IDLE_POLL_MS = 50
 const PREVIEW_TIMEOUT_TOKEN = Symbol('preview-timeout')
 const EXPECTED_DISCOVERY_ERROR_PATTERNS = [
   /failed to download client config/i,
@@ -372,6 +373,19 @@ export const useNostrStore = defineStore('nostr', {
       } finally {
         this.isPreviewQueueRunning = false
       }
+    },
+
+    async waitForPreviewQueueIdle(timeoutMs = PREVIEW_TIMEOUT_MS + 500) {
+      const deadline = Date.now() + timeoutMs
+      while (this.isPreviewQueueRunning && Date.now() < deadline) {
+        // Allow in-flight preview calls to finish before wallet join/open.
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, PREVIEW_QUEUE_IDLE_POLL_MS)
+        })
+      }
+
+      return !this.isPreviewQueueRunning
     },
 
     stopDiscoveringFederations() {

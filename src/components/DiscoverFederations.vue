@@ -75,11 +75,33 @@
         <div class="text-caption">No federations discovered yet.</div>
       </div>
 
-      <div class="text-center q-pa-lg text-grey-7">
-        <div v-if="isDiscovering" class="loading-container">
+      <div
+        v-if="isDiscovering && visibleFederations.length === 0"
+        class="text-center q-pa-lg text-grey-7"
+      >
+        <div class="loading-container">
           <q-spinner color="primary" size="2em" />
           <div class="text-caption q-mt-xs">Searching...</div>
         </div>
+      </div>
+
+      <div
+        v-if="showDiscoveryStatus"
+        class="discovery-status row items-center justify-between q-mt-md"
+      >
+        <div class="row items-center text-caption text-grey-7">
+          <q-spinner v-if="isDiscovering" color="primary" size="16px" class="q-mr-sm" />
+          <span>{{ discoveryStatusText }}</span>
+        </div>
+        <q-btn
+          v-if="isDiscovering"
+          flat
+          dense
+          no-caps
+          color="primary"
+          label="Stop"
+          @click="stopDiscovery"
+        />
       </div>
     </div>
   </ModalCard>
@@ -155,6 +177,16 @@ const visibleFederations = computed<DiscoveryListItem[]>(() => {
 
   return entries
 })
+const showDiscoveryStatus = computed(() => {
+  return visibleFederations.value.length > 0
+})
+const discoveryStatusText = computed(() => {
+  const loaded = nostr.discoveredFederations.length
+  if (isDiscovering.value) {
+    return `${loaded} loaded, live updates on`
+  }
+  return `${loaded} loaded`
+})
 const canLoadMore = computed(() => {
   return nostr.discoveryCandidates.length > nostr.previewTargetCount
 })
@@ -206,6 +238,10 @@ function loadMoreFederations() {
   nostr.increasePreviewTarget()
 }
 
+function stopDiscovery() {
+  nostr.stopDiscoveringFederations()
+}
+
 async function addFederation(federation: Federation) {
   Loading.show({ message: 'Adding Federation' })
 
@@ -222,8 +258,18 @@ async function addFederation(federation: Federation) {
     }
 
     nostr.setJoinInProgress(true)
+    const queueIdle = await nostr.waitForPreviewQueueIdle()
+    if (!queueIdle) {
+      logger.warn('Preview queue still busy while joining federation')
+    }
+
     federationStore.addFederation(federation)
-    await federationStore.selectFederation(federation)
+    try {
+      await federationStore.selectFederation(federation)
+    } catch (error) {
+      federationStore.deleteFederation(federation.federationId)
+      throw error
+    }
 
     Notify.create({
       message: 'Federation added successfully',
@@ -327,5 +373,10 @@ function truncateFederationId(federationId: string): string {
   align-items: center;
   justify-content: center;
   padding: 32px 16px;
+}
+
+.discovery-status {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
 }
 </style>

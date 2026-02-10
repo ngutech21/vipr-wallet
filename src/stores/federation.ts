@@ -25,9 +25,15 @@ export const useFederationStore = defineStore('federation', {
       }
     },
     async selectFederation(fedi: Federation | undefined) {
+      const previousSelectedFederationId = this.selectedFederationId
       this.selectedFederationId = fedi?.federationId ?? null
       const walletStore = useWalletStore()
-      await walletStore.openWallet()
+      try {
+        await walletStore.openWallet()
+      } catch (error) {
+        this.selectedFederationId = previousSelectedFederationId
+        throw error
+      }
     },
   },
 })

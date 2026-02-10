@@ -110,7 +110,12 @@ async function addFederation() {
       // FIXME is this redundant?
       federation.metadata = meta ?? {}
       federationStore.addFederation(federation)
-      await federationStore.selectFederation(federation)
+      try {
+        await federationStore.selectFederation(federation)
+      } catch (error) {
+        federationStore.deleteFederation(federation.federationId)
+        throw error
+      }
     }
   } catch (error) {
     Notify.create({

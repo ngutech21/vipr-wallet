@@ -214,4 +214,32 @@ describe('nostr store discovery queue', () => {
       expect.anything(),
     )
   })
+
+  it('waits for preview queue to become idle before continuing', async () => {
+    vi.useFakeTimers()
+
+    const nostr = useNostrStore()
+    nostr.isPreviewQueueRunning = true
+
+    const waitPromise = nostr.waitForPreviewQueueIdle(1_000)
+    setTimeout(() => {
+      nostr.isPreviewQueueRunning = false
+    }, 120)
+
+    await vi.advanceTimersByTimeAsync(200)
+
+    await expect(waitPromise).resolves.toBe(true)
+  })
+
+  it('returns false when preview queue does not become idle in time', async () => {
+    vi.useFakeTimers()
+
+    const nostr = useNostrStore()
+    nostr.isPreviewQueueRunning = true
+
+    const waitPromise = nostr.waitForPreviewQueueIdle(100)
+    await vi.advanceTimersByTimeAsync(150)
+
+    await expect(waitPromise).resolves.toBe(false)
+  })
 })
