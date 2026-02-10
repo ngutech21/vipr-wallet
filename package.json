@@ -31,7 +31,7 @@
     "@fedimint/transport-web": "0.1.0",
     "@getalby/bitcoin-connect": "^3.12.1",
     "@getalby/lightning-tools": "^6.1.0",
-    "@nostr-dev-kit/ndk": "^2.18.1",
+    "@nostr-dev-kit/ndk": "^3.0.0",
     "@quasar/extras": "^1.17.0",
     "@vueuse/core": "^14.2.0",
     "bech32": "^2.0.0",
