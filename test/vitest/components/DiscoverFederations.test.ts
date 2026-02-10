@@ -172,7 +172,7 @@ describe('DiscoverFederations.vue', () => {
   })
 
   describe('Add Federation', () => {
-    it('should add and select federation successfully, then emit close', async () => {
+    it('should add and select federation successfully without stopping discovery', async () => {
       const federation = createMockFederation()
       wrapper = createWrapper()
       const federationStore = useFederationStore()
@@ -188,8 +188,8 @@ describe('DiscoverFederations.vue', () => {
 
       expect(addSpy).toHaveBeenCalledWith(federation)
       expect(selectSpy).toHaveBeenCalledWith(federation)
-      expect(stopSpy).toHaveBeenCalledTimes(1)
-      expect(wrapper.emitted('close')).toHaveLength(1)
+      expect(stopSpy).not.toHaveBeenCalled()
+      expect(wrapper.emitted('close')).toBeFalsy()
       expect(mockNotify).toHaveBeenCalledWith({
         message: 'Federation added successfully',
         color: 'positive',

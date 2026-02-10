@@ -69,10 +69,6 @@ const nostr = useNostrStore()
 const federationStore = useFederationStore()
 const isDiscovering = computed(() => nostr.isDiscoveringFederations)
 
-const emit = defineEmits<{
-  close: []
-}>()
-
 const props = defineProps({
   visible: {
     type: Boolean,
@@ -141,8 +137,6 @@ async function addFederation(federation: Federation) {
       position: 'top',
       timeout: 3000,
     })
-    nostr.stopDiscoveringFederations()
-    emit('close')
   } catch (error) {
     logger.error('Failed to add federation', error)
     Notify.create({

@@ -94,6 +94,10 @@ export const useNostrStore = defineStore('nostr', {
       if (this.ndk === null) {
         await this.initNdk()
       }
+      if (this.federationSubscription != null) {
+        this.stopDiscoveringFederations()
+      }
+
       this.isDiscoveringFederations = true
 
       const mintInfoFilter: NDKFilter = {
@@ -109,6 +113,8 @@ export const useNostrStore = defineStore('nostr', {
             logger.error('Failed to process federation event', error)
           })
         })
+      } else {
+        this.isDiscoveringFederations = false
       }
     },
 
@@ -163,8 +169,6 @@ async function processFederationEvent(
         return (a.title ?? '').localeCompare(b.title ?? '')
       })
     }
-
-    store.isDiscoveringFederations = false
   } catch (error) {
     logger.error('Error processing federation event', { eventId: event.id, error })
   }
