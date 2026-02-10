@@ -15,7 +15,11 @@
     </q-dialog>
 
     <q-dialog v-model="showDiscover" position="bottom">
-      <DiscoverFederations v-if="showDiscover" @close="showDiscover = false" />
+      <DiscoverFederations
+        v-if="showDiscover"
+        :visible="showDiscover"
+        @close="showDiscover = false"
+      />
     </q-dialog>
 
     <q-dialog v-model="showAdd" position="bottom">

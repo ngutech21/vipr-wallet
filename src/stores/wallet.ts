@@ -199,8 +199,8 @@ export const useWalletStore = defineStore('wallet', {
           meta = Object.values(data)[0] as FederationMeta
           logger.logFederation('External metadata parsed')
         } catch (error) {
-          logger.error('Failed to fetch external metadata', error)
-          return undefined
+          logger.warn('Failed to fetch external metadata, continuing without metadata', error)
+          meta = {}
         }
       } else {
         meta = {}

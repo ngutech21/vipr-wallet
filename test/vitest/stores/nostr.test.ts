@@ -1,0 +1,217 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import type { Federation } from 'src/components/models'
+import type { NDKEvent } from '@nostr-dev-kit/ndk'
+import { Nip87Kinds } from 'src/types/nip87'
+import { logger } from 'src/services/logger'
+
+const walletStoreMock = vi.hoisted(() => ({
+  initDirector: vi.fn(),
+  previewFederation: vi.fn<() => Promise<Federation | undefined>>(),
+}))
+
+vi.mock('src/stores/wallet', () => ({
+  useWalletStore: () => walletStoreMock,
+}))
+
+import { useNostrStore } from 'src/stores/nostr'
+
+function createFederation(id: string, inviteCode: string, title: string): Federation {
+  return {
+    federationId: id,
+    inviteCode,
+    title,
+    modules: [],
+    metadata: {},
+  }
+}
+
+function createFederationEvent({
+  federationId,
+  inviteCode,
+  createdAt,
+}: {
+  federationId: string
+  inviteCode: string
+  createdAt: number
+}): NDKEvent {
+  return {
+    id: `${federationId}-${createdAt}`,
+    kind: Nip87Kinds.FediInfo,
+    created_at: createdAt,
+    getMatchingTags(tag: string) {
+      if (tag === 'u') {
+        return [['u', inviteCode]]
+      }
+      if (tag === 'd') {
+        return [['d', federationId]]
+      }
+      return []
+    },
+  } as unknown as NDKEvent
+}
+
+describe('nostr store discovery queue', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    setActivePinia(createPinia())
+    localStorage.clear()
+    walletStoreMock.initDirector.mockReset()
+    walletStoreMock.previewFederation.mockReset()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('continues scanning candidates when early previews fail', async () => {
+    const nostr = useNostrStore()
+    nostr.isDiscoveringFederations = true
+    nostr.previewTargetCount = 2
+    nostr.discoveryCandidates = [
+      { federationId: 'fed-1', inviteCode: 'invite-1', createdAt: 30 },
+      { federationId: 'fed-2', inviteCode: 'invite-2', createdAt: 20 },
+      { federationId: 'fed-3', inviteCode: 'invite-3', createdAt: 10 },
+    ]
+
+    walletStoreMock.previewFederation
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(createFederation('fed-2', 'invite-2', 'Second'))
+      .mockResolvedValueOnce(createFederation('fed-3', 'invite-3', 'Third'))
+
+    nostr.enqueueCandidatesForPreview()
+    await nostr.processPreviewQueue()
+
+    expect(walletStoreMock.previewFederation).toHaveBeenCalledTimes(3)
+    expect(walletStoreMock.previewFederation).toHaveBeenNthCalledWith(1, 'invite-1')
+    expect(walletStoreMock.previewFederation).toHaveBeenNthCalledWith(2, 'invite-2')
+    expect(walletStoreMock.previewFederation).toHaveBeenNthCalledWith(3, 'invite-3')
+    expect(nostr.discoveredFederations).toHaveLength(2)
+    expect(nostr.discoveredFederations.map((f) => f.federationId)).toEqual(['fed-2', 'fed-3'])
+  })
+
+  it('does not retry unchanged candidates that already failed preview', async () => {
+    const nostr = useNostrStore()
+    nostr.isDiscoveringFederations = true
+    nostr.previewTargetCount = 1
+    nostr.discoveryCandidates = [{ federationId: 'fed-1', inviteCode: 'invite-1', createdAt: 30 }]
+    walletStoreMock.previewFederation.mockResolvedValue(undefined)
+
+    nostr.enqueueCandidatesForPreview()
+    await nostr.processPreviewQueue()
+
+    nostr.enqueueCandidatesForPreview()
+
+    expect(walletStoreMock.previewFederation).toHaveBeenCalledTimes(1)
+    expect(nostr.previewQueue).toEqual([])
+  })
+
+  it('retries a candidate when a newer federation event arrives', async () => {
+    const nostr = useNostrStore()
+    nostr.isDiscoveringFederations = true
+    nostr.previewTargetCount = 1
+    nostr.discoveryCandidates = [{ federationId: 'fed-1', inviteCode: 'invite-1', createdAt: 30 }]
+
+    walletStoreMock.previewFederation
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(createFederation('fed-1', 'invite-1-updated', 'Updated'))
+
+    nostr.enqueueCandidatesForPreview()
+    await nostr.processPreviewQueue()
+
+    await nostr.handleFederationEvent(
+      createFederationEvent({
+        federationId: 'fed-1',
+        inviteCode: 'invite-1-updated',
+        createdAt: 31,
+      }),
+    )
+
+    expect(walletStoreMock.previewFederation).toHaveBeenCalledTimes(2)
+    expect(nostr.discoveredFederations).toHaveLength(1)
+    expect(nostr.discoveredFederations[0]?.federationId).toBe('fed-1')
+    expect(nostr.discoveredFederations[0]?.inviteCode).toBe('invite-1-updated')
+  })
+
+  it('times out hanging previews and continues with remaining candidates', async () => {
+    vi.useFakeTimers()
+
+    const nostr = useNostrStore()
+    nostr.isDiscoveringFederations = true
+    nostr.previewTargetCount = 1
+    nostr.discoveryCandidates = [
+      { federationId: 'fed-1', inviteCode: 'invite-1', createdAt: 30 },
+      { federationId: 'fed-2', inviteCode: 'invite-2', createdAt: 20 },
+    ]
+
+    walletStoreMock.previewFederation
+      .mockImplementationOnce(() => {
+        return new Promise<Federation | undefined>(() => {})
+      })
+      .mockResolvedValueOnce(createFederation('fed-2', 'invite-2', 'Second'))
+
+    nostr.enqueueCandidatesForPreview()
+    const processingPromise = nostr.processPreviewQueue()
+
+    await vi.advanceTimersByTimeAsync(7_000)
+    await processingPromise
+
+    expect(walletStoreMock.previewFederation).toHaveBeenCalledTimes(2)
+    expect(nostr.discoveredFederations).toHaveLength(1)
+    expect(nostr.discoveredFederations[0]?.federationId).toBe('fed-2')
+  })
+
+  it('logs expected discovery failures as warnings instead of hard errors', async () => {
+    const errorSpy = vi.spyOn(logger, 'error')
+    const warnSpy = vi.spyOn(logger.nostr, 'warn')
+
+    const nostr = useNostrStore()
+    nostr.isDiscoveringFederations = true
+    nostr.previewTargetCount = 1
+    nostr.discoveryCandidates = [{ federationId: 'fed-1', inviteCode: 'invite-1', createdAt: 30 }]
+    walletStoreMock.previewFederation.mockRejectedValue(
+      new Error('Failed to download client config'),
+    )
+
+    nostr.enqueueCandidatesForPreview()
+    await nostr.processPreviewQueue()
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      'Skipping federation candidate with unavailable config',
+      expect.objectContaining({
+        federationId: 'fed-1',
+        reason: 'Failed to download client config',
+      }),
+    )
+    expect(errorSpy).not.toHaveBeenCalledWith(
+      'Unexpected error while previewing federation candidate',
+      expect.anything(),
+    )
+  })
+
+  it('keeps logging unexpected preview failures as errors', async () => {
+    const errorSpy = vi.spyOn(logger, 'error')
+    const warnSpy = vi.spyOn(logger.nostr, 'warn')
+
+    const nostr = useNostrStore()
+    nostr.isDiscoveringFederations = true
+    nostr.previewTargetCount = 1
+    nostr.discoveryCandidates = [{ federationId: 'fed-1', inviteCode: 'invite-1', createdAt: 30 }]
+    walletStoreMock.previewFederation.mockRejectedValue(new Error('Unexpected parser crash'))
+
+    nostr.enqueueCandidatesForPreview()
+    await nostr.processPreviewQueue()
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Unexpected error while previewing federation candidate',
+      expect.objectContaining({
+        federationId: 'fed-1',
+        error: 'Unexpected parser crash',
+      }),
+    )
+    expect(warnSpy).not.toHaveBeenCalledWith(
+      'Skipping federation candidate with unavailable config',
+      expect.anything(),
+    )
+  })
+})

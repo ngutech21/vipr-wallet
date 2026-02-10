@@ -148,6 +148,21 @@ describe('DiscoverFederations.vue', () => {
       expect(wrapper.text()).toContain('My Federation')
       expect(wrapper.text()).toContain('my-fed-id-123')
     })
+
+    it('should only show federations up to preview target count', async () => {
+      wrapper = createWrapper()
+      const nostrStore = useNostrStore()
+      nostrStore.previewTargetCount = 10
+      nostrStore.discoveredFederations = [
+        createMockFederation({ title: 'Federation 1', federationId: 'fed-1' }),
+        createMockFederation({ title: 'Federation 2', federationId: 'fed-2' }),
+      ]
+      nostrStore.previewTargetCount = 1
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Federation 1')
+      expect(wrapper.text()).not.toContain('Federation 2')
+    })
   })
 
   describe('Loading State', () => {
@@ -171,6 +186,42 @@ describe('DiscoverFederations.vue', () => {
     })
   })
 
+  describe('Paging Controls', () => {
+    it('should show load more button when there are more candidates than visible target', async () => {
+      wrapper = createWrapper()
+      const nostrStore = useNostrStore()
+      nostrStore.previewTargetCount = 10
+      nostrStore.discoveryCandidates = Array.from({ length: 12 }, (_, index) => ({
+        federationId: `fed-${index}`,
+        inviteCode: `invite-${index}`,
+        createdAt: index,
+      }))
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Load more')
+    })
+
+    it('should increase preview target when loading more federations', async () => {
+      wrapper = createWrapper()
+      const nostrStore = useNostrStore()
+      nostrStore.previewTargetCount = 10
+      nostrStore.discoveryCandidates = Array.from({ length: 12 }, (_, index) => ({
+        federationId: `fed-${index}`,
+        inviteCode: `invite-${index}`,
+        createdAt: index,
+      }))
+      await flushPromises()
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const component = wrapper.vm as any
+      const initialTarget = nostrStore.previewTargetCount
+      component.loadMoreFederations()
+      await flushPromises()
+
+      expect(nostrStore.previewTargetCount).toBeGreaterThan(initialTarget)
+    })
+  })
+
   describe('Add Federation', () => {
     it('should add and select federation successfully without stopping discovery', async () => {
       const federation = createMockFederation()
@@ -180,6 +231,7 @@ describe('DiscoverFederations.vue', () => {
       const addSpy = vi.spyOn(federationStore, 'addFederation')
       const selectSpy = vi.spyOn(federationStore, 'selectFederation').mockResolvedValue()
       const stopSpy = vi.spyOn(nostrStore, 'stopDiscoveringFederations')
+      const joinSpy = vi.spyOn(nostrStore, 'setJoinInProgress')
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const component = wrapper.vm as any
@@ -189,6 +241,8 @@ describe('DiscoverFederations.vue', () => {
       expect(addSpy).toHaveBeenCalledWith(federation)
       expect(selectSpy).toHaveBeenCalledWith(federation)
       expect(stopSpy).not.toHaveBeenCalled()
+      expect(joinSpy).toHaveBeenNthCalledWith(1, true)
+      expect(joinSpy).toHaveBeenLastCalledWith(false)
       expect(wrapper.emitted('close')).toBeFalsy()
       expect(mockNotify).toHaveBeenCalledWith({
         message: 'Federation added successfully',

@@ -9,17 +9,17 @@
           icon="refresh"
           color="primary"
           :loading="isDiscovering"
-          @click="discoverFederations"
+          @click="discoverFederations(true)"
         />
       </div>
 
-      <q-list bordered separator v-if="nostr.discoveredFederations.length > 0">
+      <q-list bordered separator v-if="visibleFederations.length > 0">
         <q-item
-          v-for="federation in nostr.discoveredFederations"
+          v-for="federation in visibleFederations"
           :key="federation.inviteCode"
           clickable
           @click="addFederation(federation)"
-          :disable="isAdded(federation)"
+          :disable="isAdded(federation) || !federation.previewReady"
         >
           <q-item-section avatar v-if="federation?.metadata?.federation_icon_url">
             <q-img :src="federation?.metadata?.federation_icon_url" class="logo" />
@@ -31,10 +31,21 @@
           </template>
           <q-item-section>
             <q-item-label>{{ federation.title }}</q-item-label>
-            <q-item-label caption class="federation-id">{{ federation.federationId }}</q-item-label>
+            <q-item-label caption class="federation-id">
+              {{ federation.federationId }}
+            </q-item-label>
+            <q-item-label
+              v-if="!federation.previewReady"
+              caption
+              class="federation-loading-caption"
+            >
+              Loading federation details...
+            </q-item-label>
           </q-item-section>
           <q-item-section side>
+            <q-spinner v-if="!federation.previewReady" color="primary" size="18px" />
             <q-btn
+              v-else
               flat
               round
               :icon="isAdded(federation) ? 'check_circle' : 'add'"
@@ -44,6 +55,25 @@
           </q-item-section>
         </q-item>
       </q-list>
+
+      <div class="text-center q-mt-md" v-if="canLoadMore">
+        <q-btn
+          unelevated
+          color="primary"
+          text-color="white"
+          no-caps
+          label="Load more"
+          icon="expand_more"
+          @click="loadMoreFederations"
+        />
+      </div>
+
+      <div
+        v-if="!isDiscovering && visibleFederations.length === 0"
+        class="text-center q-pa-lg text-grey-7"
+      >
+        <div class="text-caption">No federations discovered yet.</div>
+      </div>
 
       <div class="text-center q-pa-lg text-grey-7">
         <div v-if="isDiscovering" class="loading-container">
@@ -65,9 +95,69 @@ import type { Federation } from 'src/components/models'
 import { getErrorMessage } from 'src/utils/error'
 import { logger } from 'src/services/logger'
 
+type DiscoveryListItem = Federation & {
+  previewReady: boolean
+}
+
 const nostr = useNostrStore()
 const federationStore = useFederationStore()
 const isDiscovering = computed(() => nostr.isDiscoveringFederations)
+const visibleFederations = computed<DiscoveryListItem[]>(() => {
+  const discoveredById = new Map(
+    nostr.discoveredFederations.map((federation) => [federation.federationId, federation]),
+  )
+  const candidatesById = new Map(
+    nostr.discoveryCandidates.map((candidate) => [candidate.federationId, candidate]),
+  )
+  const orderedFederationIds = [
+    ...nostr.discoveryCandidates.map((candidate) => candidate.federationId),
+    ...nostr.discoveredFederations.map((federation) => federation.federationId),
+  ]
+  const seenIds = new Set<string>()
+  const entries: DiscoveryListItem[] = []
+
+  for (const federationId of orderedFederationIds) {
+    if (seenIds.has(federationId)) {
+      continue
+    }
+    seenIds.add(federationId)
+
+    const discovered = discoveredById.get(federationId)
+    if (discovered != null) {
+      entries.push({
+        ...discovered,
+        previewReady: true,
+      })
+      if (entries.length >= nostr.previewTargetCount) {
+        break
+      }
+      continue
+    }
+
+    const candidate = candidatesById.get(federationId)
+    if (candidate == null) {
+      continue
+    }
+
+    entries.push({
+      title: `Federation ${truncateFederationId(candidate.federationId)}`,
+      federationId: candidate.federationId,
+      inviteCode: candidate.inviteCode,
+      modules: [],
+      metadata: {},
+      previewReady: false,
+    })
+
+    if (entries.length >= nostr.previewTargetCount) {
+      break
+    }
+  }
+
+  return entries
+})
+const canLoadMore = computed(() => {
+  return nostr.discoveryCandidates.length > nostr.previewTargetCount
+})
 
 const props = defineProps({
   visible: {
@@ -98,9 +188,9 @@ onUnmounted(() => {
   nostr.stopDiscoveringFederations()
 })
 
-async function discoverFederations() {
+async function discoverFederations(reset = false) {
   try {
-    await nostr.discoverFederations()
+    await nostr.discoverFederations({ reset })
   } catch (error) {
     logger.error('Failed to discover federations', error)
     Notify.create({
@@ -110,6 +200,10 @@ async function discoverFederations() {
       position: 'top',
     })
   }
+}
+
+function loadMoreFederations() {
+  nostr.increasePreviewTarget()
 }
 
 async function addFederation(federation: Federation) {
@@ -127,6 +221,7 @@ async function addFederation(federation: Federation) {
       return
     }
 
+    nostr.setJoinInProgress(true)
     federationStore.addFederation(federation)
     await federationStore.selectFederation(federation)
 
@@ -147,8 +242,16 @@ async function addFederation(federation: Federation) {
       position: 'top',
     })
   } finally {
+    nostr.setJoinInProgress(false)
     Loading.hide()
   }
+}
+
+function truncateFederationId(federationId: string): string {
+  if (federationId.length <= 12) {
+    return federationId
+  }
+  return `${federationId.slice(0, 6)}...${federationId.slice(-4)}`
 }
 </script>
 
@@ -211,6 +314,10 @@ async function addFederation(federation: Federation) {
   text-overflow: ellipsis;
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.8rem;
+}
+
+.federation-loading-caption {
+  color: rgba(255, 255, 255, 0.45);
 }
 
 /* Enhance the loading state */
