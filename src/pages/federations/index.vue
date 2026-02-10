@@ -33,6 +33,7 @@
           fab
           icon="add"
           color="primary"
+          :aria-expanded="showSelection"
           @click="showSelection = true"
           data-testid="add-federation-button"
         />

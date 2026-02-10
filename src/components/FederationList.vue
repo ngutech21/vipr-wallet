@@ -1,73 +1,65 @@
 <template>
-  <div v-if="federations.length > 0">
-    <transition-group name="federation-list" tag="div" class="federation-list">
-      <q-card
-        v-for="fedi in federations"
-        :key="fedi.federationId"
-        :class="['federation-card q-mb-md', isSelected(fedi) ? 'federation-selected' : '']"
-        flat
-        bordered
-        @click="selectFederation(fedi)"
-      >
-        <div v-if="isSelected(fedi)" class="selection-indicator"></div>
+  <div v-if="federations.length > 0" class="federation-list">
+    <q-card
+      v-for="fedi in federations"
+      :key="fedi.federationId"
+      :class="['federation-card q-mb-md', isSelected(fedi) ? 'federation-selected' : '']"
+      flat
+      bordered
+      @click="selectFederation(fedi)"
+    >
+      <div v-if="isSelected(fedi)" class="selection-indicator"></div>
 
-        <q-item>
-          <q-item-section avatar>
-            <q-avatar size="42px" v-if="fedi?.metadata?.federation_icon_url">
-              <q-img
-                :src="fedi?.metadata?.federation_icon_url"
-                loading="eager"
-                no-spinner
-                no-transition
-              />
+      <q-item>
+        <q-item-section avatar>
+          <q-avatar size="42px" v-if="fedi?.metadata?.federation_icon_url">
+            <q-img
+              :src="fedi?.metadata?.federation_icon_url"
+              loading="eager"
+              no-spinner
+              no-transition
+            />
+          </q-avatar>
+          <template v-else>
+            <q-avatar color="grey-3" text-color="grey-7" class="logo q-mr-md">
+              <q-icon name="account_balance" />
             </q-avatar>
-            <template v-else>
-              <q-avatar color="grey-3" text-color="grey-7" class="logo q-mr-md">
-                <q-icon name="account_balance" />
-              </q-avatar>
-            </template>
-          </q-item-section>
+          </template>
+        </q-item-section>
 
-          <!-- Federation details -->
-          <q-item-section>
-            <q-item-label class="text-weight-medium">{{ fedi.title }}</q-item-label>
-            <q-item-label caption>
-              <q-chip
-                size="sm"
-                :color="isSelected(fedi) ? 'primary' : 'grey-7'"
-                text-color="white"
-                dense
-                class="status-chip"
-              >
-                {{ isSelected(fedi) ? 'Active' : 'Available' }}
-              </q-chip>
-              <span class="federation-id q-ml-sm">ID: {{ truncateId(fedi.federationId) }}</span>
-            </q-item-label>
-          </q-item-section>
+        <!-- Federation details -->
+        <q-item-section>
+          <q-item-label class="text-weight-medium">{{ fedi.title }}</q-item-label>
+          <q-item-label caption>
+            <q-chip
+              size="sm"
+              :color="isSelected(fedi) ? 'primary' : 'grey-7'"
+              text-color="white"
+              dense
+              class="status-chip"
+            >
+              {{ isSelected(fedi) ? 'Active' : 'Available' }}
+            </q-chip>
+            <span class="federation-id q-ml-sm">ID: {{ truncateId(fedi.federationId) }}</span>
+          </q-item-label>
+        </q-item-section>
 
-          <!-- Action buttons -->
-          <q-item-section side>
-            <div class="row items-center">
-              <q-btn
-                flat
-                round
-                icon="arrow_forward"
-                :color="isSelected(fedi) ? 'primary' : 'grey'"
-                size="sm"
-                class="q-mr-sm"
-                :to="{ name: '/federation/[id]', params: { id: String(fedi.federationId) } }"
-              />
-            </div>
-          </q-item-section>
-        </q-item>
-      </q-card>
-    </transition-group>
-
-    <!-- Empty state when no federations -->
-    <div v-if="federations.length === 0" class="column items-center q-pa-lg text-grey">
-      <q-icon name="info" size="48px" />
-      <div class="text-subtitle1 q-mt-md">No federations added yet</div>
-    </div>
+        <!-- Action buttons -->
+        <q-item-section side>
+          <div class="row items-center">
+            <q-btn
+              flat
+              round
+              icon="arrow_forward"
+              :color="isSelected(fedi) ? 'primary' : 'grey'"
+              size="sm"
+              class="q-mr-sm"
+              :to="{ name: '/federation/[id]', params: { id: String(fedi.federationId) } }"
+            />
+          </div>
+        </q-item-section>
+      </q-item>
+    </q-card>
   </div>
 </template>
 
@@ -141,21 +133,5 @@ function truncateId(id: string): string {
 .federation-id {
   opacity: 0.6;
   font-size: 11px;
-}
-
-// List animations
-.federation-list-enter-active,
-.federation-list-leave-active {
-  transition: all 0.3s;
-}
-
-.federation-list-enter-from,
-.federation-list-leave-to {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.federation-list-move {
-  transition: transform 0.3s;
 }
 </style>
