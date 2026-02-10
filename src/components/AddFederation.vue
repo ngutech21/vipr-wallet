@@ -73,10 +73,18 @@ function onClose() {
 }
 
 async function pasteFromClipboard() {
-  await navigator.clipboard.readText().then((text) => {
+  try {
+    const text = await navigator.clipboard.readText()
     logger.ui.debug('Federation invite code pasted from clipboard', { text })
     inviteCode.value = text
-  })
+  } catch (error) {
+    logger.ui.error('Failed to read clipboard for federation invite code', error)
+    Notify.create({
+      type: 'negative',
+      message: `Unable to access clipboard ${getErrorMessage(error)}`,
+      position: 'top',
+    })
+  }
 }
 
 async function addFederation() {
