@@ -7,6 +7,7 @@
       transition-hide="slide-down"
     >
       <AddFederationSelection
+        v-if="showSelection"
         @close="showSelection = false"
         @show-discover="showDiscover = true"
         @show-add="showAdd = true"
@@ -14,11 +15,15 @@
     </q-dialog>
 
     <q-dialog v-model="showDiscover" position="bottom">
-      <DiscoverFederations :visible="showDiscover" @close="showDiscover = false" />
+      <DiscoverFederations
+        v-if="showDiscover"
+        :visible="showDiscover"
+        @close="showDiscover = false"
+      />
     </q-dialog>
 
     <q-dialog v-model="showAdd" position="bottom">
-      <AddFederation @close="showAdd = false" />
+      <AddFederation v-if="showAdd" @close="showAdd = false" />
     </q-dialog>
 
     <q-toolbar class="header-section">
@@ -48,10 +53,15 @@ defineOptions({
 })
 
 import FederationList from 'src/components/FederationList.vue'
-import { ref } from 'vue'
-import AddFederationSelection from 'src/components/AddFederationSelection.vue'
-import DiscoverFederations from 'src/components/DiscoverFederations.vue'
-import AddFederation from 'src/components/AddFederation.vue'
+import { ref, defineAsyncComponent } from 'vue'
+
+const AddFederationSelection = defineAsyncComponent(
+  () => import('src/components/AddFederationSelection.vue'),
+)
+const DiscoverFederations = defineAsyncComponent(
+  () => import('src/components/DiscoverFederations.vue'),
+)
+const AddFederation = defineAsyncComponent(() => import('src/components/AddFederation.vue'))
 
 const showSelection = ref(false)
 const showDiscover = ref(false)

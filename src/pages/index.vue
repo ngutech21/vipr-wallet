@@ -7,6 +7,7 @@
       transition-hide="slide-down"
     >
       <AddFederationSelection
+        v-if="showSelection"
         @close="showSelection = false"
         @show-discover="showDiscover = true"
         @show-add="showAdd = true"
@@ -14,11 +15,11 @@
     </q-dialog>
 
     <q-dialog v-model="showDiscover" position="bottom">
-      <DiscoverFederations @close="showDiscover = false" />
+      <DiscoverFederations v-if="showDiscover" @close="showDiscover = false" />
     </q-dialog>
 
     <q-dialog v-model="showAdd" position="bottom">
-      <AddFederation @close="showAdd = false" />
+      <AddFederation v-if="showAdd" @close="showAdd = false" />
     </q-dialog>
 
     <q-dialog
@@ -28,6 +29,7 @@
       transition-hide="slide-down"
     >
       <ReceiveEcashSelection
+        v-if="showReceiveEcashSelection"
         @close="showReceiveEcashSelection = false"
         @show-discover="showReceiveEcashSelection = true"
         @show-add="showAdd = true"
@@ -92,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, defineAsyncComponent } from 'vue'
 
 defineOptions({
   name: 'IndexPage',
@@ -100,10 +102,17 @@ defineOptions({
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import TransactionsList from 'src/components/TransactionsList.vue'
-import AddFederationSelection from 'src/components/AddFederationSelection.vue'
-import DiscoverFederations from 'src/components/DiscoverFederations.vue'
-import AddFederation from 'src/components/AddFederation.vue'
-import ReceiveEcashSelection from 'src/components/ReceiveEcashSelection.vue'
+
+const AddFederationSelection = defineAsyncComponent(
+  () => import('src/components/AddFederationSelection.vue'),
+)
+const DiscoverFederations = defineAsyncComponent(
+  () => import('src/components/DiscoverFederations.vue'),
+)
+const AddFederation = defineAsyncComponent(() => import('src/components/AddFederation.vue'))
+const ReceiveEcashSelection = defineAsyncComponent(
+  () => import('src/components/ReceiveEcashSelection.vue'),
+)
 
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
