@@ -7,7 +7,6 @@
       transition-hide="slide-down"
     >
       <AddFederationSelection
-        v-if="showSelection"
         @close="showSelection = false"
         @show-discover="showDiscover = true"
         @show-add="showAdd = true"
@@ -15,15 +14,11 @@
     </q-dialog>
 
     <q-dialog v-model="showDiscover" position="bottom">
-      <DiscoverFederations
-        v-if="showDiscover"
-        :visible="showDiscover"
-        @close="showDiscover = false"
-      />
+      <DiscoverFederations :visible="showDiscover" @close="showDiscover = false" />
     </q-dialog>
 
     <q-dialog v-model="showAdd" position="bottom">
-      <AddFederation v-if="showAdd" @close="showAdd = false" />
+      <AddFederation @close="showAdd = false" />
     </q-dialog>
 
     <q-toolbar class="header-section">
@@ -33,7 +28,7 @@
     <div class="q-pa-md">
       <FederationList />
 
-      <q-page-sticky position="bottom-right" :offset="[30, 30]">
+      <div class="add-federation-fab">
         <q-btn
           fab
           icon="add"
@@ -42,7 +37,7 @@
           @click="showSelection = true"
           data-testid="add-federation-button"
         />
-      </q-page-sticky>
+      </div>
     </div>
   </q-page>
 </template>
@@ -52,18 +47,22 @@ defineOptions({
   name: 'FederationsPage',
 })
 
+import AddFederation from 'src/components/AddFederation.vue'
+import AddFederationSelection from 'src/components/AddFederationSelection.vue'
+import DiscoverFederations from 'src/components/DiscoverFederations.vue'
 import FederationList from 'src/components/FederationList.vue'
-import { ref, defineAsyncComponent } from 'vue'
-
-const AddFederationSelection = defineAsyncComponent(
-  () => import('src/components/AddFederationSelection.vue'),
-)
-const DiscoverFederations = defineAsyncComponent(
-  () => import('src/components/DiscoverFederations.vue'),
-)
-const AddFederation = defineAsyncComponent(() => import('src/components/AddFederation.vue'))
+import { ref } from 'vue'
 
 const showSelection = ref(false)
 const showDiscover = ref(false)
 const showAdd = ref(false)
 </script>
+
+<style scoped>
+.add-federation-fab {
+  position: fixed;
+  right: 24px;
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  z-index: 1200;
+}
+</style>

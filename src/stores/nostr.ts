@@ -16,10 +16,11 @@ type DiscoveredFederationCandidate = {
 type PreviewStatus = 'loading' | 'failed' | 'timed_out' | 'ready'
 
 const DEFAULT_RELAYS = [
+  'wss://nos.lol',
   'wss://relay.primal.net',
   'wss://relay.damus.io',
-  'wss://relay.nostr.band',
   'wss://relay.snort.social',
+  'wss://bitcoiner.social',
 ]
 
 const DISCOVERY_PAGE_SIZE = 5
@@ -200,10 +201,6 @@ export const useNostrStore = defineStore('nostr', {
       if (this.lastDiscoveryCreatedAt > 0) {
         ;(mintInfoFilter as NDKFilter & { since?: number }).since = this.lastDiscoveryCreatedAt + 1
       }
-      if (this.lastRecommendationCreatedAt > 0) {
-        ;(recommendationFilter as NDKFilter & { since?: number }).since =
-          this.lastRecommendationCreatedAt + 1
-      }
 
       this.enqueueCandidatesForPreview()
       this.processPreviewQueue().catch((error) => {
@@ -262,9 +259,12 @@ export const useNostrStore = defineStore('nostr', {
           existing.inviteCode !== candidate.inviteCode ||
           existing.createdAt !== candidate.createdAt
         ) {
+          const recommendationCount = this.getRecommendationCountForFederationId(
+            candidate.federationId,
+          )
           this.discoveryCandidates[existingIndex] = {
             ...candidate,
-            recommendationCount: this.getRecommendationCountForFederationId(candidate.federationId),
+            recommendationCount: Math.max(existing.recommendationCount ?? 0, recommendationCount),
           }
           delete this.previewAttemptedCreatedAt[candidate.federationId]
           delete this.previewStatusByFederation[candidate.federationId]
@@ -291,10 +291,7 @@ export const useNostrStore = defineStore('nostr', {
       if (event.kind !== Nip87Kinds.Reccomendation) return
       if (event.pubkey == null || event.pubkey === '') return
 
-      const recommendedFederationIds = extractRecommendedFederationIds(
-        event,
-        this.discoveryCandidates,
-      )
+      const recommendedFederationIds = extractRecommendationTargets(event)
       if (recommendedFederationIds.length === 0) {
         return
       }
@@ -332,9 +329,12 @@ export const useNostrStore = defineStore('nostr', {
 
     applyRecommendationCountsToCandidates() {
       this.discoveryCandidates = this.discoveryCandidates.map((candidate) => {
+        const recommendationCount = this.getRecommendationCountForFederationId(
+          candidate.federationId,
+        )
         return {
           ...candidate,
-          recommendationCount: this.getRecommendationCountForFederationId(candidate.federationId),
+          recommendationCount: Math.max(candidate.recommendationCount ?? 0, recommendationCount),
         }
       })
     },
@@ -560,10 +560,7 @@ function extractFederationCandidate(event: NDKEvent): DiscoveredFederationCandid
   }
 }
 
-function extractRecommendedFederationIds(
-  event: NDKEvent,
-  discoveryCandidates: DiscoveredFederationCandidate[],
-): string[] {
+function extractRecommendationTargets(event: NDKEvent): string[] {
   const recommendedFederationIds = new Set<string>()
 
   for (const pointerTag of event.getMatchingTags('a')) {
@@ -580,18 +577,12 @@ function extractRecommendedFederationIds(
     recommendedFederationIds.add(identifier)
   }
 
-  const inviteCodes = new Set(
-    event
-      .getMatchingTags('u')
-      .map((tag) => tag[1])
-      .filter((inviteCode): inviteCode is string => inviteCode != null && inviteCode !== ''),
-  )
-  if (inviteCodes.size > 0) {
-    for (const candidate of discoveryCandidates) {
-      if (inviteCodes.has(candidate.inviteCode)) {
-        recommendedFederationIds.add(candidate.federationId)
-      }
-    }
+  const directFederationIds = event
+    .getMatchingTags('d')
+    .map((tag) => tag[1])
+    .filter((federationId): federationId is string => federationId != null && federationId !== '')
+  for (const federationId of directFederationIds) {
+    recommendedFederationIds.add(federationId)
   }
 
   return [...recommendedFederationIds]

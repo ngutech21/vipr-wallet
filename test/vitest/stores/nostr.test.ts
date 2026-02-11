@@ -324,7 +324,7 @@ describe('nostr store discovery queue', () => {
     expect(nostr.recommendationCountsByFederation['fed-1']).toBe(2)
   })
 
-  it('maps recommendations by invite code when pointer tags are missing', async () => {
+  it('ignores recommendation events when federation pointers are missing', async () => {
     const nostr = useNostrStore()
     nostr.discoveryCandidates = [{ federationId: 'fed-2', inviteCode: 'invite-2', createdAt: 10 }]
 
@@ -336,6 +336,82 @@ describe('nostr store discovery queue', () => {
       }),
     )
 
-    expect(nostr.recommendationCountsByFederation['fed-2']).toBe(1)
+    expect(nostr.recommendationCountsByFederation['fed-2']).toBeUndefined()
+    expect(nostr.discoveryCandidates[0]?.recommendationCount ?? 0).toBe(0)
+  })
+
+  it('maps recommendation pointers to federation ids', async () => {
+    const nostr = useNostrStore()
+    nostr.discoveryCandidates = [{ federationId: 'fed-3', inviteCode: 'invite-3', createdAt: 10 }]
+
+    await nostr.handleRecommendationEvent(
+      createRecommendationEvent({
+        pubkey: 'pubkey-a',
+        createdAt: 100,
+        federationIds: ['fed-3'],
+      }),
+    )
+
+    expect(nostr.discoveryCandidates[0]?.recommendationCount).toBe(1)
+    expect(nostr.recommendationCountsByFederation['fed-3']).toBe(1)
+  })
+
+  it('does not drop existing candidate recommendation counts when recomputing', () => {
+    const nostr = useNostrStore()
+    nostr.discoveryCandidates = [
+      {
+        federationId: 'candidate-fed',
+        inviteCode: 'invite-shared',
+        createdAt: 10,
+        recommendationCount: 7,
+      },
+    ]
+
+    nostr.applyRecommendationCountsToCandidates()
+
+    expect(nostr.discoveryCandidates[0]?.recommendationCount).toBe(7)
+  })
+
+  it('keeps higher recommendation count when federation event updates candidate metadata', async () => {
+    const nostr = useNostrStore()
+    nostr.discoveryCandidates = [
+      { federationId: 'fed-1', inviteCode: 'invite-1', createdAt: 10, recommendationCount: 5 },
+    ]
+
+    await nostr.handleFederationEvent(
+      createFederationEvent({
+        federationId: 'fed-1',
+        inviteCode: 'invite-1-updated',
+        createdAt: 11,
+      }),
+    )
+
+    expect(nostr.discoveryCandidates[0]?.recommendationCount).toBe(5)
+  })
+
+  it('preserves recommendation count when preview resolves the same federation id', async () => {
+    const nostr = useNostrStore()
+    nostr.isDiscoveringFederations = true
+    nostr.previewTargetCount = 1
+    nostr.discoveryCandidates = [
+      { federationId: 'resolved-fed', inviteCode: 'invite-candidate', createdAt: 10 },
+    ]
+    nostr.recommendationCountsByFederation['resolved-fed'] = 2
+    nostr.recommendationVotersByFederation['resolved-fed'] = {
+      'pubkey-a': 100,
+      'pubkey-b': 101,
+    }
+    nostr.applyRecommendationCountsToCandidates()
+
+    walletStoreMock.previewFederation.mockResolvedValue(
+      createFederation('resolved-fed', 'invite-candidate', 'Resolved Federation'),
+    )
+
+    nostr.enqueueCandidatesForPreview()
+    await nostr.processPreviewQueue()
+
+    expect(nostr.discoveredFederations[0]?.federationId).toBe('resolved-fed')
+    expect(nostr.recommendationCountsByFederation['resolved-fed']).toBe(2)
+    expect(nostr.discoveryCandidates[0]?.recommendationCount).toBe(2)
   })
 })

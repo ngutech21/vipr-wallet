@@ -73,9 +73,10 @@ describe('DiscoverFederations.vue', () => {
       expect(wrapper.exists()).toBe(true)
     })
 
-    it('should render component with heading text', () => {
+    it('should render discovery status with start action when idle', () => {
       wrapper = createWrapper()
-      expect(wrapper.text()).toContain('Available Federations')
+      expect(wrapper.text()).toContain('0 loaded, updates paused')
+      expect(wrapper.text()).toContain('Start')
     })
   })
 
@@ -172,6 +173,43 @@ describe('DiscoverFederations.vue', () => {
       expect(wrapper.text()).toContain('Recommended by 3 users')
     })
 
+    it('should prioritize ready federations over loading placeholders', async () => {
+      wrapper = createWrapper()
+      const nostrStore = useNostrStore()
+      nostrStore.previewTargetCount = 2
+      nostrStore.discoveryCandidates = [
+        {
+          federationId: 'loading-fed-1',
+          inviteCode: 'invite-loading-1',
+          createdAt: 3,
+          recommendationCount: 9,
+        },
+        {
+          federationId: 'loading-fed-2',
+          inviteCode: 'invite-loading-2',
+          createdAt: 2,
+          recommendationCount: 8,
+        },
+        {
+          federationId: 'ready-fed',
+          inviteCode: 'invite-ready',
+          createdAt: 1,
+          recommendationCount: 7,
+        },
+      ]
+      nostrStore.discoveredFederations = [
+        createMockFederation({
+          title: 'Joinable Federation',
+          federationId: 'ready-fed',
+          inviteCode: 'invite-ready',
+        }),
+      ]
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Joinable Federation')
+      expect(wrapper.text()).toContain('Loading federation details...')
+    })
+
     it('should show unavailable state instead of loading spinner for failed candidate', async () => {
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
@@ -217,7 +255,8 @@ describe('DiscoverFederations.vue', () => {
       await flushPromises()
 
       expect(wrapper.text()).toContain('Searching...')
-      expect(wrapper.text()).not.toContain('live updates on')
+      expect(wrapper.text()).toContain('0 loaded, live updates on')
+      expect(wrapper.text()).toContain('Stop')
     })
 
     it('should show live status and stop action when discovering with loaded results', async () => {
@@ -242,10 +281,26 @@ describe('DiscoverFederations.vue', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const component = wrapper.vm as any
-      component.stopDiscovery()
+      component.toggleDiscovery()
       await flushPromises()
 
       expect(stopSpy).toHaveBeenCalled()
+      expect(wrapper.text()).toContain('Start')
+    })
+
+    it('should restart discovery when start action is triggered', async () => {
+      wrapper = createWrapper()
+      const nostrStore = useNostrStore()
+      nostrStore.isDiscoveringFederations = false
+      const discoverSpy = vi.spyOn(nostrStore, 'discoverFederations').mockResolvedValue()
+      await flushPromises()
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const component = wrapper.vm as any
+      component.toggleDiscovery()
+      await flushPromises()
+
+      expect(discoverSpy).toHaveBeenCalledWith({ reset: false })
     })
 
     it('should not show loading spinner when not discovering', async () => {

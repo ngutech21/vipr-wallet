@@ -1,22 +1,10 @@
 <template>
   <ModalCard title="Discover Federations">
     <div class="q-pa-md">
-      <div class="row items-center justify-between q-mb-md">
-        <div class="text-subtitle1">Available Federations</div>
-        <q-btn
-          flat
-          round
-          icon="refresh"
-          color="primary"
-          :loading="isDiscovering"
-          @click="discoverFederations(true)"
-        />
-      </div>
-
       <q-list bordered separator v-if="visibleFederations.length > 0">
         <q-item
           v-for="federation in visibleFederations"
-          :key="federation.inviteCode"
+          :key="federation.federationId"
           clickable
           @click="addFederation(federation)"
           :disable="isAdded(federation) || !federation.previewReady"
@@ -114,22 +102,18 @@
         </div>
       </div>
 
-      <div
-        v-if="showDiscoveryStatus"
-        class="discovery-status row items-center justify-between q-mt-md"
-      >
+      <div class="discovery-status row items-center justify-between q-mt-md">
         <div class="row items-center text-caption text-grey-7">
           <q-spinner v-if="isDiscovering" color="primary" size="16px" class="q-mr-sm" />
           <span>{{ discoveryStatusText }}</span>
         </div>
         <q-btn
-          v-if="isDiscovering"
           flat
           dense
           no-caps
           color="primary"
-          label="Stop"
-          @click="stopDiscovery"
+          :label="isDiscovering ? 'Stop' : 'Start'"
+          @click="toggleDiscovery"
         />
       </div>
     </div>
@@ -159,71 +143,87 @@ const visibleFederations = computed<DiscoveryListItem[]>(() => {
   const discoveredById = new Map(
     nostr.discoveredFederations.map((federation) => [federation.federationId, federation]),
   )
-  const candidatesById = new Map(
-    nostr.discoveryCandidates.map((candidate) => [candidate.federationId, candidate]),
-  )
-  const orderedFederationIds = [
-    ...nostr.discoveryCandidates.map((candidate) => candidate.federationId),
-    ...nostr.discoveredFederations.map((federation) => federation.federationId),
-  ]
-  const seenIds = new Set<string>()
-  const entries: DiscoveryListItem[] = []
+  const seenCandidateIds = new Set<string>()
+  const usedDiscoveredIds = new Set<string>()
+  const readyEntries: DiscoveryListItem[] = []
+  const pendingEntries: DiscoveryListItem[] = []
 
-  for (const federationId of orderedFederationIds) {
-    if (seenIds.has(federationId)) {
+  const buildReadyEntry = (
+    federation: Federation,
+    recommendationCount: number,
+  ): DiscoveryListItem => {
+    return {
+      ...federation,
+      previewReady: true,
+      recommendationCount,
+      previewStatus: 'ready',
+    }
+  }
+
+  for (const candidate of nostr.discoveryCandidates) {
+    if (seenCandidateIds.has(candidate.federationId)) {
       continue
     }
-    seenIds.add(federationId)
+    seenCandidateIds.add(candidate.federationId)
 
-    const discovered = discoveredById.get(federationId)
+    const discovered = discoveredById.get(candidate.federationId)
     if (discovered != null) {
-      const candidate = candidatesById.get(federationId)
-      entries.push({
-        ...discovered,
-        previewReady: true,
-        recommendationCount:
-          candidate?.recommendationCount ??
-          nostr.getRecommendationCountForFederationId(federationId),
-        previewStatus: 'ready',
-      })
-      if (entries.length >= nostr.previewTargetCount) {
-        break
+      if (!usedDiscoveredIds.has(discovered.federationId)) {
+        readyEntries.push(
+          buildReadyEntry(
+            discovered,
+            Math.max(
+              candidate.recommendationCount ?? 0,
+              nostr.getRecommendationCountForFederationId(candidate.federationId),
+            ),
+          ),
+        )
+        usedDiscoveredIds.add(discovered.federationId)
       }
       continue
     }
 
-    const candidate = candidatesById.get(federationId)
-    if (candidate == null) {
-      continue
-    }
-
-    entries.push({
+    pendingEntries.push({
       title: `Federation ${truncateFederationId(candidate.federationId)}`,
       federationId: candidate.federationId,
       inviteCode: candidate.inviteCode,
       modules: [],
       metadata: {},
       previewReady: false,
-      recommendationCount: candidate.recommendationCount ?? 0,
+      recommendationCount: Math.max(
+        candidate.recommendationCount ?? 0,
+        nostr.getRecommendationCountForFederationId(candidate.federationId),
+      ),
       previewStatus: nostr.previewStatusByFederation[candidate.federationId] ?? 'loading',
     })
+  }
 
-    if (entries.length >= nostr.previewTargetCount) {
-      break
+  for (const discovered of nostr.discoveredFederations) {
+    if (usedDiscoveredIds.has(discovered.federationId)) {
+      continue
     }
+    readyEntries.push(
+      buildReadyEntry(
+        discovered,
+        nostr.getRecommendationCountForFederationId(discovered.federationId),
+      ),
+    )
+    usedDiscoveredIds.add(discovered.federationId)
+  }
+
+  const entries = readyEntries.slice(0, nostr.previewTargetCount)
+  if (entries.length < nostr.previewTargetCount) {
+    entries.push(...pendingEntries.slice(0, nostr.previewTargetCount - entries.length))
   }
 
   return entries
-})
-const showDiscoveryStatus = computed(() => {
-  return visibleFederations.value.length > 0
 })
 const discoveryStatusText = computed(() => {
   const loaded = nostr.discoveredFederations.length
   if (isDiscovering.value) {
     return `${loaded} loaded, live updates on`
   }
-  return `${loaded} loaded`
+  return `${loaded} loaded, updates paused`
 })
 const canLoadMore = computed(() => {
   return nostr.discoveryCandidates.length > nostr.previewTargetCount
@@ -278,6 +278,14 @@ function loadMoreFederations() {
 
 function stopDiscovery() {
   nostr.stopDiscoveringFederations()
+}
+
+async function toggleDiscovery() {
+  if (isDiscovering.value) {
+    stopDiscovery()
+    return
+  }
+  await discoverFederations()
 }
 
 function formatRecommendationCount(count: number): string {
