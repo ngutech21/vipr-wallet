@@ -149,6 +149,48 @@ describe('DiscoverFederations.vue', () => {
       expect(wrapper.text()).toContain('my-fed-id-123')
     })
 
+    it('should show recommendation count when available', async () => {
+      wrapper = createWrapper()
+      const nostrStore = useNostrStore()
+      nostrStore.discoveredFederations = [
+        createMockFederation({
+          title: 'Recommended Federation',
+          federationId: 'recommended-fed-id',
+          inviteCode: 'invite-recommended',
+        }),
+      ]
+      nostrStore.discoveryCandidates = [
+        {
+          federationId: 'recommended-fed-id',
+          inviteCode: 'invite-recommended',
+          createdAt: 1,
+          recommendationCount: 3,
+        },
+      ]
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Recommended by 3 users')
+    })
+
+    it('should show unavailable state instead of loading spinner for failed candidate', async () => {
+      wrapper = createWrapper()
+      const nostrStore = useNostrStore()
+      nostrStore.discoveryCandidates = [
+        {
+          federationId: 'failed-fed-id',
+          inviteCode: 'invite-failed',
+          createdAt: 1,
+        },
+      ]
+      nostrStore.previewStatusByFederation = {
+        'failed-fed-id': 'failed',
+      }
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Federation details unavailable.')
+      expect(wrapper.text()).not.toContain('Loading federation details...')
+    })
+
     it('should only show federations up to preview target count', async () => {
       wrapper = createWrapper()
       const nostrStore = useNostrStore()

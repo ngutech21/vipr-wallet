@@ -51,6 +51,37 @@ function createFederationEvent({
   } as unknown as NDKEvent
 }
 
+function createRecommendationEvent({
+  pubkey,
+  createdAt,
+  federationIds = [],
+  inviteCodes = [],
+}: {
+  pubkey: string
+  createdAt: number
+  federationIds?: string[]
+  inviteCodes?: string[]
+}): NDKEvent {
+  return {
+    id: `recommendation-${pubkey}-${createdAt}`,
+    kind: Nip87Kinds.Reccomendation,
+    pubkey,
+    created_at: createdAt,
+    getMatchingTags(tag: string) {
+      if (tag === 'a') {
+        return federationIds.map((federationId) => [
+          'a',
+          `${Nip87Kinds.FediInfo}:${pubkey}:${federationId}`,
+        ])
+      }
+      if (tag === 'u') {
+        return inviteCodes.map((inviteCode) => ['u', inviteCode])
+      }
+      return []
+    },
+  } as unknown as NDKEvent
+}
+
 describe('nostr store discovery queue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -159,6 +190,7 @@ describe('nostr store discovery queue', () => {
     expect(walletStoreMock.previewFederation).toHaveBeenCalledTimes(2)
     expect(nostr.discoveredFederations).toHaveLength(1)
     expect(nostr.discoveredFederations[0]?.federationId).toBe('fed-2')
+    expect(nostr.previewStatusByFederation['fed-1']).toBe('timed_out')
   })
 
   it('logs expected discovery failures as warnings instead of hard errors', async () => {
@@ -183,6 +215,7 @@ describe('nostr store discovery queue', () => {
         reason: 'Failed to download client config',
       }),
     )
+    expect(nostr.previewStatusByFederation['fed-1']).toBe('failed')
     expect(errorSpy).not.toHaveBeenCalledWith(
       'Unexpected error while previewing federation candidate',
       expect.anything(),
@@ -241,5 +274,68 @@ describe('nostr store discovery queue', () => {
     await vi.advanceTimersByTimeAsync(150)
 
     await expect(waitPromise).resolves.toBe(false)
+  })
+
+  it('prioritizes candidates with higher recommendation counts', async () => {
+    const nostr = useNostrStore()
+    nostr.discoveryCandidates = [
+      { federationId: 'fed-older', inviteCode: 'invite-1', createdAt: 10 },
+      { federationId: 'fed-newer', inviteCode: 'invite-2', createdAt: 20 },
+    ]
+
+    await nostr.handleRecommendationEvent(
+      createRecommendationEvent({
+        pubkey: 'pubkey-a',
+        createdAt: 100,
+        federationIds: ['fed-older'],
+      }),
+    )
+
+    expect(nostr.recommendationCountsByFederation['fed-older']).toBe(1)
+    expect(nostr.discoveryCandidates[0]?.federationId).toBe('fed-older')
+  })
+
+  it('counts unique recommenders without double-counting the same pubkey', async () => {
+    const nostr = useNostrStore()
+    nostr.discoveryCandidates = [{ federationId: 'fed-1', inviteCode: 'invite-1', createdAt: 10 }]
+
+    await nostr.handleRecommendationEvent(
+      createRecommendationEvent({
+        pubkey: 'pubkey-a',
+        createdAt: 100,
+        federationIds: ['fed-1'],
+      }),
+    )
+    await nostr.handleRecommendationEvent(
+      createRecommendationEvent({
+        pubkey: 'pubkey-a',
+        createdAt: 101,
+        federationIds: ['fed-1'],
+      }),
+    )
+    await nostr.handleRecommendationEvent(
+      createRecommendationEvent({
+        pubkey: 'pubkey-b',
+        createdAt: 102,
+        federationIds: ['fed-1'],
+      }),
+    )
+
+    expect(nostr.recommendationCountsByFederation['fed-1']).toBe(2)
+  })
+
+  it('maps recommendations by invite code when pointer tags are missing', async () => {
+    const nostr = useNostrStore()
+    nostr.discoveryCandidates = [{ federationId: 'fed-2', inviteCode: 'invite-2', createdAt: 10 }]
+
+    await nostr.handleRecommendationEvent(
+      createRecommendationEvent({
+        pubkey: 'pubkey-a',
+        createdAt: 100,
+        inviteCodes: ['invite-2'],
+      }),
+    )
+
+    expect(nostr.recommendationCountsByFederation['fed-2']).toBe(1)
   })
 })

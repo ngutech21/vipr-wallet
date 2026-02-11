@@ -10,15 +10,16 @@ type DiscoveredFederationCandidate = {
   federationId: string
   inviteCode: string
   createdAt: number
+  recommendationCount?: number
 }
 
+type PreviewStatus = 'loading' | 'failed' | 'timed_out' | 'ready'
+
 const DEFAULT_RELAYS = [
-  'wss://nostr.mutinywallet.com/',
+  'wss://relay.primal.net',
   'wss://relay.damus.io',
-  'wss://nos.lol',
   'wss://relay.nostr.band',
   'wss://relay.snort.social',
-  'wss://relay.primal.net',
 ]
 
 const DISCOVERY_PAGE_SIZE = 5
@@ -45,14 +46,25 @@ export const useNostrStore = defineStore('nostr', {
       [],
     ),
     lastDiscoveryCreatedAt: useLocalStorage<number>('vipr.nostr.discovery.last-created-at', 0),
+    lastRecommendationCreatedAt: useLocalStorage<number>(
+      'vipr.nostr.discovery.last-recommendation-created-at',
+      0,
+    ),
+    recommendationCountsByFederation: useLocalStorage<Record<string, number>>(
+      'vipr.nostr.discovery.recommendation-counts',
+      {},
+    ),
+    recommendationVotersByFederation: {} as Record<string, Record<string, number>>,
     isDiscoveringFederations: false,
     federationSubscription: null as NDKSubscription | null,
+    recommendationSubscription: null as NDKSubscription | null,
     previewTargetCount: DISCOVERY_PAGE_SIZE,
     previewQueue: [] as string[],
     isPreviewQueueRunning: false,
     isJoinInProgress: false,
     previewAttemptedCreatedAt: {} as Record<string, number>,
     previewErrorLoggedCreatedAt: {} as Record<string, number>,
+    previewStatusByFederation: {} as Record<string, PreviewStatus>,
   }),
 
   getters: {},
@@ -83,6 +95,10 @@ export const useNostrStore = defineStore('nostr', {
 
     setPubkey(pubkey: string) {
       this.pubkey = pubkey
+    },
+
+    getRecommendationCountForFederationId(federationId: string): number {
+      return this.recommendationCountsByFederation[federationId] ?? 0
     },
 
     setJoinInProgress(isInProgress: boolean) {
@@ -116,7 +132,11 @@ export const useNostrStore = defineStore('nostr', {
       this.previewQueue = []
       this.previewAttemptedCreatedAt = {}
       this.previewErrorLoggedCreatedAt = {}
+      this.previewStatusByFederation = {}
       this.lastDiscoveryCreatedAt = 0
+      this.lastRecommendationCreatedAt = 0
+      this.recommendationCountsByFederation = {}
+      this.recommendationVotersByFederation = {}
     },
 
     async initNdk() {
@@ -171,9 +191,18 @@ export const useNostrStore = defineStore('nostr', {
       const mintInfoFilter: NDKFilter = {
         kinds: [Nip87Kinds.FediInfo],
       } as unknown as NDKFilter
+      const recommendationFilter: NDKFilter = {
+        kinds: [Nip87Kinds.Reccomendation],
+        '#k': [String(Nip87Kinds.FediInfo)],
+        limit: 500,
+      } as unknown as NDKFilter
 
       if (this.lastDiscoveryCreatedAt > 0) {
         ;(mintInfoFilter as NDKFilter & { since?: number }).since = this.lastDiscoveryCreatedAt + 1
+      }
+      if (this.lastRecommendationCreatedAt > 0) {
+        ;(recommendationFilter as NDKFilter & { since?: number }).since =
+          this.lastRecommendationCreatedAt + 1
       }
 
       this.enqueueCandidatesForPreview()
@@ -194,6 +223,16 @@ export const useNostrStore = defineStore('nostr', {
               return
             }
             logger.error('Failed to process federation event', error)
+          })
+        })
+
+        this.recommendationSubscription = this.ndk.subscribe(recommendationFilter, {
+          closeOnEose: false,
+        })
+
+        this.recommendationSubscription?.on('event', (event) => {
+          this.handleRecommendationEvent(event).catch((error) => {
+            logger.error('Failed to process federation recommendation', error)
           })
         })
       } else {
@@ -223,21 +262,101 @@ export const useNostrStore = defineStore('nostr', {
           existing.inviteCode !== candidate.inviteCode ||
           existing.createdAt !== candidate.createdAt
         ) {
-          this.discoveryCandidates[existingIndex] = candidate
+          this.discoveryCandidates[existingIndex] = {
+            ...candidate,
+            recommendationCount: this.getRecommendationCountForFederationId(candidate.federationId),
+          }
           delete this.previewAttemptedCreatedAt[candidate.federationId]
+          delete this.previewStatusByFederation[candidate.federationId]
         }
       } else {
-        this.discoveryCandidates.push(candidate)
+        this.discoveryCandidates.push({
+          ...candidate,
+          recommendationCount: this.getRecommendationCountForFederationId(candidate.federationId),
+        })
         delete this.previewAttemptedCreatedAt[candidate.federationId]
+        delete this.previewStatusByFederation[candidate.federationId]
       }
 
-      this.discoveryCandidates.sort((a, b) => b.createdAt - a.createdAt)
+      this.sortDiscoveryCandidates()
       if (this.discoveryCandidates.length > MAX_DISCOVERY_CACHE_SIZE) {
         this.discoveryCandidates = this.discoveryCandidates.slice(0, MAX_DISCOVERY_CACHE_SIZE)
       }
 
       this.enqueueCandidatesForPreview()
       await this.processPreviewQueue()
+    },
+
+    async handleRecommendationEvent(event: NDKEvent) {
+      if (event.kind !== Nip87Kinds.Reccomendation) return
+      if (event.pubkey == null || event.pubkey === '') return
+
+      const recommendedFederationIds = extractRecommendedFederationIds(
+        event,
+        this.discoveryCandidates,
+      )
+      if (recommendedFederationIds.length === 0) {
+        return
+      }
+
+      const createdAt = event.created_at ?? 0
+      this.lastRecommendationCreatedAt = Math.max(this.lastRecommendationCreatedAt, createdAt)
+
+      let updated = false
+      for (const federationId of recommendedFederationIds) {
+        const votersByFederation = this.recommendationVotersByFederation[federationId] ?? {}
+        const previousVoteCreatedAt = votersByFederation[event.pubkey]
+        if (previousVoteCreatedAt != null && previousVoteCreatedAt >= createdAt) {
+          continue
+        }
+
+        votersByFederation[event.pubkey] = createdAt
+        this.recommendationVotersByFederation[federationId] = votersByFederation
+
+        const recommendationCount = Object.keys(votersByFederation).length
+        if (this.recommendationCountsByFederation[federationId] !== recommendationCount) {
+          this.recommendationCountsByFederation[federationId] = recommendationCount
+          updated = true
+        }
+      }
+
+      if (!updated) {
+        return
+      }
+
+      this.applyRecommendationCountsToCandidates()
+      this.sortDiscoveryCandidates()
+      this.enqueueCandidatesForPreview()
+      await this.processPreviewQueue()
+    },
+
+    applyRecommendationCountsToCandidates() {
+      this.discoveryCandidates = this.discoveryCandidates.map((candidate) => {
+        return {
+          ...candidate,
+          recommendationCount: this.getRecommendationCountForFederationId(candidate.federationId),
+        }
+      })
+    },
+
+    sortDiscoveryCandidates() {
+      this.discoveryCandidates.sort((a, b) => {
+        const aStatus = this.previewStatusByFederation[a.federationId]
+        const bStatus = this.previewStatusByFederation[b.federationId]
+        const aStatusPenalty = aStatus === 'failed' || aStatus === 'timed_out' ? 1 : 0
+        const bStatusPenalty = bStatus === 'failed' || bStatus === 'timed_out' ? 1 : 0
+        const statusPenaltyDiff = aStatusPenalty - bStatusPenalty
+        if (statusPenaltyDiff !== 0) {
+          return statusPenaltyDiff
+        }
+
+        const recommendationDiff = (b.recommendationCount ?? 0) - (a.recommendationCount ?? 0)
+        if (recommendationDiff !== 0) {
+          return recommendationDiff
+        }
+
+        return b.createdAt - a.createdAt
+      })
     },
 
     enqueueCandidatesForPreview() {
@@ -318,10 +437,12 @@ export const useNostrStore = defineStore('nostr', {
           }
 
           this.previewAttemptedCreatedAt[candidate.federationId] = candidate.createdAt
+          this.previewStatusByFederation[candidate.federationId] = 'loading'
 
           const previewPromise = walletStore
             .previewFederation(candidate.inviteCode)
             .catch((error) => {
+              this.previewStatusByFederation[candidate.federationId] = 'failed'
               if (isExpectedDiscoveryError(error)) {
                 const lastLoggedCreatedAt = this.previewErrorLoggedCreatedAt[candidate.federationId]
                 if (lastLoggedCreatedAt == null || lastLoggedCreatedAt < candidate.createdAt) {
@@ -345,16 +466,23 @@ export const useNostrStore = defineStore('nostr', {
           // eslint-disable-next-line no-await-in-loop
           const previewResult = await raceWithTimeout(previewPromise, PREVIEW_TIMEOUT_MS)
           if (previewResult === PREVIEW_TIMEOUT_TOKEN) {
+            this.previewStatusByFederation[candidate.federationId] = 'timed_out'
+            this.sortDiscoveryCandidates()
             logger.warn('Federation preview timed out', { federationId: candidate.federationId })
             continue
           }
 
           const federation = previewResult
           if (federation == null) {
+            if (this.previewStatusByFederation[candidate.federationId] === 'loading') {
+              this.previewStatusByFederation[candidate.federationId] = 'failed'
+            }
+            this.sortDiscoveryCandidates()
             continue
           }
 
           if (!this.discoveredFederations.some((f) => f.federationId === federation.federationId)) {
+            this.previewStatusByFederation[candidate.federationId] = 'ready'
             this.discoveredFederations.push(federation)
             this.discoveredFederations.sort((a, b) => {
               return (a.title ?? '').localeCompare(b.title ?? '')
@@ -394,9 +522,14 @@ export const useNostrStore = defineStore('nostr', {
         this.federationSubscription.stop()
         this.federationSubscription = null
       }
+      if (this.recommendationSubscription != null) {
+        this.recommendationSubscription.stop()
+        this.recommendationSubscription = null
+      }
       this.previewQueue = []
       this.previewAttemptedCreatedAt = {}
       this.previewErrorLoggedCreatedAt = {}
+      this.previewStatusByFederation = {}
       this.isDiscoveringFederations = false
     },
   },
@@ -425,6 +558,43 @@ function extractFederationCandidate(event: NDKEvent): DiscoveredFederationCandid
     inviteCode,
     createdAt: event.created_at ?? 0,
   }
+}
+
+function extractRecommendedFederationIds(
+  event: NDKEvent,
+  discoveryCandidates: DiscoveredFederationCandidate[],
+): string[] {
+  const recommendedFederationIds = new Set<string>()
+
+  for (const pointerTag of event.getMatchingTags('a')) {
+    const pointer = pointerTag[1]
+    if (pointer == null || pointer === '') {
+      continue
+    }
+
+    const [kind, _pubkey, identifier] = pointer.split(':', 3)
+    if (kind !== String(Nip87Kinds.FediInfo) || identifier == null || identifier === '') {
+      continue
+    }
+
+    recommendedFederationIds.add(identifier)
+  }
+
+  const inviteCodes = new Set(
+    event
+      .getMatchingTags('u')
+      .map((tag) => tag[1])
+      .filter((inviteCode): inviteCode is string => inviteCode != null && inviteCode !== ''),
+  )
+  if (inviteCodes.size > 0) {
+    for (const candidate of discoveryCandidates) {
+      if (inviteCodes.has(candidate.inviteCode)) {
+        recommendedFederationIds.add(candidate.federationId)
+      }
+    }
+  }
+
+  return [...recommendedFederationIds]
 }
 
 async function raceWithTimeout<T>(

@@ -35,15 +35,44 @@
               {{ federation.federationId }}
             </q-item-label>
             <q-item-label
-              v-if="!federation.previewReady"
+              v-if="federation.recommendationCount > 0"
+              caption
+              class="federation-recommendation-caption"
+            >
+              Recommended by {{ formatRecommendationCount(federation.recommendationCount) }}
+            </q-item-label>
+            <q-item-label
+              v-if="federation.previewStatus === 'loading'"
               caption
               class="federation-loading-caption"
             >
               Loading federation details...
             </q-item-label>
+            <q-item-label
+              v-else-if="federation.previewStatus === 'failed'"
+              caption
+              class="federation-error-caption"
+            >
+              Federation details unavailable.
+            </q-item-label>
+            <q-item-label
+              v-else-if="federation.previewStatus === 'timed_out'"
+              caption
+              class="federation-error-caption"
+            >
+              Federation details request timed out.
+            </q-item-label>
           </q-item-section>
           <q-item-section side>
-            <q-spinner v-if="!federation.previewReady" color="primary" size="18px" />
+            <q-spinner v-if="federation.previewStatus === 'loading'" color="primary" size="18px" />
+            <q-icon
+              v-else-if="
+                federation.previewStatus === 'failed' || federation.previewStatus === 'timed_out'
+              "
+              name="warning"
+              color="warning"
+              size="18px"
+            />
             <q-btn
               v-else
               flat
@@ -119,6 +148,8 @@ import { logger } from 'src/services/logger'
 
 type DiscoveryListItem = Federation & {
   previewReady: boolean
+  recommendationCount: number
+  previewStatus: 'loading' | 'failed' | 'timed_out' | 'ready'
 }
 
 const nostr = useNostrStore()
@@ -146,9 +177,14 @@ const visibleFederations = computed<DiscoveryListItem[]>(() => {
 
     const discovered = discoveredById.get(federationId)
     if (discovered != null) {
+      const candidate = candidatesById.get(federationId)
       entries.push({
         ...discovered,
         previewReady: true,
+        recommendationCount:
+          candidate?.recommendationCount ??
+          nostr.getRecommendationCountForFederationId(federationId),
+        previewStatus: 'ready',
       })
       if (entries.length >= nostr.previewTargetCount) {
         break
@@ -168,6 +204,8 @@ const visibleFederations = computed<DiscoveryListItem[]>(() => {
       modules: [],
       metadata: {},
       previewReady: false,
+      recommendationCount: candidate.recommendationCount ?? 0,
+      previewStatus: nostr.previewStatusByFederation[candidate.federationId] ?? 'loading',
     })
 
     if (entries.length >= nostr.previewTargetCount) {
@@ -240,6 +278,11 @@ function loadMoreFederations() {
 
 function stopDiscovery() {
   nostr.stopDiscoveringFederations()
+}
+
+function formatRecommendationCount(count: number): string {
+  const suffix = count === 1 ? 'user' : 'users'
+  return `${count} ${suffix}`
 }
 
 async function addFederation(federation: Federation) {
@@ -364,6 +407,14 @@ function truncateFederationId(federationId: string): string {
 
 .federation-loading-caption {
   color: rgba(255, 255, 255, 0.45);
+}
+
+.federation-recommendation-caption {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.federation-error-caption {
+  color: rgba(255, 193, 7, 0.9);
 }
 
 /* Enhance the loading state */
