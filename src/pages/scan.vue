@@ -25,7 +25,15 @@ meta:
     </div>
 
     <div class="action-bar top-bar q-px-md q-py-sm">
-      <q-btn round flat color="white" icon="arrow_back" :to="{ name: '/' }" class="q-mr-md" />
+      <q-btn
+        round
+        flat
+        color="white"
+        icon="arrow_back"
+        :to="{ name: '/' }"
+        class="q-mr-md"
+        data-testid="scan-back-btn"
+      />
       <div class="text-white text-subtitle1 text-weight-medium">Scan QR Code</div>
     </div>
 
@@ -39,6 +47,7 @@ meta:
         icon="flashlight_on"
         checked-icon="flashlight_off"
         :disable="!hasTorch"
+        data-testid="scan-torch-toggle"
       />
     </div>
   </q-page>

@@ -8,6 +8,7 @@
           clickable
           @click="addFederation(federation)"
           :disable="isAdded(federation) || !federation.previewReady"
+          :data-testid="`discover-federation-item-${federation.federationId}`"
         >
           <q-item-section avatar v-if="federation?.metadata?.federation_icon_url">
             <q-img :src="federation?.metadata?.federation_icon_url" class="logo" />
@@ -68,6 +69,7 @@
               :icon="isAdded(federation) ? 'check_circle' : 'add'"
               :color="isAdded(federation) ? 'positive' : 'primary'"
               :disable="isAdded(federation)"
+              :data-testid="`discover-federation-action-${federation.federationId}`"
             />
           </q-item-section>
         </q-item>
@@ -82,6 +84,7 @@
           label="Load more"
           icon="expand_more"
           @click="loadMoreFederations"
+          data-testid="discover-federations-load-more-btn"
         />
       </div>
 
@@ -114,6 +117,7 @@
           color="primary"
           :label="isDiscovering ? 'Stop' : 'Start'"
           @click="toggleDiscovery"
+          data-testid="discover-federations-toggle-btn"
         />
       </div>
     </div>

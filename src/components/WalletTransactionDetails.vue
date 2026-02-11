@@ -53,7 +53,15 @@
     <q-separator class="q-my-md" />
     <div class="detail-row">
       <div class="label">Bitcoin Address</div>
-      <q-btn flat dense round icon="content_copy" @click="copyAddress" class="copy-button" />
+      <q-btn
+        flat
+        dense
+        round
+        icon="content_copy"
+        @click="copyAddress"
+        class="copy-button"
+        data-testid="wallet-transaction-details-copy-address-btn"
+      />
     </div>
 
     <div class="address-section q-mt-sm">

@@ -15,6 +15,7 @@ meta:
         icon="close"
         class="absolute-top-right q-ma-md"
         :to="{ name: '/' }"
+        data-testid="received-lightning-close-btn"
       />
 
       <div class="text-center text-white">

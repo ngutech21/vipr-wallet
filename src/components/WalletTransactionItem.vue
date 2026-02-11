@@ -4,6 +4,7 @@
     v-ripple
     class="transaction-item"
     @click="$emit('click', transaction.operationId)"
+    :data-testid="`wallet-transaction-item-${transaction.operationId}`"
   >
     <q-item-section avatar>
       <q-icon

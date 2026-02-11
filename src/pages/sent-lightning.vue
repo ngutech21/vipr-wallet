@@ -15,6 +15,7 @@ meta:
         icon="close"
         class="absolute-top-right q-ma-md"
         :to="{ name: '/' }"
+        data-testid="sent-lightning-close-btn"
       />
 
       <div class="success-icon-container">
@@ -38,7 +39,14 @@ meta:
           </div>
         </div>
       </q-card>
-      <q-btn flat color="white" class="q-mt-xl" :to="{ name: '/' }" label="Back to Home" />
+      <q-btn
+        flat
+        color="white"
+        class="q-mt-xl"
+        :to="{ name: '/' }"
+        label="Back to Home"
+        data-testid="sent-lightning-back-home-btn"
+      />
     </div>
   </q-page>
 </template>

@@ -6,7 +6,7 @@
   >
     <q-page class="column dark-gradient">
       <q-toolbar class="header-section">
-        <q-btn flat round icon="arrow_back" :to="{ name: '/' }" />
+        <q-btn flat round icon="arrow_back" :to="{ name: '/' }" data-testid="send-back-btn" />
         <q-toolbar-title class="text-center no-wrap">Send</q-toolbar-title>
         <div class="q-ml-md" style="width: 40px"></div>
       </q-toolbar>
@@ -24,9 +24,17 @@
                 type="textarea"
                 placeholder="Enter Lightning Invoice, Address or LNURL"
                 class="custom-input"
+                data-testid="send-invoice-input"
               >
                 <template #after>
-                  <q-btn round dense flat icon="qr_code_scanner" @click="openScanner" />
+                  <q-btn
+                    round
+                    dense
+                    flat
+                    icon="qr_code_scanner"
+                    @click="openScanner"
+                    data-testid="send-open-scanner-btn"
+                  />
                 </template>
               </q-input>
             </q-card-section>
@@ -48,6 +56,7 @@
                       label="Amount in sats"
                       type="number"
                       class="custom-input"
+                      data-testid="send-amount-input"
                     />
                   </div>
                 </div>
@@ -61,6 +70,7 @@
                       v-model="invoiceMemo"
                       label="Memo (optional)"
                       class="custom-input"
+                      data-testid="send-memo-input"
                     />
                   </div>
                 </div>
@@ -77,6 +87,7 @@
               size="lg"
               :loading="isProcessing"
               @click="amountRequired ? createInvoice() : decodeInvoice()"
+              data-testid="send-continue-btn"
             >
               <!-- :disable="!isValidInput" -->
               <template #loading>

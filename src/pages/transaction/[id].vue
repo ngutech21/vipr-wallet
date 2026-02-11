@@ -7,7 +7,14 @@
   >
     <q-page class="transaction-details-page">
       <q-toolbar class="header-section">
-        <q-btn flat round color="white" icon="arrow_back" @click="navigateBack" />
+        <q-btn
+          flat
+          round
+          color="white"
+          icon="arrow_back"
+          @click="navigateBack"
+          data-testid="transaction-details-back-btn"
+        />
         <q-toolbar-title class="text-center no-wrap">Transaction</q-toolbar-title>
         <div class="q-ml-md" style="width: 40px"></div>
       </q-toolbar>
@@ -22,7 +29,13 @@
       <div v-else-if="error" class="full-height column flex-center">
         <q-icon name="error_outline" color="negative" size="3em" />
         <div class="q-mt-sm">{{ error }}</div>
-        <q-btn color="primary" label="Go Back" class="q-mt-md" @click="navigateBack" />
+        <q-btn
+          color="primary"
+          label="Go Back"
+          class="q-mt-md"
+          @click="navigateBack"
+          data-testid="transaction-details-error-go-back-btn"
+        />
       </div>
 
       <!-- Transaction content -->

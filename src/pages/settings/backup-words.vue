@@ -6,7 +6,13 @@ meta:
 <template>
   <q-page class="dark-gradient">
     <q-toolbar class="header-section">
-      <q-btn flat round icon="arrow_back" @click="goBack" />
+      <q-btn
+        flat
+        round
+        icon="arrow_back"
+        @click="goBack"
+        data-testid="backup-words-back-btn"
+      />
       <q-toolbar-title class="text-center no-wrap">Recovery Words</q-toolbar-title>
       <div class="q-ml-md" style="width: 40px"></div>
     </q-toolbar>
@@ -63,6 +69,7 @@ meta:
           class="full-width q-mb-sm"
           size="lg"
           @click="confirmBackup"
+          data-testid="backup-words-confirm-btn"
         />
       </div>
     </div>

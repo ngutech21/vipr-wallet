@@ -81,7 +81,15 @@
     <q-separator class="q-my-md" />
     <div class="detail-row">
       <div class="label">Lightning Invoice</div>
-      <q-btn flat dense round icon="content_copy" @click="copyInvoice" class="copy-button" />
+      <q-btn
+        flat
+        dense
+        round
+        icon="content_copy"
+        @click="copyInvoice"
+        class="copy-button"
+        data-testid="lightning-transaction-details-copy-invoice-btn"
+      />
     </div>
 
     <div class="invoice-section q-mt-sm">

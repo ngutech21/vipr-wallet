@@ -7,7 +7,13 @@
   >
     <q-page>
       <q-toolbar class="header-section">
-        <q-btn flat round icon="arrow_back" :to="{ name: '/federations/' }" />
+        <q-btn
+          flat
+          round
+          icon="arrow_back"
+          :to="{ name: '/federations/' }"
+          data-testid="federation-details-back-btn"
+        />
         <q-toolbar-title class="text-center no-wrap">Federation Details</q-toolbar-title>
         <div class="q-ml-md" style="width: 40px"></div>
       </q-toolbar>
@@ -165,7 +171,13 @@
         <q-card flat class="q-mb-md" v-if="federation?.metadata?.tos_url">
           <q-card-section>
             <q-list>
-              <q-item clickable tag="a" :href="federation?.metadata?.tos_url" target="_blank">
+              <q-item
+                clickable
+                tag="a"
+                :href="federation?.metadata?.tos_url"
+                target="_blank"
+                data-testid="federation-details-tos-link"
+              >
                 <q-item-section avatar>
                   <q-icon name="description" color="primary" />
                 </q-item-section>
@@ -193,6 +205,7 @@
                 @click="confirmLeave = true"
                 icon="logout"
                 class="full-width"
+                data-testid="federation-details-leave-btn"
               />
             </div>
           </q-card-section>
@@ -211,8 +224,21 @@
             </q-card-section>
 
             <q-card-actions align="right">
-              <q-btn flat label="Cancel" color="primary" v-close-popup />
-              <q-btn flat label="Leave" color="negative" @click="leaveFederation" v-close-popup />
+              <q-btn
+                flat
+                label="Cancel"
+                color="primary"
+                v-close-popup
+                data-testid="federation-details-leave-cancel-btn"
+              />
+              <q-btn
+                flat
+                label="Leave"
+                color="negative"
+                @click="leaveFederation"
+                v-close-popup
+                data-testid="federation-details-leave-confirm-btn"
+              />
             </q-card-actions>
           </q-card>
         </q-dialog>

@@ -11,7 +11,13 @@ meta:
   >
     <q-page class="column dark-gradient">
       <q-toolbar class="header-section">
-        <q-btn flat round icon="arrow_back" :to="{ name: '/' }" />
+        <q-btn
+          flat
+          round
+          icon="arrow_back"
+          :to="{ name: '/' }"
+          data-testid="receive-ecash-back-btn"
+        />
         <q-toolbar-title class="text-center no-wrap">Receive Offline</q-toolbar-title>
         <div class="q-ml-md" style="width: 40px"></div>
       </q-toolbar>
@@ -28,9 +34,17 @@ meta:
               type="textarea"
               placeholder="Paste eCash token here"
               class="custom-input"
+              data-testid="receive-ecash-token-input"
             >
               <template #after>
-                <q-btn round dense flat icon="content_paste" @click="pasteFromClipboard" />
+                <q-btn
+                  round
+                  dense
+                  flat
+                  icon="content_paste"
+                  @click="pasteFromClipboard"
+                  data-testid="receive-ecash-paste-btn"
+                />
               </template>
             </q-input>
           </q-card-section>
@@ -45,6 +59,7 @@ meta:
             :loading="isProcessing"
             :disable="!ecashToken.trim()"
             @click="redeemEcash"
+            data-testid="receive-ecash-submit-btn"
           >
             <template #loading>
               <q-spinner-dots color="white" />

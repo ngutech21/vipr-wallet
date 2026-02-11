@@ -13,6 +13,7 @@
         :to="{ name: '/' }"
         label="Go Home"
         no-caps
+        data-testid="not-found-go-home-btn"
       />
     </div>
   </div>

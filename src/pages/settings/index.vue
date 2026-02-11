@@ -46,6 +46,7 @@
                   @click="configureBitcoinConnect"
                   :flat="!!connectedProvider"
                   :outline="!!connectedProvider"
+                  data-testid="settings-bitcoin-connect-btn"
                 />
               </div>
             </div>
@@ -80,6 +81,7 @@
                     color="negative"
                     size="sm"
                     @click="removeRelay(relay)"
+                    :data-testid="`settings-remove-relay-btn-${index}`"
                   />
                 </q-item-section>
               </q-item>
@@ -102,6 +104,7 @@
                   dense
                   placeholder="Must start with wss://"
                   class="relay-input"
+                  data-testid="settings-new-relay-input"
                 />
               </div>
               <div class="col-4">
@@ -112,6 +115,7 @@
                   class="full-width"
                   :disable="!isValidRelayUrl"
                   @click="addNewRelay"
+                  data-testid="settings-add-relay-btn"
                 />
               </div>
             </div>
@@ -123,6 +127,7 @@
                 color="secondary"
                 icon="settings_backup_restore"
                 @click="resetRelays"
+                data-testid="settings-reset-relays-btn"
               />
             </div>
           </q-card-section>
@@ -155,6 +160,7 @@
                 color="primary"
                 @click="checkForUpdates"
                 class="q-mt-sm full-width"
+                data-testid="settings-check-updates-btn"
               />
             </div>
           </q-card-section>
@@ -182,6 +188,7 @@
               icon="backup"
               :to="{ name: '/settings/backup' }"
               class="full-width"
+              data-testid="settings-create-backup-btn"
             />
           </q-card-section>
         </q-card>
@@ -207,6 +214,7 @@
               :href="'https://github.com/ngutech21/vipr-wallet'"
               target="_blank"
               class="full-width"
+              data-testid="settings-open-github-btn"
             />
           </q-card-section>
         </q-card>
@@ -233,6 +241,7 @@
               icon="delete"
               @click="deleteData"
               class="full-width"
+              data-testid="settings-delete-data-btn"
             />
           </q-card-section>
         </q-card>

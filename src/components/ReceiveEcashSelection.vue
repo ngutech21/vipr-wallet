@@ -22,7 +22,12 @@
         </div>
 
         <div class="col-12">
-          <q-card class="cursor-pointer" v-ripple @click="onReceiveOffline">
+          <q-card
+            class="cursor-pointer"
+            v-ripple
+            @click="onReceiveOffline"
+            data-testid="receive-offline-card"
+          >
             <q-card-section class="row">
               <q-icon name="swap_horiz" size="48px" color="primary" class="col-2" />
               <div class="col-10">

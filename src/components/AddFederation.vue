@@ -18,6 +18,7 @@
           color="primary"
           :to="'/scan'"
           class="q-pl-none"
+          data-testid="add-federation-scan-btn"
         />
         <q-btn
           flat
@@ -26,10 +27,17 @@
           color="primary"
           @click="pasteFromClipboard"
           class="q-pr-none"
+          data-testid="add-federation-paste-btn"
         />
       </div>
       <div class="q-mt-xl">
-        <q-btn type="submit" label="Add Federation" color="primary" class="q-mt-md full-width" />
+        <q-btn
+          type="submit"
+          label="Add Federation"
+          color="primary"
+          class="q-mt-md full-width"
+          data-testid="add-federation-submit-btn"
+        />
       </div>
     </q-form>
   </ModalCard>

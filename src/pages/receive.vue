@@ -13,7 +13,13 @@ meta:
 
     <q-page class="dark-gradient">
       <q-toolbar class="header-section">
-        <q-btn flat round icon="arrow_back" @click="goBack" />
+        <q-btn
+          flat
+          round
+          icon="arrow_back"
+          @click="goBack"
+          data-testid="receive-back-btn"
+        />
         <q-toolbar-title class="text-center no-wrap">Receive</q-toolbar-title>
         <div class="q-ml-md" style="width: 40px"></div>
       </q-toolbar>
@@ -44,6 +50,7 @@ meta:
                 :icon="button.icon"
                 :label="button.label"
                 @click="button.handler"
+                :data-testid="`receive-keypad-btn-${index}`"
               />
             </div>
           </div>
@@ -56,6 +63,7 @@ meta:
             @click="onRequest"
             icon="bolt"
             :loading="isCreatingInvoice"
+            data-testid="receive-create-invoice-btn"
           >
             <template #loading>
               <q-spinner-dots color="white" />
@@ -74,9 +82,20 @@ meta:
           <q-separator />
           <q-card-section>
             <div class="row items-center q-gutter-sm">
-              <q-input v-model="qrData" readonly class="col" />
-              <q-btn icon="content_copy" flat @click="copyToClipboard" />
-              <q-btn icon="share" flat @click="shareQrcode" v-if="isSupported" />
+              <q-input v-model="qrData" readonly class="col" data-testid="receive-invoice-input" />
+              <q-btn
+                icon="content_copy"
+                flat
+                @click="copyToClipboard"
+                data-testid="receive-copy-invoice-btn"
+              />
+              <q-btn
+                icon="share"
+                flat
+                @click="shareQrcode"
+                v-if="isSupported"
+                data-testid="receive-share-invoice-btn"
+              />
             </div>
           </q-card-section>
         </q-card>
@@ -100,6 +119,7 @@ meta:
           color="primary"
           icon="account_balance_wallet"
           @click="payWithBitcoinConnect"
+          data-testid="receive-pay-with-wallet-btn"
         />
       </div>
     </q-page>

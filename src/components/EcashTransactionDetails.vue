@@ -57,7 +57,15 @@
     <q-separator class="q-my-md" v-if="transaction.notes" />
     <div v-if="transaction.notes" class="detail-row">
       <div class="label">Notes</div>
-      <q-btn flat dense round icon="content_copy" @click="copyNotes" class="copy-button" />
+      <q-btn
+        flat
+        dense
+        round
+        icon="content_copy"
+        @click="copyNotes"
+        class="copy-button"
+        data-testid="ecash-transaction-details-copy-notes-btn"
+      />
     </div>
 
     <div v-if="transaction.notes" class="notes-section q-mt-sm">

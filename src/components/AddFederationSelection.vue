@@ -3,7 +3,12 @@
     <div class="q-pa-md">
       <div class="row q-col-gutter-md">
         <div class="col-12">
-          <q-card class="cursor-pointer" v-ripple @click="onDiscover">
+          <q-card
+            class="cursor-pointer"
+            v-ripple
+            @click="onDiscover"
+            data-testid="join-discover-federation-card"
+          >
             <q-card-section class="row">
               <q-icon name="search" size="48px" color="primary" class="col-2" />
               <div class="col-10">

@@ -3,7 +3,16 @@
     <q-card-section class="row items-center">
       <div style="width: 40px"></div>
       <div class="text-h6 col full-width text-center">{{ title }}</div>
-      <q-btn icon="close" color="primary" class="q-ml-sm" flat round dense v-close-popup />
+      <q-btn
+        icon="close"
+        color="primary"
+        class="q-ml-sm"
+        flat
+        round
+        dense
+        v-close-popup
+        data-testid="modal-card-close-btn"
+      />
     </q-card-section>
     <q-separator />
     <slot></slot>

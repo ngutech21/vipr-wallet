@@ -7,6 +7,7 @@
       flat
       bordered
       @click="selectFederation(fedi)"
+      :data-testid="`federation-list-item-${fedi.federationId}`"
     >
       <div v-if="isSelected(fedi)" class="selection-indicator"></div>
 
@@ -55,6 +56,7 @@
               size="sm"
               class="q-mr-sm"
               :to="{ name: '/federation/[id]', params: { id: String(fedi.federationId) } }"
+              :data-testid="`federation-list-details-btn-${fedi.federationId}`"
             />
           </div>
         </q-item-section>
