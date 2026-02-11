@@ -22,7 +22,7 @@ ENV BUILDTIME=${BUILDTIME}
 
 
 # Stage 2: Serve the app using Nginx
-FROM alpine:3.21
+FROM alpine:3.23
 
 RUN apk add --no-cache nginx nginx-mod-http-brotli \
     && mkdir -p /usr/share/nginx/html /run/nginx /etc/nginx/http.d
