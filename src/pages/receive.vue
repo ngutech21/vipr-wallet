@@ -13,13 +13,7 @@ meta:
 
     <q-page class="dark-gradient">
       <q-toolbar class="header-section">
-        <q-btn
-          flat
-          round
-          icon="arrow_back"
-          @click="goBack"
-          data-testid="receive-back-btn"
-        />
+        <q-btn flat round icon="arrow_back" @click="goBack" data-testid="receive-back-btn" />
         <q-toolbar-title class="text-center no-wrap">Receive</q-toolbar-title>
         <div class="q-ml-md" style="width: 40px"></div>
       </q-toolbar>
@@ -59,11 +53,12 @@ meta:
             label="Create Invoice"
             color="primary"
             class="full-width"
-            :disable="amount <= 0"
+            :disable="amount <= 0 || isCreatingInvoice"
             @click="onRequest"
             icon="bolt"
             :loading="isCreatingInvoice"
             data-testid="receive-create-invoice-btn"
+            :data-busy="isCreatingInvoice ? 'true' : 'false'"
           >
             <template #loading>
               <q-spinner-dots color="white" />

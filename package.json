@@ -48,7 +48,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@pinia/testing": "^1.0.3",
-    "@playwright/test": "1.56.1",
+    "@playwright/test": "1.57.0",
     "@quasar/app-vite": ">=2.0.0 <2.4.0",
     "@quasar/cli": "^2.5.0",
     "@quasar/quasar-app-extension-testing-unit-vitest": "^1.2.4",

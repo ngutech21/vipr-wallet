@@ -86,8 +86,10 @@
               class="full-width q-py-sm"
               size="lg"
               :loading="isProcessing"
+              :disable="isProcessing"
               @click="amountRequired ? createInvoice() : decodeInvoice()"
               data-testid="send-continue-btn"
+              :data-busy="isProcessing ? 'true' : 'false'"
             >
               <!-- :disable="!isValidInput" -->
               <template #loading>

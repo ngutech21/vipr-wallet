@@ -37,6 +37,9 @@
           color="primary"
           class="q-mt-md full-width"
           data-testid="add-federation-submit-btn"
+          :disable="isSubmitting"
+          :loading="isSubmitting"
+          :data-busy="isSubmitting ? 'true' : 'false'"
         />
       </div>
     </q-form>
@@ -65,6 +68,7 @@ const props = defineProps<{
 
 // Change to initialize from prop if available
 const inviteCode = ref(props.initialInviteCode ?? '')
+const isSubmitting = ref(false)
 
 // Watch for changes to the prop to update the local ref
 watch(
@@ -97,6 +101,7 @@ async function pasteFromClipboard() {
 
 async function addFederation() {
   Loading.show({ message: 'Adding Federation' })
+  isSubmitting.value = true
 
   try {
     logger.federation.debug('Adding federation', { inviteCode: inviteCode.value })
@@ -134,6 +139,7 @@ async function addFederation() {
       position: 'top',
     })
   } finally {
+    isSubmitting.value = false
     Loading.hide()
     onClose()
   }

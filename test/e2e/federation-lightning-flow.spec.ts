@@ -1,7 +1,11 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 import { FaucetService } from './utils/FaucetService'
 
 test.setTimeout(120_000)
+
+async function waitForAppReady(page: Page) {
+  await expect(page.locator('[data-app-ready="true"]')).toBeVisible({ timeout: 60_000 })
+}
 
 test.describe('Federation Join and Lightning Payment Flow', () => {
   let faucet: FaucetService
@@ -13,31 +17,29 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
   test('join federation and receive lightning payment', async ({ page }) => {
     // Navigate to the app
     await page.goto('/')
+    await waitForAppReady(page)
     await expect(page).toHaveTitle(/Vipr/)
 
     // Step 1: Navigate to Federations page
     await test.step('Navigate to Federations page', async () => {
-      await page.locator('[data-testid="nav-federations"]').click()
-      await page.waitForLoadState('networkidle')
+      await page.getByTestId('nav-federations').click()
       await expect(page).toHaveURL(/#\/federations$/)
-      await expect(page.locator('[data-testid="federations-page"]')).toBeVisible()
+      await expect(page.getByTestId('federations-page')).toBeVisible()
     })
 
     // Step 2: Open Add Federation dialog
     await test.step('Open Add Federation dialog', async () => {
       // Click the FAB button to open federation selection
-      await page.locator('[data-testid="add-federation-button"]').click()
-      await page.waitForLoadState('networkidle')
+      await page.getByTestId('add-federation-button').click()
 
       // Wait for the selection dialog to appear
-      await page.waitForSelector('[data-testid="join-federation-selection"]', { timeout: 5000 })
+      await expect(page.getByTestId('join-federation-selection')).toBeVisible({ timeout: 10_000 })
 
       // Click on "Add Federation" option to open the add federation form
-      await page.locator('[data-testid="join-trusted-federation-card"]').click()
-      await page.waitForLoadState('networkidle')
+      await page.getByTestId('join-trusted-federation-card').click()
 
       // Wait for the form to be visible
-      await page.waitForSelector('[data-testid="add-federation-form"]', { timeout: 5000 })
+      await expect(page.getByTestId('add-federation-form')).toBeVisible({ timeout: 10_000 })
     })
 
     // Step 3: Join federation using faucet invite code
@@ -48,26 +50,25 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       expect(inviteCode.length).toBeGreaterThan(10)
 
       // Fill in the invite code // [data-testid="invite-code-input"]
-      const inviteCodeInput = page.locator('[data-testid="invite-code-input"]')
+      const inviteCodeInput = page.getByTestId('invite-code-input')
       await inviteCodeInput.fill(inviteCode)
 
       // Click Add Federation button
-      await page.locator('button:has-text("Add Federation")').click()
-      await page.waitForLoadState('networkidle')
-
-      // Wait for loading to complete
-      await page.waitForSelector('text=Adding Federation', { state: 'hidden', timeout: 30000 })
+      const addFederationButton = page.getByTestId('add-federation-submit-btn')
+      await expect(addFederationButton).toHaveAttribute('data-busy', 'false')
+      await expect(addFederationButton).toBeEnabled()
+      await addFederationButton.click()
 
       // Verify we're back on the federations page with the new federation
-      await expect(page.locator('[data-testid="federations-page"]')).toBeVisible()
+      await expect(page.getByTestId('add-federation-form')).toBeHidden({ timeout: 30_000 })
+      await expect(page.getByTestId('federations-page')).toBeVisible()
     })
 
     // Step 4: Navigate back to home page
     await test.step('Navigate to home page', async () => {
-      await page.locator('[data-testid="nav-home"]').click()
-      await page.waitForLoadState('networkidle')
+      await page.getByTestId('nav-home').click()
       await expect(page).toHaveURL(/#\/$/)
-      await expect(page.locator('[data-testid="home-page"]')).toBeVisible()
+      await expect(page.getByTestId('home-page')).toBeVisible()
 
       // Verify initial balance is 0
       await expect(page.locator('.text-h4')).toContainText('0 sats')
@@ -79,48 +80,45 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     // Step 5: Start receive flow
     await test.step('Start receive flow', async () => {
       // Click Receive button
-      await page.locator('button:has-text("Receive")').click()
-      await page.waitForLoadState('networkidle')
+      await page.getByTestId('home-receive-btn').click()
 
       // Wait for receive selection dialog
-      await page.waitForSelector('text=Receive eCash', { timeout: 5000 })
+      await expect(page.getByTestId('receive-lightning-card')).toBeVisible({ timeout: 10_000 })
 
       // Click on Receive Lightning option
-      await page.locator('[data-testid="receive-lightning-card"]').click()
-      await page.waitForLoadState('networkidle')
-
-      // Wait for modal to close completely
-      await page.waitForSelector('text=Receive eCash', { state: 'hidden', timeout: 10000 })
+      await page.getByTestId('receive-lightning-card').click()
 
       // Wait for navigation to receive page
-      await page.waitForURL('**/#/receive', { timeout: 10000 })
+      await page.waitForURL('**/#/receive', { timeout: 15_000 })
 
       // Wait for receive page to load
-      await page.waitForSelector('[data-testid="amount-input"]', { timeout: 10000 })
+      await expect(page.getByTestId('amount-input')).toBeVisible({ timeout: 15_000 })
     })
 
     // Step 6: Create invoice for 1000 sats
     let invoice: string
     await test.step('Create invoice for 1000 sats', async () => {
       // Enter amount using keypad
-      await page.locator('button:has-text("1")').click()
-      await page.locator('button:has-text("0")').click()
-      await page.locator('button:has-text("0")').click()
-      await page.locator('button:has-text("0")').click()
+      await page.locator('[data-testid^="receive-keypad-btn-"]', { hasText: '1' }).first().click()
+      await page.locator('[data-testid^="receive-keypad-btn-"]', { hasText: '0' }).first().click()
+      await page.locator('[data-testid^="receive-keypad-btn-"]', { hasText: '0' }).first().click()
+      await page.locator('[data-testid^="receive-keypad-btn-"]', { hasText: '0' }).first().click()
 
       // Verify amount is 1000
-      const amountInput = page.locator('[data-testid="amount-input"]')
+      const amountInput = page.getByTestId('amount-input')
       await expect(amountInput).toHaveValue('1000')
 
       // Click Create Invoice button
-      await page.locator('button:has-text("Create Invoice")').click()
-      await page.waitForLoadState('networkidle')
+      const createInvoiceButton = page.getByTestId('receive-create-invoice-btn')
+      await expect(createInvoiceButton).toHaveAttribute('data-busy', 'false')
+      await expect(createInvoiceButton).toBeEnabled()
+      await createInvoiceButton.click()
 
       // Wait for QR code to appear
-      await page.waitForSelector('.qr-card', { timeout: 10000 })
+      await expect(page.locator('.qr-card')).toBeVisible({ timeout: 15_000 })
 
       // Extract invoice from the input field
-      const invoiceInput = page.locator('.qr-card input[readonly]')
+      const invoiceInput = page.getByTestId('receive-invoice-input')
       invoice = await invoiceInput.inputValue()
 
       expect(invoice).toBeTruthy()
@@ -137,15 +135,15 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       await page.waitForURL('**/#/received-lightning*', { timeout: 60_000 })
 
       // Wait for success message
-      await expect(page.locator('text=Payment Received')).toBeVisible()
-      await expect(page.locator('text=1,000 sats')).toBeVisible()
+      await expect(page.getByTestId('back-home-button')).toBeVisible()
+      await expect(page.getByText('Payment Received!')).toBeVisible()
+      await expect(page.getByText('1,000 sats')).toBeVisible()
     })
 
     // Step 8: Verify balance updated
     await test.step('Verify balance updated', async () => {
       // Navigate back to home
-      await page.locator('[data-testid="back-home-button"]').click()
-      await page.waitForLoadState('networkidle')
+      await page.getByTestId('back-home-button').click()
       await expect(page).toHaveURL(/#\/$/)
 
       // Verify balance shows 1000 sats

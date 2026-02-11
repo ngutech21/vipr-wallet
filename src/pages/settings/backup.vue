@@ -6,13 +6,7 @@ meta:
 <template>
   <q-page class="dark-gradient">
     <q-toolbar class="header-section">
-      <q-btn
-        flat
-        round
-        icon="arrow_back"
-        @click="goBack"
-        data-testid="backup-intro-back-btn"
-      />
+      <q-btn flat round icon="arrow_back" @click="goBack" data-testid="backup-intro-back-btn" />
       <q-toolbar-title class="text-center no-wrap">Personal Backup</q-toolbar-title>
       <div class="q-ml-md" style="width: 40px"></div>
     </q-toolbar>

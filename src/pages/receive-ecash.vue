@@ -57,9 +57,10 @@ meta:
             class="full-width q-py-sm"
             size="lg"
             :loading="isProcessing"
-            :disable="!ecashToken.trim()"
+            :disable="!ecashToken.trim() || isProcessing"
             @click="redeemEcash"
             data-testid="receive-ecash-submit-btn"
+            :data-busy="isProcessing ? 'true' : 'false'"
           >
             <template #loading>
               <q-spinner-dots color="white" />
