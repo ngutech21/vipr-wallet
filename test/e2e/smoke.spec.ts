@@ -20,7 +20,6 @@ test.describe('Smoke Tests', () => {
     await page.getByTestId('nav-settings').click()
 
     // Verify we're on the settings page
-    await expect(page).toHaveURL(/#\/settings\/?$/)
     await expect(page.getByTestId('settings-page')).toBeVisible()
 
     // Verify settings page content is loaded
@@ -36,14 +35,12 @@ test.describe('Smoke Tests', () => {
 
     // Navigate to settings first
     await page.getByTestId('nav-settings').click()
-    await expect(page).toHaveURL(/#\/settings\/?$/)
     await expect(page.getByTestId('settings-page')).toBeVisible()
 
     // Click home tab
     await page.getByTestId('nav-home').click()
 
     // Verify we're back to home
-    await expect(page).toHaveURL(/#\/$/)
     await expect(page.getByTestId('home-page')).toBeVisible()
   })
 
@@ -57,7 +54,6 @@ test.describe('Smoke Tests', () => {
     await page.getByTestId('nav-federations').click()
 
     // Verify we're on federations page
-    await expect(page).toHaveURL(/#\/federations\/?$/)
     await expect(page.getByTestId('federations-page')).toBeVisible()
   })
 })

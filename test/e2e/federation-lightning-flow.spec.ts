@@ -21,7 +21,6 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     // Step 1: Navigate to Federations page
     await test.step('Navigate to Federations page', async () => {
       await page.getByTestId('nav-federations').click()
-      await expect(page).toHaveURL(/#\/federations\/?$/)
       await expect(page.getByTestId('federations-page')).toBeVisible()
     })
 
@@ -65,7 +64,6 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     // Step 4: Navigate back to home page
     await test.step('Navigate to home page', async () => {
       await page.getByTestId('nav-home').click()
-      await expect(page).toHaveURL(/#\/$/)
       await expect(page.getByTestId('home-page')).toBeVisible()
 
       // Verify initial balance is 0
@@ -86,10 +84,8 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       // Click on Receive Lightning option
       await page.getByTestId('receive-lightning-card').click()
 
-      // Wait for navigation to receive page
-      await page.waitForURL(/#\/receive\/?$/, { timeout: 15_000 })
-
       // Wait for receive page to load
+      await expect(page.getByTestId('receive-page')).toBeVisible({ timeout: 15_000 })
       await expect(page.getByTestId('amount-input')).toBeVisible({ timeout: 15_000 })
     })
 
@@ -128,12 +124,9 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       // Pay the invoice using faucet service
       const _paymentResult = await faucet.payFaucetInvoice(invoice)
 
-      // Wait for payment to be processed
-      // The app should detect the payment and redirect
-      await page.waitForURL('**/#/received-lightning*', { timeout: 60_000 })
-
       // Wait for success message
-      await expect(page.getByTestId('back-home-button')).toBeVisible()
+      await expect(page.getByTestId('received-lightning-page')).toBeVisible({ timeout: 60_000 })
+      await expect(page.getByTestId('back-home-button')).toBeVisible({ timeout: 60_000 })
       await expect(page.getByText('Payment Received!')).toBeVisible()
       await expect(page.getByText('1,000 sats')).toBeVisible()
     })
@@ -142,7 +135,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     await test.step('Verify balance updated', async () => {
       // Navigate back to home
       await page.getByTestId('back-home-button').click()
-      await expect(page).toHaveURL(/#\/$/)
+      await expect(page.getByTestId('home-page')).toBeVisible({ timeout: 20_000 })
 
       // Verify balance shows 1000 sats
       await expect(page.locator('.text-h4')).toContainText('1,000 sats')

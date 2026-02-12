@@ -11,7 +11,7 @@ meta:
   >
     <!-- Only render layout if not leaving -->
 
-    <q-page class="dark-gradient">
+    <q-page class="dark-gradient" data-testid="receive-page">
       <q-toolbar class="header-section">
         <q-btn flat round icon="arrow_back" @click="goBack" data-testid="receive-back-btn" />
         <q-toolbar-title class="text-center no-wrap">Receive</q-toolbar-title>

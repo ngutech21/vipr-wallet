@@ -4,7 +4,7 @@ meta:
 </route>
 
 <template>
-  <q-page class="page-container">
+  <q-page class="page-container" data-testid="received-lightning-page">
     <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
 
     <div class="content-container">
