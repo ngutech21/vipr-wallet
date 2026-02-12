@@ -78,12 +78,6 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
 </script>
 
 <style scoped>
-:deep(.q-focus-helper) {
-  display: none !important;
-  opacity: 0 !important;
-  background: transparent !important;
-}
-
 :deep(.q-tab__label) {
   font-size: 0.8rem;
   line-height: 1;

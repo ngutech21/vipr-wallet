@@ -1,11 +1,8 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { FaucetService } from './utils/FaucetService'
+import { continuePastBackupWordsIfNeeded, waitForAppReady } from './utils/app'
 
 test.setTimeout(120_000)
-
-async function waitForAppReady(page: Page) {
-  await expect(page.locator('[data-app-ready="true"]')).toBeVisible({ timeout: 60_000 })
-}
 
 test.describe('Federation Join and Lightning Payment Flow', () => {
   let faucet: FaucetService
@@ -18,12 +15,13 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     // Navigate to the app
     await page.goto('/')
     await waitForAppReady(page)
+    await continuePastBackupWordsIfNeeded(page)
     await expect(page).toHaveTitle(/Vipr/)
 
     // Step 1: Navigate to Federations page
     await test.step('Navigate to Federations page', async () => {
       await page.getByTestId('nav-federations').click()
-      await expect(page).toHaveURL(/#\/federations$/)
+      await expect(page).toHaveURL(/#\/federations\/?$/)
       await expect(page.getByTestId('federations-page')).toBeVisible()
     })
 
@@ -89,7 +87,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       await page.getByTestId('receive-lightning-card').click()
 
       // Wait for navigation to receive page
-      await page.waitForURL('**/#/receive', { timeout: 15_000 })
+      await page.waitForURL(/#\/receive\/?$/, { timeout: 15_000 })
 
       // Wait for receive page to load
       await expect(page.getByTestId('amount-input')).toBeVisible({ timeout: 15_000 })
