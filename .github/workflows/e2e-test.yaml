@@ -13,6 +13,8 @@ jobs:
 
       - name: Setup Nix
         uses: ./.github/actions/setup-nix
+        with:
+          enable-magic-nix-cache: 'false'
 
       - name: Configure GitHub authentication for Nix
         run: |
@@ -40,4 +42,3 @@ jobs:
           pnpm test:e2e || { ec=$?; echo "E2E failed (exit $ec)"; exit $ec; }
 
           EOF
-

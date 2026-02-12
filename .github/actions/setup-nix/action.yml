@@ -4,6 +4,10 @@ name: Setup Nix
 description: Fast, cached Nix setup (flakes) for devimint + E2E tests
 
 inputs:
+  enable-magic-nix-cache:
+    description: 'Enable Determinate magic-nix-cache GitHub cache integration (true/false)'
+    default: 'false'
+    required: false
   cachix-auth-token:
     description: Optional auth token to PUSH to fedimint Cachix (read-only pulls need none)
     required: false
@@ -30,6 +34,7 @@ runs:
           stalled-download-timeout = 15
 
     - name: Enable common binary caches (magic-nix-cache)
+      if: inputs.enable-magic-nix-cache == 'true'
       uses: DeterminateSystems/magic-nix-cache-action@v6
 
     - name: Add fedimint Cachix (pull or push)
@@ -56,6 +61,7 @@ runs:
       shell: bash
       run: |
         echo "Nix setup complete." >> $GITHUB_STEP_SUMMARY
+        echo "magic-nix-cache: ${{ inputs.enable-magic-nix-cache }}" >> $GITHUB_STEP_SUMMARY
         echo "Fedimint cache: ${{ inputs.enable-fedimint-cache }}" >> $GITHUB_STEP_SUMMARY
         if [ -n "${{ inputs.cachix-auth-token }}" ]; then
           echo "Fedimint cache push: enabled (token provided)" >> $GITHUB_STEP_SUMMARY
