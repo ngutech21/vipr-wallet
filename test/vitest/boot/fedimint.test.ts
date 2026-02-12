@@ -19,6 +19,10 @@ const federationStoreMock = vi.hoisted(() => ({
   selectedFederationId: null as string | null,
 }))
 
+const pwaUpdateStoreMock = vi.hoisted(() => ({
+  checkForUpdatesStartup: vi.fn(),
+}))
+
 vi.mock('#q-app/wrappers', () => ({
   defineBoot: <T>(fn: T) => fn,
 }))
@@ -42,6 +46,10 @@ vi.mock('src/stores/federation', () => ({
   useFederationStore: () => federationStoreMock,
 }))
 
+vi.mock('src/stores/pwa-update', () => ({
+  usePwaUpdateStore: () => pwaUpdateStoreMock,
+}))
+
 vi.mock('src/services/logger', () => ({
   logger: {
     error: vi.fn(),
@@ -58,6 +66,7 @@ describe('fedimint boot', () => {
     walletStoreMock.ensureStorageSchema.mockResolvedValue(false)
     walletStoreMock.ensureMnemonicReady.mockResolvedValue(false)
     walletStoreMock.openWallet.mockResolvedValue()
+    pwaUpdateStoreMock.checkForUpdatesStartup.mockResolvedValue(undefined)
   })
 
   it('redirects to backup words when mnemonic is newly generated', async () => {
@@ -73,6 +82,7 @@ describe('fedimint boot', () => {
     expect(walletStoreMock.ensureMnemonicReady).toHaveBeenCalledTimes(1)
     expect(walletStoreMock.openWallet).toHaveBeenCalledTimes(1)
     expect(router.replace).toHaveBeenCalledWith({ name: '/settings/backup-words' })
+    expect(pwaUpdateStoreMock.checkForUpdatesStartup).toHaveBeenCalledTimes(1)
   })
 
   it('does not redirect when mnemonic already exists', async () => {
@@ -85,5 +95,6 @@ describe('fedimint boot', () => {
     await fedimintBoot({ app: {}, router } as never)
 
     expect(router.replace).not.toHaveBeenCalled()
+    expect(pwaUpdateStoreMock.checkForUpdatesStartup).toHaveBeenCalledTimes(1)
   })
 })
