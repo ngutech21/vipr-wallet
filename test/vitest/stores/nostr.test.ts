@@ -223,6 +223,35 @@ describe('nostr store discovery queue', () => {
     )
   })
 
+  it('treats GetDirectory security errors as expected discovery failures', async () => {
+    const errorSpy = vi.spyOn(logger, 'error')
+    const warnSpy = vi.spyOn(logger.nostr, 'warn')
+
+    const nostr = useNostrStore()
+    nostr.isDiscoveringFederations = true
+    nostr.previewTargetCount = 1
+    nostr.discoveryCandidates = [{ federationId: 'fed-1', inviteCode: 'invite-1', createdAt: 30 }]
+    walletStoreMock.previewFederation.mockRejectedValue(
+      new Error('{"federationId":"fed-1","error":"Security error when calling GetDirectory"}'),
+    )
+
+    nostr.enqueueCandidatesForPreview()
+    await nostr.processPreviewQueue()
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      'Skipping federation candidate with unavailable config',
+      expect.objectContaining({
+        federationId: 'fed-1',
+        reason: expect.stringContaining('Security error when calling GetDirectory'),
+      }),
+    )
+    expect(nostr.previewStatusByFederation['fed-1']).toBe('failed')
+    expect(errorSpy).not.toHaveBeenCalledWith(
+      'Unexpected error while previewing federation candidate',
+      expect.anything(),
+    )
+  })
+
   it('keeps logging unexpected preview failures as errors', async () => {
     const errorSpy = vi.spyOn(logger, 'error')
     const warnSpy = vi.spyOn(logger.nostr, 'warn')

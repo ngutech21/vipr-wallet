@@ -100,11 +100,11 @@ async function pasteFromClipboard() {
 }
 
 async function addFederation() {
-  Loading.show({ message: 'Adding Federation' })
+  Loading.show({ message: 'Joining Federation' })
   isSubmitting.value = true
 
   try {
-    logger.federation.debug('Adding federation', { inviteCode: inviteCode.value })
+    logger.federation.debug('Joining federation', { inviteCode: inviteCode.value })
 
     if (federationStore.federations.some((f) => f.inviteCode === inviteCode.value)) {
       Notify.create({

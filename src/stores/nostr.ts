@@ -34,6 +34,9 @@ const EXPECTED_DISCOVERY_ERROR_PATTERNS = [
   /networkerror/i,
   /load failed/i,
   /connection timeout/i,
+  /security error when calling getdirectory/i,
+  /securityerror.*getdirectory/i,
+  /operation is insecure/i,
 ]
 
 export const useNostrStore = defineStore('nostr', {

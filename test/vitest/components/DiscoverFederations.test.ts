@@ -229,6 +229,26 @@ describe('DiscoverFederations.vue', () => {
       expect(wrapper.text()).not.toContain('Loading federation details...')
     })
 
+    it('should show recommendation count for failed preview candidates', async () => {
+      wrapper = createWrapper()
+      const nostrStore = useNostrStore()
+      nostrStore.discoveryCandidates = [
+        {
+          federationId: 'failed-fed-id',
+          inviteCode: 'invite-failed',
+          createdAt: 1,
+          recommendationCount: 4,
+        },
+      ]
+      nostrStore.previewStatusByFederation = {
+        'failed-fed-id': 'failed',
+      }
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('Recommended by 4 users')
+      expect(wrapper.text()).toContain('Federation details unavailable.')
+    })
+
     it('should only show federations up to preview target count', async () => {
       wrapper = createWrapper()
       const nostrStore = useNostrStore()

@@ -298,7 +298,7 @@ function formatRecommendationCount(count: number): string {
 }
 
 async function addFederation(federation: Federation) {
-  Loading.show({ message: 'Adding Federation' })
+  Loading.show({ message: 'Joining Federation' })
 
   try {
     if (federationStore.federations.some((f) => f.federationId === federation.federationId)) {
