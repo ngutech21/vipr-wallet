@@ -88,6 +88,29 @@ describe('pwa update store', () => {
     expect(store.state).toBe('idle')
   })
 
+  it('keeps checking state while manual check is still in flight', async () => {
+    let resolveUpdate: (() => void) | undefined
+    const updatePromise = new Promise<void>((resolve) => {
+      resolveUpdate = resolve
+    })
+
+    const registration = createRegistration({
+      update: vi.fn(() => updatePromise) as unknown as ServiceWorkerRegistration['update'],
+    })
+
+    installServiceWorkerMock(() => registration)
+    const store = usePwaUpdateStore()
+
+    const checkPromise = store.checkForUpdatesManual()
+    await Promise.resolve()
+
+    expect(store.state).toBe('checking')
+
+    resolveUpdate?.()
+    await checkPromise
+    expect(store.state).toBe('idle')
+  })
+
   it('blocks apply update on non-allowlisted routes', async () => {
     const postMessage = vi.fn()
     const waitingWorker = {

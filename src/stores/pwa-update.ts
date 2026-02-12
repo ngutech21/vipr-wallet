@@ -111,12 +111,6 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
       this.registration = registration
       if (registration.waiting != null) {
         this.onUpdated(registration)
-        return
-      }
-
-      if (this.state === 'checking') {
-        this.isUpdateReady = false
-        this.setState('idle')
       }
     },
 
@@ -172,6 +166,10 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
         }
 
         this.bindRegistration(registration)
+        if (registration.waiting != null) {
+          return 'update-ready'
+        }
+
         await registration.update()
 
         const latestRegistration = (await navigator.serviceWorker.getRegistration()) ?? registration
