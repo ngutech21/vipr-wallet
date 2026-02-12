@@ -155,13 +155,18 @@
             <!-- Update button below version info -->
             <div>
               <q-btn
-                label="Check for Updates"
-                icon="refresh"
+                :label="updateButtonLabel"
+                :icon="updateButtonIcon"
                 color="primary"
-                @click="checkForUpdates"
+                @click="handleUpdateAction"
                 class="q-mt-sm full-width"
                 data-testid="settings-check-updates-btn"
+                :loading="isUpdateActionRunning"
+                :disable="isUpdateActionRunning"
               />
+              <div v-if="showApplyRestrictionHint" class="text-warning text-caption q-mt-sm">
+                Update is ready. Open Home or Settings to apply safely.
+              </div>
             </div>
           </q-card-section>
         </q-card>
@@ -258,11 +263,13 @@ defineOptions({
 import { version } from '../../../package.json'
 import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'
-import { Dialog, Loading, Notify } from 'quasar'
+import { Dialog, Notify } from 'quasar'
 import { useNostrStore } from 'src/stores/nostr'
 import { useWalletStore } from 'src/stores/wallet'
+import { usePwaUpdateStore } from 'src/stores/pwa-update'
 import { logger } from 'src/services/logger'
 import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import {
   getConnectorConfig,
   launchModal,
@@ -272,6 +279,19 @@ import {
 
 const connectedProvider = ref('')
 const walletStore = useWalletStore()
+const pwaUpdateStore = usePwaUpdateStore()
+const route = useRoute()
+
+const isUpdateReady = computed(() => pwaUpdateStore.isUpdateReady)
+const isCheckingForUpdates = computed(() => pwaUpdateStore.state === 'checking')
+const isApplyingUpdate = computed(() => pwaUpdateStore.state === 'applying')
+const isUpdateActionRunning = computed(() => isCheckingForUpdates.value || isApplyingUpdate.value)
+const canApplyUpdateHere = computed(() => pwaUpdateStore.canApplyOnRoute(route.name))
+const showApplyRestrictionHint = computed(() => isUpdateReady.value && !canApplyUpdateHere.value)
+const updateButtonLabel = computed(() =>
+  isUpdateReady.value ? 'Apply Update' : 'Check for Updates',
+)
+const updateButtonIcon = computed(() => 'refresh')
 
 function updateConnectedProvider() {
   const config = getConnectorConfig()
@@ -314,8 +334,45 @@ async function clearLocalAndWalletData() {
     position: 'top',
   })
 }
+async function handleUpdateAction() {
+  if (isUpdateReady.value) {
+    await applyUpdate()
+  } else {
+    await checkForUpdates()
+  }
+}
+
 async function checkForUpdates() {
-  if (!('serviceWorker' in navigator)) {
+  const result = await pwaUpdateStore.checkForUpdatesManual()
+
+  if (result === 'update-ready') {
+    Notify.create({
+      message: 'Update ready to install',
+      color: 'positive',
+      position: 'top',
+    })
+    return
+  }
+
+  if (result === 'up-to-date') {
+    Notify.create({
+      message: 'No updates available',
+      color: 'info',
+      position: 'top',
+    })
+    return
+  }
+
+  if (result === 'checking') {
+    Notify.create({
+      message: 'Update is downloading in the background',
+      color: 'info',
+      position: 'top',
+    })
+    return
+  }
+
+  if (result === 'not-supported') {
     Notify.create({
       message: 'Service Worker not supported',
       color: 'negative',
@@ -324,60 +381,58 @@ async function checkForUpdates() {
     return
   }
 
-  try {
-    Loading.show({ message: 'Checking for updates...' })
-    await clearServiceWorkerCaches()
-
-    const registration = await navigator.serviceWorker.getRegistration()
-
-    if (registration == null) {
-      Notify.create({
-        message: 'Service Worker not registered',
-        color: 'warning',
-        position: 'top',
-      })
-      return
-    }
-
-    // First, check for updates and wait for it to complete
-    await registration.update()
-
-    // Then check if we have a waiting worker
-    if (registration.waiting != null) {
-      Dialog.create({
-        title: 'Update Available',
-        message: 'A new version is available. Update now?',
-        persistent: true,
-        ok: { label: 'Update', color: 'primary' },
-        cancel: true,
-      }).onOk(() => {
-        registration.waiting?.postMessage({ type: 'SKIP_WAITING' })
-        window.location.reload()
-      })
-    } else {
-      Notify.create({
-        message: 'No updates available',
-        color: 'info',
-        position: 'top',
-      })
-    }
-  } catch (error) {
-    logger.error('Failed to check for app updates', error)
+  if (result === 'not-registered') {
     Notify.create({
-      message: 'Error checking for updates',
+      message: 'Service Worker not registered',
+      color: 'warning',
+      position: 'top',
+    })
+    return
+  }
+
+  Notify.create({
+    message: pwaUpdateStore.lastError ?? 'Error checking for updates',
+    color: 'negative',
+    position: 'top',
+  })
+}
+
+async function applyUpdate() {
+  const result = await pwaUpdateStore.applyUpdate(route.name)
+
+  if (result === 'blocked-route') {
+    Notify.create({
+      message: 'Update is ready. Open Home or Settings to apply safely.',
+      color: 'warning',
+      position: 'top',
+    })
+    return
+  }
+
+  if (result === 'no-update') {
+    Notify.create({
+      message: 'No update is ready yet',
+      color: 'info',
+      position: 'top',
+    })
+    return
+  }
+
+  if (result === 'not-supported') {
+    Notify.create({
+      message: 'Service Worker not supported',
       color: 'negative',
       position: 'top',
     })
-  } finally {
-    Loading.hide()
+    return
   }
-}
 
-async function clearServiceWorkerCaches() {
-  if ('caches' in window) {
-    const cacheNames = await caches.keys()
-    await Promise.all(cacheNames.map((name) => caches.delete(name)))
-    logger.pwa.debug('Service worker caches cleared', { cacheCount: cacheNames.length })
+  if (result === 'error') {
+    Notify.create({
+      message: pwaUpdateStore.lastError ?? 'Error applying update',
+      color: 'negative',
+      position: 'top',
+    })
   }
 }
 

@@ -2,6 +2,7 @@
 import { useWalletStore } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
 import { useAppStore } from 'src/stores/app'
+import { usePwaUpdateStore } from 'src/stores/pwa-update'
 import { defineBoot } from '#q-app/wrappers'
 import { Loading } from 'quasar'
 import { logger } from 'src/services/logger'
@@ -11,6 +12,7 @@ export default defineBoot(async ({ app, router }) => {
   const appStore = useAppStore()
   const walletStore = useWalletStore()
   const federationStore = useFederationStore()
+  const pwaUpdateStore = usePwaUpdateStore()
   appStore.setReady(false)
   try {
     await walletStore.ensureStorageSchema()
@@ -29,6 +31,9 @@ export default defineBoot(async ({ app, router }) => {
     }
   } finally {
     appStore.setReady(true)
+    pwaUpdateStore.checkForUpdatesStartup().catch((error) => {
+      logger.pwa.warn('Startup update check failed', { error })
+    })
     Loading.hide()
   }
 })
