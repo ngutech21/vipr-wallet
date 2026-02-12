@@ -17,6 +17,7 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
+  failOnFlakyTests: true,
   expect: {
     timeout: 10_000,
   },

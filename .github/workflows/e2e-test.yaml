@@ -1,10 +1,16 @@
 name: Run e2e Tests
 
 on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
   workflow_dispatch: {} 
 
 jobs:
-  test:
+  e2e-test:
     runs-on: self-hosted
 
     steps:
