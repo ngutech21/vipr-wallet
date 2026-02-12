@@ -51,10 +51,15 @@ runs:
       shell: bash
       run: |
         echo '--- nix show-config (filtered) ---'
-        nix show-config | grep -E 'substituters|trusted-public-keys|experimental-features'
-        echo '--- nix path-info devShell dry-run (if flake present) ---'
+        nix show-config | grep -E 'substituters|trusted-public-keys|experimental-features' || true
+        echo '--- devShell dry-run (best effort) ---'
         if [ -f flake.nix ]; then
-          nix build .#devShells.$(nix eval --raw --expr 'builtins.currentSystem').default --dry-run 2>&1 | sed -n '1,120p'
+          SYSTEM="$(nix eval --raw --impure --expr 'builtins.currentSystem' 2>/dev/null || true)"
+          if [ -n "${SYSTEM}" ]; then
+            nix build ".#devShells.${SYSTEM}.default" --dry-run 2>&1 | sed -n '1,120p' || true
+          else
+            echo 'Skipping devShell dry-run: could not resolve builtins.currentSystem in this runner context.'
+          fi
         fi
 
     - name: Summary
