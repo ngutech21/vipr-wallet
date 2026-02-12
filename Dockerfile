@@ -1,5 +1,5 @@
 # Stage 1: Build the Quasar PWA
-FROM node:22.22.0-slim AS builder
+FROM node:25.6.1-slim AS builder
 
 RUN corepack enable \
     && corepack prepare pnpm@10 --activate \
