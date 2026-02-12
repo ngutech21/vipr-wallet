@@ -34,11 +34,11 @@ runs:
           stalled-download-timeout = 15
 
     - name: Enable common binary caches (magic-nix-cache)
-      if: inputs.enable-magic-nix-cache == 'true'
+      if: ${{ inputs['enable-magic-nix-cache'] == 'true' }}
       uses: DeterminateSystems/magic-nix-cache-action@v6
 
     - name: Add fedimint Cachix (pull or push)
-      if: inputs.enable-fedimint-cache == 'true'
+      if: ${{ inputs['enable-fedimint-cache'] == 'true' }}
       uses: cachix/cachix-action@v15
       with:
         name: fedimint
@@ -47,7 +47,7 @@ runs:
       continue-on-error: true
 
     - name: Show Nix config (optional)
-      if: inputs.print-config == 'true'
+      if: ${{ inputs['print-config'] == 'true' }}
       shell: bash
       run: |
         echo '--- nix show-config (filtered) ---'

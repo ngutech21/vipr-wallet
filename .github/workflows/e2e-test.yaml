@@ -15,6 +15,12 @@ jobs:
         uses: ./.github/actions/setup-nix
         with:
           enable-magic-nix-cache: 'false'
+          enable-fedimint-cache: 'false'
+          print-config: 'true'
+
+      - name: Verify cache hooks are disabled
+        run: |
+          nix show-config | grep -E '^post-build-hook|^substituters' || true
 
       - name: Configure GitHub authentication for Nix
         run: |
@@ -32,6 +38,8 @@ jobs:
           NIX_CONFIG: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
         run: |
+          unset ACTIONS_CACHE_URL ACTIONS_RESULTS_URL ACTIONS_RUNTIME_TOKEN ACTIONS_RUNTIME_URL
+
           nix develop --accept-flake-config -c bash <<'EOF'
           set -euo pipefail
 
