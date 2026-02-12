@@ -45,8 +45,7 @@ meta:
         </q-card>
 
         <div class="text-caption text-grey-6 text-center q-mb-lg">
-          Note: Recovery words are currently a placeholder feature. Full wallet recovery will be
-          available when the Fedimint SDK supports it.
+          You will now see your real wallet recovery words.
         </div>
 
         <q-btn

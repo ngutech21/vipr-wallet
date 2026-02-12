@@ -406,7 +406,7 @@ export const useNostrStore = defineStore('nostr', {
       const walletStore = useWalletStore()
 
       try {
-        walletStore.initDirector()
+        await walletStore.initClients()
 
         while (
           this.discoveredFederations.length < this.previewTargetCount &&

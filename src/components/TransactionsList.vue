@@ -19,7 +19,11 @@
         />
       </template>
 
-      <q-item v-if="recentTransactions.length === 0" class="text-center">
+      <q-item
+        v-if="recentTransactions.length === 0"
+        class="text-center"
+        :data-testid="emptyTransactionsTestId"
+      >
         <q-item-section>
           <p class="text-grey-6">No transactions yet</p>
         </q-item-section>
@@ -47,6 +51,7 @@ const walletStore = useWalletStore()
 const router = useRouter()
 const recentTransactions = ref<Transactions[]>([])
 const isLoading = ref(false)
+const emptyTransactionsTestId = 'transactions-empty-state'
 
 onMounted(async () => {
   await loadTransactions()

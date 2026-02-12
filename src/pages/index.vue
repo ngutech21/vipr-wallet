@@ -66,7 +66,7 @@
         class="q-mt-md"
         icon="add"
         @click="showSelection = true"
-        data-testid="home-join-federation-btn"
+        :data-testid="'home-join-federation-btn'"
       />
     </div>
 
@@ -84,21 +84,21 @@
             color="primary"
             :to="'/send'"
             :disable="totalBalance <= 0"
-            data-testid="home-send-btn"
+            :data-testid="'home-send-btn'"
           />
           <q-btn
             label=""
             color="primary"
             icon="qr_code_scanner"
             :to="'/scan'"
-            data-testid="home-scan-btn"
+            :data-testid="'home-scan-btn'"
           />
           <q-btn
             label="Receive"
             icon="arrow_downward"
             color="primary"
             @click="showReceiveEcashSelection = true"
-            data-testid="home-receive-btn"
+            :data-testid="'home-receive-btn'"
           />
         </div>
       </div>

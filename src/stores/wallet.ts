@@ -1,115 +1,162 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import { type FedimintWallet, WalletDirector, type MSats, type Transactions } from '@fedimint/core'
-import { WasmWorkerTransport } from '@fedimint/transport-web'
+import type { FedimintWallet, MSats, Transactions } from '@fedimint/core'
 import { useFederationStore } from './federation'
-import { ref } from 'vue'
 import type { Federation, FederationMeta, ModuleConfig } from 'src/components/models'
 import { logger } from 'src/services/logger'
+import { fedimintClient } from 'src/services/fedimint-client'
 
 const WALLET_OPEN_TIMEOUT_MS = 15_000
 const FEDERATION_JOIN_TIMEOUT_MS = 20_000
 const BALANCE_UPDATE_TIMEOUT_MS = 10_000
+const WALLET_NAME_PREFIX = 'wallet-'
+
+export const FEDIMINT_STORAGE_SCHEMA_KEY = 'vipr.fedimint.storage.schema'
+export const FEDIMINT_STORAGE_SCHEMA_VERSION = '2'
+export const FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY = 'vipr.fedimint.mnemonic.backup.confirmed'
+
+export function getWalletNameForFederationId(federationId: string): string {
+  return `${WALLET_NAME_PREFIX}${federationId}`
+}
 
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
-    director: null as WalletDirector | null,
     wallet: null as FedimintWallet | null,
-    balance: ref(0),
+    activeWalletName: null as string | null,
+    balance: 0,
+    mnemonicWords: [] as string[],
+    needsMnemonicBackup: false,
   }),
   actions: {
+    async initClients() {
+      await fedimintClient.init()
+      fedimintClient.setLogLevel('debug')
+    },
+
+    async ensureStorageSchema() {
+      const currentSchema = localStorage.getItem(FEDIMINT_STORAGE_SCHEMA_KEY)
+      if (currentSchema === FEDIMINT_STORAGE_SCHEMA_VERSION) {
+        return false
+      }
+
+      logger.logWalletOperation('Applying Fedimint storage migration', {
+        from: currentSchema ?? 'none',
+        to: FEDIMINT_STORAGE_SCHEMA_VERSION,
+      })
+
+      await this.initClients()
+      await this.clearAllWallets()
+
+      const federationStore = useFederationStore()
+      federationStore.federations = []
+      federationStore.selectedFederationId = null
+      localStorage.setItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY, '0')
+
+      localStorage.setItem(FEDIMINT_STORAGE_SCHEMA_KEY, FEDIMINT_STORAGE_SCHEMA_VERSION)
+      logger.logWalletOperation('Fedimint storage migration applied', {
+        schema: FEDIMINT_STORAGE_SCHEMA_VERSION,
+      })
+
+      return true
+    },
+
     async openWalletForFederation(selectedFederation: Federation) {
-      // Ensure director is initialized
-      if (this.director == null) {
-        this.initDirector()
+      await this.initClients()
+      if (this.mnemonicWords.length === 0) {
+        await this.ensureMnemonicReady()
       }
 
-      // Create wallet if none exists
-      if (this.wallet == null && this.director != null) {
-        this.wallet = await this.director.createWallet()
-      }
-
-      const walletIsOpen = this.wallet?.isOpen()
-      if (
-        walletIsOpen &&
-        (await this.wallet?.federation.getFederationId()) !== selectedFederation.federationId
-      ) {
+      const walletName = getWalletNameForFederationId(selectedFederation.federationId)
+      if (this.activeWalletName != null && this.activeWalletName !== walletName) {
         await this.closeWallet()
-        if (this.director != null) {
-          this.wallet = await this.director.createWallet()
-        }
       }
 
-      if (!this.wallet?.isOpen()) {
-        const wallet = this.wallet
-        if (wallet == null) {
-          throw new Error('Wallet is not initialized')
-        }
+      this.wallet = await withTimeout(
+        fedimintClient.ensureWalletOpen({
+          walletName,
+          federationId: selectedFederation.federationId,
+          inviteCode: selectedFederation.inviteCode,
+        }),
+        WALLET_OPEN_TIMEOUT_MS + FEDERATION_JOIN_TIMEOUT_MS,
+        'wallet open',
+      )
 
-        const walletOpened = await withTimeout(
-          wallet.open(selectedFederation.federationId),
-          WALLET_OPEN_TIMEOUT_MS,
-          'wallet open',
-        )
-        if (!walletOpened) {
-          logger.logWalletOperation('Joining federation', {
-            federationId: selectedFederation.federationId,
-          })
-          await withTimeout(
-            wallet.joinFederation(selectedFederation.inviteCode, selectedFederation.federationId),
-            FEDERATION_JOIN_TIMEOUT_MS,
-            'federation join',
-          )
-          logger.logWalletOperation('Federation joined successfully')
-        }
-      }
+      this.activeWalletName = walletName
       await withTimeout(this.updateBalance(), BALANCE_UPDATE_TIMEOUT_MS, 'balance update')
     },
-    initDirector() {
-      if (this.director == null) {
-        try {
-          this.director = new WalletDirector(new WasmWorkerTransport())
-          this.director.setLogLevel('debug')
-          logger.logWalletOperation('Wallet director initialized')
-        } catch (error) {
-          logger.error('Failed to initialize wallet director', error)
-          throw error
-        }
-      }
-    },
+
     async openWallet() {
       const federationStore = useFederationStore()
       const selectedFederation = federationStore.selectedFederation
 
-      if (selectedFederation != null) {
-        logger.logWalletOperation('Opening wallet for federation', {
-          federationId: selectedFederation.federationId,
-        })
-        try {
-          await this.openWalletForFederation(selectedFederation)
-        } catch (error) {
-          if (!isRecoverableTransportError(error) && !isTimeoutError(error)) {
-            throw error
-          }
-
-          logger.warn('Wallet transport entered an invalid RPC state; retrying open', {
-            federationId: selectedFederation.federationId,
-            reason: getErrorMessage(error),
-          })
-
-          await this.closeWallet()
-          this.director = null
-          this.initDirector()
-          await this.openWalletForFederation(selectedFederation)
-        }
-      } else {
+      if (selectedFederation == null) {
+        this.wallet = null
+        this.activeWalletName = null
         this.balance = 0
+        return
+      }
+
+      logger.logWalletOperation('Opening wallet for federation', {
+        federationId: selectedFederation.federationId,
+      })
+
+      try {
+        await this.openWalletForFederation(selectedFederation)
+      } catch (error) {
+        if (!isRecoverableTransportError(error) && !isTimeoutError(error)) {
+          throw error
+        }
+
+        logger.warn('Wallet transport entered an invalid RPC state; retrying open', {
+          federationId: selectedFederation.federationId,
+          reason: getErrorMessage(error),
+        })
+
+        await this.closeWallet()
+        fedimintClient.reset()
+        await this.openWalletForFederation(selectedFederation)
       }
     },
+
     async closeWallet() {
-      if (this.wallet != null) {
-        await this.wallet.cleanup()
+      try {
+        await fedimintClient.closeActiveWallet()
+      } finally {
         this.wallet = null
+        this.activeWalletName = null
       }
+    },
+
+    async clearAllWallets() {
+      await this.initClients()
+      await fedimintClient.clearAllWallets()
+      this.wallet = null
+      this.activeWalletName = null
+      this.balance = 0
+      this.mnemonicWords = []
+      this.needsMnemonicBackup = false
+    },
+
+    async listWallets(): Promise<string[]> {
+      await this.initClients()
+      return await fedimintClient.listWallets()
+    },
+
+    async ensureMnemonicReady(): Promise<boolean> {
+      await this.initClients()
+      const { words, created } = await fedimintClient.ensureMnemonic()
+      this.mnemonicWords = words
+
+      if (created) {
+        localStorage.setItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY, '0')
+      }
+      this.needsMnemonicBackup =
+        localStorage.getItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY) !== '1'
+      return created
+    },
+
+    markMnemonicBackupConfirmed() {
+      localStorage.setItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY, '1')
+      this.needsMnemonicBackup = false
     },
 
     async redeemEcash(tokens: string): Promise<MSats | undefined> {
@@ -128,33 +175,23 @@ export const useWalletStore = defineStore('wallet', {
     async getTransactions(): Promise<Transactions[]> {
       try {
         const transactions = await this.wallet?.federation.listTransactions(10)
-        return transactions ?? [] // Handle undefined case
+        return transactions ?? []
       } catch (error) {
         logger.error('Failed to fetch transactions', error)
-        return [] // Return empty array on error
+        return []
       }
     },
 
     async deleteFederationData(federationId: string): Promise<void> {
+      const walletName = getWalletNameForFederationId(federationId)
       try {
-        // Close the wallet first if it's open
-        if (this.wallet?.isOpen()) {
+        if (this.activeWalletName === walletName) {
           await this.closeWallet()
         }
 
-        // Delete the IndexedDB database
-        await new Promise<void>((resolve, reject) => {
-          const deleteRequest = indexedDB.deleteDatabase(federationId)
-
-          deleteRequest.onerror = () => {
-            reject(new Error(`Failed to delete database ${federationId}`))
-          }
-
-          deleteRequest.onsuccess = () => {
-            logger.logWalletOperation('Federation database deleted successfully')
-            resolve()
-          }
-        })
+        await this.initClients()
+        await fedimintClient.deleteWallet(walletName)
+        logger.logWalletOperation('Federation wallet deleted successfully', { federationId })
       } catch (error) {
         logger.error('Failed to delete federation data', error)
         throw error
@@ -164,6 +201,7 @@ export const useWalletStore = defineStore('wallet', {
     async handleFederationChange() {
       await this.openWallet()
     },
+
     async updateBalance() {
       if (this.wallet != null) {
         this.balance = ((await this.wallet.balance.getBalance()) ?? 0) / 1_000
@@ -194,7 +232,9 @@ export const useWalletStore = defineStore('wallet', {
     },
 
     async previewFederation(inviteCode: string): Promise<Federation | undefined> {
-      const result = await this.director?.previewFederation(inviteCode)
+      await this.initClients()
+
+      const result = await fedimintClient.previewFederation(inviteCode)
       if (result == null) {
         return undefined
       }
@@ -215,7 +255,7 @@ export const useWalletStore = defineStore('wallet', {
       const federationName = typedConfig?.global?.meta?.federation_name ?? 'Unknown Federation'
 
       const metaExternalUrl = typedConfig?.global?.meta?.meta_external_url as string
-      const modules = config?.modules ?? {}
+      const modules = typedConfig?.modules ?? {}
 
       let meta: FederationMeta
 

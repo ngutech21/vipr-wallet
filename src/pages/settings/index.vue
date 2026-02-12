@@ -260,6 +260,7 @@ import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'
 import { Dialog, Loading, Notify } from 'quasar'
 import { useNostrStore } from 'src/stores/nostr'
+import { useWalletStore } from 'src/stores/wallet'
 import { logger } from 'src/services/logger'
 import { computed, ref, watch } from 'vue'
 import {
@@ -270,6 +271,7 @@ import {
 } from '@getalby/bitcoin-connect'
 
 const connectedProvider = ref('')
+const walletStore = useWalletStore()
 
 function updateConnectedProvider() {
   const config = getConnectorConfig()
@@ -297,12 +299,19 @@ function deleteData() {
     ok: { label: 'Delete', color: 'negative' },
     cancel: true,
   }).onOk(() => {
-    localStorage.clear()
-    Notify.create({
-      type: 'positive',
-      message: 'Data deleted successfully',
-      position: 'top',
+    clearLocalAndWalletData().catch((error) => {
+      logger.error('Failed to clear local and wallet data', error)
     })
+  })
+}
+
+async function clearLocalAndWalletData() {
+  await walletStore.clearAllWallets()
+  localStorage.clear()
+  Notify.create({
+    type: 'positive',
+    message: 'Data deleted successfully',
+    position: 'top',
   })
 }
 async function checkForUpdates() {

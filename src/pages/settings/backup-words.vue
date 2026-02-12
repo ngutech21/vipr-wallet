@@ -44,12 +44,10 @@ meta:
             <div class="flex items-start">
               <q-icon name="info" size="md" class="q-mr-sm" />
               <div>
-                <div class="text-subtitle2 text-weight-bold q-mb-xs">
-                  Placeholder Recovery Words
-                </div>
+                <div class="text-subtitle2 text-weight-bold q-mb-xs">Store This Secret Safely</div>
                 <div class="text-caption">
-                  These are temporary placeholder words. Full recovery functionality will be
-                  available when the Fedimint SDK supports mnemonic generation.
+                  These are your real wallet recovery words. Anyone with these words can recover
+                  your wallet.
                 </div>
               </div>
             </div>
@@ -77,21 +75,37 @@ defineOptions({
 
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { generateRecoveryWords } from 'src/utils/recovery'
+import { useWalletStore } from 'src/stores/wallet'
+import { Notify } from 'quasar'
+import { getErrorMessage } from 'src/utils/error'
 
 const router = useRouter()
+const walletStore = useWalletStore()
 const recoveryWords = ref<string[]>([])
 
 onMounted(() => {
-  recoveryWords.value = generateRecoveryWords()
+  loadRecoveryWords().catch((error) => {
+    Notify.create({
+      message: `Failed to load recovery words: ${getErrorMessage(error)}`,
+      color: 'negative',
+      icon: 'error',
+      position: 'top',
+    })
+  })
 })
 
 async function confirmBackup() {
+  walletStore.markMnemonicBackupConfirmed()
   await router.push({ name: '/settings/' })
 }
 
 async function goBack() {
-  await router.push({ name: '/settings/backup' })
+  await router.push({ name: '/settings/' })
+}
+
+async function loadRecoveryWords() {
+  await walletStore.ensureMnemonicReady()
+  recoveryWords.value = [...walletStore.mnemonicWords]
 }
 </script>
 

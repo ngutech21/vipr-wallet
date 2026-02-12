@@ -13,8 +13,12 @@ export default defineBoot(async ({ app, router }) => {
   const federationStore = useFederationStore()
   appStore.setReady(false)
   try {
-    walletStore.initDirector()
+    await walletStore.ensureStorageSchema()
+    const mnemonicCreated = await walletStore.ensureMnemonicReady()
     await walletStore.openWallet()
+    if (mnemonicCreated && router.currentRoute.value.name !== '/settings/backup-words') {
+      await router.replace({ name: '/settings/backup-words' })
+    }
   } catch (error) {
     logger.error('Failed to initialize wallet:', error)
     if (federationStore.selectedFederationId != null) {

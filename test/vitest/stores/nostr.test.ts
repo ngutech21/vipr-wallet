@@ -6,7 +6,7 @@ import { Nip87Kinds } from 'src/types/nip87'
 import { logger } from 'src/services/logger'
 
 const walletStoreMock = vi.hoisted(() => ({
-  initDirector: vi.fn(),
+  initClients: vi.fn<() => Promise<void>>(),
   previewFederation: vi.fn<() => Promise<Federation | undefined>>(),
 }))
 
@@ -87,7 +87,8 @@ describe('nostr store discovery queue', () => {
     vi.clearAllMocks()
     setActivePinia(createPinia())
     localStorage.clear()
-    walletStoreMock.initDirector.mockReset()
+    walletStoreMock.initClients.mockReset()
+    walletStoreMock.initClients.mockResolvedValue()
     walletStoreMock.previewFederation.mockReset()
   })
 
