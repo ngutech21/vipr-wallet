@@ -120,6 +120,25 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
       this.setState('checking')
     },
 
+    onCached(registration: ServiceWorkerRegistration) {
+      this.registration = registration
+      this.lastError = null
+      this.isUpdateReady = registration.waiting != null
+
+      if (this.isUpdateReady) {
+        this.setState('waiting')
+      } else if (this.state === 'checking') {
+        this.setState('idle')
+      }
+    },
+
+    onOffline() {
+      if (this.state === 'checking') {
+        this.isUpdateReady = false
+        this.setState('idle')
+      }
+    },
+
     onUpdated(registration: ServiceWorkerRegistration) {
       this.registration = registration
       this.lastError = null
@@ -145,6 +164,10 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
         this.setState('idle')
         this.isUpdateReady = false
         return 'not-supported'
+      }
+
+      if (this.state === 'checking') {
+        return 'checking'
       }
 
       if (this.registration?.waiting != null) {

@@ -88,6 +88,18 @@ describe('pwa update store', () => {
     expect(store.state).toBe('idle')
   })
 
+  it('returns checking without starting a second check when already checking', async () => {
+    const registration = createRegistration()
+    const serviceWorkerMock = installServiceWorkerMock(() => registration)
+    const store = usePwaUpdateStore()
+    store.onUpdateFound()
+
+    const result = await store.checkForUpdatesManual()
+
+    expect(result).toBe('checking')
+    expect(serviceWorkerMock.getRegistration).not.toHaveBeenCalled()
+  })
+
   it('keeps checking state while manual check is still in flight', async () => {
     let resolveUpdate: (() => void) | undefined
     const updatePromise = new Promise<void>((resolve) => {
@@ -125,6 +137,43 @@ describe('pwa update store', () => {
 
     expect(result).toBe('blocked-route')
     expect(postMessage).not.toHaveBeenCalled()
+  })
+
+  it('moves checking to idle when cached lifecycle event fires', () => {
+    const registration = createRegistration()
+    const store = usePwaUpdateStore()
+
+    store.onUpdateFound()
+    expect(store.state).toBe('checking')
+
+    store.onCached(registration)
+
+    expect(store.state).toBe('idle')
+    expect(store.isUpdateReady).toBe(false)
+  })
+
+  it('keeps waiting when cached lifecycle event includes waiting worker', () => {
+    const waitingWorker = {
+      postMessage: vi.fn(),
+    } as unknown as ServiceWorker
+    const registration = createRegistration({ waiting: waitingWorker })
+    const store = usePwaUpdateStore()
+
+    store.onUpdateFound()
+    store.onCached(registration)
+
+    expect(store.state).toBe('waiting')
+    expect(store.isUpdateReady).toBe(true)
+  })
+
+  it('moves checking to idle when offline event fires', () => {
+    const store = usePwaUpdateStore()
+    store.onUpdateFound()
+
+    store.onOffline()
+
+    expect(store.state).toBe('idle')
+    expect(store.isUpdateReady).toBe(false)
   })
 
   it('allows apply update on /', async () => {

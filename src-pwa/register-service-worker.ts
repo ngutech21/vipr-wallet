@@ -39,8 +39,11 @@ register(process.env.SERVICE_WORKER_FILE, {
     })
   },
 
-  cached(/* registration */) {
+  cached(registration) {
     // Content has been cached for offline use
+    withPwaUpdateStore((store) => {
+      store.onCached(registration)
+    })
   },
 
   updatefound(registration) {
@@ -60,6 +63,9 @@ register(process.env.SERVICE_WORKER_FILE, {
 
   offline() {
     // No internet connection found. App is running in offline mode
+    withPwaUpdateStore((store) => {
+      store.onOffline()
+    })
   },
 
   error(err) {
