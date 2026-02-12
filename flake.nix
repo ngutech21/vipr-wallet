@@ -23,6 +23,14 @@
         };
         # Get latest playwright from unstable
         pkgs-unstable = import nixpkgs-unstable { inherit system; };
+        playwrightFonts = with pkgs; [
+          noto-fonts
+          noto-fonts-cjk-sans
+          noto-fonts-emoji
+          liberation_ttf
+          dejavu_fonts
+        ];
+        playwrightFontsConf = pkgs.makeFontsConf { fontDirectories = playwrightFonts; };
       in
       {
         devShells.default = pkgs.mkShell {
@@ -46,15 +54,18 @@
             nodePackages.pnpm
             nodePackages.typescript
             mkcert
+            fontconfig
+            fontconfig.bin
             pkgs.playwright-driver.browsers
-          ]++ [
+          ] ++ playwrightFonts ++ [
             # Use latest playwright from unstable
             pkgs-unstable.playwright-driver.browsers
           ];
 
           shellHook = ''
             export PLAYWRIGHT_BROWSERS_PATH=${pkgs-unstable.playwright-driver.browsers}
-            export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+            export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=false
+            export FONTCONFIG_FILE=${playwrightFontsConf}
 
             echo "Vipr-Wallet development environment"
             echo "Node.js $(node --version)"

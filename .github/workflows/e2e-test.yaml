@@ -38,6 +38,17 @@ jobs:
           pnpm install --frozen-lockfile --strict-peer-dependencies
           pnpm build
 
+          echo "--- Font diagnostics ---"
+          if command -v fc-list >/dev/null 2>&1; then
+            fc-list | head -n 20 || true
+            fc-match sans-serif || true
+            fc-match "Roboto" || true
+          else
+            echo "fc-list not found in PATH"
+            command -v fc-match >/dev/null 2>&1 && fc-match sans-serif || true
+          fi
+          echo "FONTCONFIG_FILE=${FONTCONFIG_FILE:-unset}"
+
           echo "--- Running e2e tests ---"
           pnpm test:e2e || { ec=$?; echo "E2E failed (exit $ec)"; exit $ec; }
 
