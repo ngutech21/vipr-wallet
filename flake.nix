@@ -64,7 +64,7 @@
 
           shellHook = ''
             export PLAYWRIGHT_BROWSERS_PATH=${pkgs-unstable.playwright-driver.browsers}
-            export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=false
+            unset PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS
             export FONTCONFIG_FILE=${playwrightFontsConf}
 
             echo "Vipr-Wallet development environment"
