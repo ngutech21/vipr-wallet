@@ -289,7 +289,7 @@ const isUpdateActionRunning = computed(() => isCheckingForUpdates.value || isApp
 const canApplyUpdateHere = computed(() => pwaUpdateStore.canApplyOnRoute(route.name))
 const showApplyRestrictionHint = computed(() => isUpdateReady.value && !canApplyUpdateHere.value)
 const updateButtonLabel = computed(() =>
-  isUpdateReady.value ? 'Apply Update' : 'Check for Updates',
+  isUpdateReady.value ? 'Update ready' : 'Check for Updates',
 )
 const updateButtonIcon = computed(() => 'refresh')
 
@@ -347,7 +347,7 @@ async function checkForUpdates() {
 
   if (result === 'update-ready') {
     Notify.create({
-      message: 'Update ready to install',
+      message: 'Update ready',
       color: 'positive',
       position: 'top',
     })

@@ -29,6 +29,7 @@ describe('MainLayout.vue', () => {
         plugins: [Quasar],
         stubs: {
           AddFederation: true,
+          PwaUpdateBanner: true,
           QRouteTab: defineComponent({
             name: 'QRouteTab',
             props: {

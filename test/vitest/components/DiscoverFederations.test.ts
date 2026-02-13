@@ -379,7 +379,7 @@ describe('DiscoverFederations.vue', () => {
     })
   })
 
-  describe('Add Federation', () => {
+  describe('Join Federation', () => {
     it('should add and select federation successfully without stopping discovery', async () => {
       const federation = createMockFederation()
       wrapper = createWrapper()
@@ -404,7 +404,7 @@ describe('DiscoverFederations.vue', () => {
       expect(idleSpy).toHaveBeenCalled()
       expect(wrapper.emitted('close')).toBeFalsy()
       expect(mockNotify).toHaveBeenCalledWith({
-        message: 'Federation added successfully',
+        message: 'Federation joined successfully',
         color: 'positive',
         icon: 'check',
         position: 'top',
@@ -468,7 +468,7 @@ describe('DiscoverFederations.vue', () => {
       await flushPromises()
 
       expect(mockNotify).toHaveBeenCalledWith({
-        message: 'Failed to add federation: select failed',
+        message: 'Failed to join federation: select failed',
         color: 'negative',
         icon: 'error',
         timeout: 5000,

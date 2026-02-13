@@ -29,6 +29,8 @@ const federationStoreMock = vi.hoisted(() => ({
 
 const pwaUpdateStoreMock = vi.hoisted(() => ({
   checkForUpdatesStartup: vi.fn(),
+  checkForUpdatesForeground: vi.fn(),
+  resumePendingApplyIfAny: vi.fn(),
 }))
 
 vi.mock('#q-app/wrappers', () => ({
@@ -84,7 +86,33 @@ describe('fedimint boot', () => {
     onboardingStoreMock.status = 'complete'
     onboardingStoreMock.flow = null
     walletStoreMock.openWallet.mockResolvedValue()
-    pwaUpdateStoreMock.checkForUpdatesStartup.mockResolvedValue(undefined)
+    pwaUpdateStoreMock.checkForUpdatesStartup.mockResolvedValue('up-to-date')
+    pwaUpdateStoreMock.checkForUpdatesForeground.mockResolvedValue('up-to-date')
+    pwaUpdateStoreMock.resumePendingApplyIfAny.mockResolvedValue(undefined)
+  })
+
+  it('registers update lifecycle hooks only once', async () => {
+    walletStoreMock.hasMnemonic = true
+    const addDocumentListenerSpy = vi.spyOn(document, 'addEventListener')
+    const addWindowListenerSpy = vi.spyOn(window, 'addEventListener')
+    const router = {
+      currentRoute: { value: { name: '/', path: '/' } },
+      replace: vi.fn(() => Promise.resolve()),
+      beforeEach: vi.fn(),
+      afterEach: vi.fn(),
+    }
+
+    await fedimintBoot({ app: {}, router } as never)
+    await fedimintBoot({ app: {}, router } as never)
+
+    const visibilityChangeCalls = addDocumentListenerSpy.mock.calls.filter(
+      (call) => call[0] === 'visibilitychange',
+    )
+    const onlineCalls = addWindowListenerSpy.mock.calls.filter((call) => call[0] === 'online')
+
+    expect(visibilityChangeCalls).toHaveLength(1)
+    expect(onlineCalls).toHaveLength(1)
+    expect(router.afterEach).toHaveBeenCalledTimes(1)
   })
 
   it('redirects to startup wizard when mnemonic is missing', async () => {
@@ -102,6 +130,7 @@ describe('fedimint boot', () => {
     expect(walletStoreMock.openWallet).not.toHaveBeenCalled()
     expect(router.replace).toHaveBeenCalledWith('/startup-wizard')
     expect(pwaUpdateStoreMock.checkForUpdatesStartup).toHaveBeenCalledTimes(1)
+    expect(pwaUpdateStoreMock.resumePendingApplyIfAny).toHaveBeenCalledWith('/')
   })
 
   it('opens wallet and does not redirect when mnemonic exists', async () => {
@@ -117,6 +146,7 @@ describe('fedimint boot', () => {
     expect(walletStoreMock.openWallet).toHaveBeenCalledTimes(1)
     expect(router.replace).not.toHaveBeenCalled()
     expect(pwaUpdateStoreMock.checkForUpdatesStartup).toHaveBeenCalledTimes(1)
+    expect(pwaUpdateStoreMock.resumePendingApplyIfAny).toHaveBeenCalledWith('/')
   })
 
   it('redirects to startup wizard when create flow is still in progress and backup is needed', async () => {

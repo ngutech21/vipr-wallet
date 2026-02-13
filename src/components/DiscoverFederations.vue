@@ -327,16 +327,16 @@ async function addFederation(federation: Federation) {
     }
 
     Notify.create({
-      message: 'Federation added successfully',
+      message: 'Federation joined successfully',
       color: 'positive',
       icon: 'check',
       position: 'top',
       timeout: 3000,
     })
   } catch (error) {
-    logger.error('Failed to add federation', error)
+    logger.error('Failed to join federation', error)
     Notify.create({
-      message: `Failed to add federation: ${getErrorMessage(error)}`,
+      message: `Failed to join federation: ${getErrorMessage(error)}`,
       color: 'negative',
       icon: 'error',
       timeout: 5000,

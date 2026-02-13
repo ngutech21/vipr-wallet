@@ -1,5 +1,5 @@
 <template>
-  <ModalCard title="Add Federation" data-testid="add-federation-form">
+  <ModalCard title="Join Federation" data-testid="add-federation-form">
     <q-form ref="federationForm" class="q-pa-md" @submit.prevent="addFederation">
       <q-input
         filled
@@ -33,7 +33,7 @@
       <div class="q-mt-xl">
         <q-btn
           type="submit"
-          label="Add Federation"
+          label="Join Federation"
           color="primary"
           class="q-mt-md full-width"
           data-testid="add-federation-submit-btn"
@@ -132,7 +132,7 @@ async function addFederation() {
     }
   } catch (error) {
     Notify.create({
-      message: `Failed to add federation: ${getErrorMessage(error)}`,
+      message: `Failed to join federation: ${getErrorMessage(error)}`,
       color: 'negative',
       icon: 'error',
       timeout: 5000,

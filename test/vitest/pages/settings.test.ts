@@ -134,7 +134,7 @@ describe('SettingsPage updates', () => {
     const wrapper = createWrapper()
     const button = wrapper.find('[data-testid="settings-check-updates-btn"]')
 
-    expect(button.text()).toBe('Apply Update')
+    expect(button.text()).toBe('Update ready')
     await button.trigger('click')
     await flushPromises()
 
