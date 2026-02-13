@@ -52,7 +52,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'BROWSER=none quasar dev -m pwa --port 9303',
+    command: 'VITE_E2E_MODE=1 BROWSER=none quasar dev -m pwa --port 9303',
     url: 'http://127.0.0.1:9303',
     reuseExistingServer: !isCI,
     timeout: 180_000, // allow cold Nix start

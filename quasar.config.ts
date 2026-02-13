@@ -27,7 +27,7 @@ export default defineConfig((_ctx) => {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['fedimint', 'icon-map'],
+    boot: ['e2e-mode', 'fedimint', 'icon-map'],
 
     htmlVariables: {
       viewport: 'width=device-width, initial-scale=1.0, viewport-fit=cover',
