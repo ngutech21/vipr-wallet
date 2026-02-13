@@ -23,9 +23,9 @@ A demo version of the wallet is available at [beta.vipr.cash](https://beta.vipr.
 ## 📱 App Screenshots
 
 <div align="center">
-  <img src="./public/screenshots/Home-iphone.png" alt="Dashboard" width="30%" />
-  <img src="./public/screenshots/Federation-Details-iphone.png" alt="Federation Details" width="30%" />
-  <img src="./public/screenshots/Receive-iphone.png" alt="Receive Payment" width="30%" />
+  <img src="./public/screenshots/Home-iphone.webp" alt="Dashboard" width="30%" />
+  <img src="./public/screenshots/Federation-Details-iphone.webp" alt="Federation Details" width="30%" />
+  <img src="./public/screenshots/Receive-iphone.webp" alt="Receive Payment" width="30%" />
 </div>
 
 ## ✨ Features
@@ -40,7 +40,7 @@ A demo version of the wallet is available at [beta.vipr.cash](https://beta.vipr.
 - [ ] pay to Nostr contacts
 - [ ] export ecash
 - [x] import ecash
-- [ ] backup wallet
+- [x] backup wallet
 - [ ] restore wallet
 
 ### Federations
@@ -124,10 +124,11 @@ pnpm dev
 
 ### 🛠️ Development
 
-| Command       | Description                              |
-| ------------- | ---------------------------------------- |
-| `pnpm dev`    | Start development server with hot reload |
-| `pnpm build`  | Build for production                     |
-| `pnpm lint`   | Run ESLint on source files               |
-| `pnpm format` | Format code with Prettier                |
-| `pnpm test`   | Run unit tests                           |
+| Command         | Description                               |
+| --------------- | ----------------------------------------- |
+| `pnpm dev`      | Start development server with hot reload  |
+| `pnpm build`    | Build for production                      |
+| `pnpm lint`     | Run ESLint on source files                |
+| `pnpm format`   | Format code with Prettier                 |
+| `pnpm test`     | Run unit tests                            |
+| `pnpm test:e2e` | Run end to end tests (requires nix shell) |                    |
