@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test'
-import { continuePastBackupWordsIfNeeded, waitForAppReady } from './utils/app'
+import { continuePastStartupWizardIfNeeded, waitForAppReady } from './utils/app'
 
 test.describe('Smoke Tests', () => {
   test('app starts and navigation works', async ({ page }) => {
     // Navigate to the app
     await page.goto('/')
     await waitForAppReady(page)
-    await continuePastBackupWordsIfNeeded(page)
+    await continuePastStartupWizardIfNeeded(page)
 
     // Wait for the app to load and check that we have the Vipr title
     await expect(page).toHaveTitle(/Vipr/)
@@ -31,7 +31,7 @@ test.describe('Smoke Tests', () => {
     // Start on app root
     await page.goto('/')
     await waitForAppReady(page)
-    await continuePastBackupWordsIfNeeded(page)
+    await continuePastStartupWizardIfNeeded(page)
 
     // Navigate to settings first
     await page.getByTestId('nav-settings').click()
@@ -48,7 +48,7 @@ test.describe('Smoke Tests', () => {
     // Start on home
     await page.goto('/')
     await waitForAppReady(page)
-    await continuePastBackupWordsIfNeeded(page)
+    await continuePastStartupWizardIfNeeded(page)
 
     // Click federations tab
     await page.getByTestId('nav-federations').click()

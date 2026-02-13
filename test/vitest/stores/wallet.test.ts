@@ -6,7 +6,9 @@ const fedimintClientMock = vi.hoisted(() => ({
   init: vi.fn<() => Promise<void>>(),
   setLogLevel: vi.fn(),
   ensureWalletOpen: vi.fn(),
-  ensureMnemonic: vi.fn<() => Promise<{ words: string[]; created: boolean }>>(),
+  getMnemonicIfSet: vi.fn<() => Promise<string[] | null>>(),
+  generateMnemonic: vi.fn<() => Promise<string[]>>(),
+  setMnemonic: vi.fn<() => Promise<void>>(),
   closeActiveWallet: vi.fn<() => Promise<void>>(),
   deleteWallet: vi.fn<() => Promise<void>>(),
   clearAllWallets: vi.fn<() => Promise<void>>(),
@@ -72,10 +74,35 @@ describe('wallet store', () => {
     fedimintClientMock.deleteWallet.mockResolvedValue()
     fedimintClientMock.clearAllWallets.mockResolvedValue()
     fedimintClientMock.listWallets.mockResolvedValue([])
-    fedimintClientMock.ensureMnemonic.mockResolvedValue({
-      words: ['abandon', 'ability', 'able', 'about'],
-      created: false,
-    })
+    fedimintClientMock.getMnemonicIfSet.mockResolvedValue([
+      'abandon',
+      'ability',
+      'able',
+      'about',
+      'above',
+      'absent',
+      'absorb',
+      'abstract',
+      'absurd',
+      'abuse',
+      'access',
+      'accident',
+    ])
+    fedimintClientMock.generateMnemonic.mockResolvedValue([
+      'alpha',
+      'bravo',
+      'charlie',
+      'delta',
+      'echo',
+      'foxtrot',
+      'golf',
+      'hotel',
+      'india',
+      'juliet',
+      'kilo',
+      'lima',
+    ])
+    fedimintClientMock.setMnemonic.mockResolvedValue()
   })
 
   it('opens the selected federation wallet via deterministic wallet name', async () => {
@@ -91,7 +118,7 @@ describe('wallet store', () => {
 
     await walletStore.openWallet()
 
-    expect(fedimintClientMock.ensureMnemonic).toHaveBeenCalledTimes(1)
+    expect(fedimintClientMock.getMnemonicIfSet).toHaveBeenCalledTimes(1)
     expect(fedimintClientMock.ensureWalletOpen).toHaveBeenCalledWith({
       walletName: getWalletNameForFederationId(federation.federationId),
       federationId: federation.federationId,
@@ -99,6 +126,19 @@ describe('wallet store', () => {
     })
     expect(walletStore.activeWalletName).toBe(getWalletNameForFederationId(federation.federationId))
     expect(walletStore.balance).toBe(12)
+  })
+
+  it('throws when opening a federation wallet without mnemonic', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    const federation = createFederation()
+
+    federationStore.federations = [federation]
+    federationStore.selectedFederationId = federation.federationId
+    fedimintClientMock.getMnemonicIfSet.mockResolvedValue(null)
+
+    await expect(walletStore.openWallet()).rejects.toThrow('Wallet mnemonic is not initialized')
+    expect(fedimintClientMock.ensureWalletOpen).not.toHaveBeenCalled()
   })
 
   it('deletes federation data via wallet manager wallet name', async () => {
@@ -131,37 +171,61 @@ describe('wallet store', () => {
     expect(fedimintClientMock.clearAllWallets).toHaveBeenCalledTimes(1)
   })
 
-  it('tracks mnemonic readiness and backup confirmation flag', async () => {
+  it('createMnemonic sets words and backup-required flag', async () => {
     const walletStore = useWalletStore()
-    fedimintClientMock.ensureMnemonic.mockResolvedValue({
-      words: ['alpha', 'beta', 'gamma'],
-      created: true,
-    })
 
-    await walletStore.ensureMnemonicReady()
+    await walletStore.createMnemonic()
 
-    expect(walletStore.mnemonicWords).toEqual(['alpha', 'beta', 'gamma'])
+    expect(walletStore.hasMnemonic).toBe(true)
+    expect(walletStore.mnemonicWords).toHaveLength(12)
     expect(walletStore.needsMnemonicBackup).toBe(true)
     expect(localStorage.getItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY)).toBe('0')
+  })
 
-    walletStore.markMnemonicBackupConfirmed()
+  it('restoreMnemonic uses setMnemonic and marks backup as confirmed', async () => {
+    const walletStore = useWalletStore()
+
+    await walletStore.restoreMnemonic([
+      'abandon',
+      'ability',
+      'able',
+      'about',
+      'above',
+      'absent',
+      'absorb',
+      'abstract',
+      'absurd',
+      'abuse',
+      'access',
+      'accident',
+    ])
+
+    expect(fedimintClientMock.setMnemonic).toHaveBeenCalledTimes(1)
+    expect(walletStore.hasMnemonic).toBe(true)
     expect(walletStore.needsMnemonicBackup).toBe(false)
     expect(localStorage.getItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY)).toBe('1')
   })
 
-  it('keeps backup confirmed state when mnemonic already existed', async () => {
+  it('loadMnemonic returns false when no mnemonic is set', async () => {
+    const walletStore = useWalletStore()
+    fedimintClientMock.getMnemonicIfSet.mockResolvedValue(null)
+
+    const hasMnemonic = await walletStore.loadMnemonic()
+
+    expect(hasMnemonic).toBe(false)
+    expect(walletStore.hasMnemonic).toBe(false)
+    expect(walletStore.mnemonicWords).toEqual([])
+    expect(walletStore.needsMnemonicBackup).toBe(false)
+  })
+
+  it('loadMnemonic respects backup confirmation flag for existing mnemonic', async () => {
     const walletStore = useWalletStore()
     localStorage.setItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY, '1')
-    fedimintClientMock.ensureMnemonic.mockResolvedValue({
-      words: ['existing', 'seed'],
-      created: false,
-    })
 
-    const created = await walletStore.ensureMnemonicReady()
+    const hasMnemonic = await walletStore.loadMnemonic()
 
-    expect(created).toBe(false)
-    expect(walletStore.mnemonicWords).toEqual(['existing', 'seed'])
+    expect(hasMnemonic).toBe(true)
+    expect(walletStore.hasMnemonic).toBe(true)
     expect(walletStore.needsMnemonicBackup).toBe(false)
-    expect(localStorage.getItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY)).toBe('1')
   })
 })

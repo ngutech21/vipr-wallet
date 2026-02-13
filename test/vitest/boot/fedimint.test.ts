@@ -10,9 +10,16 @@ const appStoreMock = vi.hoisted(() => ({
 }))
 
 const walletStoreMock = vi.hoisted(() => ({
+  hasMnemonic: false,
+  needsMnemonicBackup: false,
   ensureStorageSchema: vi.fn<() => Promise<boolean>>(),
-  ensureMnemonicReady: vi.fn<() => Promise<boolean>>(),
+  loadMnemonic: vi.fn<() => Promise<boolean>>(),
   openWallet: vi.fn<() => Promise<void>>(),
+}))
+
+const onboardingStoreMock = vi.hoisted(() => ({
+  isBackupPending: false,
+  normalizeForMnemonicState: vi.fn(),
 }))
 
 const federationStoreMock = vi.hoisted(() => ({
@@ -46,6 +53,10 @@ vi.mock('src/stores/federation', () => ({
   useFederationStore: () => federationStoreMock,
 }))
 
+vi.mock('src/stores/onboarding', () => ({
+  useOnboardingStore: () => onboardingStoreMock,
+}))
+
 vi.mock('src/stores/pwa-update', () => ({
   usePwaUpdateStore: () => pwaUpdateStoreMock,
 }))
@@ -63,37 +74,45 @@ describe('fedimint boot', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     federationStoreMock.selectedFederationId = null
+    walletStoreMock.hasMnemonic = false
+    walletStoreMock.needsMnemonicBackup = false
     walletStoreMock.ensureStorageSchema.mockResolvedValue(false)
-    walletStoreMock.ensureMnemonicReady.mockResolvedValue(false)
+    walletStoreMock.loadMnemonic.mockImplementation(() =>
+      Promise.resolve(walletStoreMock.hasMnemonic),
+    )
+    onboardingStoreMock.isBackupPending = false
     walletStoreMock.openWallet.mockResolvedValue()
     pwaUpdateStoreMock.checkForUpdatesStartup.mockResolvedValue(undefined)
   })
 
-  it('redirects to backup words when mnemonic is newly generated', async () => {
-    walletStoreMock.ensureMnemonicReady.mockResolvedValue(true)
+  it('redirects to startup wizard when mnemonic is missing', async () => {
+    walletStoreMock.hasMnemonic = false
     const router = {
-      currentRoute: { value: { name: '/' } },
+      currentRoute: { value: { name: '/', path: '/' } },
       replace: vi.fn(() => Promise.resolve()),
+      beforeEach: vi.fn(),
     }
 
     await fedimintBoot({ app: {}, router } as never)
 
     expect(walletStoreMock.ensureStorageSchema).toHaveBeenCalledTimes(1)
-    expect(walletStoreMock.ensureMnemonicReady).toHaveBeenCalledTimes(1)
-    expect(walletStoreMock.openWallet).toHaveBeenCalledTimes(1)
-    expect(router.replace).toHaveBeenCalledWith({ name: '/settings/backup-words' })
+    expect(walletStoreMock.loadMnemonic).toHaveBeenCalledTimes(1)
+    expect(walletStoreMock.openWallet).not.toHaveBeenCalled()
+    expect(router.replace).toHaveBeenCalledWith('/startup-wizard')
     expect(pwaUpdateStoreMock.checkForUpdatesStartup).toHaveBeenCalledTimes(1)
   })
 
-  it('does not redirect when mnemonic already exists', async () => {
-    walletStoreMock.ensureMnemonicReady.mockResolvedValue(false)
+  it('opens wallet and does not redirect when mnemonic exists', async () => {
+    walletStoreMock.hasMnemonic = true
     const router = {
-      currentRoute: { value: { name: '/' } },
+      currentRoute: { value: { name: '/', path: '/' } },
       replace: vi.fn(() => Promise.resolve()),
+      beforeEach: vi.fn(),
     }
 
     await fedimintBoot({ app: {}, router } as never)
 
+    expect(walletStoreMock.openWallet).toHaveBeenCalledTimes(1)
     expect(router.replace).not.toHaveBeenCalled()
     expect(pwaUpdateStoreMock.checkForUpdatesStartup).toHaveBeenCalledTimes(1)
   })

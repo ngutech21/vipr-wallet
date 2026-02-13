@@ -132,6 +132,20 @@ class FedimintClientAdapter {
     return extractMnemonicWords(await this.director.getMnemonic(), 'get')
   }
 
+  async getMnemonicIfSet(): Promise<string[] | null> {
+    try {
+      return await this.getMnemonic()
+    } catch (error) {
+      if (isRecoverableMnemonicReadError(error)) {
+        logger.warn('Mnemonic not set yet; returning null for read-only check', {
+          reason: getErrorMessage(error),
+        })
+        return null
+      }
+      throw error
+    }
+  }
+
   async generateMnemonic(): Promise<string[]> {
     await this.init()
 
@@ -447,7 +461,7 @@ function isRecoverableMnemonicReadError(error: unknown): boolean {
 }
 
 function isExistingClientError(error: unknown): boolean {
-  return /(already exists|already joined|already open|client already exists|client exists)/i.test(
+  return /already exists|already joined|already open|client already exists|client exists|no modification allowed|nomodificationallowederror/i.test(
     getErrorMessage(error),
   )
 }

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { FaucetService } from './utils/FaucetService'
-import { continuePastBackupWordsIfNeeded, waitForAppReady } from './utils/app'
+import { continuePastStartupWizardIfNeeded, waitForAppReady } from './utils/app'
 
 test.setTimeout(120_000)
 
@@ -15,7 +15,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     // Navigate to the app
     await page.goto('/')
     await waitForAppReady(page)
-    await continuePastBackupWordsIfNeeded(page)
+    await continuePastStartupWizardIfNeeded(page)
     await expect(page).toHaveTitle(/Vipr/)
 
     // Step 1: Navigate to Federations page
