@@ -104,9 +104,11 @@ async function addFederation() {
   isSubmitting.value = true
 
   try {
-    logger.federation.debug('Joining federation', { inviteCode: inviteCode.value })
+    const cleanInviteCode = inviteCode.value.trim()
+    logger.federation.debug('Joining federation', { inviteCode: cleanInviteCode })
 
-    if (federationStore.federations.some((f) => f.inviteCode === inviteCode.value)) {
+    // FIXME check if federation with the same federationid already exists instead of just invite code
+    if (federationStore.federations.some((f) => f.inviteCode === cleanInviteCode)) {
       Notify.create({
         message: 'Federation already exists',
         color: 'negative',
@@ -116,7 +118,7 @@ async function addFederation() {
       })
       return
     }
-    const federation = await walletStore.previewFederation(inviteCode.value)
+    const federation = await walletStore.previewFederation(cleanInviteCode)
     logger.federation.debug('Federation preview', { federation })
     if (federation != null) {
       const meta = await walletStore.getMetadata(federation)
