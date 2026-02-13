@@ -16,7 +16,8 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     await page.goto('/')
     await waitForAppReady(page)
     await continuePastStartupWizardIfNeeded(page)
-    await expect(page).toHaveTitle(/Vipr/)
+    // Avoid title checks; use stable test IDs instead.
+    await expect(page.getByTestId('home-page')).toBeVisible()
 
     // Step 1: Navigate to Federations page
     await test.step('Navigate to Federations page', async () => {

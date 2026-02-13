@@ -8,8 +8,8 @@ test.describe('Smoke Tests', () => {
     await waitForAppReady(page)
     await continuePastStartupWizardIfNeeded(page)
 
-    // Wait for the app to load and check that we have the Vipr title
-    await expect(page).toHaveTitle(/Vipr/)
+    // Avoid title checks; use stable test IDs instead.
+    await expect(page.getByTestId('home-page')).toBeVisible()
 
     // Verify the footer navigation is visible and contains expected tabs
     await expect(page.getByTestId('nav-home')).toBeVisible()
