@@ -139,6 +139,66 @@ describe('pwa update store', () => {
     expect(postMessage).not.toHaveBeenCalled()
   })
 
+  it('rechecks registration before returning no-update', async () => {
+    const updateMock = vi.fn().mockResolvedValue(undefined)
+    const registration = createRegistration({
+      update: updateMock as unknown as ServiceWorkerRegistration['update'],
+    })
+    const serviceWorkerMock = installServiceWorkerMock(() => registration)
+    const store = usePwaUpdateStore()
+
+    const result = await store.applyUpdate('/')
+
+    expect(result).toBe('no-update')
+    expect(updateMock).toHaveBeenCalledTimes(1)
+    expect(serviceWorkerMock.getRegistration).toHaveBeenCalledTimes(2)
+    expect(store.state).toBe('idle')
+    expect(store.isUpdateReady).toBe(false)
+  })
+
+  it('keeps checking when apply recheck finds installing worker', async () => {
+    const registration = createRegistration({
+      installing: {} as ServiceWorker,
+    })
+    installServiceWorkerMock(() => registration)
+    const store = usePwaUpdateStore()
+
+    const result = await store.applyUpdate('/')
+
+    expect(result).toBe('checking')
+    expect(store.state).toBe('checking')
+    expect(store.isUpdateReady).toBe(false)
+  })
+
+  it('applies update after recheck discovers a waiting worker', async () => {
+    const postMessage = vi.fn()
+    const waitingWorker = {
+      postMessage,
+    } as unknown as ServiceWorker
+
+    const initialRegistration = createRegistration()
+    let currentRegistration: ServiceWorkerRegistration = initialRegistration
+    initialRegistration.update = vi.fn(() => {
+      currentRegistration = createRegistration({ waiting: waitingWorker })
+      return Promise.resolve(undefined)
+    }) as unknown as ServiceWorkerRegistration['update']
+
+    const serviceWorkerMock = installServiceWorkerMock(() => currentRegistration)
+    const store = usePwaUpdateStore()
+    store.reloadTriggered = true
+
+    const applyPromise = store.applyUpdate('/')
+    await Promise.resolve()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(store.state).toBe('applying')
+    serviceWorkerMock.dispatchControllerChange()
+    const result = await applyPromise
+
+    expect(result).toBe('applied')
+    expect(postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' })
+  })
+
   it('moves checking to idle when cached lifecycle event fires', () => {
     const registration = createRegistration()
     const store = usePwaUpdateStore()

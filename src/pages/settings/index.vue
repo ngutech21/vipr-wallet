@@ -418,6 +418,15 @@ async function applyUpdate() {
     return
   }
 
+  if (result === 'checking') {
+    Notify.create({
+      message: 'Update is downloading in the background',
+      color: 'info',
+      position: 'top',
+    })
+    return
+  }
+
   if (result === 'not-supported') {
     Notify.create({
       message: 'Service Worker not supported',

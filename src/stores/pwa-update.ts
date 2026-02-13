@@ -17,6 +17,7 @@ export type UpdateCheckResult =
 export type ApplyUpdateResult =
   | 'applied'
   | 'blocked-route'
+  | 'checking'
   | 'no-update'
   | 'not-supported'
   | 'error'
@@ -228,19 +229,52 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
 
       const registration =
         this.registration ?? (await navigator.serviceWorker.getRegistration()) ?? null
-      if (registration == null || registration.waiting == null) {
+      if (registration == null) {
         this.registration = registration
         this.isUpdateReady = false
         this.setState('idle')
         return 'no-update'
       }
 
-      this.registration = registration
+      let latestRegistration = registration
+      if (latestRegistration.waiting == null) {
+        this.registration = latestRegistration
+        this.setState('checking')
+
+        try {
+          await latestRegistration.update()
+        } catch (error) {
+          this.setError(error, 'apply-check')
+          return 'error'
+        }
+
+        latestRegistration = (await navigator.serviceWorker.getRegistration()) ?? latestRegistration
+        this.bindRegistration(latestRegistration)
+
+        if (latestRegistration.waiting == null) {
+          this.isUpdateReady = false
+          if (latestRegistration.installing != null) {
+            this.setState('checking')
+            return 'checking'
+          }
+          this.setState('idle')
+          return 'no-update'
+        }
+      }
+
+      this.registration = latestRegistration
       this.setState('applying')
 
       try {
+        const waitingWorker = latestRegistration.waiting
+        if (waitingWorker == null) {
+          this.isUpdateReady = false
+          this.setState('checking')
+          return 'checking'
+        }
+
         const controllerChangePromise = waitForControllerChange()
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+        waitingWorker.postMessage({ type: 'SKIP_WAITING' })
         await controllerChangePromise
 
         this.isUpdateReady = false

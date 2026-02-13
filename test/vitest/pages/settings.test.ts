@@ -162,4 +162,20 @@ describe('SettingsPage updates', () => {
       }),
     )
   })
+
+  it('shows checking notification when apply triggers background download', async () => {
+    mockPwaUpdateStore.isUpdateReady = true
+    mockPwaUpdateStore.state = 'waiting'
+    mockApplyUpdate.mockResolvedValue('checking')
+
+    const wrapper = createWrapper()
+    await wrapper.find('[data-testid="settings-check-updates-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(mockNotifyCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Update is downloading in the background',
+      }),
+    )
+  })
 })
