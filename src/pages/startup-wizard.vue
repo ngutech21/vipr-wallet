@@ -8,7 +8,7 @@ meta:
     <div class="wizard-container">
       <q-card flat bordered class="wizard-card">
         <q-card-section>
-          <div class="text-h5 text-center q-mb-xs">Wallet Setup</div>
+          <div class="text-h5 text-center q-mb-xs">Vipr Wallet Setup</div>
           <div class="text-caption text-grey-6 text-center q-mb-md">
             Set up a new wallet or restore one from your recovery words.
           </div>
@@ -22,29 +22,25 @@ meta:
               :header-nav="false"
             >
               <div class="text-body1 q-mb-md">
-                Choose how you want to continue with your wallet on this device.
+                Choose how you want to continue with your wallet on this device
               </div>
 
-              <q-btn
-                label="Create New Wallet"
-                color="primary"
-                icon="add"
-                class="full-width q-mb-sm"
-                :outline="selectedFlow !== 'create'"
-                :disable="isCreating || isRestoring"
-                @click="selectFlow('create')"
-                data-testid="startup-wizard-create-btn"
-              />
-              <q-btn
-                label="Restore From Backup"
-                color="primary"
-                icon="settings_backup_restore"
-                class="full-width"
-                :outline="selectedFlow !== 'restore'"
-                :disable="isCreating || isRestoring || isCreateLocked"
-                @click="selectFlow('restore')"
-                data-testid="startup-wizard-restore-btn"
-              />
+              <div class="column q-gutter-y-sm q-mb-sm">
+                <q-radio
+                  v-model="selectedFlow"
+                  val="create"
+                  label="Create New Wallet"
+                  :disable="isCreating || isRestoring"
+                  data-testid="startup-wizard-create-radio"
+                />
+                <q-radio
+                  v-model="selectedFlow"
+                  val="restore"
+                  label="Restore From Backup"
+                  :disable="isCreating || isRestoring || isCreateLocked"
+                  data-testid="startup-wizard-restore-radio"
+                />
+              </div>
 
               <div v-if="isCreateLocked" class="text-caption text-warning q-mt-md">
                 Wallet was already created in this setup. Continue backup to proceed.
@@ -110,7 +106,7 @@ meta:
             <q-step
               name="restore"
               title="Restore Wallet"
-              icon="restore"
+              icon="settings_backup_restore"
               :done="false"
               :header-nav="false"
             >
@@ -270,13 +266,6 @@ async function finishWizardAndEnterApp() {
     })
   }
   await router.replace('/')
-}
-
-function selectFlow(flow: SelectableFlow) {
-  if (isCreateLocked.value && flow === 'restore') {
-    return
-  }
-  selectedFlow.value = flow
 }
 
 async function goFromChoiceNext() {

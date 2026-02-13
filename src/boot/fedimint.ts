@@ -22,9 +22,7 @@ function requiresStartupWizard(
 ): boolean {
   return (
     !hasMnemonic ||
-    (onboardingStatus === 'in_progress' &&
-      onboardingFlow === 'create' &&
-      needsMnemonicBackup)
+    (onboardingStatus === 'in_progress' && onboardingFlow === 'create' && needsMnemonicBackup)
   )
 }
 

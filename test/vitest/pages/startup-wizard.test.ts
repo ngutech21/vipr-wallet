@@ -74,6 +74,13 @@ const QBtnStub = {
     '<button v-bind="$attrs" :disabled="disable || loading" @click="$emit(\'click\')">{{ label }}</button>',
 }
 
+const QRadioStub = {
+  props: ['modelValue', 'val', 'disable'],
+  emits: ['update:modelValue'],
+  template:
+    '<input v-bind="$attrs" type="radio" :disabled="disable" :checked="modelValue === val" @change="$emit(\'update:modelValue\', val)" />',
+}
+
 const QInputStub = {
   props: ['modelValue'],
   emits: ['update:modelValue'],
@@ -92,6 +99,7 @@ function createWrapper() {
         'q-stepper': SlotStub,
         'q-step': SlotStub,
         'q-btn': QBtnStub,
+        'q-radio': QRadioStub,
         'q-input': QInputStub,
       },
     },
@@ -137,7 +145,7 @@ describe('StartupWizardPage', () => {
     const wrapper = createWrapper()
     await flushPromises()
 
-    await wrapper.find('[data-testid="startup-wizard-create-btn"]').trigger('click')
+    await wrapper.find('[data-testid="startup-wizard-create-radio"]').trigger('change')
     await wrapper.find('[data-testid="startup-wizard-choice-next-btn"]').trigger('click')
     await flushPromises()
     expect(walletStoreMock.createMnemonic).toHaveBeenCalledTimes(1)
@@ -154,7 +162,7 @@ describe('StartupWizardPage', () => {
     const wrapper = createWrapper()
     await flushPromises()
 
-    await wrapper.find('[data-testid="startup-wizard-restore-btn"]').trigger('click')
+    await wrapper.find('[data-testid="startup-wizard-restore-radio"]').trigger('change')
     await wrapper.find('[data-testid="startup-wizard-choice-next-btn"]').trigger('click')
     await wrapper.find('[data-testid="startup-wizard-restore-submit-btn"]').trigger('click')
 
@@ -170,7 +178,7 @@ describe('StartupWizardPage', () => {
     const wrapper = createWrapper()
     await flushPromises()
 
-    await wrapper.find('[data-testid="startup-wizard-restore-btn"]').trigger('click')
+    await wrapper.find('[data-testid="startup-wizard-restore-radio"]').trigger('change')
     await wrapper.find('[data-testid="startup-wizard-choice-next-btn"]').trigger('click')
 
     const words = [
