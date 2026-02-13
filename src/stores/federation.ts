@@ -27,6 +27,11 @@ export const useFederationStore = defineStore('federation', {
     async selectFederation(fedi: Federation | undefined) {
       const previousSelectedFederationId = this.selectedFederationId
       this.selectedFederationId = fedi?.federationId ?? null
+
+      if (previousSelectedFederationId === this.selectedFederationId) {
+        return
+      }
+
       const walletStore = useWalletStore()
       try {
         await walletStore.openWallet()
