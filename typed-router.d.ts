@@ -66,6 +66,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       never
     >
+    '/receive-onchain': RouteRecordInfo<
+      '/receive-onchain',
+      '/receive-onchain',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >
     '/received-lightning': RouteRecordInfo<
       '/received-lightning',
       '/received-lightning',
@@ -149,6 +156,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/receive-ecash.vue': {
       routes: '/receive-ecash'
+      views: never
+    }
+    'src/pages/receive-onchain.vue': {
+      routes: '/receive-onchain'
       views: never
     }
     'src/pages/received-lightning.vue': {
