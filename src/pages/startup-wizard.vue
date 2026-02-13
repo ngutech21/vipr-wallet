@@ -13,43 +13,53 @@ meta:
             Set up a new wallet or restore one from your recovery words.
           </div>
 
-          <q-stepper
-            v-model="currentStep"
-            animated
-            flat
-            color="primary"
-            class="wizard-stepper"
-            header-nav
-          >
+          <q-stepper v-model="currentStep" animated flat color="primary" class="wizard-stepper">
             <q-step
               name="choice"
               title="Get Started"
               icon="account_balance_wallet"
               :done="currentStep !== 'choice'"
+              :header-nav="false"
             >
               <div class="text-body1 q-mb-md">
                 Choose how you want to continue with your wallet on this device.
               </div>
+
               <q-btn
                 label="Create New Wallet"
                 color="primary"
                 icon="add"
                 class="full-width q-mb-sm"
-                :loading="isCreating"
+                :outline="selectedFlow !== 'create'"
                 :disable="isCreating || isRestoring"
-                @click="selectCreateWallet"
+                @click="selectFlow('create')"
                 data-testid="startup-wizard-create-btn"
               />
               <q-btn
                 label="Restore From Backup"
-                outline
                 color="primary"
                 icon="settings_backup_restore"
                 class="full-width"
-                :disable="isCreating || isRestoring"
-                @click="selectRestoreWallet"
+                :outline="selectedFlow !== 'restore'"
+                :disable="isCreating || isRestoring || isCreateLocked"
+                @click="selectFlow('restore')"
                 data-testid="startup-wizard-restore-btn"
               />
+
+              <div v-if="isCreateLocked" class="text-caption text-warning q-mt-md">
+                Wallet was already created in this setup. Continue backup to proceed.
+              </div>
+
+              <div class="row justify-end q-mt-lg">
+                <q-btn
+                  label="Next"
+                  color="primary"
+                  :loading="isCreating"
+                  :disable="!canProceedFromChoice"
+                  @click="goFromChoiceNext"
+                  data-testid="startup-wizard-choice-next-btn"
+                />
+              </div>
             </q-step>
 
             <q-step
@@ -72,15 +82,29 @@ meta:
                 </q-card>
               </div>
 
-              <q-btn
-                label="I've Backed Up My Words"
-                color="primary"
-                icon="check_circle"
-                class="full-width"
-                :disable="mnemonicWords.length !== 12"
-                @click="confirmBackupAndFinish"
-                data-testid="startup-wizard-backup-confirm-btn"
-              />
+              <div class="row q-col-gutter-sm">
+                <div class="col-12 col-sm-6">
+                  <q-btn
+                    label="Back"
+                    flat
+                    color="grey-7"
+                    class="full-width"
+                    @click="backFromBackupToChoice"
+                    data-testid="startup-wizard-backup-back-btn"
+                  />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <q-btn
+                    label="I've Backed Up My Words"
+                    color="primary"
+                    icon="check_circle"
+                    class="full-width"
+                    :disable="mnemonicWords.length !== 12"
+                    @click="confirmBackupAndFinish"
+                    data-testid="startup-wizard-backup-confirm-btn"
+                  />
+                </div>
+              </div>
             </q-step>
 
             <q-step
@@ -118,7 +142,7 @@ meta:
                     color="grey-7"
                     class="full-width"
                     :disable="isRestoring"
-                    @click="backToChoice"
+                    @click="backFromRestoreToChoice"
                     data-testid="startup-wizard-restore-back-btn"
                   />
                 </div>
@@ -156,17 +180,35 @@ import { useOnboardingStore } from 'src/stores/onboarding'
 import { logger } from 'src/services/logger'
 
 type WizardStep = 'choice' | 'backup' | 'restore'
+type SelectableFlow = 'create' | 'restore'
 
 const router = useRouter()
 const walletStore = useWalletStore()
 const onboardingStore = useOnboardingStore()
 
 const currentStep = ref<WizardStep>('choice')
+const selectedFlow = ref<SelectableFlow | null>(null)
 const isCreating = ref(false)
 const isRestoring = ref(false)
 const restoreWords = ref<string[]>(Array.from({ length: 12 }, () => ''))
 
 const mnemonicWords = computed(() => walletStore.mnemonicWords)
+const isCreateLocked = computed(
+  () =>
+    onboardingStore.status === 'in_progress' &&
+    onboardingStore.flow === 'create' &&
+    walletStore.hasMnemonic &&
+    walletStore.needsMnemonicBackup,
+)
+const canProceedFromChoice = computed(() => {
+  if (isCreating.value || isRestoring.value) {
+    return false
+  }
+  if (isCreateLocked.value) {
+    return true
+  }
+  return selectedFlow.value != null
+})
 
 onMounted(() => {
   initializeWizard().catch((error) => {
@@ -180,27 +222,42 @@ onMounted(() => {
 })
 
 async function initializeWizard() {
-  const hasMnemonic = await walletStore.loadMnemonic()
-  onboardingStore.normalizeForMnemonicState(hasMnemonic)
+  await walletStore.loadMnemonic()
+  onboardingStore.normalizeForWalletState({
+    hasMnemonic: walletStore.hasMnemonic,
+    needsMnemonicBackup: walletStore.needsMnemonicBackup,
+  })
 
-  if (onboardingStore.isBackupPending && walletStore.needsMnemonicBackup) {
+  if (walletStore.hasMnemonic && !walletStore.needsMnemonicBackup) {
+    await finishWizardAndEnterApp()
+    return
+  }
+
+  if (onboardingStore.flow === 'create') {
+    selectedFlow.value = 'create'
+  } else if (onboardingStore.flow === 'restore') {
+    selectedFlow.value = 'restore'
+  }
+
+  if (onboardingStore.step === 'backup' && walletStore.needsMnemonicBackup) {
     currentStep.value = 'backup'
+    selectedFlow.value = 'create'
+    onboardingStore.markInProgress()
+    onboardingStore.goToStep('backup')
     return
   }
 
   if (!walletStore.hasMnemonic && onboardingStore.step === 'restore') {
-    onboardingStore.startRestoreFlow()
     currentStep.value = 'restore'
+    selectedFlow.value = 'restore'
+    onboardingStore.markInProgress()
+    onboardingStore.goToStep('restore')
     return
   }
 
-  if (!walletStore.hasMnemonic) {
-    onboardingStore.goToChoice()
-    currentStep.value = 'choice'
-    return
-  }
-
-  await finishWizardAndEnterApp()
+  currentStep.value = 'choice'
+  onboardingStore.markInProgress()
+  onboardingStore.goToStep('choice')
 }
 
 async function finishWizardAndEnterApp() {
@@ -215,32 +272,75 @@ async function finishWizardAndEnterApp() {
   await router.replace('/')
 }
 
-async function selectCreateWallet() {
-  isCreating.value = true
-  try {
-    await walletStore.createMnemonic()
-    onboardingStore.startCreateFlow()
-    currentStep.value = 'backup'
-  } catch (error) {
-    Notify.create({
-      color: 'negative',
-      icon: 'error',
-      position: 'top',
-      message: `Failed to create wallet: ${getErrorMessage(error)}`,
-    })
-  } finally {
-    isCreating.value = false
+function selectFlow(flow: SelectableFlow) {
+  if (isCreateLocked.value && flow === 'restore') {
+    return
   }
+  selectedFlow.value = flow
 }
 
-function selectRestoreWallet() {
-  onboardingStore.startRestoreFlow()
+async function goFromChoiceNext() {
+  if (isCreateLocked.value) {
+    selectedFlow.value = 'create'
+    onboardingStore.markInProgress()
+    onboardingStore.goToStep('backup')
+    currentStep.value = 'backup'
+    return
+  }
+
+  if (selectedFlow.value == null) {
+    Notify.create({
+      color: 'warning',
+      icon: 'warning',
+      position: 'top',
+      message: 'Please choose how to continue.',
+    })
+    return
+  }
+
+  if (selectedFlow.value === 'create') {
+    onboardingStore.start('create')
+
+    if (!(walletStore.hasMnemonic && walletStore.needsMnemonicBackup)) {
+      isCreating.value = true
+      try {
+        await walletStore.createMnemonic()
+      } catch (error) {
+        Notify.create({
+          color: 'negative',
+          icon: 'error',
+          position: 'top',
+          message: `Failed to create wallet: ${getErrorMessage(error)}`,
+        })
+        onboardingStore.goToStep('choice')
+        return
+      } finally {
+        isCreating.value = false
+      }
+    }
+
+    onboardingStore.goToStep('backup')
+    currentStep.value = 'backup'
+    return
+  }
+
+  onboardingStore.start('restore')
+  onboardingStore.goToStep('restore')
   currentStep.value = 'restore'
 }
 
-function backToChoice() {
-  onboardingStore.goToChoice()
+function backFromBackupToChoice() {
+  onboardingStore.markInProgress()
+  onboardingStore.goToStep('choice')
   currentStep.value = 'choice'
+  selectedFlow.value = 'create'
+}
+
+function backFromRestoreToChoice() {
+  onboardingStore.markInProgress()
+  onboardingStore.goToStep('choice')
+  currentStep.value = 'choice'
+  selectedFlow.value = isCreateLocked.value ? 'create' : 'restore'
   restoreWords.value = Array.from({ length: 12 }, () => '')
 }
 
@@ -263,6 +363,8 @@ async function submitRestore() {
   }
 
   isRestoring.value = true
+  onboardingStore.markInProgress()
+  onboardingStore.goToStep('restore')
   try {
     await walletStore.restoreMnemonic(words)
     await finishWizardAndEnterApp()

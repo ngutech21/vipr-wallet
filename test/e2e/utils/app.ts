@@ -16,6 +16,7 @@ export async function continuePastStartupWizardIfNeeded(page: Page): Promise<voi
   if (shouldContinueWizard) {
     await expect(createButton).toBeVisible({ timeout: 15_000 })
     await createButton.click()
+    await page.getByTestId('startup-wizard-choice-next-btn').click()
 
     const confirmWizardBackupButton = page.getByTestId('startup-wizard-backup-confirm-btn')
     await expect(confirmWizardBackupButton).toBeVisible({ timeout: 20_000 })

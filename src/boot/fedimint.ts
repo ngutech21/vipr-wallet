@@ -16,10 +16,16 @@ function isStartupWizardRoute(route: { path?: string; name?: string | symbol | n
 
 function requiresStartupWizard(
   hasMnemonic: boolean,
-  backupPending: boolean,
+  onboardingStatus: 'in_progress' | 'complete',
+  onboardingFlow: 'create' | 'restore' | null,
   needsMnemonicBackup: boolean,
 ): boolean {
-  return !hasMnemonic || (backupPending && needsMnemonicBackup)
+  return (
+    !hasMnemonic ||
+    (onboardingStatus === 'in_progress' &&
+      onboardingFlow === 'create' &&
+      needsMnemonicBackup)
+  )
 }
 
 export default defineBoot(async ({ app, router }) => {
@@ -32,12 +38,16 @@ export default defineBoot(async ({ app, router }) => {
   appStore.setReady(false)
   try {
     await walletStore.ensureStorageSchema()
-    const hasMnemonic = await walletStore.loadMnemonic()
-    onboardingStore.normalizeForMnemonicState(hasMnemonic)
+    await walletStore.loadMnemonic()
+    onboardingStore.normalizeForWalletState({
+      hasMnemonic: walletStore.hasMnemonic,
+      needsMnemonicBackup: walletStore.needsMnemonicBackup,
+    })
 
     const startupWizardRequired = requiresStartupWizard(
       walletStore.hasMnemonic,
-      onboardingStore.isBackupPending,
+      onboardingStore.status,
+      onboardingStore.flow,
       walletStore.needsMnemonicBackup,
     )
 
@@ -49,7 +59,8 @@ export default defineBoot(async ({ app, router }) => {
       router.beforeEach((to) => {
         const shouldOpenWizard = requiresStartupWizard(
           walletStore.hasMnemonic,
-          onboardingStore.isBackupPending,
+          onboardingStore.status,
+          onboardingStore.flow,
           walletStore.needsMnemonicBackup,
         )
 

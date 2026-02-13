@@ -18,8 +18,9 @@ const walletStoreMock = vi.hoisted(() => ({
 }))
 
 const onboardingStoreMock = vi.hoisted(() => ({
-  isBackupPending: false,
-  normalizeForMnemonicState: vi.fn(),
+  status: 'complete' as 'in_progress' | 'complete',
+  flow: null as 'create' | 'restore' | null,
+  normalizeForWalletState: vi.fn(),
 }))
 
 const federationStoreMock = vi.hoisted(() => ({
@@ -80,7 +81,8 @@ describe('fedimint boot', () => {
     walletStoreMock.loadMnemonic.mockImplementation(() =>
       Promise.resolve(walletStoreMock.hasMnemonic),
     )
-    onboardingStoreMock.isBackupPending = false
+    onboardingStoreMock.status = 'complete'
+    onboardingStoreMock.flow = null
     walletStoreMock.openWallet.mockResolvedValue()
     pwaUpdateStoreMock.checkForUpdatesStartup.mockResolvedValue(undefined)
   })
@@ -115,5 +117,23 @@ describe('fedimint boot', () => {
     expect(walletStoreMock.openWallet).toHaveBeenCalledTimes(1)
     expect(router.replace).not.toHaveBeenCalled()
     expect(pwaUpdateStoreMock.checkForUpdatesStartup).toHaveBeenCalledTimes(1)
+  })
+
+  it('redirects to startup wizard when create flow is still in progress and backup is needed', async () => {
+    walletStoreMock.hasMnemonic = true
+    walletStoreMock.needsMnemonicBackup = true
+    onboardingStoreMock.status = 'in_progress'
+    onboardingStoreMock.flow = 'create'
+
+    const router = {
+      currentRoute: { value: { name: '/', path: '/' } },
+      replace: vi.fn(() => Promise.resolve()),
+      beforeEach: vi.fn(),
+    }
+
+    await fedimintBoot({ app: {}, router } as never)
+
+    expect(walletStoreMock.openWallet).not.toHaveBeenCalled()
+    expect(router.replace).toHaveBeenCalledWith('/startup-wizard')
   })
 })

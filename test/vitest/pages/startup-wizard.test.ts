@@ -32,11 +32,11 @@ const walletStoreMock = vi.hoisted(() => ({
 const onboardingStoreMock = vi.hoisted(() => ({
   flow: null as 'create' | 'restore' | null,
   step: 'choice' as 'choice' | 'backup' | 'restore',
-  isBackupPending: false,
-  normalizeForMnemonicState: vi.fn(),
-  startCreateFlow: vi.fn(),
-  startRestoreFlow: vi.fn(),
-  goToChoice: vi.fn(),
+  status: 'complete' as 'in_progress' | 'complete',
+  normalizeForWalletState: vi.fn(),
+  start: vi.fn(),
+  goToStep: vi.fn(),
+  markInProgress: vi.fn(),
   complete: vi.fn(),
 }))
 
@@ -104,50 +104,50 @@ describe('StartupWizardPage', () => {
     walletStoreMock.hasMnemonic = false
     walletStoreMock.needsMnemonicBackup = false
     walletStoreMock.loadMnemonic.mockResolvedValue(false)
-    walletStoreMock.createMnemonic.mockResolvedValue()
+    walletStoreMock.createMnemonic.mockImplementation(() => {
+      walletStoreMock.hasMnemonic = true
+      walletStoreMock.needsMnemonicBackup = true
+      return Promise.resolve()
+    })
     walletStoreMock.restoreMnemonic.mockResolvedValue()
     walletStoreMock.openWallet.mockResolvedValue()
 
     onboardingStoreMock.flow = null
     onboardingStoreMock.step = 'choice'
-    onboardingStoreMock.isBackupPending = false
-    onboardingStoreMock.startCreateFlow.mockImplementation(() => {
-      onboardingStoreMock.flow = 'create'
-      onboardingStoreMock.step = 'backup'
-      onboardingStoreMock.isBackupPending = true
+    onboardingStoreMock.status = 'complete'
+    onboardingStoreMock.start.mockImplementation((flow: 'create' | 'restore') => {
+      onboardingStoreMock.flow = flow
+      onboardingStoreMock.status = 'in_progress'
+      onboardingStoreMock.step = flow === 'create' ? 'backup' : 'restore'
     })
-    onboardingStoreMock.startRestoreFlow.mockImplementation(() => {
-      onboardingStoreMock.flow = 'restore'
-      onboardingStoreMock.step = 'restore'
-      onboardingStoreMock.isBackupPending = false
+    onboardingStoreMock.goToStep.mockImplementation((step: 'choice' | 'backup' | 'restore') => {
+      onboardingStoreMock.step = step
     })
-    onboardingStoreMock.goToChoice.mockImplementation(() => {
-      onboardingStoreMock.flow = null
-      onboardingStoreMock.step = 'choice'
-      onboardingStoreMock.isBackupPending = false
+    onboardingStoreMock.markInProgress.mockImplementation(() => {
+      onboardingStoreMock.status = 'in_progress'
     })
     onboardingStoreMock.complete.mockImplementation(() => {
       onboardingStoreMock.flow = null
       onboardingStoreMock.step = 'choice'
-      onboardingStoreMock.isBackupPending = false
+      onboardingStoreMock.status = 'complete'
     })
   })
 
-  it('create flow waits for backup confirmation before routing home', async () => {
+  it('create flow does not recreate mnemonic after going back to choice', async () => {
     const wrapper = createWrapper()
     await flushPromises()
 
     await wrapper.find('[data-testid="startup-wizard-create-btn"]').trigger('click')
+    await wrapper.find('[data-testid="startup-wizard-choice-next-btn"]').trigger('click')
     await flushPromises()
-
     expect(walletStoreMock.createMnemonic).toHaveBeenCalledTimes(1)
-    expect(routerReplaceMock).not.toHaveBeenCalled()
 
-    await wrapper.find('[data-testid="startup-wizard-backup-confirm-btn"]').trigger('click')
+    await wrapper.find('[data-testid="startup-wizard-backup-back-btn"]').trigger('click')
     await flushPromises()
 
-    expect(walletStoreMock.markMnemonicBackupConfirmed).toHaveBeenCalledTimes(1)
-    expect(routerReplaceMock).toHaveBeenCalledWith('/')
+    await wrapper.find('[data-testid="startup-wizard-choice-next-btn"]').trigger('click')
+    await flushPromises()
+    expect(walletStoreMock.createMnemonic).toHaveBeenCalledTimes(1)
   })
 
   it('restore flow enforces all 12 words before submit', async () => {
@@ -155,6 +155,7 @@ describe('StartupWizardPage', () => {
     await flushPromises()
 
     await wrapper.find('[data-testid="startup-wizard-restore-btn"]').trigger('click')
+    await wrapper.find('[data-testid="startup-wizard-choice-next-btn"]').trigger('click')
     await wrapper.find('[data-testid="startup-wizard-restore-submit-btn"]').trigger('click')
 
     expect(walletStoreMock.restoreMnemonic).not.toHaveBeenCalled()
@@ -170,6 +171,7 @@ describe('StartupWizardPage', () => {
     await flushPromises()
 
     await wrapper.find('[data-testid="startup-wizard-restore-btn"]').trigger('click')
+    await wrapper.find('[data-testid="startup-wizard-choice-next-btn"]').trigger('click')
 
     const words = [
       ' Alpha ',
@@ -213,16 +215,16 @@ describe('StartupWizardPage', () => {
     expect(routerReplaceMock).toHaveBeenCalledWith('/')
   })
 
-  it('resumes restore step after remount when progress says restore', async () => {
+  it('resumes restore step after remount when persisted progress says restore', async () => {
     onboardingStoreMock.flow = 'restore'
     onboardingStoreMock.step = 'restore'
+    onboardingStoreMock.status = 'in_progress'
     walletStoreMock.loadMnemonic.mockResolvedValue(false)
 
     const wrapper = createWrapper()
     await flushPromises()
 
-    expect(onboardingStoreMock.startRestoreFlow).toHaveBeenCalledTimes(1)
-    expect(onboardingStoreMock.goToChoice).not.toHaveBeenCalled()
+    expect(onboardingStoreMock.goToStep).toHaveBeenCalledWith('restore')
     wrapper.unmount()
   })
 })
