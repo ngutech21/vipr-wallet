@@ -13,7 +13,6 @@ Vipr-Wallet is a modern Progressive Web App (PWA) that serves as an ecash wallet
 This software is experimental and comes with risks:
 
 - Current version is in **beta stage** with incomplete features and potential bugs
-- **NO BACKUP FUNCTIONALITY** implemented yet - funds could be lost permanently
 - **DO NOT USE** with significant amounts of ecash or in production environments
 
 By using this wallet, you acknowledge and accept these risks.
@@ -41,7 +40,7 @@ A demo version of the wallet is available at [beta.vipr.cash](https://beta.vipr.
 - [ ] export ecash
 - [x] import ecash
 - [x] backup wallet
-- [ ] restore wallet
+- [x] restore wallet
 
 ### Federations
 
@@ -125,10 +124,10 @@ pnpm dev
 ### 🛠️ Development
 
 | Command         | Description                               |
-| --------------- | ----------------------------------------- |
+| --------------- | ----------------------------------------- | --- |
 | `pnpm dev`      | Start development server with hot reload  |
 | `pnpm build`    | Build for production                      |
 | `pnpm lint`     | Run ESLint on source files                |
 | `pnpm format`   | Format code with Prettier                 |
 | `pnpm test`     | Run unit tests                            |
-| `pnpm test:e2e` | Run end to end tests (requires nix shell) |                    |
+| `pnpm test:e2e` | Run end to end tests (requires nix shell) |     |

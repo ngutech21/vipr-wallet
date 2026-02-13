@@ -19,7 +19,7 @@ export default defineConfig({
   reporter: 'html',
   failOnFlakyTests: true,
   expect: {
-    timeout: 10_000,
+    timeout: isCI ? 20_000 : 10_000,
   },
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -35,6 +35,9 @@ export default defineConfig({
     actionTimeout: 15_000,
     navigationTimeout: 30_000,
     serviceWorkers: 'block',
+    contextOptions: {
+      reducedMotion: 'reduce',
+    },
   },
 
   /* Configure projects for major browsers */
@@ -49,7 +52,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'BROWSER=none quasar dev -m pwa --port 9303',
+    command: 'VITE_E2E_MODE=1 BROWSER=none quasar dev -m pwa --port 9303',
     url: 'http://127.0.0.1:9303',
     reuseExistingServer: !isCI,
     timeout: 180_000, // allow cold Nix start

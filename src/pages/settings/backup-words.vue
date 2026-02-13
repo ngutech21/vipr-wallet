@@ -104,7 +104,10 @@ async function goBack() {
 }
 
 async function loadRecoveryWords() {
-  await walletStore.ensureMnemonicReady()
+  const hasMnemonic = await walletStore.loadMnemonic()
+  if (!hasMnemonic) {
+    throw new Error('No wallet mnemonic found')
+  }
   recoveryWords.value = [...walletStore.mnemonicWords]
 }
 </script>

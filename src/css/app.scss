@@ -2,6 +2,19 @@
 
 @use 'sass:color';
 
+// E2E mode: remove motion to reduce test flakiness in CI.
+html[data-e2e='1'],
+html[data-e2e='1'] body {
+  scroll-behavior: auto !important;
+}
+
+html[data-e2e='1'] *,
+html[data-e2e='1'] *::before,
+html[data-e2e='1'] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
 // Rounded buttons
 .q-btn:not(.q-btn--fab) {
   border-radius: 8px;

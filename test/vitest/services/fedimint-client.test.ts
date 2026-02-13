@@ -12,6 +12,8 @@ const coreMockState = vi.hoisted(() => ({
   getMnemonicValue: new Error(
     'No wallet mnemonic set. Please set or generate a mnemonic first.',
   ) as unknown,
+  joinFederationErrorOnce: null as Error | null,
+  openWalletSuccessOnce: false,
   generateMnemonicValue: [
     'abandon',
     'ability',
@@ -39,8 +41,19 @@ vi.mock('@fedimint/core', () => {
 
     constructor(_client: unknown, _clientName = 'default-client') {}
 
-    readonly openMock = vi.fn((_clientName?: string) => Promise.resolve(this.joined))
+    readonly openMock = vi.fn((_clientName?: string) => {
+      if (coreMockState.openWalletSuccessOnce) {
+        coreMockState.openWalletSuccessOnce = false
+        this.joined = true
+      }
+      return Promise.resolve(this.joined)
+    })
     readonly joinMock = vi.fn((_inviteCode: string, _clientName?: string) => {
+      if (coreMockState.joinFederationErrorOnce != null) {
+        const error = coreMockState.joinFederationErrorOnce
+        coreMockState.joinFederationErrorOnce = null
+        return Promise.reject(error)
+      }
       this.joined = true
       return Promise.resolve(true)
     })
@@ -113,6 +126,8 @@ describe('fedimint client adapter', () => {
     coreMockState.getMnemonicValue = new Error(
       'No wallet mnemonic set. Please set or generate a mnemonic first.',
     )
+    coreMockState.joinFederationErrorOnce = null
+    coreMockState.openWalletSuccessOnce = false
     coreMockState.generateMnemonicValue = [
       'abandon',
       'ability',
@@ -167,6 +182,21 @@ describe('fedimint client adapter', () => {
 
     expect(openedWallet.openMock).toHaveBeenCalledWith(firstClientName)
     expect(openedWallet.joinMock).not.toHaveBeenCalled()
+  })
+
+  it('falls back to open when join reports no modification allowed', async () => {
+    coreMockState.joinFederationErrorOnce = new Error('No modification allowed')
+    coreMockState.openWalletSuccessOnce = true
+
+    const wallet = (await fedimintClient.ensureWalletOpen({
+      walletName: 'wallet-fed-1',
+      federationId: 'fed-1',
+      inviteCode: 'invite-1',
+    })) as unknown as MockWalletLike
+
+    expect(wallet.joinMock).toHaveBeenCalledTimes(1)
+    expect(wallet.openMock).toHaveBeenCalledTimes(1)
+    expect(wallet.isOpen()).toBe(true)
   })
 
   it('tracks known wallet names for list/delete/clear', async () => {
@@ -234,5 +264,29 @@ describe('fedimint client adapter', () => {
 
     await expect(fedimintClient.ensureMnemonic()).rejects.toThrow('generate failed')
     expect(coreMockState.setMnemonicSpy).not.toHaveBeenCalled()
+  })
+
+  it('getMnemonicIfSet returns null for missing mnemonic', async () => {
+    coreMockState.getMnemonicValue = new Error(
+      'No wallet mnemonic set. Please set or generate a mnemonic first.',
+    )
+
+    const result = await fedimintClient.getMnemonicIfSet()
+
+    expect(result).toBeNull()
+  })
+
+  it('getMnemonicIfSet returns null for invalid mnemonic shape', async () => {
+    coreMockState.getMnemonicValue = { unexpected: true }
+
+    const result = await fedimintClient.getMnemonicIfSet()
+
+    expect(result).toBeNull()
+  })
+
+  it('getMnemonicIfSet rethrows non-recoverable errors', async () => {
+    coreMockState.getMnemonicValue = new Error('transport exploded')
+
+    await expect(fedimintClient.getMnemonicIfSet()).rejects.toThrow('transport exploded')
   })
 })

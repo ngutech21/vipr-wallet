@@ -24,6 +24,7 @@ export const useWalletStore = defineStore('wallet', {
     activeWalletName: null as string | null,
     balance: 0,
     mnemonicWords: [] as string[],
+    hasMnemonic: false,
     needsMnemonicBackup: false,
   }),
   actions: {
@@ -61,8 +62,11 @@ export const useWalletStore = defineStore('wallet', {
 
     async openWalletForFederation(selectedFederation: Federation) {
       await this.initClients()
-      if (this.mnemonicWords.length === 0) {
-        await this.ensureMnemonicReady()
+      if (!this.hasMnemonic) {
+        const hasMnemonic = await this.loadMnemonic()
+        if (!hasMnemonic) {
+          throw new Error('Wallet mnemonic is not initialized')
+        }
       }
 
       const walletName = getWalletNameForFederationId(selectedFederation.federationId)
@@ -133,6 +137,7 @@ export const useWalletStore = defineStore('wallet', {
       this.activeWalletName = null
       this.balance = 0
       this.mnemonicWords = []
+      this.hasMnemonic = false
       this.needsMnemonicBackup = false
     },
 
@@ -141,17 +146,41 @@ export const useWalletStore = defineStore('wallet', {
       return await fedimintClient.listWallets()
     },
 
-    async ensureMnemonicReady(): Promise<boolean> {
+    async loadMnemonic(): Promise<boolean> {
       await this.initClients()
-      const { words, created } = await fedimintClient.ensureMnemonic()
-      this.mnemonicWords = words
-
-      if (created) {
-        localStorage.setItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY, '0')
+      const words = await fedimintClient.getMnemonicIfSet()
+      if (words == null) {
+        this.mnemonicWords = []
+        this.hasMnemonic = false
+        this.needsMnemonicBackup = false
+        return false
       }
+
+      this.mnemonicWords = words
+      this.hasMnemonic = true
       this.needsMnemonicBackup =
         localStorage.getItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY) !== '1'
-      return created
+      return true
+    },
+
+    async createMnemonic(): Promise<void> {
+      await this.initClients()
+      const words = await fedimintClient.generateMnemonic()
+      this.mnemonicWords = words
+      this.hasMnemonic = true
+      localStorage.setItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY, '0')
+      this.needsMnemonicBackup = true
+    },
+
+    async restoreMnemonic(words: string[]): Promise<void> {
+      await this.initClients()
+      await fedimintClient.setMnemonic(words)
+      const hasMnemonic = await this.loadMnemonic()
+      if (!hasMnemonic) {
+        throw new Error('Failed to verify restored mnemonic')
+      }
+      localStorage.setItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY, '1')
+      this.needsMnemonicBackup = false
     },
 
     markMnemonicBackupConfirmed() {
