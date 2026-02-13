@@ -58,6 +58,10 @@ function hasServiceWorkerSupport(): boolean {
   return typeof navigator !== 'undefined' && 'serviceWorker' in navigator
 }
 
+function hasActiveServiceWorkerController(): boolean {
+  return hasServiceWorkerSupport() && navigator.serviceWorker.controller != null
+}
+
 function hasLocalStorageSupport(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
 }
@@ -237,7 +241,7 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
     onCached(registration: ServiceWorkerRegistration) {
       this.registration = registration
       this.lastError = null
-      this.isUpdateReady = registration.waiting != null
+      this.isUpdateReady = registration.waiting != null && hasActiveServiceWorkerController()
 
       if (this.isUpdateReady) {
         this.setState('waiting')
@@ -256,7 +260,7 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
     onUpdated(registration: ServiceWorkerRegistration) {
       this.registration = registration
       this.lastError = null
-      this.isUpdateReady = registration.waiting != null
+      this.isUpdateReady = registration.waiting != null && hasActiveServiceWorkerController()
 
       if (this.isUpdateReady) {
         this.setState('waiting')
@@ -308,7 +312,7 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
         return 'checking'
       }
 
-      if (this.registration?.waiting != null) {
+      if (this.registration?.waiting != null && hasActiveServiceWorkerController()) {
         this.onUpdated(this.registration)
         return 'update-ready'
       }
@@ -327,7 +331,7 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
         }
 
         this.bindRegistration(registration)
-        if (registration.waiting != null) {
+        if (registration.waiting != null && hasActiveServiceWorkerController()) {
           return 'update-ready'
         }
 
@@ -336,7 +340,7 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
         const latestRegistration = (await navigator.serviceWorker.getRegistration()) ?? registration
         this.bindRegistration(latestRegistration)
 
-        if (latestRegistration.waiting != null) {
+        if (latestRegistration.waiting != null && hasActiveServiceWorkerController()) {
           return 'update-ready'
         }
 

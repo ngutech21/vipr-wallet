@@ -11,14 +11,16 @@ type ServiceWorkerContainerMock = {
 
 function installServiceWorkerMock(
   getRegistrationValue: () => ServiceWorkerRegistration | undefined,
+  options: { controller?: ServiceWorker | null } = {},
 ): ServiceWorkerContainerMock {
   const target = new EventTarget()
   const getRegistration = vi.fn(() => Promise.resolve(getRegistrationValue()))
+  const controller = options.controller === undefined ? ({} as ServiceWorker) : options.controller
 
   Object.defineProperty(navigator, 'serviceWorker', {
     configurable: true,
     value: {
-      controller: {} as ServiceWorker,
+      controller,
       getRegistration,
       addEventListener: target.addEventListener.bind(target),
       removeEventListener: target.removeEventListener.bind(target),
@@ -62,6 +64,7 @@ describe('pwa update store', () => {
       postMessage: vi.fn(),
     } as unknown as ServiceWorker
     const registration = createRegistration({ waiting: waitingWorker })
+    installServiceWorkerMock(() => registration)
     const store = usePwaUpdateStore()
 
     store.onUpdated(registration)
@@ -106,6 +109,22 @@ describe('pwa update store', () => {
 
     expect(result).toBe('update-ready')
     expect(postMessage).not.toHaveBeenCalled()
+  })
+
+  it('ignores waiting worker during first install when no controller exists', async () => {
+    const waitingWorker = {
+      postMessage: vi.fn(),
+    } as unknown as ServiceWorker
+    const registration = createRegistration({ waiting: waitingWorker })
+    installServiceWorkerMock(() => registration, { controller: null })
+    const store = usePwaUpdateStore()
+    store.bindRegistration(registration)
+
+    const result = await store.checkForUpdatesStartup()
+
+    expect(result).toBe('up-to-date')
+    expect(store.isUpdateReady).toBe(false)
+    expect(store.state).toBe('idle')
   })
 
   it('throttles foreground checks', async () => {
