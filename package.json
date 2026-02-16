@@ -60,7 +60,7 @@
     "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.4.24",
     "eslint": "9.39.2",
-    "eslint-plugin-vue": "^10.7.0",
+    "eslint-plugin-vue": "^10.8.0",
     "globals": "^17.3.0",
     "lighthouse": "^13.0.3",
     "pinia": "^3.0.4",
