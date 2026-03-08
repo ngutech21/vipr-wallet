@@ -11,6 +11,8 @@ vi.mock('vue-router', () => ({
   }),
 }))
 
+const totalAmountCards = 3
+
 describe('ReceiveEcashSelection.vue', () => {
   let wrapper: VueWrapper
 
@@ -67,10 +69,10 @@ describe('ReceiveEcashSelection.vue', () => {
       )
     })
 
-    it('should render two q-card elements', () => {
+    it('should render multiple q-card elements', () => {
       wrapper = createWrapper()
       const cards = wrapper.findAllComponents({ name: 'QCard' })
-      expect(cards).toHaveLength(2)
+      expect(cards).toHaveLength(totalAmountCards)
     })
 
     it('should render Lightning icon for first option', () => {
@@ -88,9 +90,10 @@ describe('ReceiveEcashSelection.vue', () => {
     it('should have cursor-pointer class on both cards', () => {
       wrapper = createWrapper()
       const cards = wrapper.findAllComponents({ name: 'QCard' })
-      expect(cards).toHaveLength(2)
+      expect(cards).toHaveLength(totalAmountCards)
       expect(cards[0]?.classes()).toContain('cursor-pointer')
       expect(cards[1]?.classes()).toContain('cursor-pointer')
+      expect(cards[2]?.classes()).toContain('cursor-pointer')
     })
 
     it('should have v-ripple directive on both cards', () => {
@@ -119,9 +122,10 @@ describe('ReceiveEcashSelection.vue', () => {
     it('should render icons with correct size', () => {
       wrapper = createWrapper()
       const icons = wrapper.findAllComponents({ name: 'QIcon' })
-      expect(icons).toHaveLength(2)
+      expect(icons).toHaveLength(totalAmountCards)
       expect(icons[0]?.props('size')).toBe('48px')
       expect(icons[1]?.props('size')).toBe('48px')
+      expect(icons[2]?.props('size')).toBe('48px')
     })
   })
 
@@ -157,7 +161,7 @@ describe('ReceiveEcashSelection.vue', () => {
     it('should emit close event when Offline eCash option is clicked', async () => {
       wrapper = createWrapper()
       const cards = wrapper.findAllComponents({ name: 'QCard' })
-      expect(cards).toHaveLength(2)
+      expect(cards).toHaveLength(totalAmountCards)
       const offlineCard = cards[1]
       if (offlineCard === undefined) throw new Error('Offline card not found')
       await offlineCard.trigger('click')
@@ -170,8 +174,8 @@ describe('ReceiveEcashSelection.vue', () => {
     it('should navigate to /receive-ecash route when Offline option is clicked', async () => {
       wrapper = createWrapper()
       const cards = wrapper.findAllComponents({ name: 'QCard' })
-      expect(cards).toHaveLength(2)
-      const offlineCard = cards[1]
+      expect(cards).toHaveLength(totalAmountCards)
+      const offlineCard = cards[2]
       if (offlineCard === undefined) throw new Error('Offline card not found')
       await offlineCard.trigger('click')
       await flushPromises()
@@ -228,7 +232,7 @@ describe('ReceiveEcashSelection.vue', () => {
     it('should not emit showOfflineReceive event', async () => {
       wrapper = createWrapper()
       const cards = wrapper.findAllComponents({ name: 'QCard' })
-      expect(cards).toHaveLength(2)
+      expect(cards).toHaveLength(totalAmountCards)
       const offlineCard = cards[1]
       if (offlineCard === undefined) throw new Error('Offline card not found')
       await offlineCard.trigger('click')
@@ -327,7 +331,7 @@ describe('ReceiveEcashSelection.vue', () => {
       wrapper = createWrapper()
       const lightningCard = wrapper.find('[data-testid="receive-lightning-card"]')
       const cards = wrapper.findAllComponents({ name: 'QCard' })
-      expect(cards).toHaveLength(2)
+      expect(cards).toHaveLength(totalAmountCards)
       const offlineCard = cards[1]
       if (offlineCard === undefined) throw new Error('Offline card not found')
 
@@ -344,7 +348,7 @@ describe('ReceiveEcashSelection.vue', () => {
       wrapper = createWrapper()
       const lightningCard = wrapper.find('[data-testid="receive-lightning-card"]')
       const cards = wrapper.findAllComponents({ name: 'QCard' })
-      expect(cards).toHaveLength(2)
+      expect(cards).toHaveLength(totalAmountCards)
       const offlineCard = cards[1]
       if (offlineCard === undefined) throw new Error('Offline card not found')
 
@@ -413,7 +417,7 @@ describe('ReceiveEcashSelection.vue', () => {
     it('should emit close when Offline card is clicked', async () => {
       wrapper = createWrapper()
       const cards = wrapper.findAllComponents({ name: 'QCard' })
-      expect(cards).toHaveLength(2)
+      expect(cards).toHaveLength(totalAmountCards)
       const offlineCard = cards[1]
       if (offlineCard === undefined) throw new Error('Offline card not found')
 

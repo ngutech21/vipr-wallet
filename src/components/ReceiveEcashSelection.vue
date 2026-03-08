@@ -25,6 +25,25 @@
           <q-card
             class="cursor-pointer"
             v-ripple
+            @click="onReceiveOnchain"
+            data-testid="receive-onchain-card"
+          >
+            <q-card-section class="row">
+              <q-icon name="currency_bitcoin" size="48px" color="orange" class="col-2" />
+              <div class="col-10">
+                <div class="text-h6 q-mt-sm">Receive via Onchain</div>
+                <div class="text-caption text-grey-7">
+                  Generate a Bitcoin address to receive funds via an onchain transaction
+                </div>
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+
+        <div class="col-12">
+          <q-card
+            class="cursor-pointer"
+            v-ripple
             @click="onReceiveOffline"
             data-testid="receive-offline-card"
           >
@@ -53,6 +72,11 @@ const emit = defineEmits<{
   close: []
   showOfflineReceive: []
 }>()
+
+async function onReceiveOnchain() {
+  emit('close')
+  await router.push({ name: '/receive-onchain' })
+}
 
 async function onReceiveLightning() {
   emit('close')
