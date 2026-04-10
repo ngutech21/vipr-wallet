@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test'
 import { FaucetService } from './utils/FaucetService'
-import { continuePastStartupWizardIfNeeded, waitForAppReady } from './utils/app'
+import {
+  continuePastStartupWizardIfNeeded,
+  navigateViaFooterTab,
+  waitForAppReady,
+  waitForHomePageReady,
+} from './utils/app'
 
 test.setTimeout(120_000)
 
@@ -16,13 +21,13 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     await page.goto('/')
     await waitForAppReady(page)
     await continuePastStartupWizardIfNeeded(page)
+    await waitForHomePageReady(page)
     // Avoid title checks; use stable test IDs instead.
     await expect(page.getByTestId('home-page')).toBeVisible()
 
     // Step 1: Navigate to Federations page
     await test.step('Navigate to Federations page', async () => {
-      await page.getByTestId('nav-federations').click()
-      await expect(page.getByTestId('federations-page')).toBeVisible()
+      await navigateViaFooterTab(page, 'nav-federations', 'federations-page', /#\/federations$/)
     })
 
     // Step 2: Open Add Federation dialog
@@ -64,8 +69,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
 
     // Step 4: Navigate back to home page
     await test.step('Navigate to home page', async () => {
-      await page.getByTestId('nav-home').click()
-      await expect(page.getByTestId('home-page')).toBeVisible()
+      await navigateViaFooterTab(page, 'nav-home', 'home-page', /#\/$/)
 
       // Verify initial balance is 0
       await expect(page.locator('.text-h4')).toContainText('0 sats')

@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test'
-import { continuePastStartupWizardIfNeeded, waitForAppReady } from './utils/app'
+import {
+  continuePastStartupWizardIfNeeded,
+  navigateViaFooterTab,
+  waitForAppReady,
+  waitForHomePageReady,
+} from './utils/app'
 
 test.describe('Smoke Tests', () => {
   test('app starts and navigation works', async ({ page }) => {
@@ -9,7 +14,7 @@ test.describe('Smoke Tests', () => {
     await continuePastStartupWizardIfNeeded(page)
 
     // Avoid title checks; use stable test IDs instead.
-    await expect(page.getByTestId('home-page')).toBeVisible()
+    await waitForHomePageReady(page)
 
     // Verify the footer navigation is visible and contains expected tabs
     await expect(page.getByTestId('nav-home')).toBeVisible()
@@ -17,10 +22,7 @@ test.describe('Smoke Tests', () => {
     await expect(page.getByTestId('nav-settings')).toBeVisible()
 
     // Click on the settings tab
-    await page.getByTestId('nav-settings').click()
-
-    // Verify we're on the settings page
-    await expect(page.getByTestId('settings-page')).toBeVisible()
+    await navigateViaFooterTab(page, 'nav-settings', 'settings-page', /#\/settings$/)
 
     // Verify settings page content is loaded
     await expect(page.locator('text=Bitcoin Wallet')).toBeVisible()
@@ -32,16 +34,13 @@ test.describe('Smoke Tests', () => {
     await page.goto('/')
     await waitForAppReady(page)
     await continuePastStartupWizardIfNeeded(page)
+    await waitForHomePageReady(page)
 
     // Navigate to settings first
-    await page.getByTestId('nav-settings').click()
-    await expect(page.getByTestId('settings-page')).toBeVisible()
+    await navigateViaFooterTab(page, 'nav-settings', 'settings-page', /#\/settings$/)
 
     // Click home tab
-    await page.getByTestId('nav-home').click()
-
-    // Verify we're back to home
-    await expect(page.getByTestId('home-page')).toBeVisible()
+    await navigateViaFooterTab(page, 'nav-home', 'home-page', /#\/$/)
   })
 
   test('federations navigation works', async ({ page }) => {
@@ -49,11 +48,9 @@ test.describe('Smoke Tests', () => {
     await page.goto('/')
     await waitForAppReady(page)
     await continuePastStartupWizardIfNeeded(page)
+    await waitForHomePageReady(page)
 
     // Click federations tab
-    await page.getByTestId('nav-federations').click()
-
-    // Verify we're on federations page
-    await expect(page.getByTestId('federations-page')).toBeVisible()
+    await navigateViaFooterTab(page, 'nav-federations', 'federations-page', /#\/federations$/)
   })
 })
