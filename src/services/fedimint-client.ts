@@ -92,19 +92,11 @@ class FedimintClientAdapter {
     applyClientNameToWallet(wallet, sdkClientName)
 
     const isKnownWallet = this.knownWalletNames.has(walletName)
-    let ready = false
-
-    if (isKnownWallet) {
-      ready = await this.tryOpenWallet(wallet, walletName, sdkClientName)
-      if (!ready) {
-        ready = await this.tryJoinFederation(wallet, inviteCode, walletName, sdkClientName)
-      }
-    } else {
-      ready = await this.tryJoinFederation(wallet, inviteCode, walletName, sdkClientName)
-      if (!ready) {
-        ready = await this.tryOpenWallet(wallet, walletName, sdkClientName)
-      }
-    }
+    const ready = isKnownWallet
+      ? (await this.tryOpenWallet(wallet, walletName, sdkClientName)) ||
+        (await this.tryJoinFederation(wallet, inviteCode, walletName, sdkClientName))
+      : (await this.tryJoinFederation(wallet, inviteCode, walletName, sdkClientName)) ||
+        (await this.tryOpenWallet(wallet, walletName, sdkClientName))
 
     if (!ready) {
       throw new Error(`Unable to open or join wallet '${walletName}'`)
