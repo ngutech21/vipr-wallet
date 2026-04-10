@@ -49,7 +49,7 @@
     "@eslint/js": "^9.39.3",
     "@pinia/testing": "^1.0.3",
     "@playwright/test": "1.57.0",
-    "@quasar/app-vite": "2.4.0",
+    "@quasar/app-vite": "2.6.0",
     "@quasar/cli": "^2.5.0",
     "@quasar/vite-plugin": "^1.11.0",
     "@types/node": "^25.6.0",
