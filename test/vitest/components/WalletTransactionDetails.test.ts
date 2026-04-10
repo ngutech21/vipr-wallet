@@ -24,7 +24,7 @@ const createMockTransaction = (overrides: Partial<WalletTransaction> = {}): Wall
 describe('WalletTransactionDetails.vue', () => {
   let wrapper: VueWrapper
   let pinia: TestingPinia
-  let mockWriteText: ReturnType<typeof vi.fn>
+  let mockWriteText: ReturnType<typeof vi.fn<(data: string) => Promise<void>>>
 
   // Mock Notify
   const mockNotify = vi.fn()
@@ -71,7 +71,7 @@ describe('WalletTransactionDetails.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Mock clipboard API
-    mockWriteText = vi.fn()
+    mockWriteText = vi.fn<(data: string) => Promise<void>>().mockResolvedValue(undefined)
     vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(mockWriteText)
   })
 
