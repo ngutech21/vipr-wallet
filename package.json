@@ -49,13 +49,13 @@
     "@eslint/js": "^9.39.3",
     "@pinia/testing": "^1.0.3",
     "@playwright/test": "1.57.0",
-    "@quasar/app-vite": "2.4.0",
+    "@quasar/app-vite": "2.6.0",
     "@quasar/cli": "^2.5.0",
     "@quasar/vite-plugin": "^1.11.0",
     "@types/node": "^25.6.0",
     "@vitejs/plugin-vue": "^6.0.1",
-    "@vitest/coverage-v8": "^3.2.4",
-    "@vitest/ui": "^3.2.4",
+    "@vitest/coverage-v8": "^4.1.4",
+    "@vitest/ui": "^4.1.4",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.7.0",
     "@vue/test-utils": "^2.4.6",
@@ -84,7 +84,7 @@
     "workbox-strategies": "^7.4.0"
   },
   "engines": {
-    "node": ">=20.19.0",
+    "node": ">=24.0.0",
     "npm": ">= 6.13.4",
     "yarn": ">= 1.21.1"
   },

@@ -73,7 +73,7 @@ export default defineConfig((_ctx) => {
 
       target: {
         browser: ['es2022', 'firefox115', 'chrome115', 'safari15'],
-        node: 'node20',
+        node: 'node24',
       },
 
       typescript: {

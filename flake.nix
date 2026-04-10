@@ -50,7 +50,7 @@
             # pkgs.which
             # pkgs.git
 
-            nodejs_22
+            nodejs_24
             nodePackages.pnpm
             nodePackages.typescript
             mkcert
