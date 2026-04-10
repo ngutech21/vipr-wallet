@@ -6,12 +6,18 @@ import { useAppStore } from 'src/stores/app'
 import { usePwaUpdateStore } from 'src/stores/pwa-update'
 import { defineBoot } from '#q-app/wrappers'
 import { Loading } from 'quasar'
+import type { RouteRecordNameGeneric, Router } from 'vue-router'
 import { logger } from 'src/services/logger'
 
 const STARTUP_WIZARD_PATH = '/startup-wizard'
 let pwaUpdateHooksRegistered = false
 
-function isStartupWizardRoute(route: { path?: string; name?: string | symbol | null }): boolean {
+type RouteLike = {
+  path?: string | undefined
+  name?: RouteRecordNameGeneric | undefined
+}
+
+function isStartupWizardRoute(route: RouteLike): boolean {
   return route.path === STARTUP_WIZARD_PATH || route.name === STARTUP_WIZARD_PATH
 }
 
@@ -28,10 +34,7 @@ function requiresStartupWizard(
 }
 
 function registerPwaUpdateHooks(
-  router: {
-    currentRoute: { value: { name?: string | symbol | null } }
-    afterEach?: (guard: (to: { name?: string | symbol | null }) => void) => void
-  },
+  router: Pick<Router, 'currentRoute' | 'afterEach'>,
   pwaUpdateStore: {
     checkForUpdatesForeground: () => Promise<unknown>
     resumePendingApplyIfAny: (routeName: unknown) => Promise<void>

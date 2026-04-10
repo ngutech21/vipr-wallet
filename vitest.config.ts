@@ -24,7 +24,9 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
     alias: {
+      '#q-app/wrappers': path.resolve(__dirname, './test/vitest/mocks/q-app-wrappers.ts'),
       '@': path.resolve(__dirname, './src'),
+      components: path.resolve(__dirname, './src/components'),
       src: path.resolve(__dirname, './src'),
     },
   },

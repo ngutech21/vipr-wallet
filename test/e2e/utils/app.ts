@@ -20,21 +20,19 @@ export async function navigateViaFooterTab(
 ): Promise<void> {
   const tab = page.getByTestId(tabTestId)
   const destination = page.getByTestId(destinationTestId)
+  const assertNavigationSucceeded = async () => {
+    await expect(page).toHaveURL(urlPattern, { timeout: 5_000 })
+    await expect(destination).toBeVisible({ timeout: 10_000 })
+  }
 
   await expect(tab).toBeVisible({ timeout: 15_000 })
 
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+  try {
     await tab.click()
-
-    try {
-      await expect(page).toHaveURL(urlPattern, { timeout: 5_000 })
-      await expect(destination).toBeVisible({ timeout: 10_000 })
-      return
-    } catch (error) {
-      if (attempt === 1) {
-        throw error
-      }
-    }
+    await assertNavigationSucceeded()
+  } catch {
+    await tab.click()
+    await assertNavigationSucceeded()
   }
 }
 
