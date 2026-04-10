@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createMemoryHistory, createRouter, type Router, type RouteRecordRaw } from 'vue-router'
 
-// Define routes manually to match unplugin-vue-router structure
+// Define routes manually to match the generated file-based route names
 const testRoutes: RouteRecordRaw[] = [
   { path: '/', name: '/', component: { template: '<div>Home</div>' } },
   { path: '/settings', name: '/settings/', component: { template: '<div>Settings</div>' } },

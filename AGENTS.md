@@ -57,7 +57,7 @@ Playwright is configured in `playwright.config.ts` (tests live under `test/e2e`)
 - `@getalby/bitcoin-connect` & `@getalby/lightning-tools` - Lightning connectivity
 - `@nostr-dev-kit/ndk` - Nostr protocol integration
 - `@vueuse/core` - Vue composition utilities
-- `@unplugin-vue-router` - Routing
+- `vue-router` - Routing with integrated file-based route generation
 
 ### Core Store Architecture
 
