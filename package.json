@@ -63,7 +63,7 @@
     "eslint": "9.39.2",
     "eslint-plugin-vue": "^10.8.0",
     "globals": "^17.4.0",
-    "lighthouse": "^13.0.3",
+    "lighthouse": "^13.1.0",
     "pinia": "^3.0.4",
     "prettier": "^3.8.2",
     "tsx": "^4.21.0",
