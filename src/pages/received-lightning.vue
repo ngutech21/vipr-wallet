@@ -18,10 +18,12 @@ meta:
         data-testid="received-lightning-close-btn"
       />
 
-      <div class="text-center text-white">
+      <div class="text-center text-white" data-testid="received-lightning-success-state">
         <q-icon name="check_circle" size="4em" />
-        <div class="text-h4 q-mt-md">Payment Received!</div>
-        <div class="text-h3 q-mt-lg">{{ formatNumber(amount) }} sats</div>
+        <div class="text-h4 q-mt-md" data-testid="received-lightning-title">Payment Received!</div>
+        <div class="text-h3 q-mt-lg" data-testid="received-lightning-amount">
+          {{ formatNumber(amount) }} sats
+        </div>
         <q-btn
           flat
           color="white"

@@ -44,7 +44,7 @@ meta:
                 :icon="button.icon"
                 :label="button.label"
                 @click="button.handler"
-                :data-testid="`receive-keypad-btn-${index}`"
+                :data-testid="button.testId"
               />
             </div>
           </div>
@@ -70,7 +70,7 @@ meta:
 
       <!-- QR Code Card -->
       <div class="column items-center justify-center">
-        <q-card v-if="qrData" class="qr-card">
+        <q-card v-if="qrData" class="qr-card" data-testid="receive-qr-container">
           <q-card-section class="qr-container">
             <qrcode-vue :value="qrData" level="M" render-as="svg" :size="0" class="responsive-qr" />
           </q-card-section>

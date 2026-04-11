@@ -41,7 +41,9 @@
     </q-dialog>
 
     <div class="text-white q-pa-md dark-bg" style="width: 100%">
-      <div class="text-h4 text-center">{{ Math.ceil(totalBalance).toLocaleString() }} sats</div>
+      <div class="text-h4 text-center" data-testid="home-balance">
+        {{ Math.ceil(totalBalance).toLocaleString() }} sats
+      </div>
 
       <div class="text-center" v-if="federationStore.selectedFederation">
         <q-chip

@@ -72,7 +72,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       await navigateViaFooterTab(page, 'nav-home', 'home-page', /#\/$/)
 
       // Verify initial balance is 0
-      await expect(page.locator('.text-h4')).toContainText('0 sats')
+      await expect(page.getByTestId('home-balance')).toContainText('0 sats')
 
       // Verify the selected federation indicator is visible
       await expect(page.getByTestId('home-selected-federation-chip')).toBeVisible()
@@ -98,10 +98,10 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
     let invoice: string
     await test.step('Create invoice for 1000 sats', async () => {
       // Enter amount using keypad
-      await page.locator('[data-testid^="receive-keypad-btn-"]', { hasText: '1' }).first().click()
-      await page.locator('[data-testid^="receive-keypad-btn-"]', { hasText: '0' }).first().click()
-      await page.locator('[data-testid^="receive-keypad-btn-"]', { hasText: '0' }).first().click()
-      await page.locator('[data-testid^="receive-keypad-btn-"]', { hasText: '0' }).first().click()
+      await page.getByTestId('receive-keypad-btn-1').click()
+      await page.getByTestId('receive-keypad-btn-0').click()
+      await page.getByTestId('receive-keypad-btn-0').click()
+      await page.getByTestId('receive-keypad-btn-0').click()
 
       // Verify amount is 1000
       const amountInput = page.getByTestId('amount-input')
@@ -114,7 +114,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       await createInvoiceButton.click()
 
       // Wait for QR code to appear
-      await expect(page.locator('.qr-card')).toBeVisible({ timeout: 15_000 })
+      await expect(page.getByTestId('receive-qr-container')).toBeVisible({ timeout: 15_000 })
 
       // Extract invoice from the input field
       const invoiceInput = page.getByTestId('receive-invoice-input')
@@ -131,9 +131,12 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
 
       // Wait for success message
       await expect(page.getByTestId('received-lightning-page')).toBeVisible({ timeout: 60_000 })
+      await expect(page.getByTestId('received-lightning-success-state')).toBeVisible({
+        timeout: 60_000,
+      })
       await expect(page.getByTestId('back-home-button')).toBeVisible({ timeout: 60_000 })
-      await expect(page.getByText('Payment Received!')).toBeVisible()
-      await expect(page.getByText('1,000 sats')).toBeVisible()
+      await expect(page.getByTestId('received-lightning-title')).toHaveText('Payment Received!')
+      await expect(page.getByTestId('received-lightning-amount')).toHaveText('1,000 sats')
     })
 
     // Step 8: Verify balance updated
@@ -143,7 +146,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       await expect(page.getByTestId('home-page')).toBeVisible({ timeout: 20_000 })
 
       // Verify balance shows 1000 sats
-      await expect(page.locator('.text-h4')).toContainText('1,000 sats')
+      await expect(page.getByTestId('home-balance')).toContainText('1,000 sats')
     })
   })
 })

@@ -12,6 +12,7 @@
         caption="Lightning wallet connection settings"
         header-class="settings-header"
         expand-icon-class="text-primary"
+        data-testid="settings-bitcoin-wallet-section"
       >
         <q-card>
           <q-card-section>
@@ -62,6 +63,7 @@
         caption="Manage your Nostr relays"
         header-class="settings-header"
         expand-icon-class="text-primary"
+        data-testid="settings-nostr-section"
       >
         <q-card>
           <q-card-section>

@@ -25,8 +25,8 @@ test.describe('Smoke Tests', () => {
     await navigateViaFooterTab(page, 'nav-settings', 'settings-page', /#\/settings$/)
 
     // Verify settings page content is loaded
-    await expect(page.locator('text=Bitcoin Wallet')).toBeVisible()
-    await expect(page.locator('text=Nostr Settings')).toBeVisible()
+    await expect(page.getByTestId('settings-bitcoin-wallet-section')).toBeVisible()
+    await expect(page.getByTestId('settings-nostr-section')).toBeVisible()
   })
 
   test('home navigation works', async ({ page }) => {

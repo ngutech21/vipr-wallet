@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 
 export interface KeypadButton {
+  testId: string
   label?: string
   icon?: string
   handler: () => void
@@ -56,24 +57,24 @@ export function useNumericInput(initialValue = 0) {
    */
   const keypadButtons = computed<KeypadButton[]>(() => [
     // First row (1-3)
-    { label: '1', handler: () => appendDigit(1) },
-    { label: '2', handler: () => appendDigit(2) },
-    { label: '3', handler: () => appendDigit(3) },
+    { testId: 'receive-keypad-btn-1', label: '1', handler: () => appendDigit(1) },
+    { testId: 'receive-keypad-btn-2', label: '2', handler: () => appendDigit(2) },
+    { testId: 'receive-keypad-btn-3', label: '3', handler: () => appendDigit(3) },
 
     // Second row (4-6)
-    { label: '4', handler: () => appendDigit(4) },
-    { label: '5', handler: () => appendDigit(5) },
-    { label: '6', handler: () => appendDigit(6) },
+    { testId: 'receive-keypad-btn-4', label: '4', handler: () => appendDigit(4) },
+    { testId: 'receive-keypad-btn-5', label: '5', handler: () => appendDigit(5) },
+    { testId: 'receive-keypad-btn-6', label: '6', handler: () => appendDigit(6) },
 
     // Third row (7-9)
-    { label: '7', handler: () => appendDigit(7) },
-    { label: '8', handler: () => appendDigit(8) },
-    { label: '9', handler: () => appendDigit(9) },
+    { testId: 'receive-keypad-btn-7', label: '7', handler: () => appendDigit(7) },
+    { testId: 'receive-keypad-btn-8', label: '8', handler: () => appendDigit(8) },
+    { testId: 'receive-keypad-btn-9', label: '9', handler: () => appendDigit(9) },
 
     // Fourth row (special buttons and 0)
-    { icon: 'clear', handler: clear },
-    { label: '0', handler: () => appendDigit(0) },
-    { icon: 'backspace', handler: deleteLastDigit },
+    { testId: 'receive-keypad-btn-clear', icon: 'clear', handler: clear },
+    { testId: 'receive-keypad-btn-0', label: '0', handler: () => appendDigit(0) },
+    { testId: 'receive-keypad-btn-backspace', icon: 'backspace', handler: deleteLastDigit },
   ])
 
   return {
