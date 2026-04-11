@@ -27,8 +27,8 @@
     "final-check": "pnpm format && pnpm lint && pnpm typecheck && pnpm test:unit:ci"
   },
   "dependencies": {
-    "@fedimint/core": "0.0.0-canary-a8098002df1b245d2f26b5a14346dbfcbd3fb620",
-    "@fedimint/transport-web": "0.0.0-canary-a8098002df1b245d2f26b5a14346dbfcbd3fb620",
+    "@fedimint/core": "0.0.0-canary-50fca06f9c3a3dc13e16b2f3440e66e852dc0d35",
+    "@fedimint/transport-web": "0.0.0-canary-50fca06f9c3a3dc13e16b2f3440e66e852dc0d35",
     "@getalby/bitcoin-connect": "^3.12.2",
     "@getalby/lightning-tools": "^8.1.0",
     "@nostr-dev-kit/ndk": "^3.0.3",

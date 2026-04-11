@@ -26,17 +26,6 @@ const INVALID_MNEMONIC_RESPONSE_MESSAGE = 'Invalid mnemonic response'
 const MNEMONIC_EMPTY_MESSAGE = 'Mnemonic is empty'
 const FEDIMINT_CLIENT_NAME_NAMESPACE = '6ba7b811-9dad-11d1-80b4-00c04fd430c8'
 
-class MnemonicExtractionError extends Error {
-  constructor(
-    public readonly source: 'get' | 'generate' | 'set',
-    public readonly shape: string,
-    message: string,
-  ) {
-    super(message)
-    this.name = 'MnemonicExtractionError'
-  }
-}
-
 class FedimintClientAdapter {
   private director: WalletDirector | null = null
   private activeWallet: FedimintWallet | null = null
@@ -121,15 +110,29 @@ class FedimintClientAdapter {
       throw new Error('Wallet director is not initialized')
     }
 
-    return extractMnemonicWords(await this.director.getMnemonic(), 'get')
+    return normalizeMnemonicWords(await this.director.getMnemonic(), 'get')
+  }
+
+  async hasMnemonicSet(): Promise<boolean> {
+    await this.init()
+
+    if (this.director == null) {
+      throw new Error('Wallet director is not initialized')
+    }
+
+    return await this.director.hasMnemonicSet()
   }
 
   async getMnemonicIfSet(): Promise<string[] | null> {
+    if (!(await this.hasMnemonicSet())) {
+      return null
+    }
+
     try {
       return await this.getMnemonic()
     } catch (error) {
-      if (isRecoverableMnemonicReadError(error)) {
-        logger.warn('Mnemonic not set yet; returning null for read-only check', {
+      if (isMissingMnemonicError(error)) {
+        logger.warn('Mnemonic missing after positive hasMnemonicSet() check', {
           reason: getErrorMessage(error),
         })
         return null
@@ -145,7 +148,7 @@ class FedimintClientAdapter {
       throw new Error('Wallet director is not initialized')
     }
 
-    return extractMnemonicWords(await this.director.generateMnemonic(), 'generate')
+    return normalizeMnemonicWords(await this.director.generateMnemonic(), 'generate')
   }
 
   async setMnemonic(words: string[]): Promise<void> {
@@ -155,7 +158,7 @@ class FedimintClientAdapter {
       throw new Error('Wallet director is not initialized')
     }
 
-    const normalizedWords = extractMnemonicWords(words, 'set')
+    const normalizedWords = normalizeMnemonicWords(words, 'set')
     const success = await this.director.setMnemonic(normalizedWords)
     if (!success) {
       throw new Error('Failed to set wallet mnemonic')
@@ -163,21 +166,21 @@ class FedimintClientAdapter {
   }
 
   async ensureMnemonic(): Promise<EnsureMnemonicResult> {
-    try {
-      const existingWords = await this.getMnemonic()
-      if (existingWords.length > 0) {
+    if (await this.hasMnemonicSet()) {
+      try {
         return {
-          words: existingWords,
+          words: await this.getMnemonic(),
           created: false,
         }
+      } catch (error) {
+        if (!isMissingMnemonicError(error)) {
+          throw error
+        }
+
+        logger.warn('Mnemonic missing after positive hasMnemonicSet() check -> generating', {
+          reason: getErrorMessage(error),
+        })
       }
-    } catch (error) {
-      if (!isRecoverableMnemonicReadError(error)) {
-        throw error
-      }
-      logger.warn('Mnemonic missing/invalid -> generating', {
-        reason: getErrorMessage(error),
-      })
     }
 
     const generatedWords = await this.generateMnemonic()
@@ -351,60 +354,22 @@ function normalizePreviewResult(value: unknown): PreviewFederationResponse {
   }
 }
 
-function extractMnemonicWords(value: unknown, source: 'get' | 'generate' | 'set'): string[] {
-  const shape = getMnemonicValueShape(value)
-  let words: string[] = []
-
-  if (Array.isArray(value)) {
-    words = value
-      .map((word) => (typeof word === 'string' ? word.trim() : ''))
-      .filter((word) => word !== '')
-  } else if (typeof value === 'string') {
-    words = value
-      .split(/\s+/)
-      .map((word) => word.trim())
-      .filter((word) => word !== '')
-  } else if (value != null && typeof value === 'object' && 'mnemonic' in value) {
-    const mnemonicValue = (value as Record<string, unknown>).mnemonic
-    words = extractMnemonicWords(mnemonicValue, source)
+function normalizeMnemonicWords(value: unknown, source: 'get' | 'generate' | 'set'): string[] {
+  if (!Array.isArray(value)) {
+    logger.warn('Mnemonic extraction failed', { source, shape: typeof value })
+    throw new Error(INVALID_MNEMONIC_RESPONSE_MESSAGE)
   }
 
+  const words = value
+    .map((word) => (typeof word === 'string' ? word.trim() : ''))
+    .filter((word) => word !== '')
+
   if (words.length === 0) {
-    logger.warn('Mnemonic extraction failed', { source, shape })
-    throw new MnemonicExtractionError(
-      source,
-      shape,
-      Array.isArray(value) ? MNEMONIC_EMPTY_MESSAGE : INVALID_MNEMONIC_RESPONSE_MESSAGE,
-    )
+    logger.warn('Mnemonic extraction failed', { source, shape: 'array-empty' })
+    throw new Error(MNEMONIC_EMPTY_MESSAGE)
   }
 
   return words
-}
-
-function getMnemonicValueShape(value: unknown): string {
-  if (Array.isArray(value)) {
-    return 'array'
-  }
-  if (typeof value === 'string') {
-    return 'string'
-  }
-  if (value != null && typeof value === 'object') {
-    if ('mnemonic' in value) {
-      const mnemonic = (value as Record<string, unknown>).mnemonic
-      if (Array.isArray(mnemonic)) {
-        return 'object:mnemonic-array'
-      }
-      if (typeof mnemonic === 'string') {
-        return 'object:mnemonic-string'
-      }
-      return 'object:mnemonic-other'
-    }
-    return 'object'
-  }
-  if (value === null) {
-    return 'null'
-  }
-  return typeof value
 }
 
 function applyClientNameToWallet(wallet: FedimintWallet, clientName: string): void {
@@ -438,18 +403,6 @@ function getErrorMessage(error: unknown): string {
 
 function isMissingMnemonicError(error: unknown): boolean {
   return /no wallet mnemonic set/i.test(getErrorMessage(error))
-}
-
-function isInvalidMnemonicReadError(error: unknown): boolean {
-  return (
-    error instanceof MnemonicExtractionError &&
-    error.source === 'get' &&
-    /invalid mnemonic response|mnemonic is empty/i.test(error.message)
-  )
-}
-
-function isRecoverableMnemonicReadError(error: unknown): boolean {
-  return isMissingMnemonicError(error) || isInvalidMnemonicReadError(error)
 }
 
 function isExistingClientError(error: unknown): boolean {

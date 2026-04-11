@@ -9,6 +9,7 @@ type MockWalletLike = {
 const UUID_V5_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 const coreMockState = vi.hoisted(() => ({
+  hasMnemonicSetValue: false,
   getMnemonicValue: new Error(
     'No wallet mnemonic set. Please set or generate a mnemonic first.',
   ) as unknown,
@@ -94,6 +95,7 @@ vi.mock('@fedimint/core', () => {
       }),
     )
     createWallet = vi.fn(() => Promise.resolve(new MockFedimintWallet(this._client)))
+    hasMnemonicSet = vi.fn(() => Promise.resolve(coreMockState.hasMnemonicSetValue))
     getMnemonic = vi.fn(() => {
       const value = coreMockState.getMnemonicValue
       if (value instanceof Error) {
@@ -123,6 +125,7 @@ describe('fedimint client adapter', () => {
   beforeEach(() => {
     fedimintClient.reset()
     vi.clearAllMocks()
+    coreMockState.hasMnemonicSetValue = false
     coreMockState.getMnemonicValue = new Error(
       'No wallet mnemonic set. Please set or generate a mnemonic first.',
     )
@@ -232,7 +235,8 @@ describe('fedimint client adapter', () => {
   })
 
   it('returns existing mnemonic without generating', async () => {
-    coreMockState.getMnemonicValue = { mnemonic: 'alpha beta gamma delta' }
+    coreMockState.hasMnemonicSetValue = true
+    coreMockState.getMnemonicValue = ['alpha', 'beta', 'gamma', 'delta']
 
     const result = await fedimintClient.ensureMnemonic()
 
@@ -240,7 +244,7 @@ describe('fedimint client adapter', () => {
     expect(result.words).toEqual(['alpha', 'beta', 'gamma', 'delta'])
   })
 
-  it('auto-generates mnemonic when getMnemonic reports missing', async () => {
+  it('auto-generates mnemonic when hasMnemonicSet reports missing', async () => {
     const result = await fedimintClient.ensureMnemonic()
 
     expect(result.created).toBe(true)
@@ -248,9 +252,9 @@ describe('fedimint client adapter', () => {
     expect(coreMockState.setMnemonicSpy).not.toHaveBeenCalled()
   })
 
-  it('auto-generates mnemonic when getMnemonic returns invalid shape', async () => {
-    coreMockState.getMnemonicValue = { unexpected: true }
-    coreMockState.generateMnemonicValue = { mnemonic: 'sun moon star' }
+  it('auto-generates mnemonic when hasMnemonicSet is stale', async () => {
+    coreMockState.hasMnemonicSetValue = true
+    coreMockState.generateMnemonicValue = ['sun', 'moon', 'star']
 
     const result = await fedimintClient.ensureMnemonic()
 
@@ -267,6 +271,13 @@ describe('fedimint client adapter', () => {
   })
 
   it('getMnemonicIfSet returns null for missing mnemonic', async () => {
+    const result = await fedimintClient.getMnemonicIfSet()
+
+    expect(result).toBeNull()
+  })
+
+  it('getMnemonicIfSet returns null when hasMnemonicSet is stale', async () => {
+    coreMockState.hasMnemonicSetValue = true
     coreMockState.getMnemonicValue = new Error(
       'No wallet mnemonic set. Please set or generate a mnemonic first.',
     )
@@ -276,15 +287,15 @@ describe('fedimint client adapter', () => {
     expect(result).toBeNull()
   })
 
-  it('getMnemonicIfSet returns null for invalid mnemonic shape', async () => {
+  it('getMnemonicIfSet rethrows invalid mnemonic responses', async () => {
+    coreMockState.hasMnemonicSetValue = true
     coreMockState.getMnemonicValue = { unexpected: true }
 
-    const result = await fedimintClient.getMnemonicIfSet()
-
-    expect(result).toBeNull()
+    await expect(fedimintClient.getMnemonicIfSet()).rejects.toThrow('Invalid mnemonic response')
   })
 
   it('getMnemonicIfSet rethrows non-recoverable errors', async () => {
+    coreMockState.hasMnemonicSetValue = true
     coreMockState.getMnemonicValue = new Error('transport exploded')
 
     await expect(fedimintClient.getMnemonicIfSet()).rejects.toThrow('transport exploded')
