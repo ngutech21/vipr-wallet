@@ -71,11 +71,15 @@ meta:
         <q-card flat class="glass-effect full-width" style="max-width: 512px">
           <q-card-section>
             <div class="text-center">
-              <div class="text-h6 q-mb-sm">
+              <div class="text-h6 q-mb-sm" data-testid="receive-onchain-status-text">
                 {{ depositStatusText }}
                 <q-spinner v-if="isWaitingForDeposit" size="20px" class="q-ml-sm" />
               </div>
-              <div v-if="confirmationInfo" class="text-caption text-grey-7">
+              <div
+                v-if="confirmationInfo"
+                class="text-caption text-grey-7"
+                data-testid="receive-onchain-confirmation-info"
+              >
                 {{ confirmationInfo }}
               </div>
             </div>
