@@ -44,7 +44,13 @@
       <div class="text-h4 text-center">{{ Math.ceil(totalBalance).toLocaleString() }} sats</div>
 
       <div class="text-center" v-if="federationStore.selectedFederation">
-        <q-chip class="q-mt-sm" color="white" text-color="primary" outline>
+        <q-chip
+          class="q-mt-sm"
+          color="white"
+          text-color="primary"
+          outline
+          data-testid="home-selected-federation-chip"
+        >
           <q-icon name="account_balance" class="q-mr-sm" />
           {{ federationStore.selectedFederation?.title }}
         </q-chip>

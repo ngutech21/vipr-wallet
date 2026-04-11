@@ -74,8 +74,8 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       // Verify initial balance is 0
       await expect(page.locator('.text-h4')).toContainText('0 sats')
 
-      // Verify federation chip is visible
-      await expect(page.locator('.q-chip')).toBeVisible()
+      // Verify the selected federation indicator is visible
+      await expect(page.getByTestId('home-selected-federation-chip')).toBeVisible()
     })
 
     // Step 5: Start receive flow
