@@ -113,28 +113,11 @@ class FedimintClientAdapter {
     return normalizeMnemonicWords(await this.director.getMnemonic(), 'get')
   }
 
-  async hasMnemonicSet(): Promise<boolean> {
-    await this.init()
-
-    if (this.director == null) {
-      throw new Error('Wallet director is not initialized')
-    }
-
-    return await this.director.hasMnemonicSet()
-  }
-
   async getMnemonicIfSet(): Promise<string[] | null> {
-    if (!(await this.hasMnemonicSet())) {
-      return null
-    }
-
     try {
       return await this.getMnemonic()
     } catch (error) {
       if (isMissingMnemonicError(error)) {
-        logger.warn('Mnemonic missing after positive hasMnemonicSet() check', {
-          reason: getErrorMessage(error),
-        })
         return null
       }
       throw error
@@ -166,20 +149,11 @@ class FedimintClientAdapter {
   }
 
   async ensureMnemonic(): Promise<EnsureMnemonicResult> {
-    if (await this.hasMnemonicSet()) {
-      try {
-        return {
-          words: await this.getMnemonic(),
-          created: false,
-        }
-      } catch (error) {
-        if (!isMissingMnemonicError(error)) {
-          throw error
-        }
-
-        logger.warn('Mnemonic missing after positive hasMnemonicSet() check -> generating', {
-          reason: getErrorMessage(error),
-        })
+    const existingWords = await this.getMnemonicIfSet()
+    if (existingWords != null) {
+      return {
+        words: existingWords,
+        created: false,
       }
     }
 

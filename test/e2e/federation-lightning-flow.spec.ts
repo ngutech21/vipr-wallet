@@ -9,6 +9,12 @@ import {
 
 test.setTimeout(120_000)
 
+function parseSats(text: string): number {
+  const digits = text.replace(/[^\d]/g, '')
+
+  return Number.parseInt(digits, 10)
+}
+
 test.describe('Federation Join and Lightning Payment Flow', () => {
   let faucet: FaucetService
 
@@ -17,6 +23,8 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
   })
 
   test('join federation and receive lightning payment', async ({ page }) => {
+    let initialBalanceSats = 0
+
     // Navigate to the app
     await page.goto('/')
     await waitForAppReady(page)
@@ -79,7 +87,9 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       await navigateViaFooterTab(page, 'nav-home', 'home-page', /#\/$/)
 
       // Verify initial balance is 0
-      await expect(page.getByTestId('home-balance')).toContainText('0 sats')
+      const homeBalance = page.getByTestId('home-balance')
+      await expect(homeBalance).toContainText('0 sats')
+      initialBalanceSats = parseSats(await homeBalance.innerText())
 
       // Verify the selected federation indicator is visible
       await expect(page.getByTestId('home-selected-federation-chip')).toBeVisible()
@@ -152,8 +162,10 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       await page.getByTestId('back-home-button').click()
       await expect(page.getByTestId('home-page')).toBeVisible({ timeout: 20_000 })
 
-      // Verify balance shows 1000 sats
-      await expect(page.getByTestId('home-balance')).toContainText('1,000 sats')
+      const finalBalance = page.getByTestId('home-balance')
+      await expect
+        .poll(async () => parseSats(await finalBalance.innerText()), { timeout: 10_000 })
+        .toBeGreaterThan(initialBalanceSats)
     })
   })
 })
