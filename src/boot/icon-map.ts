@@ -47,6 +47,7 @@ import {
   matVerified,
   matVisibility,
   matWarning,
+  matCurrencyBitcoin,
 } from '@quasar/extras/material-icons'
 
 const iconMap: Record<string, string> = {
@@ -96,6 +97,7 @@ const iconMap: Record<string, string> = {
   verified: matVerified,
   visibility: matVisibility,
   warning: matWarning,
+  currency_bitcoin: matCurrencyBitcoin,
 }
 
 export default defineBoot(() => {

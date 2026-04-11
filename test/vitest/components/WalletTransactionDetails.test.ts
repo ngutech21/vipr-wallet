@@ -99,11 +99,11 @@ describe('WalletTransactionDetails.vue', () => {
   })
 
   describe('Transaction Type Display', () => {
-    it('should display "Deposited" for deposit type with positive color', () => {
+    it('should display "Bitcoin deposit" for deposit type with positive color', () => {
       const transaction = createMockTransaction({ type: 'deposit' })
       wrapper = createWrapper(transaction)
 
-      expect(wrapper.text()).toContain('Deposited')
+      expect(wrapper.text()).toContain('Bitcoin deposit')
       expect(wrapper.html()).toContain('text-positive')
     })
 
@@ -145,49 +145,50 @@ describe('WalletTransactionDetails.vue', () => {
   })
 
   describe('Status Badge', () => {
-    it('should show positive color for Confirmed status', () => {
+    it('should show positive color for confirmed deposits', () => {
       const transaction = createMockTransaction({ outcome: 'Confirmed' })
       wrapper = createWrapper(transaction)
 
       const badge = wrapper.find('.status-badge')
       expect(badge.exists()).toBe(true)
-      expect(wrapper.text()).toContain('Confirmed')
+      expect(wrapper.text()).toContain('Bitcoin received')
     })
 
-    it('should show positive color for Claimed status', () => {
+    it('should show positive color for claimed deposits', () => {
       const transaction = createMockTransaction({ outcome: 'Claimed' })
       wrapper = createWrapper(transaction)
 
-      expect(wrapper.text()).toContain('Claimed')
+      expect(wrapper.text()).toContain('Bitcoin received')
     })
 
-    it('should show warning color for WaitingForTransaction status', () => {
+    it('should show warning color for deposits waiting for a transaction', () => {
       const transaction = createMockTransaction({ outcome: 'WaitingForTransaction' })
       wrapper = createWrapper(transaction)
 
-      expect(wrapper.text()).toContain('Waiting For Transaction')
+      expect(wrapper.text()).toContain('Waiting for Bitcoin')
     })
 
-    it('should show warning color for WaitingForConfirmation status', () => {
+    it('should show warning color for detected transactions waiting on confirmations', () => {
       const transaction = createMockTransaction({ outcome: 'WaitingForConfirmation' })
       wrapper = createWrapper(transaction)
 
-      expect(wrapper.text()).toContain('Waiting For Confirmation')
+      expect(wrapper.text()).toContain('Transaction detected')
     })
 
     it('should show negative color for Failed status', () => {
       const transaction = createMockTransaction({ outcome: 'Failed' })
       wrapper = createWrapper(transaction)
 
-      expect(wrapper.text()).toContain('Failed')
+      expect(wrapper.text()).toContain('Deposit failed')
     })
 
-    it('should format outcome text correctly (camelCase to spaced)', () => {
-      const transaction = createMockTransaction({ outcome: 'WaitingForConfirmation' })
-      wrapper = createWrapper(transaction)
+    it('should show a friendly pending label when the deposit has no outcome yet', () => {
+      const { outcome: _removed, ...transactionWithoutOutcome } = createMockTransaction({
+        amountMsats: 0,
+      })
+      wrapper = createWrapper(transactionWithoutOutcome as WalletTransaction)
 
-      expect(wrapper.text()).toContain('Waiting For Confirmation')
-      expect(wrapper.text()).not.toContain('WaitingForConfirmation')
+      expect(wrapper.text()).toContain('Waiting for Bitcoin')
     })
 
     it('should not show status badge when outcome is undefined', () => {
@@ -196,7 +197,8 @@ describe('WalletTransactionDetails.vue', () => {
       wrapper = createWrapper(transaction)
 
       const badge = wrapper.find('.status-badge')
-      expect(badge.exists()).toBe(false)
+      expect(badge.exists()).toBe(true)
+      expect(badge.text()).toContain('Waiting for Bitcoin')
     })
 
     it('should return grey color for empty string status', () => {
@@ -204,9 +206,10 @@ describe('WalletTransactionDetails.vue', () => {
       const transaction = createMockTransaction({ outcome: '' as any })
       wrapper = createWrapper(transaction)
 
-      // Badge should still exist but with grey color
       const badge = wrapper.find('.status-badge')
-      expect(badge.exists()).toBe(false)
+      expect(badge.exists()).toBe(true)
+      expect(badge.text()).toContain('Waiting for Bitcoin')
+      expect(badge.attributes('class')).toContain('bg-warning')
     })
   })
 
@@ -581,14 +584,14 @@ describe('WalletTransactionDetails.vue', () => {
         const transaction = createMockTransaction({ outcome: 'WaitingForConfirmation' })
         wrapper = createWrapper(transaction)
 
-        expect(wrapper.text()).toContain('Waiting For Confirmation')
+        expect(wrapper.text()).toContain('Transaction detected')
       })
 
       it('should not modify single word outcomes', () => {
         const transaction = createMockTransaction({ outcome: 'Confirmed' })
         wrapper = createWrapper(transaction)
 
-        expect(wrapper.text()).toContain('Confirmed')
+        expect(wrapper.text()).toContain('Bitcoin received')
       })
     })
 
@@ -598,12 +601,12 @@ describe('WalletTransactionDetails.vue', () => {
         const transaction = transactionWithoutOutcome as WalletTransaction
         wrapper = createWrapper(transaction)
 
-        // Badge shouldn't exist for undefined outcome
         const badge = wrapper.find('.status-badge')
-        expect(badge.exists()).toBe(false)
+        expect(badge.exists()).toBe(true)
+        expect(badge.attributes('class')).toContain('bg-warning')
       })
 
-      it('should return positive color for Confirmed', () => {
+      it('should return positive color for confirmed deposits', () => {
         const transaction = createMockTransaction({ outcome: 'Confirmed' })
         wrapper = createWrapper(transaction)
 
@@ -613,7 +616,7 @@ describe('WalletTransactionDetails.vue', () => {
         expect(badge.attributes('class')).toContain('bg-positive')
       })
 
-      it('should return positive color for Claimed', () => {
+      it('should return positive color for claimed deposits', () => {
         const transaction = createMockTransaction({ outcome: 'Claimed' })
         wrapper = createWrapper(transaction)
 
@@ -621,7 +624,7 @@ describe('WalletTransactionDetails.vue', () => {
         expect(badge.attributes('class')).toContain('bg-positive')
       })
 
-      it('should return warning color for WaitingForTransaction', () => {
+      it('should return warning color for deposits waiting for bitcoin', () => {
         const transaction = createMockTransaction({ outcome: 'WaitingForTransaction' })
         wrapper = createWrapper(transaction)
 
@@ -629,7 +632,7 @@ describe('WalletTransactionDetails.vue', () => {
         expect(badge.attributes('class')).toContain('bg-warning')
       })
 
-      it('should return warning color for WaitingForConfirmation', () => {
+      it('should return warning color for transactions waiting for confirmations', () => {
         const transaction = createMockTransaction({ outcome: 'WaitingForConfirmation' })
         wrapper = createWrapper(transaction)
 
@@ -637,7 +640,7 @@ describe('WalletTransactionDetails.vue', () => {
         expect(badge.attributes('class')).toContain('bg-warning')
       })
 
-      it('should return negative color for Failed', () => {
+      it('should return negative color for failed deposits', () => {
         const transaction = createMockTransaction({ outcome: 'Failed' })
         wrapper = createWrapper(transaction)
 
@@ -655,7 +658,8 @@ describe('WalletTransactionDetails.vue', () => {
 
       expect(wrapper.exists()).toBe(true)
       const badge = wrapper.find('.status-badge')
-      expect(badge.exists()).toBe(false)
+      expect(badge.exists()).toBe(true)
+      expect(badge.text()).toContain('Waiting for Bitcoin')
     })
 
     it('should handle extremely small amounts', () => {

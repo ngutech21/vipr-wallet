@@ -87,4 +87,23 @@ describe('WalletTransactionItem.vue', () => {
     expect(satsToFiatSpy).toHaveBeenNthCalledWith(2, 200000)
     expect(wrapper.text()).toContain('≈ $20.00 usd')
   })
+
+  it('shows a friendly waiting label for pending onchain deposits', async () => {
+    const { outcome: _removed, ...transactionWithoutOutcome } = createMockTransaction({
+      amountMsats: 0,
+    })
+    wrapper = mountComponent(transactionWithoutOutcome as WalletTransaction)
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Waiting for Bitcoin')
+    expect(wrapper.text()).not.toContain('Deposited')
+  })
+
+  it('shows a friendly confirmed label for completed onchain deposits', async () => {
+    wrapper = mountComponent(createMockTransaction({ outcome: 'Confirmed' }))
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Bitcoin received')
+    expect(wrapper.text()).not.toContain('Deposited')
+  })
 })

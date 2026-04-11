@@ -21,16 +21,16 @@
           class="q-mr-sm"
         />
         <span class="text-subtitle1">
-          {{ transaction.type === 'withdraw' ? 'Withdrawn' : 'Deposited' }}
+          {{ transactionTitle }}
         </span>
       </div>
 
       <q-badge
-        :color="getStatusColor(transaction.outcome)"
+        :color="getWalletTransactionStatusColor(statusLabel)"
         class="status-badge q-pa-sm text-caption"
-        v-if="transaction.outcome"
+        v-if="statusLabel"
       >
-        {{ formatOutcome(transaction.outcome) }}
+        {{ statusLabel }}
       </q-badge>
     </div>
 
@@ -100,6 +100,11 @@ import { useFederationStore } from 'src/stores/federation'
 import { useLightningStore } from 'src/stores/lightning'
 import type { WalletTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
+import {
+  getWalletTransactionDetailTitle,
+  getWalletTransactionStatusColor,
+  getWalletTransactionStatusLabel,
+} from 'src/utils/walletTransactionPresentation'
 
 interface Props {
   transaction: WalletTransaction
@@ -110,6 +115,8 @@ const props = defineProps<Props>()
 const federationStore = useFederationStore()
 const lightningStore = useLightningStore()
 const amountInFiat = ref<string>('0.00')
+const transactionTitle = computed(() => getWalletTransactionDetailTitle(props.transaction))
+const statusLabel = computed(() => getWalletTransactionStatusLabel(props.transaction))
 
 const amountInSats = computed(() => {
   return Math.floor(props.transaction.amountMsats / 1000).toLocaleString()
@@ -143,27 +150,6 @@ onMounted(async () => {
 
 function formatDate(timestamp: number): string {
   return date.formatDate(timestamp, 'MMMM D, YYYY - h:mm A')
-}
-
-function formatOutcome(outcome: string): string {
-  return outcome.replace(/([A-Z])/g, ' $1').trim()
-}
-
-function getStatusColor(status: string | undefined): string {
-  if (status == null || status === '') return 'grey'
-
-  switch (status) {
-    case 'Confirmed':
-    case 'Claimed':
-      return 'positive'
-    case 'WaitingForTransaction':
-    case 'WaitingForConfirmation':
-      return 'warning'
-    case 'Failed':
-      return 'negative'
-    default:
-      return 'grey'
-  }
 }
 
 async function copyAddress() {

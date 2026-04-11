@@ -15,19 +15,12 @@
     </q-item-section>
 
     <q-item-section>
-      <q-item-label>{{ transaction.type === 'withdraw' ? 'Withdrawn' : 'Deposited' }}</q-item-label>
+      <q-item-label>{{ transactionTitle }}</q-item-label>
       <q-item-label caption>{{
         date.formatDate(transaction.timestamp, 'MMMM D, YYYY - h:mm A')
       }}</q-item-label>
       <q-item-label caption class="text-grey-6">
         {{ formatAddress(transaction.onchainAddress) }}
-      </q-item-label>
-      <q-item-label
-        caption
-        v-if="transaction.outcome && transaction.outcome !== 'Confirmed'"
-        class="text-orange"
-      >
-        Status: {{ formatOutcome(transaction.outcome) }}
       </q-item-label>
     </q-item-section>
 
@@ -55,6 +48,7 @@ import { date } from 'quasar'
 import { useLightningStore } from 'src/stores/lightning'
 import type { WalletTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
+import { getWalletTransactionListTitle } from 'src/utils/walletTransactionPresentation'
 
 interface Props {
   transaction: WalletTransaction
@@ -68,6 +62,7 @@ defineEmits<{
 
 const lightningStore = useLightningStore()
 const amountInFiat = ref('0.00')
+const transactionTitle = computed(() => getWalletTransactionListTitle(props.transaction))
 
 const amountInSats = computed(() => {
   return Math.floor(props.transaction.amountMsats / 1000).toLocaleString()
@@ -95,10 +90,6 @@ watch(
 function formatAddress(address: string): string {
   if (address.length <= 16) return address
   return `${address.slice(0, 8)}...${address.slice(-8)}`
-}
-
-function formatOutcome(outcome: string): string {
-  return outcome.replace(/([A-Z])/g, ' $1').trim()
 }
 </script>
 
