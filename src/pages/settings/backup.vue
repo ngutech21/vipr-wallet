@@ -4,7 +4,7 @@ meta:
 </route>
 
 <template>
-  <q-page class="dark-gradient">
+  <q-page class="dark-gradient" data-testid="backup-intro-page">
     <q-toolbar class="header-section">
       <q-btn flat round icon="arrow_back" @click="goBack" data-testid="backup-intro-back-btn" />
       <q-toolbar-title class="text-center no-wrap">Personal Backup</q-toolbar-title>
@@ -17,7 +17,9 @@ meta:
           <q-icon name="shield" size="4em" color="primary" />
         </div>
 
-        <div class="text-h5 text-center q-mb-md">Backup Your Wallet</div>
+        <div class="text-h5 text-center q-mb-md" data-testid="backup-intro-title">
+          Backup Your Wallet
+        </div>
 
         <div class="text-body1 q-mb-lg">
           <p>

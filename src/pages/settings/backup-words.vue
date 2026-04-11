@@ -4,7 +4,7 @@ meta:
 </route>
 
 <template>
-  <q-page class="dark-gradient">
+  <q-page class="dark-gradient" data-testid="backup-words-page">
     <q-toolbar class="header-section">
       <q-btn flat round icon="arrow_back" @click="goBack" data-testid="backup-words-back-btn" />
       <q-toolbar-title class="text-center no-wrap">Recovery Words</q-toolbar-title>
@@ -31,10 +31,16 @@ meta:
             flat
             bordered
             class="word-card glass-effect"
+            :data-testid="`backup-word-card-${index + 1}`"
           >
             <q-card-section class="q-pa-md">
               <div class="word-number text-caption text-grey-6">{{ index + 1 }}</div>
-              <div class="word-text text-h6 text-weight-medium">{{ word }}</div>
+              <div
+                class="word-text text-h6 text-weight-medium"
+                :data-testid="`backup-word-${index + 1}`"
+              >
+                {{ word }}
+              </div>
             </q-card-section>
           </q-card>
         </div>

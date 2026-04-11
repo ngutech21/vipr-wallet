@@ -177,12 +177,18 @@
       <!-- Personal Backup Section -->
       <q-expansion-item
         expand-separator
-        icon="shield"
-        label="Personal Backup"
-        caption="Backup your wallet with recovery words"
         header-class="settings-header"
         expand-icon-class="text-primary"
       >
+        <template #header>
+          <q-item-section avatar>
+            <q-icon name="shield" />
+          </q-item-section>
+          <q-item-section data-testid="settings-personal-backup-section">
+            <q-item-label>Personal Backup</q-item-label>
+            <q-item-label caption>Backup your wallet with recovery words</q-item-label>
+          </q-item-section>
+        </template>
         <q-card>
           <q-card-section>
             <div class="text-subtitle1 q-mb-md">

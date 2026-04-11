@@ -349,18 +349,17 @@ function normalizeMnemonicWords(value: unknown, source: 'get' | 'generate' | 'se
     objectValue?.data != null && typeof objectValue.data === 'object'
       ? (objectValue.data as Record<string, unknown>)
       : null
-  const rawWords =
-    Array.isArray(value)
-      ? value
-      : objectValue != null && Array.isArray(objectValue.mnemonic)
-        ? objectValue.mnemonic
-        : objectValue != null && Array.isArray(objectValue.words)
-          ? objectValue.words
-          : nestedData != null && Array.isArray(nestedData.mnemonic)
-            ? nestedData.mnemonic
-            : nestedData != null && Array.isArray(nestedData.words)
-              ? nestedData.words
-              : null
+  const rawWords = Array.isArray(value)
+    ? value
+    : objectValue != null && Array.isArray(objectValue.mnemonic)
+      ? objectValue.mnemonic
+      : objectValue != null && Array.isArray(objectValue.words)
+        ? objectValue.words
+        : nestedData != null && Array.isArray(nestedData.mnemonic)
+          ? nestedData.mnemonic
+          : nestedData != null && Array.isArray(nestedData.words)
+            ? nestedData.words
+            : null
 
   if (rawWords == null) {
     logger.warn('Mnemonic extraction failed', { source, shape: typeof value })

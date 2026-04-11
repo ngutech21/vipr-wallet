@@ -10,3 +10,4 @@ killall -q faucet || true
 killall -q fedimintd || true
 killall -q gatewayd || true
 killall -q reccuringd || true
+killall -q reccuringdv2 || true
