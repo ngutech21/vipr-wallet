@@ -104,18 +104,22 @@ class FedimintClientAdapter {
   }
 
   async getMnemonic(): Promise<string[]> {
-    await this.init()
-
-    if (this.director == null) {
-      throw new Error('Wallet director is not initialized')
+    const mnemonicValue = await this.getMnemonicValue()
+    if (mnemonicValue == null) {
+      throw new Error('No wallet mnemonic set')
     }
 
-    return normalizeMnemonicWords(await this.director.getMnemonic(), 'get')
+    return normalizeMnemonicWords(mnemonicValue, 'get')
   }
 
   async getMnemonicIfSet(): Promise<string[] | null> {
     try {
-      return await this.getMnemonic()
+      const mnemonicValue = await this.getMnemonicValue()
+      if (mnemonicValue == null) {
+        return null
+      }
+
+      return normalizeMnemonicWords(mnemonicValue, 'get')
     } catch (error) {
       if (isMissingMnemonicError(error)) {
         return null
@@ -213,6 +217,16 @@ class FedimintClientAdapter {
     this.activeWallet = null
     this.activeWalletName = null
     this.knownWalletNames.clear()
+  }
+
+  private async getMnemonicValue(): Promise<unknown> {
+    await this.init()
+
+    if (this.director == null) {
+      throw new Error('Wallet director is not initialized')
+    }
+
+    return await this.director.getMnemonic()
   }
 
   private async tryOpenWallet(
@@ -329,12 +343,31 @@ function normalizePreviewResult(value: unknown): PreviewFederationResponse {
 }
 
 function normalizeMnemonicWords(value: unknown, source: 'get' | 'generate' | 'set'): string[] {
-  if (!Array.isArray(value)) {
+  const objectValue =
+    value != null && typeof value === 'object' ? (value as Record<string, unknown>) : null
+  const nestedData =
+    objectValue?.data != null && typeof objectValue.data === 'object'
+      ? (objectValue.data as Record<string, unknown>)
+      : null
+  const rawWords =
+    Array.isArray(value)
+      ? value
+      : objectValue != null && Array.isArray(objectValue.mnemonic)
+        ? objectValue.mnemonic
+        : objectValue != null && Array.isArray(objectValue.words)
+          ? objectValue.words
+          : nestedData != null && Array.isArray(nestedData.mnemonic)
+            ? nestedData.mnemonic
+            : nestedData != null && Array.isArray(nestedData.words)
+              ? nestedData.words
+              : null
+
+  if (rawWords == null) {
     logger.warn('Mnemonic extraction failed', { source, shape: typeof value })
     throw new Error(INVALID_MNEMONIC_RESPONSE_MESSAGE)
   }
 
-  const words = value
+  const words = rawWords
     .map((word) => (typeof word === 'string' ? word.trim() : ''))
     .filter((word) => word !== '')
 

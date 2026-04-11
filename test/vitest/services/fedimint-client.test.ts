@@ -266,9 +266,17 @@ describe('fedimint client adapter', () => {
   })
 
   it('getMnemonicIfSet returns null for missing mnemonic', async () => {
+    coreMockState.getMnemonicValue = null
+
     const result = await fedimintClient.getMnemonicIfSet()
 
     expect(result).toBeNull()
+  })
+
+  it('getMnemonic throws when mnemonic is missing', async () => {
+    coreMockState.getMnemonicValue = null
+
+    await expect(fedimintClient.getMnemonic()).rejects.toThrow('No wallet mnemonic set')
   })
 
   it('getMnemonicIfSet returns null when getMnemonic reports missing', async () => {
@@ -285,6 +293,12 @@ describe('fedimint client adapter', () => {
     coreMockState.getMnemonicValue = { unexpected: true }
 
     await expect(fedimintClient.getMnemonicIfSet()).rejects.toThrow('Invalid mnemonic response')
+  })
+
+  it('getMnemonicIfSet accepts object responses with mnemonic field', async () => {
+    coreMockState.getMnemonicValue = { mnemonic: ['alpha', 'beta', 'gamma'] }
+
+    await expect(fedimintClient.getMnemonicIfSet()).resolves.toEqual(['alpha', 'beta', 'gamma'])
   })
 
   it('getMnemonicIfSet rethrows non-recoverable errors', async () => {
