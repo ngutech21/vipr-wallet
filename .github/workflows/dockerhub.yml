@@ -4,9 +4,38 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch: {}
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.filter.outputs.deploy }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Detect deploy-relevant changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            deploy:
+              - 'src/**'
+              - 'src-pwa/**'
+              - 'public/**'
+              - 'Dockerfile'
+              - 'docker/**'
+              - '.dockerignore'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'quasar.config.ts'
+              - 'tsconfig*.json'
+              - 'vite.config.*'
+
   build-and-push:
+    needs: changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.deploy == 'true'
     runs-on: ubuntu-latest
 
     steps:
