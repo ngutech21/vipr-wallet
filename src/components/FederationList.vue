@@ -38,6 +38,7 @@
               text-color="white"
               dense
               class="status-chip"
+              :data-testid="`federation-list-status-${fedi.federationId}`"
             >
               {{ isSelected(fedi) ? 'Active' : 'Available' }}
             </q-chip>

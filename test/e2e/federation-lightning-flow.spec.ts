@@ -65,6 +65,13 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       // Verify we're back on the federations page with the new federation
       await expect(page.getByTestId('add-federation-form')).toBeHidden({ timeout: 30_000 })
       await expect(page.getByTestId('federations-page')).toBeVisible()
+
+      const federationItem = page.locator('[data-testid^="federation-list-item-"]').first()
+      await expect(federationItem).toBeVisible({ timeout: 30_000 })
+      await federationItem.click()
+
+      const federationStatus = page.locator('[data-testid^="federation-list-status-"]').first()
+      await expect(federationStatus).toHaveText('Active')
     })
 
     // Step 4: Navigate back to home page
