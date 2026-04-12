@@ -26,9 +26,12 @@ import {
   FEDIMINT_STORAGE_SCHEMA_KEY,
   FEDIMINT_STORAGE_SCHEMA_VERSION,
   getWalletNameForFederationId,
+  mapTxOutputSummaryToFederationUtxo,
+  parseOutpoint,
   useWalletStore,
 } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
+import type { TxOutputSummary } from '@fedimint/core'
 
 function createFederation(overrides: Partial<Federation> = {}): Federation {
   return {
@@ -227,5 +230,48 @@ describe('wallet store', () => {
     expect(hasMnemonic).toBe(true)
     expect(walletStore.hasMnemonic).toBe(true)
     expect(walletStore.needsMnemonicBackup).toBe(false)
+  })
+})
+
+describe('wallet utxo helpers', () => {
+  it('parses string outpoints in txid:vout format', () => {
+    expect(
+      parseOutpoint('F6F735A7B8642104B399196FB85B724CD7E8C36C55BBF962FBA063E798F4A486:1'),
+    ).toEqual({
+      txid: 'f6f735a7b8642104b399196fb85b724cd7e8c36c55bbf962fba063e798f4a486',
+      vout: 1,
+    })
+  })
+
+  it('falls back to vout 0 when string outpoint has no numeric index', () => {
+    expect(parseOutpoint('abc:not-a-number')).toEqual({
+      txid: 'abc',
+      vout: 0,
+    })
+  })
+
+  it('parses object outpoints', () => {
+    expect(
+      parseOutpoint({
+        txid: ' A8C08C36F7F2CB6A51EC2DE382CBD53F28AAE21860A24139721F5815AC4CF759 ',
+        vout: 3,
+      }),
+    ).toEqual({
+      txid: 'a8c08c36f7f2cb6a51ec2de382cbd53f28aae21860a24139721f5815ac4cf759',
+      vout: 3,
+    })
+  })
+
+  it('maps tx output summaries with string outpoints to federation utxos', () => {
+    const output = {
+      outpoint: 'c7361f4cd75cbf199d151150a4613c2ede9f78b86c101b06fe38d54d9f6a9844:1',
+      amount: 1_398_888,
+    } as unknown as TxOutputSummary
+
+    expect(mapTxOutputSummaryToFederationUtxo(output)).toEqual({
+      txid: 'c7361f4cd75cbf199d151150a4613c2ede9f78b86c101b06fe38d54d9f6a9844',
+      vout: 1,
+      amount: 1_398_888,
+    })
   })
 })

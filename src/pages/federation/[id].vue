@@ -195,6 +195,13 @@
           </q-card-section>
         </q-card>
 
+        <FederationUtxos
+          :utxos="spendableUtxos"
+          :is-loading="isLoadingUtxos"
+          :error="utxoError"
+          :network="federation?.network ?? null"
+        />
+
         <!-- Actions Card -->
 
         <q-card flat>
@@ -254,11 +261,13 @@ defineOptions({
   name: 'FederationDetailsPage',
 })
 
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import FederationGuardians from 'src/components/FederationGuardians.vue'
+import FederationUtxos from 'src/components/FederationUtxos.vue'
+import type { FederationUtxo } from 'src/components/models'
 import { useFormatters } from '../../utils/formatter'
 import { logger } from 'src/services/logger'
 
@@ -267,41 +276,51 @@ const route = useRoute('/federation/[id]')
 const router = useRouter()
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
-const federation = federationStore.federations.find((f) => f.federationId === route.params.id)
 const confirmLeave = ref(false)
+const spendableUtxos = ref<FederationUtxo[]>([])
+const isLoadingUtxos = ref(false)
+const utxoError = ref<string | null>(null)
+
+const federation = computed(() => {
+  return federationStore.federations.find((f) => f.federationId === route.params.id)
+})
 
 const hasMetadata = computed(() => {
-  return federation?.metadata != null && Object.keys(federation.metadata).length > 0
+  return federation.value?.metadata != null && Object.keys(federation.value.metadata).length > 0
 })
 
 const hasMessages = computed(() => {
-  logger.federation.debug('Checking for messages in federation metadata', { federation })
+  logger.federation.debug('Checking for messages in federation metadata', {
+    federationId: federation.value?.federationId,
+  })
   return (
-    (federation?.metadata?.preview_message != null && federation.metadata.preview_message !== '') ||
-    (federation?.metadata?.popup_countdown_message != null &&
-      federation.metadata.popup_countdown_message !== '')
+    (federation.value?.metadata?.preview_message != null &&
+      federation.value.metadata.preview_message !== '') ||
+    (federation.value?.metadata?.popup_countdown_message != null &&
+      federation.value.metadata.popup_countdown_message !== '')
   )
 })
 
 const hasVettedGateways = computed(() => {
   return (
-    federation?.metadata?.vetted_gateways != null && federation.metadata.vetted_gateways.length > 0
+    federation.value?.metadata?.vetted_gateways != null &&
+    federation.value.metadata.vetted_gateways.length > 0
   )
 })
 
 const vettedGateways = computed(() => {
-  if (federation?.metadata?.vetted_gateways == null) return []
+  if (federation.value?.metadata?.vetted_gateways == null) return []
 
-  if (typeof federation.metadata.vetted_gateways === 'string') {
+  if (typeof federation.value.metadata.vetted_gateways === 'string') {
     try {
-      return JSON.parse(federation.metadata.vetted_gateways) as string[]
+      return JSON.parse(federation.value.metadata.vetted_gateways) as string[]
     } catch (error) {
       logger.error('Failed to parse vetted_gateways JSON', error)
       return []
     }
   }
 
-  return federation.metadata.vetted_gateways
+  return federation.value.metadata.vetted_gateways
 })
 
 function formatDate(timestamp: string) {
@@ -313,16 +332,45 @@ function formatDate(timestamp: string) {
   }
 }
 
+watch(
+  () => route.params.id,
+  async () => {
+    const currentFederation = federation.value
+    spendableUtxos.value = []
+    utxoError.value = null
+
+    if (currentFederation == null) {
+      return
+    }
+
+    isLoadingUtxos.value = true
+
+    try {
+      if (federationStore.selectedFederationId !== currentFederation.federationId) {
+        await federationStore.selectFederation(currentFederation)
+      }
+
+      spendableUtxos.value = await walletStore.getSpendableUtxos()
+    } catch (error) {
+      logger.error('Failed to load federation UTXOs', error)
+      utxoError.value = 'Failed to load spendable UTXOs.'
+    } finally {
+      isLoadingUtxos.value = false
+    }
+  },
+  { immediate: true },
+)
+
 async function leaveFederation() {
-  if (federation == null) return
+  if (federation.value == null) return
 
   try {
     await walletStore.closeWallet()
     await new Promise((resolve) => {
       setTimeout(resolve, 100)
     })
-    await walletStore.deleteFederationData(federation.federationId)
-    federationStore.deleteFederation(federation.federationId)
+    await walletStore.deleteFederationData(federation.value.federationId)
+    federationStore.deleteFederation(federation.value.federationId)
     await walletStore.openWallet()
     await router.push({ name: '/federations/' })
   } catch (error) {

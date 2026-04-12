@@ -17,6 +17,12 @@ export type FederationGuardian = {
   url: string
 }
 
+export type FederationUtxo = {
+  txid: string
+  vout: number
+  amount: number
+}
+
 export type ModuleConfig = {
   config: string
   kind: string

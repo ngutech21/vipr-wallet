@@ -1,11 +1,12 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import type { FedimintWallet, MSats, Transactions } from '@fedimint/core'
+import type { FedimintWallet, MSats, Transactions, TxOutputSummary } from '@fedimint/core'
 import { useFederationStore } from './federation'
 import type {
   Federation,
   FederationGuardian,
   FederationMeta,
   ModuleConfig,
+  FederationUtxo,
 } from 'src/components/models'
 import { logger } from 'src/services/logger'
 import { fedimintClient } from 'src/services/fedimint-client'
@@ -244,6 +245,22 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
+    async getSpendableUtxos(): Promise<FederationUtxo[]> {
+      if (this.wallet == null) {
+        return []
+      }
+
+      try {
+        const summary = await this.wallet.wallet.getWalletSummary()
+        return summary.spendable_utxos
+          .map(mapTxOutputSummaryToFederationUtxo)
+          .sort((left, right) => right.amount - left.amount)
+      } catch (error) {
+        logger.error('Failed to fetch spendable UTXOs', error)
+        throw error
+      }
+    },
+
     async getMetadata(federation: Federation): Promise<FederationMeta | undefined> {
       if (federation.metaUrl == null || federation.metaUrl === '') {
         logger.warn('No metaUrl provided for federation')
@@ -360,6 +377,48 @@ function extractFederationGuardians(
     })
     .filter((guardian) => guardian.url !== '')
     .sort((left, right) => left.peerId - right.peerId)
+}
+
+export function mapTxOutputSummaryToFederationUtxo(output: TxOutputSummary): FederationUtxo {
+  const rawOutput = output as TxOutputSummary & {
+    outpoint?: string | { txid?: string; vout?: number }
+    out_point?: string | { txid?: string; vout?: number }
+  }
+  const outpoint = rawOutput.outpoint ?? rawOutput.out_point
+  const { txid, vout } = parseOutpoint(outpoint)
+
+  return {
+    txid,
+    vout,
+    amount: output.amount,
+  }
+}
+
+export function parseOutpoint(outpoint: string | { txid?: string; vout?: number } | undefined): {
+  txid: string
+  vout: number
+} {
+  if (typeof outpoint === 'string') {
+    const [txid = '', rawVout = '0'] = outpoint.trim().split(':')
+    const vout = Number.parseInt(rawVout, 10)
+
+    return {
+      txid: txid.toLowerCase(),
+      vout: Number.isNaN(vout) ? 0 : vout,
+    }
+  }
+
+  if (outpoint != null) {
+    return {
+      txid: outpoint.txid?.trim().toLowerCase() ?? '',
+      vout: outpoint.vout ?? 0,
+    }
+  }
+
+  return {
+    txid: '',
+    vout: 0,
+  }
 }
 
 function getErrorMessage(error: unknown): string {
