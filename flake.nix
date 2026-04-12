@@ -31,6 +31,10 @@
           dejavu_fonts
         ];
         playwrightFontsConf = pkgs.makeFontsConf { fontDirectories = playwrightFonts; };
+        pnpm24 = pkgs.writeShellScriptBin "pnpm" ''
+          exec ${pkgs.nodejs_24}/bin/node \
+            ${pkgs.nodejs_24.pkgs.pnpm}/libexec/pnpm/bin/pnpm.cjs "$@"
+        '';
       in
       {
         devShells.default = pkgs.mkShell {
@@ -43,16 +47,9 @@
             pkgs.electrs
             pkgs.lnd
             pkgs.esplora-electrs
-            # pkgs.jq
-            # pkgs.netcat
-            # pkgs.perl
-            # pkgs.procps
-            # pkgs.which
-            # pkgs.git
-
             nodejs_24
-            nodePackages.pnpm
-            nodePackages.typescript
+            pnpm24
+            nodejs_24.pkgs.typescript
             mkcert
             fontconfig
             fontconfig.bin
