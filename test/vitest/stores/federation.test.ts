@@ -4,6 +4,7 @@ import type { Federation } from 'src/components/models'
 
 const walletStoreMock = vi.hoisted(() => ({
   openWallet: vi.fn<() => Promise<void>>(),
+  wallet: null as object | null,
 }))
 
 vi.mock('src/stores/wallet', () => ({
@@ -28,6 +29,7 @@ describe('federation store', () => {
     setActivePinia(createPinia())
     localStorage.clear()
     walletStoreMock.openWallet.mockReset()
+    walletStoreMock.wallet = null
   })
 
   it('keeps selected federation when wallet opens successfully', async () => {
@@ -94,5 +96,18 @@ describe('federation store', () => {
 
     expect(walletStoreMock.openWallet).toHaveBeenCalledTimes(1)
     expect(federationStore.selectedFederationId).toBe(first.federationId)
+  })
+
+  it('opens the wallet when the federation is already selected but no wallet is active', async () => {
+    const federationStore = useFederationStore()
+    const federation = createFederation()
+    federationStore.addFederation(federation)
+    walletStoreMock.openWallet.mockResolvedValue()
+    walletStoreMock.wallet = null
+
+    await federationStore.selectFederation(federation)
+
+    expect(walletStoreMock.openWallet).toHaveBeenCalledTimes(1)
+    expect(federationStore.selectedFederationId).toBe(federation.federationId)
   })
 })
