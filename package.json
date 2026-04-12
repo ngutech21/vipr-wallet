@@ -23,8 +23,9 @@
     "test:e2e": "pnpm run test:setup playwright test",
     "test:e2e:headed": "playwright test --headed",
     "typecheck": "exec vue-tsc --noEmit",
+    "typecheck:pwa": "exec tsc -p src-pwa/tsconfig.json --noEmit",
     "run-devimint": "pnpm run test:setup playwright test",
-    "final-check": "pnpm format && pnpm lint && pnpm typecheck && pnpm test:unit:ci"
+    "final-check": "pnpm format && pnpm lint && pnpm typecheck && pnpm typecheck:pwa && pnpm test:unit:ci"
   },
   "dependencies": {
     "@fedimint/core": "0.0.0-canary-50fca06f9c3a3dc13e16b2f3440e66e852dc0d35",
