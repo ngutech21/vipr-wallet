@@ -61,6 +61,8 @@
           </q-card-section>
         </q-card>
 
+        <FederationGuardians :guardians="federation?.guardians ?? []" class="q-mb-md" />
+
         <div class="text-subtitle1 q-mb-xs" v-if="hasMetadata">Details</div>
         <q-card flat class="q-mb-md" v-if="hasMetadata">
           <q-card-section>
@@ -256,6 +258,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
+import FederationGuardians from 'src/components/FederationGuardians.vue'
 import { useFormatters } from '../../utils/formatter'
 import { logger } from 'src/services/logger'
 

@@ -1,7 +1,12 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import type { FedimintWallet, MSats, Transactions } from '@fedimint/core'
 import { useFederationStore } from './federation'
-import type { Federation, FederationMeta, ModuleConfig } from 'src/components/models'
+import type {
+  Federation,
+  FederationGuardian,
+  FederationMeta,
+  ModuleConfig,
+} from 'src/components/models'
 import { logger } from 'src/services/logger'
 import { fedimintClient } from 'src/services/fedimint-client'
 
@@ -273,6 +278,13 @@ export const useWalletStore = defineStore('wallet', {
 
       const typedConfig = config as {
         global?: {
+          api_endpoints?: Record<
+            string,
+            {
+              name?: string
+              url?: string
+            }
+          >
           meta?: {
             federation_name?: string
             meta_external_url?: string
@@ -282,7 +294,7 @@ export const useWalletStore = defineStore('wallet', {
       }
 
       const federationName = typedConfig?.global?.meta?.federation_name ?? 'Unknown Federation'
-
+      const guardians = extractFederationGuardians(typedConfig?.global?.api_endpoints)
       const metaExternalUrl = typedConfig?.global?.meta?.meta_external_url as string
       const modules = typedConfig?.modules ?? {}
 
@@ -313,11 +325,42 @@ export const useWalletStore = defineStore('wallet', {
         federationId: federation_id.trim(),
         metaUrl: metaExternalUrl,
         modules: Object.values(modules) as ModuleConfig[],
+        guardians,
         metadata: meta,
       } satisfies Federation
     },
   },
 })
+
+function extractFederationGuardians(
+  apiEndpoints:
+    | Record<
+        string,
+        {
+          name?: string
+          url?: string
+        }
+      >
+    | undefined,
+): FederationGuardian[] {
+  if (apiEndpoints == null) {
+    return []
+  }
+
+  return Object.entries(apiEndpoints)
+    .map(([peerId, peer]) => {
+      const numericPeerId = Number.parseInt(peerId, 10)
+      const normalizedPeerId = Number.isNaN(numericPeerId) ? 0 : numericPeerId
+
+      return {
+        peerId: normalizedPeerId,
+        name: typeof peer?.name === 'string' ? peer.name.trim() : '',
+        url: typeof peer?.url === 'string' ? peer.url.trim() : '',
+      } satisfies FederationGuardian
+    })
+    .filter((guardian) => guardian.url !== '')
+    .sort((left, right) => left.peerId - right.peerId)
+}
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {

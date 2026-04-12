@@ -1,56 +1,32 @@
 <template>
-  <ModalCard title="Join Federation" data-testid="add-federation-form">
-    <q-form ref="federationForm" class="q-pa-md" @submit.prevent="addFederation">
-      <q-input
-        filled
-        v-model="inviteCode"
-        label="Enter Fedimint Invitecode"
-        :rules="[(val) => !!val || 'Invitecode is required']"
-        type="textarea"
-        data-testid="invite-code-input"
-      />
+  <ModalCard :title="dialogTitle" data-testid="add-federation-flow">
+    <JoinFederationInviteStep
+      v-if="step === 'invite'"
+      :invite-code="inviteCode"
+      :is-submitting="isSubmitting"
+      @update:invite-code="updateInviteCode"
+      @paste="pasteFromClipboard"
+      @submit="loadPreview"
+    />
 
-      <div class="row justify-between full-width q-mt-none">
-        <q-btn
-          flat
-          label="Scan QR"
-          icon="qr_code_scanner"
-          color="primary"
-          :to="'/scan'"
-          class="q-pl-none"
-          data-testid="add-federation-scan-btn"
-        />
-        <q-btn
-          flat
-          label="Paste"
-          icon="content_paste"
-          color="primary"
-          @click="pasteFromClipboard"
-          class="q-pr-none"
-          data-testid="add-federation-paste-btn"
-        />
-      </div>
-      <div class="q-mt-xl">
-        <q-btn
-          type="submit"
-          label="Join Federation"
-          color="primary"
-          class="q-mt-md full-width"
-          data-testid="add-federation-submit-btn"
-          :disable="isSubmitting"
-          :loading="isSubmitting"
-          :data-busy="isSubmitting ? 'true' : 'false'"
-        />
-      </div>
-    </q-form>
+    <JoinFederationPreviewStep
+      v-else-if="previewFederation != null"
+      :federation="previewFederation"
+      :is-submitting="isSubmitting"
+      @back="goBackToInviteStep"
+      @join="addFederation"
+    />
   </ModalCard>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
+import type { Federation } from 'src/components/models'
 import ModalCard from 'src/components/ModalCard.vue'
+import JoinFederationInviteStep from 'src/components/JoinFederationInviteStep.vue'
+import JoinFederationPreviewStep from 'src/components/JoinFederationPreviewStep.vue'
 import { Loading, Notify } from 'quasar'
 import { getErrorMessage } from 'src/utils/error'
 import { logger } from 'src/services/logger'
@@ -64,24 +40,44 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   initialInviteCode?: string | null
+  autoPreview?: boolean
 }>()
 
-// Change to initialize from prop if available
 const inviteCode = ref(props.initialInviteCode ?? '')
 const isSubmitting = ref(false)
+const previewFederation = ref<Federation | null>(null)
+const step = ref<'invite' | 'preview'>('invite')
 
-// Watch for changes to the prop to update the local ref
+const dialogTitle = computed(() => {
+  return step.value === 'preview' ? 'Preview Federation' : 'Join Federation'
+})
+
 watch(
   () => props.initialInviteCode,
-  (newCode) => {
+  async (newCode) => {
     if (newCode != null && newCode !== '') {
       inviteCode.value = newCode
+      previewFederation.value = null
+      step.value = 'invite'
+      if (props.autoPreview === true) {
+        await loadPreview()
+      }
     }
   },
+  { immediate: true },
 )
+
+function updateInviteCode(value: string | number | null) {
+  inviteCode.value = typeof value === 'string' ? value : ''
+  previewFederation.value = null
+}
 
 function onClose() {
   emit('close')
+}
+
+function goBackToInviteStep() {
+  step.value = 'invite'
 }
 
 async function pasteFromClipboard() {
@@ -99,15 +95,14 @@ async function pasteFromClipboard() {
   }
 }
 
-async function addFederation() {
-  Loading.show({ message: 'Joining Federation' })
+async function loadPreview() {
+  Loading.show({ message: 'Loading federation preview' })
   isSubmitting.value = true
 
   try {
     const cleanInviteCode = inviteCode.value.trim()
-    logger.federation.debug('Joining federation', { inviteCode: cleanInviteCode })
+    logger.federation.debug('Previewing federation', { inviteCode: cleanInviteCode })
 
-    // FIXME check if federation with the same federationid already exists instead of just invite code
     if (federationStore.federations.some((f) => f.inviteCode === cleanInviteCode)) {
       Notify.create({
         message: 'Federation already exists',
@@ -118,19 +113,43 @@ async function addFederation() {
       })
       return
     }
+
     const federation = await walletStore.previewFederation(cleanInviteCode)
     logger.federation.debug('Federation preview', { federation })
     if (federation != null) {
-      const meta = await walletStore.getMetadata(federation)
-      // FIXME is this redundant?
-      federation.metadata = meta ?? {}
-      federationStore.addFederation(federation)
-      try {
-        await federationStore.selectFederation(federation)
-      } catch (error) {
-        federationStore.deleteFederation(federation.federationId)
-        throw error
-      }
+      previewFederation.value = federation
+      step.value = 'preview'
+    }
+  } catch (error) {
+    Notify.create({
+      message: `Failed to preview federation: ${getErrorMessage(error)}`,
+      color: 'negative',
+      icon: 'error',
+      timeout: 5000,
+      position: 'top',
+    })
+  } finally {
+    isSubmitting.value = false
+    Loading.hide()
+  }
+}
+
+async function addFederation() {
+  const federation = previewFederation.value
+  if (federation == null) {
+    return
+  }
+
+  Loading.show({ message: 'Joining Federation' })
+  isSubmitting.value = true
+
+  try {
+    federationStore.addFederation(federation)
+    try {
+      await federationStore.selectFederation(federation)
+    } catch (error) {
+      federationStore.deleteFederation(federation.federationId)
+      throw error
     }
   } catch (error) {
     Notify.create({
@@ -140,12 +159,12 @@ async function addFederation() {
       timeout: 5000,
       position: 'top',
     })
+    return
   } finally {
     isSubmitting.value = false
     Loading.hide()
-    onClose()
   }
+
+  onClose()
 }
 </script>
-
-<style scoped></style>

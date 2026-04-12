@@ -7,7 +7,14 @@ export type Federation = {
   // mainnet | testnet | regtest | signet
   network?: string
   modules: ModuleConfig[]
+  guardians?: FederationGuardian[]
   metadata?: FederationMeta
+}
+
+export type FederationGuardian = {
+  peerId: number
+  name: string
+  url: string
 }
 
 export type ModuleConfig = {

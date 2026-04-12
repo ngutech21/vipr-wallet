@@ -19,11 +19,17 @@
         v-if="showDiscover"
         :visible="showDiscover"
         @close="showDiscover = false"
+        @show-add="openAddFederationPreview"
       />
     </q-dialog>
 
     <q-dialog v-model="showAdd" position="bottom">
-      <AddFederation v-if="showAdd" @close="showAdd = false" />
+      <AddFederation
+        v-if="showAdd"
+        @close="closeAddFederation"
+        :initial-invite-code="selectedInviteCode"
+        :auto-preview="selectedInviteCode != null"
+      />
     </q-dialog>
 
     <q-dialog
@@ -142,6 +148,18 @@ const showSelection = ref(false)
 const showReceiveEcashSelection = ref(false)
 const showDiscover = ref(false)
 const showAdd = ref(false)
+const selectedInviteCode = ref<string | null>(null)
+
+function openAddFederationPreview(inviteCode: string) {
+  selectedInviteCode.value = inviteCode
+  showDiscover.value = false
+  showAdd.value = true
+}
+
+function closeAddFederation() {
+  showAdd.value = false
+  selectedInviteCode.value = null
+}
 </script>
 
 <style scoped>

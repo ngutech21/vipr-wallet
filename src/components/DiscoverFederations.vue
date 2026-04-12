@@ -6,7 +6,7 @@
           v-for="federation in visibleFederations"
           :key="federation.federationId"
           clickable
-          @click="addFederation(federation)"
+          @click="openFederationPreview(federation)"
           :disable="isAdded(federation) || !federation.previewReady"
           :data-testid="`discover-federation-item-${federation.federationId}`"
         >
@@ -70,6 +70,7 @@
               :color="isAdded(federation) ? 'positive' : 'primary'"
               :disable="isAdded(federation)"
               :data-testid="`discover-federation-action-${federation.federationId}`"
+              @click.stop="openFederationPreview(federation)"
             />
           </q-item-section>
         </q-item>
@@ -129,7 +130,7 @@ import { computed, watch, onUnmounted } from 'vue'
 import { useNostrStore } from 'src/stores/nostr'
 import { useFederationStore } from 'src/stores/federation'
 import ModalCard from 'src/components/ModalCard.vue'
-import { Loading, Notify } from 'quasar'
+import { Notify } from 'quasar'
 import type { Federation } from 'src/components/models'
 import { getErrorMessage } from 'src/utils/error'
 import { logger } from 'src/services/logger'
@@ -192,6 +193,7 @@ const visibleFederations = computed<DiscoveryListItem[]>(() => {
       federationId: candidate.federationId,
       inviteCode: candidate.inviteCode,
       modules: [],
+      guardians: [],
       metadata: {},
       previewReady: false,
       recommendationCount: Math.max(
@@ -239,6 +241,11 @@ const props = defineProps({
     default: false,
   },
 })
+
+const emit = defineEmits<{
+  close: []
+  showAdd: [inviteCode: string]
+}>()
 
 watch(
   () => props.visible,
@@ -297,55 +304,20 @@ function formatRecommendationCount(count: number): string {
   return `${count} ${suffix}`
 }
 
-async function addFederation(federation: Federation) {
-  Loading.show({ message: 'Joining Federation' })
-
-  try {
-    if (federationStore.federations.some((f) => f.federationId === federation.federationId)) {
-      Notify.create({
-        message: 'Federation already exists',
-        color: 'negative',
-        icon: 'error',
-        timeout: 5000,
-        position: 'top',
-      })
-      return
-    }
-
-    nostr.setJoinInProgress(true)
-    const queueIdle = await nostr.waitForPreviewQueueIdle()
-    if (!queueIdle) {
-      logger.warn('Preview queue still busy while joining federation')
-    }
-
-    federationStore.addFederation(federation)
-    try {
-      await federationStore.selectFederation(federation)
-    } catch (error) {
-      federationStore.deleteFederation(federation.federationId)
-      throw error
-    }
-
+function openFederationPreview(federation: Federation) {
+  if (federationStore.federations.some((f) => f.federationId === federation.federationId)) {
     Notify.create({
-      message: 'Federation joined successfully',
-      color: 'positive',
-      icon: 'check',
-      position: 'top',
-      timeout: 3000,
-    })
-  } catch (error) {
-    logger.error('Failed to join federation', error)
-    Notify.create({
-      message: `Failed to join federation: ${getErrorMessage(error)}`,
+      message: 'Federation already exists',
       color: 'negative',
       icon: 'error',
       timeout: 5000,
       position: 'top',
     })
-  } finally {
-    nostr.setJoinInProgress(false)
-    Loading.hide()
+    return
   }
+
+  emit('close')
+  emit('showAdd', federation.inviteCode)
 }
 
 function truncateFederationId(federationId: string): string {

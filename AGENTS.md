@@ -22,6 +22,7 @@ Vipr-Wallet is a Progressive Web App (PWA) that serves as an ecash wallet for Fe
 - `pnpm format` - Format code with Prettier
 - `pnpm typecheck` - Run Vue TypeScript compiler checks
 - `pnpm final-check` - Run all checks: format, lint, typecheck, and tests
+- After every code change made by an agent, run `pnpm final-check` before finalizing the work.
 
 ### Testing
 

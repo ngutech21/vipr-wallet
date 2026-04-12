@@ -379,38 +379,21 @@ describe('DiscoverFederations.vue', () => {
     })
   })
 
-  describe('Join Federation', () => {
-    it('should add and select federation successfully without stopping discovery', async () => {
+  describe('Preview Flow', () => {
+    it('should open federation preview without stopping discovery', async () => {
       const federation = createMockFederation()
       wrapper = createWrapper()
-      const federationStore = useFederationStore()
       const nostrStore = useNostrStore()
-      const addSpy = vi.spyOn(federationStore, 'addFederation')
-      const selectSpy = vi.spyOn(federationStore, 'selectFederation').mockResolvedValue()
       const stopSpy = vi.spyOn(nostrStore, 'stopDiscoveringFederations')
-      const joinSpy = vi.spyOn(nostrStore, 'setJoinInProgress')
-      const idleSpy = vi.spyOn(nostrStore, 'waitForPreviewQueueIdle').mockResolvedValue(true)
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const component = wrapper.vm as any
-      await component.addFederation(federation)
+      component.openFederationPreview(federation)
       await flushPromises()
 
-      expect(addSpy).toHaveBeenCalledWith(federation)
-      expect(selectSpy).toHaveBeenCalledWith(federation)
       expect(stopSpy).not.toHaveBeenCalled()
-      expect(joinSpy).toHaveBeenNthCalledWith(1, true)
-      expect(joinSpy).toHaveBeenLastCalledWith(false)
-      expect(idleSpy).toHaveBeenCalled()
-      expect(wrapper.emitted('close')).toBeFalsy()
-      expect(mockNotify).toHaveBeenCalledWith({
-        message: 'Federation joined successfully',
-        color: 'positive',
-        icon: 'check',
-        position: 'top',
-        timeout: 3000,
-      })
-      expect(mockLoadingHide).toHaveBeenCalled()
+      expect(wrapper.emitted('close')).toEqual([[]])
+      expect(wrapper.emitted('showAdd')).toEqual([[federation.inviteCode]])
     })
 
     it('should show error notification when federation already exists', async () => {
@@ -422,10 +405,9 @@ describe('DiscoverFederations.vue', () => {
       federationStore.federations = [federation]
       await flushPromises()
 
-      // Call addFederation directly since item is disabled
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const component = wrapper.vm as any
-      await component.addFederation(federation)
+      component.openFederationPreview(federation)
       await flushPromises()
 
       expect(mockNotify).toHaveBeenCalledWith({
@@ -448,35 +430,23 @@ describe('DiscoverFederations.vue', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const component = wrapper.vm as any
-      await component.addFederation(federation)
+      component.openFederationPreview(federation)
       await flushPromises()
 
       expect(wrapper.emitted('close')).toBeFalsy()
+      expect(wrapper.emitted('showAdd')).toBeFalsy()
     })
 
-    it('should show error notification when selecting federation fails', async () => {
+    it('should emit selected invite code when opening preview', async () => {
       const federation = createMockFederation()
       wrapper = createWrapper()
-      const federationStore = useFederationStore()
-      federationStore.federations = []
-      vi.spyOn(federationStore, 'selectFederation').mockRejectedValue(new Error('select failed'))
-      const deleteSpy = vi.spyOn(federationStore, 'deleteFederation')
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const component = wrapper.vm as any
-      await component.addFederation(federation)
+      component.openFederationPreview(federation)
       await flushPromises()
 
-      expect(mockNotify).toHaveBeenCalledWith({
-        message: 'Failed to join federation: select failed',
-        color: 'negative',
-        icon: 'error',
-        timeout: 5000,
-        position: 'top',
-      })
-      expect(deleteSpy).toHaveBeenCalledWith(federation.federationId)
-      expect(wrapper.emitted('close')).toBeFalsy()
-      expect(mockLoadingHide).toHaveBeenCalled()
+      expect(wrapper.emitted('showAdd')).toEqual([[federation.inviteCode]])
     })
   })
 
