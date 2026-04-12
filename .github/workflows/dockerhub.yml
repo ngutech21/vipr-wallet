@@ -57,11 +57,11 @@ jobs:
 
       - name: Get current date
         id: date
-        run: echo "date=$(date -u '+%F-%T')" >> $GITHUB_OUTPUT
+        run: echo "date=$(date -u '+%F-%T')" >> "$GITHUB_OUTPUT"
 
       - name: Get short SHA
         id: sha
-        run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        run: echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
