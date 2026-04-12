@@ -320,7 +320,7 @@ async function leaveFederation() {
     })
     await walletStore.deleteFederationData(federation.federationId)
     federationStore.deleteFederation(federation.federationId)
-    await federationStore.selectFederation(undefined)
+    await walletStore.openWallet()
     await router.push({ name: '/federations/' })
   } catch (error) {
     logger.error('Failed to leave federation', error)

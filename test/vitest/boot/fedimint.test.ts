@@ -15,6 +15,7 @@ const walletStoreMock = vi.hoisted(() => ({
   ensureStorageSchema: vi.fn<() => Promise<boolean>>(),
   loadMnemonic: vi.fn<() => Promise<boolean>>(),
   openWallet: vi.fn<() => Promise<void>>(),
+  closeWallet: vi.fn<() => Promise<void>>(),
 }))
 
 const onboardingStoreMock = vi.hoisted(() => ({
@@ -25,6 +26,7 @@ const onboardingStoreMock = vi.hoisted(() => ({
 
 const federationStoreMock = vi.hoisted(() => ({
   selectedFederationId: null as string | null,
+  ensureValidSelection: vi.fn(),
 }))
 
 const pwaUpdateStoreMock = vi.hoisted(() => ({
@@ -83,9 +85,11 @@ describe('fedimint boot', () => {
     walletStoreMock.loadMnemonic.mockImplementation(() =>
       Promise.resolve(walletStoreMock.hasMnemonic),
     )
+    walletStoreMock.closeWallet.mockResolvedValue()
     onboardingStoreMock.status = 'complete'
     onboardingStoreMock.flow = null
     walletStoreMock.openWallet.mockResolvedValue()
+    federationStoreMock.ensureValidSelection.mockReset()
     pwaUpdateStoreMock.checkForUpdatesStartup.mockResolvedValue('up-to-date')
     pwaUpdateStoreMock.checkForUpdatesForeground.mockResolvedValue('up-to-date')
     pwaUpdateStoreMock.resumePendingApplyIfAny.mockResolvedValue(undefined)
@@ -144,6 +148,7 @@ describe('fedimint boot', () => {
     await fedimintBoot({ app: {}, router } as never)
 
     expect(walletStoreMock.openWallet).toHaveBeenCalledTimes(1)
+    expect(federationStoreMock.ensureValidSelection).toHaveBeenCalledTimes(1)
     expect(router.replace).not.toHaveBeenCalled()
     expect(pwaUpdateStoreMock.checkForUpdatesStartup).toHaveBeenCalledTimes(1)
     expect(pwaUpdateStoreMock.resumePendingApplyIfAny).toHaveBeenCalledWith('/')
@@ -165,5 +170,22 @@ describe('fedimint boot', () => {
 
     expect(walletStoreMock.openWallet).not.toHaveBeenCalled()
     expect(router.replace).toHaveBeenCalledWith('/startup-wizard')
+  })
+
+  it('keeps the selected federation when startup wallet open fails', async () => {
+    walletStoreMock.hasMnemonic = true
+    walletStoreMock.openWallet.mockRejectedValue(new Error('startup open failed'))
+    federationStoreMock.selectedFederationId = 'fed-1'
+
+    const router = {
+      currentRoute: { value: { name: '/', path: '/' } },
+      replace: vi.fn(() => Promise.resolve()),
+      beforeEach: vi.fn(),
+    }
+
+    await fedimintBoot({ app: {}, router } as never)
+
+    expect(federationStoreMock.selectedFederationId).toBe('fed-1')
+    expect(walletStoreMock.closeWallet).toHaveBeenCalledTimes(1)
   })
 })

@@ -43,6 +43,45 @@ describe('federation store', () => {
     expect(federationStore.selectedFederationId).toBe(federation.federationId)
   })
 
+  it('selects the first federation when selection is missing', () => {
+    const federationStore = useFederationStore()
+    const first = createFederation({ federationId: 'fed-1' })
+    const second = createFederation({ federationId: 'fed-2' })
+    federationStore.federations = [first, second]
+    federationStore.selectedFederationId = null
+
+    const selectedFederation = federationStore.ensureValidSelection()
+
+    expect(selectedFederation?.federationId).toBe(first.federationId)
+    expect(federationStore.selectedFederationId).toBe(first.federationId)
+  })
+
+  it('repairs a stale selection by choosing the first available federation', () => {
+    const federationStore = useFederationStore()
+    const first = createFederation({ federationId: 'fed-1' })
+    const second = createFederation({ federationId: 'fed-2' })
+    federationStore.federations = [first, second]
+    federationStore.selectedFederationId = 'missing-fed'
+
+    const selectedFederation = federationStore.ensureValidSelection()
+
+    expect(selectedFederation?.federationId).toBe(first.federationId)
+    expect(federationStore.selectedFederationId).toBe(first.federationId)
+  })
+
+  it('falls back to another federation when the active federation is deleted', () => {
+    const federationStore = useFederationStore()
+    const first = createFederation({ federationId: 'fed-1' })
+    const second = createFederation({ federationId: 'fed-2' })
+    federationStore.federations = [first, second]
+    federationStore.selectedFederationId = first.federationId
+
+    federationStore.deleteFederation(first.federationId)
+
+    expect(federationStore.federations).toEqual([second])
+    expect(federationStore.selectedFederationId).toBe(second.federationId)
+  })
+
   it('restores previous selected federation when wallet open fails', async () => {
     const federationStore = useFederationStore()
     const first = createFederation({ federationId: 'fed-1' })

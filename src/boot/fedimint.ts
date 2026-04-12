@@ -93,6 +93,7 @@ export default defineBoot(async ({ app, router }) => {
       hasMnemonic: walletStore.hasMnemonic,
       needsMnemonicBackup: walletStore.needsMnemonicBackup,
     })
+    federationStore.ensureValidSelection()
 
     const startupWizardRequired = requiresStartupWizard(
       walletStore.hasMnemonic,
@@ -132,11 +133,10 @@ export default defineBoot(async ({ app, router }) => {
     }
   } catch (error) {
     logger.error('Failed to initialize wallet:', error)
-    if (federationStore.selectedFederationId != null) {
-      logger.warn('Clearing selected federation after startup wallet failure', {
-        selectedFederationId: federationStore.selectedFederationId,
-      })
-      federationStore.selectedFederationId = null
+    try {
+      await walletStore.closeWallet()
+    } catch (closeError) {
+      logger.warn('Failed to close wallet after startup error', { closeError })
     }
   } finally {
     appStore.setReady(true)

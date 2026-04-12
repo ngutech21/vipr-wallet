@@ -17,16 +17,32 @@ export const useFederationStore = defineStore('federation', {
   actions: {
     addFederation(newFedi: Federation) {
       this.federations.push(newFedi)
+      this.ensureValidSelection()
     },
+
+    ensureValidSelection(): Federation | undefined {
+      const selectedFederation = this.federations.find(
+        (f) => f.federationId === this.selectedFederationId,
+      )
+
+      if (selectedFederation != null) {
+        return selectedFederation
+      }
+
+      const fallbackFederation = this.federations[0]
+      this.selectedFederationId = fallbackFederation?.federationId ?? null
+      return fallbackFederation
+    },
+
     deleteFederation(federationId: string) {
       this.federations = this.federations.filter((f) => f.federationId !== federationId)
-      if (this.selectedFederationId === federationId) {
-        this.selectedFederationId = null
-      }
+      this.ensureValidSelection()
     },
+
     async selectFederation(fedi: Federation | undefined) {
       const previousSelectedFederationId = this.selectedFederationId
-      this.selectedFederationId = fedi?.federationId ?? null
+      const nextFederation = fedi ?? this.ensureValidSelection()
+      this.selectedFederationId = nextFederation?.federationId ?? null
 
       if (previousSelectedFederationId === this.selectedFederationId) {
         return
