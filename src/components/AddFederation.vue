@@ -1,5 +1,5 @@
 <template>
-  <ModalCard :title="dialogTitle" data-testid="add-federation-flow">
+  <ModalCard :title="dialogTitle" data-testid="add-federation-form">
     <JoinFederationInviteStep
       v-if="step === 'invite'"
       :invite-code="inviteCode"

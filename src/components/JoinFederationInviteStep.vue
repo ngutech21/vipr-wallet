@@ -8,7 +8,7 @@
       :rules="[(val) => !!val || 'Invitecode is required']"
       type="textarea"
       autogrow
-      data-testid="add-federation-invite-input"
+      data-testid="invite-code-input"
     />
 
     <div class="row justify-between full-width q-mt-none">

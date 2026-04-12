@@ -64,7 +64,17 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       const inviteCodeInput = page.getByTestId('invite-code-input')
       await inviteCodeInput.fill(inviteCode)
 
-      // Click Add Federation button
+      // Load preview first
+      const previewFederationButton = page.getByTestId('add-federation-preview-btn')
+      await expect(previewFederationButton).toHaveAttribute('data-busy', 'false')
+      await expect(previewFederationButton).toBeEnabled()
+      await previewFederationButton.click()
+
+      await expect(page.getByTestId('join-federation-preview-step')).toBeVisible({
+        timeout: 30_000,
+      })
+
+      // Confirm join from the preview step
       const addFederationButton = page.getByTestId('add-federation-submit-btn')
       await expect(addFederationButton).toHaveAttribute('data-busy', 'false')
       await expect(addFederationButton).toBeEnabled()

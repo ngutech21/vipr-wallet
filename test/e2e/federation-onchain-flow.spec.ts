@@ -38,6 +38,15 @@ test.describe('Federation Join and Onchain Receive Flow', () => {
 
       await page.getByTestId('invite-code-input').fill(inviteCode)
 
+      const previewFederationButton = page.getByTestId('add-federation-preview-btn')
+      await expect(previewFederationButton).toHaveAttribute('data-busy', 'false')
+      await expect(previewFederationButton).toBeEnabled()
+      await previewFederationButton.click()
+
+      await expect(page.getByTestId('join-federation-preview-step')).toBeVisible({
+        timeout: 30_000,
+      })
+
       const addFederationButton = page.getByTestId('add-federation-submit-btn')
       await expect(addFederationButton).toHaveAttribute('data-busy', 'false')
       await expect(addFederationButton).toBeEnabled()
