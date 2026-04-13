@@ -95,7 +95,7 @@ describe('WalletTransactionItem.vue', () => {
     wrapper = mountComponent(transactionWithoutOutcome as WalletTransaction)
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Waiting for Bitcoin')
+    expect(wrapper.text()).toContain('Received Bitcoin')
     expect(wrapper.text()).not.toContain('Deposited')
   })
 
