@@ -50,7 +50,7 @@
     <q-separator class="q-my-md" v-if="transaction.txId" />
     <div v-if="transaction.txId" class="detail-row">
       <div class="label">Transaction ID</div>
-      <div class="value text-caption">{{ transaction.txId }}</div>
+      <div class="value value--transaction-id text-caption">{{ transaction.txId }}</div>
     </div>
 
     <!-- Notes section if available -->
@@ -237,6 +237,19 @@ async function copyNotes() {
   .value {
     max-width: 80%;
     word-break: break-all;
+  }
+
+  .value--transaction-id {
+    flex: 1 1 auto;
+    max-width: none;
+    min-width: 0;
+    text-align: right;
+    white-space: nowrap;
+    word-break: normal;
+    overflow-x: auto;
+    overflow-y: hidden;
+    font-family: monospace;
+    scrollbar-width: thin;
   }
 }
 
