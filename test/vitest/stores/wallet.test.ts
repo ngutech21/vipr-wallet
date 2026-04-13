@@ -306,6 +306,46 @@ describe('wallet store', () => {
     expect(inspection.requiresJoin).toBe(false)
   })
 
+  it('does not fall back to prefix matching when a full federation id is present but unknown', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    const federation = createFederation({ federationId: 'fed-1-known' })
+    federationStore.federations = [federation]
+    fedimintClientMock.parseOobNotes.mockResolvedValue({
+      total_amount: 30_000,
+      federation_id_prefix: 'fed-1',
+      federation_id: 'fed-1-other',
+      invite_code: null,
+      note_counts: { '10000': 3 },
+    })
+
+    const inspection = await walletStore.inspectEcash('notes-full-id-mismatch')
+
+    expect(inspection.matchedFederation).toBeNull()
+    expect(inspection.requiresJoin).toBe(false)
+  })
+
+  it('does not match ambiguous federation prefixes during ecash inspection', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    federationStore.federations = [
+      createFederation({ federationId: 'abcd1111fed' }),
+      createFederation({ federationId: 'abcd2222fed', inviteCode: 'fed11testinvite2' }),
+    ]
+    fedimintClientMock.parseOobNotes.mockResolvedValue({
+      total_amount: 35_000,
+      federation_id_prefix: 'abcd',
+      federation_id: null,
+      invite_code: null,
+      note_counts: { '5000': 7 },
+    })
+
+    const inspection = await walletStore.inspectEcash('notes-ambiguous-prefix')
+
+    expect(inspection.matchedFederation).toBeNull()
+    expect(inspection.requiresJoin).toBe(false)
+  })
+
   it('redeems ecash only through reissueExternalNotes on the open wallet', async () => {
     const walletStore = useWalletStore()
     const wallet = createWalletMock(12_000)

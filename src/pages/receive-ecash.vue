@@ -128,11 +128,11 @@ meta:
             <div class="text-subtitle1">Federation Status</div>
             <div class="text-body2 q-mt-sm">
               <template v-if="inspection.requiresJoin">
-                This eCash belongs to an unknown federation. Preview the federation and join it
+                This ecash belongs to an unknown federation. Preview the federation and join it
                 before importing the notes.
               </template>
               <template v-else>
-                This eCash belongs to an unknown federation and does not include an invite code.
+                This ecash belongs to an unknown federation and does not include an invite code.
               </template>
             </div>
           </q-card-section>
@@ -141,7 +141,7 @@ meta:
         <div class="q-mt-lg">
           <q-btn
             v-if="inspection == null"
-            label="Preview eCash"
+            label="Preview ecash"
             color="primary"
             class="full-width q-py-sm"
             size="lg"

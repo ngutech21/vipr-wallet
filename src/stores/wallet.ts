@@ -462,9 +462,7 @@ function findMatchingFederation(
   const federationId = normalizeOptionalString(parsed.federation_id)
   if (federationId != null) {
     const exactMatch = federations.find((federation) => federation.federationId === federationId)
-    if (exactMatch != null) {
-      return exactMatch
-    }
+    return exactMatch ?? null
   }
 
   const federationIdPrefix = normalizeOptionalString(parsed.federation_id_prefix)
@@ -472,11 +470,11 @@ function findMatchingFederation(
     return null
   }
 
-  return (
-    federations.find((federation) =>
-      federation.federationId.toLowerCase().startsWith(federationIdPrefix.toLowerCase()),
-    ) ?? null
+  const prefixMatches = federations.filter((federation) =>
+    federation.federationId.toLowerCase().startsWith(federationIdPrefix.toLowerCase()),
   )
+
+  return prefixMatches.length === 1 ? (prefixMatches[0] ?? null) : null
 }
 
 function normalizeOptionalString(value: string | null | undefined): string | null {
