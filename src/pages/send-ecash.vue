@@ -73,18 +73,8 @@ meta:
 
             <q-separator dark />
 
-            <q-card-section>
-              <q-input
-                :model-value="exportedNotes"
-                readonly
-                filled
-                autogrow
-                dense
-                dark
-                type="textarea"
-                class="custom-input"
-                data-testid="send-ecash-notes-input"
-              />
+            <q-card-section class="column items-center q-pt-lg">
+              <AnimatedEcashQr :notes="exportedNotes" data-testid="send-ecash-animated-qr" />
             </q-card-section>
 
             <q-card-actions class="q-px-md q-pb-md">
@@ -107,9 +97,9 @@ meta:
               <q-btn
                 flat
                 color="primary"
-                label="Create another"
-                @click="resetExport"
-                data-testid="send-ecash-create-another-btn"
+                label="Go to home"
+                @click="goHome"
+                data-testid="send-ecash-go-home-btn"
               />
             </q-card-actions>
           </q-card>
@@ -128,6 +118,7 @@ import { computed, ref } from 'vue'
 import { Loading, useQuasar } from 'quasar'
 import { useShare } from '@vueuse/core'
 import { useRouter } from 'vue-router'
+import AnimatedEcashQr from 'src/components/AnimatedEcashQr.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
 import { useNumericInput } from 'src/composables/useNumericInput'
 import { useFederationStore } from 'src/stores/federation'
@@ -256,6 +247,11 @@ async function shareNotes() {
     title: `eCash for ${exportedAmount.value} sats`,
     text: exportedNotes.value,
   })
+}
+
+async function goHome() {
+  resetExport()
+  await router.push({ name: '/' })
 }
 
 function resetExport() {

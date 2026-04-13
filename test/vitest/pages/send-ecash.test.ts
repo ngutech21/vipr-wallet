@@ -78,6 +78,12 @@ describe('SendEcashPage.vue', () => {
           'q-separator': { template: '<hr />' },
           'q-space': { template: '<span />' },
           'q-spinner-dots': { template: '<span />' },
+          AnimatedEcashQr: {
+            props: {
+              notes: { type: String, required: true },
+            },
+            template: '<div data-testid="send-ecash-animated-qr-stub" :data-notes="notes" />',
+          },
           'q-btn': {
             props: {
               disable: { type: Boolean, required: false, default: false },
@@ -162,12 +168,10 @@ describe('SendEcashPage.vue', () => {
     await flushPromises()
 
     expect(mockSpendEcashOffline).toHaveBeenCalledWith(25)
-    expect(
-      (
-        wrapper.get('[data-testid="send-ecash-notes-input"] textarea')
-          .element as HTMLTextAreaElement
-      ).value,
-    ).toBe('cashuAoffline123')
+    expect(wrapper.get('[data-testid="send-ecash-animated-qr"]').attributes('data-notes')).toBe(
+      'cashuAoffline123',
+    )
+    expect(wrapper.find('[data-testid="send-ecash-notes-input"]').exists()).toBe(false)
     expect(mockLoadingShow).toHaveBeenCalledWith({ message: 'Creating offline eCash...' })
     expect(mockLoadingHide).toHaveBeenCalledTimes(1)
   })
@@ -203,5 +207,17 @@ describe('SendEcashPage.vue', () => {
       title: 'eCash for 25 sats',
       text: 'cashuAoffline123',
     })
+  })
+
+  it('returns to the home page from the export step', async () => {
+    wrapper = createWrapper()
+
+    await wrapper.get('[data-testid="receive-keypad-btn-2"]').trigger('click')
+    await wrapper.get('[data-testid="receive-keypad-btn-5"]').trigger('click')
+    await wrapper.get('[data-testid="send-ecash-create-btn"]').trigger('click')
+    await flushPromises()
+    await wrapper.get('[data-testid="send-ecash-go-home-btn"]').trigger('click')
+
+    expect(mockRouterPush).toHaveBeenCalledWith({ name: '/' })
   })
 })
