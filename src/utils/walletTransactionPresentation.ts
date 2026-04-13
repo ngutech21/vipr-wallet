@@ -22,7 +22,7 @@ export function getWalletDepositStatusLabel(outcome: WalletDepositOutcome): stri
 
 export function getWalletTransactionListTitle(transaction: WalletTransaction): string {
   if (transaction.type === 'withdraw') {
-    return 'Withdrawn'
+    return 'Sent Bitcoin'
   }
 
   return getWalletDepositStatusLabel(transaction.outcome)
@@ -30,17 +30,30 @@ export function getWalletTransactionListTitle(transaction: WalletTransaction): s
 
 export function getWalletTransactionDetailTitle(transaction: WalletTransaction): string {
   if (transaction.type === 'withdraw') {
-    return 'Withdrawn'
+    return 'Sent Bitcoin'
   }
 
-  return 'Bitcoin deposit'
+  return 'Received Bitcoin'
 }
 
 export function getWalletTransactionStatusLabel(
   transaction: WalletTransaction,
 ): string | undefined {
   if (transaction.type === 'withdraw') {
-    return transaction.outcome
+    const outcome = transaction.outcome as WalletDepositOutcome
+
+    switch (outcome) {
+      case 'Confirmed':
+      case 'Claimed':
+        return 'Broadcast'
+      case 'Failed':
+        return 'Failed'
+      case 'pending':
+      case undefined:
+        return 'Processing'
+      default:
+        return transaction.outcome
+    }
   }
 
   return getWalletDepositStatusLabel(transaction.outcome)
@@ -68,4 +81,31 @@ export function getWalletTransactionStatusColor(status: string | undefined): str
     default:
       return 'grey'
   }
+}
+
+export function getWalletTransactionAmountSats(transaction: WalletTransaction): number | null {
+  if (transaction.type === 'withdraw' && transaction.amountMsats <= 0) {
+    return null
+  }
+
+  return Math.max(0, Math.floor(transaction.amountMsats / 1_000))
+}
+
+export function getWalletTransactionFeeSats(transaction: WalletTransaction): number {
+  return Math.max(0, Math.floor(transaction.fee / 1_000))
+}
+
+export function getWalletTransactionTotalDebitedSats(
+  transaction: WalletTransaction,
+): number | null {
+  if (transaction.type !== 'withdraw') {
+    return null
+  }
+
+  const amountSats = getWalletTransactionAmountSats(transaction)
+  if (amountSats == null) {
+    return null
+  }
+
+  return amountSats + getWalletTransactionFeeSats(transaction)
 }

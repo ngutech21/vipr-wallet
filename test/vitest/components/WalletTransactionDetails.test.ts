@@ -99,19 +99,19 @@ describe('WalletTransactionDetails.vue', () => {
   })
 
   describe('Transaction Type Display', () => {
-    it('should display "Bitcoin deposit" for deposit type with positive color', () => {
+    it('should display "Received Bitcoin" for deposit type with positive color', () => {
       const transaction = createMockTransaction({ type: 'deposit' })
       wrapper = createWrapper(transaction)
 
-      expect(wrapper.text()).toContain('Bitcoin deposit')
+      expect(wrapper.text()).toContain('Received Bitcoin')
       expect(wrapper.html()).toContain('text-positive')
     })
 
-    it('should display "Withdrawn" for withdraw type with negative color', () => {
+    it('should display "Sent Bitcoin" for withdraw type with negative color', () => {
       const transaction = createMockTransaction({ type: 'withdraw' })
       wrapper = createWrapper(transaction)
 
-      expect(wrapper.text()).toContain('Withdrawn')
+      expect(wrapper.text()).toContain('Sent Bitcoin')
       expect(wrapper.html()).toContain('text-negative')
     })
 
@@ -296,11 +296,11 @@ describe('WalletTransactionDetails.vue', () => {
       expect(wrapper.text()).not.toContain('Net Withdrawn')
     })
 
-    it('should display "Net Withdrawn" for withdraw transactions', () => {
+    it('should display "Total Debited" for withdraw transactions', () => {
       const transaction = createMockTransaction({ type: 'withdraw' })
       wrapper = createWrapper(transaction)
 
-      expect(wrapper.text()).toContain('Net Withdrawn')
+      expect(wrapper.text()).toContain('Total Debited')
       expect(wrapper.text()).not.toContain('Net Deposited')
     })
 
@@ -316,7 +316,7 @@ describe('WalletTransactionDetails.vue', () => {
       expect(wrapper.text()).toContain('+95,000 sats')
     })
 
-    it('should calculate net amount correctly for withdraw (amount + fee)', () => {
+    it('should calculate total debited correctly for withdraw (amount + fee)', () => {
       const transaction = createMockTransaction({
         type: 'withdraw',
         amountMsats: 100000000,
@@ -324,7 +324,7 @@ describe('WalletTransactionDetails.vue', () => {
       })
       wrapper = createWrapper(transaction)
 
-      // Net withdrawn = 100,000 sats + 5,000 sats = 105,000 sats
+      // Total debited = 100,000 sats + 5,000 sats = 105,000 sats
       expect(wrapper.text()).toContain('-105,000 sats')
     })
 
@@ -355,8 +355,21 @@ describe('WalletTransactionDetails.vue', () => {
       wrapper = createWrapper(transaction)
 
       const detailRows = wrapper.findAll('.detail-row')
-      const netAmountRow = detailRows.find((row) => row.text().includes('Net Withdrawn'))
+      const netAmountRow = detailRows.find((row) => row.text().includes('Total Debited'))
       expect(netAmountRow?.html()).toContain('text-negative')
+    })
+
+    it('shows "Amount unavailable" for withdraws without a recoverable amount', () => {
+      const transaction = createMockTransaction({
+        type: 'withdraw',
+        amountMsats: 0,
+        fee: 471000,
+      })
+      wrapper = createWrapper(transaction)
+
+      expect(wrapper.text()).toContain('Amount unavailable')
+      expect(wrapper.text()).toContain('Total Debited')
+      expect(wrapper.text()).toContain('Unknown')
     })
   })
 

@@ -56,6 +56,7 @@ describe('SendEcashSelection.vue', () => {
     wrapper = createWrapper()
 
     expect(wrapper.text()).toContain('Send via Lightning')
+    expect(wrapper.text()).toContain('Send Onchain')
     expect(wrapper.text()).toContain('Send Offline eCash')
   })
 
@@ -76,6 +77,16 @@ describe('SendEcashSelection.vue', () => {
     await flushPromises()
 
     expect(mockRouterPush).toHaveBeenCalledWith({ name: '/send-ecash' })
+    expect(wrapper.emitted('close')).toHaveLength(1)
+  })
+
+  it('navigates to the onchain send page and closes', async () => {
+    wrapper = createWrapper()
+
+    await wrapper.get('[data-testid="send-onchain-card"]').trigger('click')
+    await flushPromises()
+
+    expect(mockRouterPush).toHaveBeenCalledWith({ path: '/send-onchain' })
     expect(wrapper.emitted('close')).toHaveLength(1)
   })
 })

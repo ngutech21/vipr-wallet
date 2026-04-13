@@ -99,4 +99,32 @@ describe('ScanPage detection flow', () => {
     expect((wrapper.vm as any).detectedContent).toBe('fed1abc')
     wrapper.unmount()
   })
+
+  it('routes bitcoin URI scans to the onchain send page', async () => {
+    wrapper = createWrapper()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).onDetect([
+      { rawValue: 'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021' },
+    ])
+    await flushPromises()
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      path: '/send-onchain',
+      query: { target: 'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021' },
+    })
+    wrapper.unmount()
+  })
+
+  it('routes raw bitcoin address scans to the onchain send page without lowercasing', async () => {
+    wrapper = createWrapper()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).onDetect([{ rawValue: '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy' }])
+    await flushPromises()
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      path: '/send-onchain',
+      query: { target: '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy' },
+    })
+    wrapper.unmount()
+  })
 })

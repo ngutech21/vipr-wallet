@@ -107,7 +107,7 @@ function getAmountClass(): string {
 }
 
 function getAmountPrefix(): string {
-  return props.transaction.type === 'spend_oob' ? '- ' : ''
+  return props.transaction.type === 'spend_oob' ? '- ' : '+ '
 }
 
 function formatOutcome(outcome: string): string {

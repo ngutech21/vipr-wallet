@@ -25,6 +25,25 @@
           <q-card
             class="cursor-pointer"
             v-ripple
+            @click="onSendOnchain"
+            data-testid="send-onchain-card"
+          >
+            <q-card-section class="row">
+              <q-icon name="currency_bitcoin" size="48px" color="orange" class="col-2" />
+              <div class="col-10">
+                <div class="text-h6 q-mt-sm">Send Onchain</div>
+                <div class="text-caption text-grey-7">
+                  Send Bitcoin to an onchain address or Bitcoin QR code
+                </div>
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+
+        <div class="col-12">
+          <q-card
+            class="cursor-pointer"
+            v-ripple
             @click="onSendOffline"
             data-testid="send-offline-card"
           >
@@ -56,6 +75,11 @@ const emit = defineEmits<{
 async function onSendLightning() {
   emit('close')
   await router.push({ name: '/send' })
+}
+
+async function onSendOnchain() {
+  emit('close')
+  await router.push({ path: '/send-onchain' })
 }
 
 async function onSendOffline() {

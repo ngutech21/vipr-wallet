@@ -92,9 +92,23 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       never
     >
+    '/send-onchain': RouteRecordInfo<
+      '/send-onchain',
+      '/send-onchain',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >
     '/sent-lightning': RouteRecordInfo<
       '/sent-lightning',
       '/sent-lightning',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >
+    '/sent-onchain': RouteRecordInfo<
+      '/sent-onchain',
+      '/sent-onchain',
       Record<never, never>,
       Record<never, never>,
       never
@@ -195,8 +209,16 @@ declare module 'vue-router/auto-routes' {
       routes: '/send-ecash'
       views: never
     }
+    'src/pages/send-onchain.vue': {
+      routes: '/send-onchain'
+      views: never
+    }
     'src/pages/sent-lightning.vue': {
       routes: '/sent-lightning'
+      views: never
+    }
+    'src/pages/sent-onchain.vue': {
+      routes: '/sent-onchain'
       views: never
     }
     'src/pages/settings/index.vue': {
