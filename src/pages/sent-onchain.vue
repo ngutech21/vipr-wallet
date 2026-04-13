@@ -232,11 +232,11 @@ onUnmounted(() => {
 })
 
 async function refreshTransaction() {
-  if (
-    operationId === '' ||
-    transaction.value != null ||
-    refreshAttempts.value >= MAX_POLL_ATTEMPTS
-  ) {
+  if (operationId === '' || refreshAttempts.value >= MAX_POLL_ATTEMPTS) {
+    return
+  }
+
+  if (transaction.value != null && isTerminalOutcome(transaction.value.outcome)) {
     return
   }
 
@@ -252,7 +252,10 @@ async function refreshTransaction() {
     if (matchingTransaction != null) {
       applyTransactionUpdate(matchingTransaction)
       await walletStore.updateBalance()
-      return
+
+      if (isTerminalOutcome(matchingTransaction.outcome)) {
+        return
+      }
     }
   } catch (error) {
     logger.error('Failed to refresh onchain withdrawal transaction', error)
@@ -262,7 +265,10 @@ async function refreshTransaction() {
 }
 
 function scheduleNextRefresh() {
-  if (refreshAttempts.value >= MAX_POLL_ATTEMPTS || transaction.value != null) {
+  if (
+    refreshAttempts.value >= MAX_POLL_ATTEMPTS ||
+    (transaction.value != null && isTerminalOutcome(transaction.value.outcome))
+  ) {
     return
   }
 
@@ -303,6 +309,10 @@ function getQueryNumber(value: unknown): number {
 
 function applyTransactionUpdate(nextTransaction: WalletTransaction) {
   transaction.value = nextTransaction
+}
+
+function isTerminalOutcome(outcome: WalletTransaction['outcome'] | undefined): boolean {
+  return outcome === 'Confirmed' || outcome === 'Claimed' || outcome === 'Failed'
 }
 </script>
 

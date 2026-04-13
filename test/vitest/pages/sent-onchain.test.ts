@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import { defineComponent, reactive } from 'vue'
 import SentOnchainPage from 'src/pages/sent-onchain.vue'
@@ -76,6 +76,7 @@ describe('SentOnchainPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.useFakeTimers()
     routeState = reactive<RouteState>({
       query: {
         operationId: 'withdraw-op-1',
@@ -87,6 +88,10 @@ describe('SentOnchainPage', () => {
     mockGetTransactions.mockResolvedValue([createWalletTransaction()])
     mockUpdateBalance.mockResolvedValue(undefined)
     mockRouterPush.mockResolvedValue(undefined)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('loads the matching wallet transaction and offers details navigation', async () => {
@@ -118,6 +123,32 @@ describe('SentOnchainPage', () => {
     expect(wrapper.text()).toContain('Sending Bitcoin...')
     expect(wrapper.text()).toContain('Pending')
     expect(wrapper.find('[data-testid="sent-onchain-view-details-btn"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('keeps polling until the withdrawal reaches a terminal state', async () => {
+    const { outcome: _pendingOutcomeRemoved, ...pendingTransactionWithoutOutcome } =
+      createWalletTransaction()
+
+    mockGetTransactions
+      .mockResolvedValueOnce([pendingTransactionWithoutOutcome as WalletTransaction])
+      .mockResolvedValueOnce([
+        createWalletTransaction({
+          outcome: 'Confirmed',
+        }),
+      ])
+
+    wrapper = createWrapper()
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Submitted')
+    expect(mockGetTransactions).toHaveBeenCalledTimes(1)
+
+    await vi.advanceTimersByTimeAsync(3_000)
+    await flushPromises()
+
+    expect(mockGetTransactions).toHaveBeenCalledTimes(2)
+    expect(wrapper.text()).toContain('Confirmed')
     wrapper.unmount()
   })
 })
