@@ -1,5 +1,10 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import type { FedimintWallet, MSats, Transactions, TxOutputSummary } from '@fedimint/core'
+import type {
+  FedimintWallet,
+  ParsedNoteDetails,
+  Transactions,
+  TxOutputSummary,
+} from '@fedimint/core'
 import { useFederationStore } from './federation'
 import type {
   Federation,
@@ -22,6 +27,15 @@ export const FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY = 'vipr.fedimint.mnemonic.ba
 
 export function getWalletNameForFederationId(federationId: string): string {
   return `${WALLET_NAME_PREFIX}${federationId}`
+}
+
+export type EcashInspection = {
+  amountMsats: number
+  amountSats: number
+  parsed: ParsedNoteDetails
+  matchedFederation: Federation | null
+  inviteCode: string | null
+  requiresJoin: boolean
 }
 
 export const useWalletStore = defineStore('wallet', {
@@ -194,17 +208,37 @@ export const useWalletStore = defineStore('wallet', {
       this.needsMnemonicBackup = false
     },
 
-    async redeemEcash(tokens: string): Promise<MSats | undefined> {
-      const amount = await this.wallet?.mint.parseNotes(tokens)
-      const opsId = await this.wallet?.mint.reissueExternalNotes(tokens)
+    async inspectEcash(tokens: string): Promise<EcashInspection> {
+      await this.initClients()
+
+      const parsed = await fedimintClient.parseOobNotes(tokens)
+      const federationStore = useFederationStore()
+      const matchedFederation = findMatchingFederation(federationStore.federations, parsed)
+      const inviteCode = normalizeOptionalString(parsed.invite_code)
+
+      return {
+        amountMsats: parsed.total_amount,
+        amountSats: Math.floor(parsed.total_amount / 1_000),
+        parsed,
+        matchedFederation,
+        inviteCode,
+        requiresJoin: matchedFederation == null && inviteCode != null,
+      }
+    },
+
+    async redeemEcash(tokens: string): Promise<void> {
+      if (this.wallet == null) {
+        throw new Error('Wallet is not open')
+      }
+
+      const opsId = await this.wallet.mint.reissueExternalNotes(tokens)
       if (opsId != null && opsId !== '') {
-        this.wallet?.mint.subscribeReissueExternalNotes(opsId, (_state) => {
+        this.wallet.mint.subscribeReissueExternalNotes(opsId, (_state) => {
           this.updateBalance()
             .then(() => logger.logWalletOperation('Balance updated after ecash redemption'))
             .catch((err) => logger.error('Error updating balance after ecash redemption', err))
         })
       }
-      return amount
     },
 
     async getTransactions(): Promise<Transactions[]> {
@@ -419,6 +453,39 @@ export function parseOutpoint(outpoint: string | { txid?: string; vout?: number 
     txid: '',
     vout: 0,
   }
+}
+
+function findMatchingFederation(
+  federations: Federation[],
+  parsed: ParsedNoteDetails,
+): Federation | null {
+  const federationId = normalizeOptionalString(parsed.federation_id)
+  if (federationId != null) {
+    const exactMatch = federations.find((federation) => federation.federationId === federationId)
+    if (exactMatch != null) {
+      return exactMatch
+    }
+  }
+
+  const federationIdPrefix = normalizeOptionalString(parsed.federation_id_prefix)
+  if (federationIdPrefix == null) {
+    return null
+  }
+
+  return (
+    federations.find((federation) =>
+      federation.federationId.toLowerCase().startsWith(federationIdPrefix.toLowerCase()),
+    ) ?? null
+  )
+}
+
+function normalizeOptionalString(value: string | null | undefined): string | null {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const normalized = value.trim()
+  return normalized === '' ? null : normalized
 }
 
 function getErrorMessage(error: unknown): string {

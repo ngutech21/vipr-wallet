@@ -14,6 +14,7 @@ const fedimintClientMock = vi.hoisted(() => ({
   clearAllWallets: vi.fn<() => Promise<void>>(),
   listWallets: vi.fn<() => Promise<string[]>>(),
   previewFederation: vi.fn(),
+  parseOobNotes: vi.fn(),
   reset: vi.fn(),
 }))
 
@@ -55,8 +56,7 @@ function createWalletMock(balanceMsats: number) {
       listTransactions: vi.fn(),
     },
     mint: {
-      parseNotes: vi.fn(),
-      reissueExternalNotes: vi.fn(),
+      reissueExternalNotes: vi.fn(() => Promise.resolve('op-1')),
       subscribeReissueExternalNotes: vi.fn(),
     },
     lightning: {},
@@ -106,6 +106,13 @@ describe('wallet store', () => {
       'lima',
     ])
     fedimintClientMock.setMnemonic.mockResolvedValue()
+    fedimintClientMock.parseOobNotes.mockResolvedValue({
+      total_amount: 12_000,
+      federation_id_prefix: 'fed-',
+      federation_id: 'fed-1',
+      invite_code: null,
+      note_counts: { '1000': 12 },
+    })
   })
 
   it('opens the selected federation wallet via deterministic wallet name', async () => {
@@ -230,6 +237,84 @@ describe('wallet store', () => {
     expect(hasMnemonic).toBe(true)
     expect(walletStore.hasMnemonic).toBe(true)
     expect(walletStore.needsMnemonicBackup).toBe(false)
+  })
+
+  it('inspects ecash and matches federation by full federation id', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    const federation = createFederation()
+    federationStore.federations = [federation]
+
+    const inspection = await walletStore.inspectEcash('notes-1')
+
+    expect(inspection.amountMsats).toBe(12_000)
+    expect(inspection.amountSats).toBe(12)
+    expect(inspection.matchedFederation).toEqual(federation)
+    expect(inspection.requiresJoin).toBe(false)
+  })
+
+  it('falls back to federation id prefix matching during ecash inspection', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    const federation = createFederation({ federationId: 'abcd1234fed' })
+    federationStore.federations = [federation]
+    fedimintClientMock.parseOobNotes.mockResolvedValue({
+      total_amount: 15_000,
+      federation_id_prefix: 'abcd',
+      federation_id: null,
+      invite_code: null,
+      note_counts: { '5000': 3 },
+    })
+
+    const inspection = await walletStore.inspectEcash('notes-prefix')
+
+    expect(inspection.matchedFederation).toEqual(federation)
+    expect(inspection.requiresJoin).toBe(false)
+  })
+
+  it('marks ecash inspection as joinable when invite code is present for unknown federation', async () => {
+    const walletStore = useWalletStore()
+    fedimintClientMock.parseOobNotes.mockResolvedValue({
+      total_amount: 20_000,
+      federation_id_prefix: 'beef',
+      federation_id: null,
+      invite_code: 'fed11joinme',
+      note_counts: { '10000': 2 },
+    })
+
+    const inspection = await walletStore.inspectEcash('notes-join')
+
+    expect(inspection.matchedFederation).toBeNull()
+    expect(inspection.inviteCode).toBe('fed11joinme')
+    expect(inspection.requiresJoin).toBe(true)
+  })
+
+  it('marks ecash inspection as not importable when invite code is missing for unknown federation', async () => {
+    const walletStore = useWalletStore()
+    fedimintClientMock.parseOobNotes.mockResolvedValue({
+      total_amount: 25_000,
+      federation_id_prefix: 'cafe',
+      federation_id: null,
+      invite_code: null,
+      note_counts: { '25000': 1 },
+    })
+
+    const inspection = await walletStore.inspectEcash('notes-unknown')
+
+    expect(inspection.matchedFederation).toBeNull()
+    expect(inspection.inviteCode).toBeNull()
+    expect(inspection.requiresJoin).toBe(false)
+  })
+
+  it('redeems ecash only through reissueExternalNotes on the open wallet', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(12_000)
+    walletStore.wallet = wallet as never
+
+    await walletStore.redeemEcash('notes-import')
+
+    expect(wallet.mint.reissueExternalNotes).toHaveBeenCalledWith('notes-import')
+    expect(wallet.mint.subscribeReissueExternalNotes).toHaveBeenCalledTimes(1)
   })
 })
 

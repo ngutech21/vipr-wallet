@@ -99,4 +99,17 @@ describe('ScanPage detection flow', () => {
     expect((wrapper.vm as any).detectedContent).toBe('fed1abc')
     wrapper.unmount()
   })
+
+  it('routes unknown scans to receive ecash page for oob parsing', async () => {
+    wrapper = createWrapper()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).onDetect([{ rawValue: 'cashuAexample' }])
+    await flushPromises()
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      name: '/receive-ecash',
+      query: { token: 'cashuAexample' },
+    })
+    wrapper.unmount()
+  })
 })

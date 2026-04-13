@@ -93,7 +93,8 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
   logger.scanner.debug('Code detected', { rawValue: code.rawValue })
   detectedContent.value = code.rawValue
 
-  const cleanCode = code.rawValue.toLocaleLowerCase()
+  const normalizedCode = code.rawValue.trim()
+  const cleanCode = normalizedCode.toLocaleLowerCase()
 
   if (cleanCode.startsWith('fed')) {
     showAddFederation.value = true
@@ -109,6 +110,13 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
         query: { invoice },
       })
       .catch((error) => logger.error('Failed to navigate to send page', error))
+  } else {
+    await router
+      .push({
+        name: '/receive-ecash',
+        query: { token: normalizedCode },
+      })
+      .catch((error) => logger.error('Failed to navigate to receive ecash page', error))
   }
 }
 

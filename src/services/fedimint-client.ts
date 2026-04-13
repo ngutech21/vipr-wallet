@@ -1,4 +1,4 @@
-import { WalletDirector, type FedimintWallet } from '@fedimint/core'
+import { WalletDirector, type FedimintWallet, type ParsedNoteDetails } from '@fedimint/core'
 import { WasmWorkerTransport } from '@fedimint/transport-web'
 import { v5 as uuidv5 } from 'uuid'
 import { logger } from 'src/services/logger'
@@ -55,6 +55,16 @@ class FedimintClientAdapter {
     }
 
     return normalizePreviewResult(await this.director.previewFederation(inviteCode))
+  }
+
+  async parseOobNotes(notes: string): Promise<ParsedNoteDetails> {
+    await this.init()
+
+    if (this.director == null) {
+      throw new Error('Wallet director is not initialized')
+    }
+
+    return await this.director.parseOobNotes(notes)
   }
 
   async ensureWalletOpen({
