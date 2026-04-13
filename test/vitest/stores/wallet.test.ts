@@ -264,6 +264,40 @@ describe('wallet store', () => {
     expect(walletStore.balance).toBe(8)
   })
 
+  it('spendEcashOffline still returns notes when the immediate balance refresh fails', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(21_000)
+    wallet.balance.getBalance = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('balance refresh failed'))
+      .mockResolvedValueOnce(8_000)
+    wallet.mint.spendNotes.mockResolvedValue({
+      notes: 'cashuA123',
+      operation_id: 'op-offline-1',
+    })
+    wallet.mint.subscribeSpendNotes.mockImplementation((_operationId, onSuccess) => {
+      onSuccess('Success')
+      return vi.fn()
+    })
+
+    walletStore.wallet = wallet as never
+
+    const result = await walletStore.spendEcashOffline(13)
+
+    expect(result).toEqual({
+      notes: 'cashuA123',
+      operationId: 'op-offline-1',
+    })
+    expect(wallet.mint.subscribeSpendNotes).toHaveBeenCalledWith(
+      'op-offline-1',
+      expect.any(Function),
+      expect.any(Function),
+    )
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(walletStore.balance).toBe(8)
+  })
+
   it('spendEcashOffline rejects invalid amounts before touching the wallet', async () => {
     const walletStore = useWalletStore()
     const wallet = createWalletMock(21_000)

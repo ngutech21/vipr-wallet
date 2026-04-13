@@ -237,7 +237,14 @@ export const useWalletStore = defineStore('wallet', {
         throw new Error('Failed to create offline eCash notes')
       }
 
-      await this.updateBalance()
+      try {
+        await this.updateBalance()
+      } catch (error) {
+        logger.error('Failed to update balance after creating offline eCash', {
+          operationId,
+          error,
+        })
+      }
 
       let unsubscribe = () => {}
       const refreshBalanceAfterSpendState = (state: SpendNotesState) => {
