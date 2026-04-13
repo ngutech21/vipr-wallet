@@ -271,6 +271,7 @@ describe('EcashTransactionDetails.vue', () => {
 
       expect(wrapper.text()).toContain('Transaction ID')
       expect(wrapper.text()).toContain('tx-id-abc123')
+      expect(wrapper.find('.value--transaction-id').exists()).toBe(true)
     })
 
     it('should hide transaction ID section when not present', () => {

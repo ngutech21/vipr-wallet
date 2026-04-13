@@ -1,5 +1,11 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
-import type { FedimintWallet, MSats, Transactions, TxOutputSummary } from '@fedimint/core'
+import type {
+  FedimintWallet,
+  MSats,
+  SpendNotesState,
+  Transactions,
+  TxOutputSummary,
+} from '@fedimint/core'
 import { useFederationStore } from './federation'
 import type {
   Federation,
@@ -22,6 +28,11 @@ export const FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY = 'vipr.fedimint.mnemonic.ba
 
 export function getWalletNameForFederationId(federationId: string): string {
   return `${WALLET_NAME_PREFIX}${federationId}`
+}
+
+export type OfflineEcashSpendResult = {
+  notes: string
+  operationId: string
 }
 
 export const useWalletStore = defineStore('wallet', {
@@ -205,6 +216,71 @@ export const useWalletStore = defineStore('wallet', {
         })
       }
       return amount
+    },
+
+    async spendEcashOffline(amountSats: number): Promise<OfflineEcashSpendResult> {
+      if (this.wallet == null) {
+        throw new Error('Wallet is not initialized')
+      }
+
+      if (!Number.isInteger(amountSats) || amountSats <= 0) {
+        throw new Error('Amount must be a positive whole number of sats')
+      }
+
+      logger.logTransaction('Creating offline eCash spend', { amount: amountSats })
+
+      const result = await this.wallet.mint.spendNotes(amountSats * 1_000, 86_400, false)
+      const operationId = result.operation_id
+      const notes = result.notes
+
+      if (operationId == null || operationId === '' || notes == null || notes === '') {
+        throw new Error('Failed to create offline eCash notes')
+      }
+
+      try {
+        await this.updateBalance()
+      } catch (error) {
+        logger.error('Failed to update balance after creating offline eCash', {
+          operationId,
+          error,
+        })
+      }
+
+      let unsubscribe = () => {}
+      const refreshBalanceAfterSpendState = (state: SpendNotesState) => {
+        if (
+          state === 'Success' ||
+          state === 'Refunded' ||
+          state === 'UserCanceledFailure' ||
+          state === 'UserCanceledSuccess'
+        ) {
+          unsubscribe()
+          this.updateBalance()
+            .then(() =>
+              logger.logWalletOperation('Balance updated after offline eCash state change', {
+                operationId,
+                state,
+              }),
+            )
+            .catch((error) =>
+              logger.error('Failed to update balance after offline eCash state change', error),
+            )
+        }
+      }
+
+      unsubscribe = this.wallet.mint.subscribeSpendNotes(
+        operationId,
+        refreshBalanceAfterSpendState,
+        (error) => {
+          unsubscribe()
+          logger.error('Offline eCash spend subscription failed', { operationId, error })
+        },
+      )
+
+      return {
+        notes,
+        operationId,
+      }
     },
 
     async getTransactions(): Promise<Transactions[]> {
