@@ -58,6 +58,8 @@ function createWalletMock(balanceMsats: number) {
       parseNotes: vi.fn(),
       reissueExternalNotes: vi.fn(),
       subscribeReissueExternalNotes: vi.fn(),
+      spendNotes: vi.fn(),
+      subscribeSpendNotes: vi.fn(),
     },
     lightning: {},
     balance: {
@@ -230,6 +232,47 @@ describe('wallet store', () => {
     expect(hasMnemonic).toBe(true)
     expect(walletStore.hasMnemonic).toBe(true)
     expect(walletStore.needsMnemonicBackup).toBe(false)
+  })
+
+  it('spendEcashOffline creates notes, converts sats to msats, and refreshes balance', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(21_000)
+    wallet.balance.getBalance = vi.fn().mockResolvedValueOnce(8_000).mockResolvedValueOnce(8_000)
+    wallet.mint.spendNotes.mockResolvedValue({
+      notes: 'cashuA123',
+      operation_id: 'op-offline-1',
+    })
+    wallet.mint.subscribeSpendNotes.mockImplementation((_operationId, onSuccess) => {
+      onSuccess('Success')
+      return vi.fn()
+    })
+
+    walletStore.wallet = wallet as never
+
+    const result = await walletStore.spendEcashOffline(13)
+
+    expect(wallet.mint.spendNotes).toHaveBeenCalledWith(13_000, 86_400, false)
+    expect(wallet.mint.subscribeSpendNotes).toHaveBeenCalledWith(
+      'op-offline-1',
+      expect.any(Function),
+      expect.any(Function),
+    )
+    expect(result).toEqual({
+      notes: 'cashuA123',
+      operationId: 'op-offline-1',
+    })
+    expect(walletStore.balance).toBe(8)
+  })
+
+  it('spendEcashOffline rejects invalid amounts before touching the wallet', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(21_000)
+    walletStore.wallet = wallet as never
+
+    await expect(walletStore.spendEcashOffline(0)).rejects.toThrow(
+      'Amount must be a positive whole number of sats',
+    )
+    expect(wallet.mint.spendNotes).not.toHaveBeenCalled()
   })
 })
 

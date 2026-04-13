@@ -34,20 +34,7 @@ meta:
             data-testid="amount-input"
           />
 
-          <!-- Preset amount buttons -->
-          <div class="row q-col-gutter-sm q-mb-lg">
-            <div class="col-4" v-for="(button, index) in keypadButtons" :key="index">
-              <q-btn
-                outline
-                color="white"
-                class="full-width"
-                :icon="button.icon"
-                :label="button.label"
-                @click="button.handler"
-                :data-testid="button.testId"
-              />
-            </div>
-          </div>
+          <NumericKeypad :buttons="keypadButtons" class="q-mb-lg" />
 
           <q-btn
             label="Create Invoice"
@@ -134,6 +121,7 @@ import { useShare } from '@vueuse/core'
 import { init, requestProvider } from '@getalby/bitcoin-connect'
 import { useFederationStore } from 'src/stores/federation'
 import { logger } from 'src/services/logger'
+import NumericKeypad from 'src/components/NumericKeypad.vue'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
 import { useNumericInput } from 'src/composables/useNumericInput'
 import { getErrorMessage } from 'src/utils/error'
