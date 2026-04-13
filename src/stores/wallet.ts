@@ -343,10 +343,11 @@ export const useWalletStore = defineStore('wallet', {
           return []
         }
 
-        const [transactions, operations] = await Promise.all([
-          this.wallet.federation.listTransactions(10),
-          this.wallet.federation.listOperations(10),
-        ])
+        const transactions = await this.wallet.federation.listTransactions(10)
+        const operations = await this.wallet.federation.listOperations(10).catch((error) => {
+          logger.warn('Failed to fetch operation metadata for transaction enrichment', error)
+          return []
+        })
 
         const operationLogById = new Map<string, OperationLog>()
         for (const operation of operations) {

@@ -527,6 +527,37 @@ describe('wallet store', () => {
       fee: 472_000,
     })
   })
+
+  it('getTransactions falls back to raw transactions when operation metadata fetch fails', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(45_000)
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'wallet',
+        operationId: 'wallet-op-4',
+        type: 'withdraw',
+        amountMsats: 2_000_000,
+        fee: 471_000,
+        onchainAddress: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+        outcome: 'Confirmed',
+        timestamp: 1_234_567_890_000,
+      },
+    ])
+    wallet.federation.listOperations.mockRejectedValue(new Error('RPC timeout'))
+
+    walletStore.wallet = wallet as never
+
+    const transactions = await walletStore.getTransactions()
+
+    expect(transactions).toHaveLength(1)
+    expect(wallet.federation.listTransactions).toHaveBeenCalledWith(10)
+    expect(wallet.federation.listOperations).toHaveBeenCalledWith(10)
+    expect(transactions[0]).toMatchObject({
+      operationId: 'wallet-op-4',
+      amountMsats: 2_000_000,
+      fee: 471_000,
+    })
+  })
 })
 
 describe('wallet utxo helpers', () => {
