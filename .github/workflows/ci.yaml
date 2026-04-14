@@ -37,6 +37,9 @@ jobs:
         # also fail on peer dependency incompatibilities.
         run: pnpm install --frozen-lockfile --strict-peer-dependencies
 
+      - name: Check code formatting
+        run: pnpm format:check
+
       - name: Lint
         run: pnpm lint
 
