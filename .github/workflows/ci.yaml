@@ -21,7 +21,7 @@ jobs:
         uses: actions/dependency-review-action@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@v5
         with:
           version: 10.28.0
 
