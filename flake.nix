@@ -1,5 +1,5 @@
 {
-  description = "Vipr-Wallet development environment";
+  description = "Vipr Wallet development environment";
   
 
   inputs = {
@@ -64,7 +64,7 @@
             unset PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS
             export FONTCONFIG_FILE=${playwrightFontsConf}
 
-            echo "Vipr-Wallet development environment"
+            echo "Vipr Wallet development environment"
             echo "Node.js $(node --version)"
             echo "pnpm $(pnpm --version)"
             echo "TypeScript $(tsc --version)"

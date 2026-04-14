@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Vipr-Wallet is a Progressive Web App (PWA) that serves as an ecash wallet for Fedimint. Built with Vue 3, TypeScript, and Quasar Framework, it enables private and instant lightning transactions.
+Vipr Wallet is a Progressive Web App (PWA) that serves as an ecash wallet for Fedimint. Built with Vue 3, TypeScript, and Quasar Framework, it enables private and instant lightning transactions.
 
 ## Development Commands
 

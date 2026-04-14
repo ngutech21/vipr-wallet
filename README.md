@@ -5,9 +5,9 @@
 
 ---
 
-# Vipr-Wallet
+# Vipr Wallet
 
-Vipr-Wallet is a modern Progressive Web App (PWA) that serves as an ecash wallet for Fedimint. It runs seamlessly on both mobile and desktop devices, enabling private and instant lightning transactions wherever you are.
+Vipr Wallet is a modern Progressive Web App (PWA) that serves as an ecash wallet for Fedimint. It runs seamlessly on both mobile and desktop devices, enabling private and instant lightning transactions wherever you are.
 
 # ⚠️ Disclaimer
 
