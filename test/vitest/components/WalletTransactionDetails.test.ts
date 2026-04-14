@@ -660,6 +660,27 @@ describe('WalletTransactionDetails.vue', () => {
         const badge = wrapper.find('.status-badge')
         expect(badge.attributes('class')).toContain('bg-negative')
       })
+
+      it('should return warning color for processing onchain sends', () => {
+        const { outcome: _removed, ...transactionWithoutOutcome } = createMockTransaction({
+          type: 'withdraw',
+        })
+        const transaction = transactionWithoutOutcome as WalletTransaction
+        wrapper = createWrapper(transaction)
+
+        const badge = wrapper.find('.status-badge')
+        expect(badge.text()).toContain('Processing')
+        expect(badge.attributes('class')).toContain('bg-warning')
+      })
+
+      it('should return positive color for broadcast onchain sends', () => {
+        const transaction = createMockTransaction({ type: 'withdraw', outcome: 'Confirmed' })
+        wrapper = createWrapper(transaction)
+
+        const badge = wrapper.find('.status-badge')
+        expect(badge.text()).toContain('Broadcast')
+        expect(badge.attributes('class')).toContain('bg-positive')
+      })
     })
   })
 

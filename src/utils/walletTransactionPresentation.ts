@@ -66,9 +66,11 @@ export function getWalletTransactionStatusColor(status: string | undefined): str
 
   switch (status) {
     case 'Bitcoin received':
+    case 'Broadcast':
     case 'Confirmed':
     case 'Claimed':
       return 'positive'
+    case 'Processing':
     case 'Received Bitcoin':
     case 'Waiting for Bitcoin':
     case 'Transaction detected':
