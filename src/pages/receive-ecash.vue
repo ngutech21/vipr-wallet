@@ -128,7 +128,7 @@ async function redeemEcash() {
 
     await router.push({
       name: '/received-lightning',
-      query: { amount: amountMsats / 1_000 },
+      query: { amount: Math.floor(amountMsats / 1_000) },
     })
   } catch (error) {
     $q.notify({
