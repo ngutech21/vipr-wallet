@@ -1,364 +1,315 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount, type VueWrapper, flushPromises } from '@vue/test-utils'
-import { Quasar, QItem, QItemSection } from 'quasar'
-import { createTestingPinia, type TestingPinia } from '@pinia/testing'
-import TransactionsList from 'src/components/TransactionsList.vue'
-import { useWalletStore } from 'src/stores/wallet'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
+import { reactive } from 'vue'
 import type {
-  Transactions,
-  LightningTransaction,
   EcashTransaction,
+  LightningTransaction,
+  OperationKey,
+  Transactions,
   WalletTransaction,
 } from '@fedimint/core'
-import LightningTransactionItem from 'src/components/LightningTransactionItem.vue'
-import EcashTransactionItem from 'src/components/EcashTransactionItem.vue'
-import WalletTransactionItem from 'src/components/WalletTransactionItem.vue'
+import TransactionsList from 'src/components/TransactionsList.vue'
 
-// Type for the exposed properties
-type TransactionsListExposed = {
-  recentTransactions: Transactions[]
-  isLoading: boolean
-}
+const mockRouterPush = vi.hoisted(() => vi.fn())
+const mockGetTransactionsPage = vi.hoisted(() => vi.fn())
+const federationState = vi.hoisted(() => ({
+  selectedFederationId: 'fed-1',
+}))
+const federationStore = reactive(federationState)
 
-// Mock router
-const mockRouterPush = vi.fn()
 vi.mock('vue-router', () => ({
   useRouter: () => ({
     push: mockRouterPush,
   }),
 }))
 
-// Helper factory to create mock transactions
-const createMockLnTransaction = (
+vi.mock('src/stores/wallet', () => ({
+  useWalletStore: () => ({
+    getTransactionsPage: mockGetTransactionsPage,
+  }),
+}))
+
+vi.mock('src/stores/federation', () => ({
+  useFederationStore: () => federationStore,
+}))
+
+function createOperationKey(operationId: string): OperationKey {
+  return {
+    operation_id: operationId,
+    creation_time: {
+      secs_since_epoch: 1_234_567_890,
+      nanos_since_epoch: 0,
+    },
+  } as OperationKey
+}
+
+function createLightningTransaction(
   overrides: Partial<LightningTransaction> = {},
-): LightningTransaction =>
-  ({
+): LightningTransaction {
+  return {
     kind: 'ln',
-    operationId: 'ln-op-123',
-    invoice: 'lnbc1000n1p0test',
+    operationId: 'ln-op-1',
     type: 'send',
-    outcome: 'success',
-    timestamp: 1234567890000,
-    fee: 100,
+    invoice: 'lnbc1test',
+    amountMsats: 1_000,
+    fee: 0,
+    timestamp: 1_234_567_890_000,
     ...overrides,
-  }) as LightningTransaction
+  } as LightningTransaction
+}
 
-const createMockMintTransaction = (overrides: Partial<EcashTransaction> = {}): EcashTransaction =>
-  ({
+function createEcashTransaction(overrides: Partial<EcashTransaction> = {}): EcashTransaction {
+  return {
     kind: 'mint',
-    operationId: 'mint-op-456',
-    type: 'reissue',
-    amountMsats: 50000,
-    outcome: 'success',
-    timestamp: 1234567890000,
+    operationId: 'mint-op-1',
+    type: 'receive',
+    amountMsats: 2_000,
+    timestamp: 1_234_567_890_000,
     ...overrides,
-  }) as EcashTransaction
+  } as EcashTransaction
+}
 
-const createMockWalletTransaction = (
-  overrides: Partial<WalletTransaction> = {},
-): WalletTransaction =>
-  ({
+function createWalletTransaction(overrides: Partial<WalletTransaction> = {}): WalletTransaction {
+  return {
     kind: 'wallet',
-    operationId: 'wallet-op-789',
-    type: 'withdraw',
-    amountMsats: 100000,
-    fee: 200,
+    operationId: 'wallet-op-1',
+    type: 'deposit',
     onchainAddress: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
-    outcome: 'Confirmed',
-    timestamp: 1234567890000,
+    amountMsats: 3_000,
+    fee: 0,
+    timestamp: 1_234_567_890_000,
     ...overrides,
-  }) as WalletTransaction
+  } as WalletTransaction
+}
+
+function createPageResult(
+  transactions: Transactions[],
+  overrides: {
+    nextCursor?: OperationKey | null
+    hasMore?: boolean
+  } = {},
+) {
+  return {
+    transactions,
+    nextCursor: overrides.nextCursor ?? null,
+    hasMore: overrides.hasMore ?? false,
+  }
+}
+
+function createWrapper(mode: 'home' | 'history' = 'home') {
+  return mount(TransactionsList, {
+    props: {
+      mode,
+    },
+    global: {
+      stubs: {
+        LightningTransactionItem: {
+          name: 'LightningTransactionItem',
+          props: {
+            transaction: { type: Object, required: true },
+          },
+          emits: ['click'],
+          template:
+            '<button data-testid="lightning-transaction-item" @click="$emit(\'click\', transaction.operationId)">{{ transaction.operationId }}</button>',
+        },
+        EcashTransactionItem: {
+          name: 'EcashTransactionItem',
+          props: {
+            transaction: { type: Object, required: true },
+          },
+          emits: ['click'],
+          template:
+            '<button data-testid="ecash-transaction-item" @click="$emit(\'click\', transaction.operationId)">{{ transaction.operationId }}</button>',
+        },
+        WalletTransactionItem: {
+          name: 'WalletTransactionItem',
+          props: {
+            transaction: { type: Object, required: true },
+          },
+          emits: ['click'],
+          template:
+            '<button data-testid="wallet-transaction-item" @click="$emit(\'click\', transaction.operationId)">{{ transaction.operationId }}</button>',
+        },
+        'q-item': {
+          template: '<div v-bind="$attrs"><slot /></div>',
+        },
+        'q-item-section': {
+          template: '<div><slot /></div>',
+        },
+        'q-btn': {
+          name: 'QBtn',
+          props: {
+            disable: { type: Boolean, default: false },
+            loading: { type: Boolean, default: false },
+            label: { type: String, default: '' },
+          },
+          emits: ['click'],
+          template:
+            '<button v-bind="$attrs" :disabled="disable" @click="$emit(\'click\')">{{ loading ? "loading" : label }}<slot /></button>',
+        },
+        'q-spinner-dots': true,
+      },
+    },
+  })
+}
 
 describe('TransactionsList.vue', () => {
-  let wrapper: VueWrapper<TransactionsListExposed>
-  let pinia: TestingPinia
-
-  const createWrapper = (
-    mockTransactions: Transactions[] = [],
-  ): VueWrapper<TransactionsListExposed> => {
-    pinia = createTestingPinia({
-      initialState: {
-        wallet: {},
-      },
-      stubActions: false,
-      createSpy: vi.fn,
-    })
-
-    // Mock the getTransactions method
-    const walletStore = useWalletStore()
-    vi.spyOn(walletStore, 'getTransactions').mockResolvedValue(mockTransactions)
-
-    return mount(TransactionsList, {
-      global: {
-        plugins: [Quasar, pinia],
-        stubs: {
-          QItem,
-          QItemSection,
-          LightningTransactionItem: true,
-          EcashTransactionItem: true,
-          WalletTransactionItem: true,
-        },
-      },
-    }) as unknown as VueWrapper<TransactionsListExposed>
-  }
+  let wrapper: VueWrapper | undefined
 
   beforeEach(() => {
     vi.clearAllMocks()
+    federationStore.selectedFederationId = 'fed-1'
+    mockRouterPush.mockResolvedValue(undefined)
   })
 
-  describe('Component Mounting & Lifecycle', () => {
-    it('should mount component and call loadTransactions on mount', async () => {
-      wrapper = createWrapper()
-      await flushPromises()
-
-      const walletStore = useWalletStore()
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(walletStore.getTransactions).toHaveBeenCalled()
-    })
-
-    it('should load transactions successfully from store', async () => {
-      const mockTransactions = [createMockLnTransaction()]
-      wrapper = createWrapper(mockTransactions)
-      await flushPromises()
-
-      const walletStore = useWalletStore()
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(walletStore.getTransactions).toHaveBeenCalled()
-      expect(wrapper.vm.recentTransactions).toEqual(mockTransactions)
-    })
-
-    it('should handle loading errors gracefully', async () => {
-      pinia = createTestingPinia({
-        initialState: {
-          wallet: {},
-        },
-        stubActions: false,
-        createSpy: vi.fn,
-      })
-
-      const walletStore = useWalletStore()
-      vi.spyOn(walletStore, 'getTransactions').mockRejectedValue(new Error('Load failed'))
-
-      wrapper = mount(TransactionsList, {
-        global: {
-          plugins: [Quasar, pinia],
-          stubs: {
-            QItem,
-            QItemSection,
-            LightningTransactionItem: true,
-            EcashTransactionItem: true,
-            WalletTransactionItem: true,
-          },
-        },
-      }) as unknown as VueWrapper<TransactionsListExposed>
-
-      await flushPromises()
-
-      // Should set empty array on error
-      expect(wrapper.vm.recentTransactions).toEqual([])
-    })
+  afterEach(() => {
+    wrapper?.unmount()
+    wrapper = undefined
   })
 
-  describe('Transaction Type Rendering', () => {
-    it('should render LightningTransactionItem for ln transactions', async () => {
-      const lnTx = createMockLnTransaction()
-      wrapper = createWrapper([lnTx])
-      await flushPromises()
+  it('loads the latest 5 transactions on home and shows the full history action', async () => {
+    mockGetTransactionsPage.mockResolvedValue(
+      createPageResult(
+        [
+          createLightningTransaction(),
+          createEcashTransaction(),
+          createWalletTransaction(),
+          createLightningTransaction({ operationId: 'ln-op-2' }),
+          createWalletTransaction({ operationId: 'wallet-op-2' }),
+        ],
+        { hasMore: true, nextCursor: createOperationKey('wallet-op-2') },
+      ),
+    )
 
-      const lightningItem = wrapper.findComponent(LightningTransactionItem)
-      expect(lightningItem.exists()).toBe(true)
-    })
+    wrapper = createWrapper('home')
+    await flushPromises()
 
-    it('should render EcashTransactionItem for mint transactions', async () => {
-      const mintTx = createMockMintTransaction()
-      wrapper = createWrapper([mintTx])
-      await flushPromises()
-
-      const ecashItem = wrapper.findComponent(EcashTransactionItem)
-      expect(ecashItem.exists()).toBe(true)
-    })
-
-    it('should render WalletTransactionItem for wallet transactions', async () => {
-      const walletTx = createMockWalletTransaction()
-      wrapper = createWrapper([walletTx])
-      await flushPromises()
-
-      const walletItem = wrapper.findComponent(WalletTransactionItem)
-      expect(walletItem.exists()).toBe(true)
-    })
-
-    it('should render multiple mixed transaction types correctly', async () => {
-      const transactions = [
-        createMockLnTransaction({ operationId: 'ln-1' }),
-        createMockMintTransaction({ operationId: 'mint-1' }),
-        createMockWalletTransaction({ operationId: 'wallet-1' }),
-      ]
-      wrapper = createWrapper(transactions)
-      await flushPromises()
-
-      expect(wrapper.findAllComponents(LightningTransactionItem)).toHaveLength(1)
-      expect(wrapper.findAllComponents(EcashTransactionItem)).toHaveLength(1)
-      expect(wrapper.findAllComponents(WalletTransactionItem)).toHaveLength(1)
-    })
-
-    it('should pass correct props to transaction item components', async () => {
-      const lnTx = createMockLnTransaction()
-      wrapper = createWrapper([lnTx])
-      await flushPromises()
-
-      const lightningItem = wrapper.findComponent(LightningTransactionItem)
-      expect(lightningItem.props('transaction')).toEqual(lnTx)
-    })
-
-    it('should use transaction.operationId as key', async () => {
-      const transactions = [createMockLnTransaction({ operationId: 'unique-id-123' })]
-      wrapper = createWrapper(transactions)
-      await flushPromises()
-
-      expect(wrapper.findComponent(LightningTransactionItem).exists()).toBe(true)
-    })
+    expect(mockGetTransactionsPage).toHaveBeenCalledWith(5)
+    expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(5)
+    expect(wrapper.get('[data-testid="transactions-show-full-history-btn"]').text()).toContain(
+      'Show full history',
+    )
   })
 
-  describe('Empty State', () => {
-    it('should show "No transactions yet" when list is empty', async () => {
-      wrapper = createWrapper([])
-      await flushPromises()
+  it('keeps the empty state on home when no transactions exist', async () => {
+    mockGetTransactionsPage.mockResolvedValue(createPageResult([]))
 
-      expect(wrapper.text()).toContain('No transactions yet')
-    })
+    wrapper = createWrapper('home')
+    await flushPromises()
 
-    it('should not show empty state when transactions exist', async () => {
-      const transactions = [createMockLnTransaction()]
-      wrapper = createWrapper(transactions)
-      await flushPromises()
-
-      expect(wrapper.text()).not.toContain('No transactions yet')
-    })
+    expect(wrapper.get('[data-testid="transactions-empty-state"]').text()).toContain(
+      'No transactions yet',
+    )
+    expect(wrapper.find('[data-testid="transactions-show-full-history-btn"]').exists()).toBe(false)
   })
 
-  describe('User Interactions', () => {
-    it('should call viewTransactionDetails when item emits click', async () => {
-      const lnTx = createMockLnTransaction({ operationId: 'test-123' })
-      wrapper = createWrapper([lnTx])
-      await flushPromises()
+  it('routes to the full history page from home', async () => {
+    mockGetTransactionsPage.mockResolvedValue(
+      createPageResult([createLightningTransaction()], {
+        hasMore: true,
+        nextCursor: createOperationKey('ln-op-1'),
+      }),
+    )
 
-      const lightningItem = wrapper.findComponent(LightningTransactionItem)
-      await lightningItem.vm.$emit('click', 'test-123')
-      await flushPromises()
+    wrapper = createWrapper('home')
+    await flushPromises()
+    await wrapper.get('[data-testid="transactions-show-full-history-btn"]').trigger('click')
 
-      expect(mockRouterPush).toHaveBeenCalled()
-    })
-
-    it('should navigate to correct route with transaction ID', async () => {
-      const transactionId = 'transaction-456'
-      const lnTx = createMockLnTransaction({ operationId: transactionId })
-      wrapper = createWrapper([lnTx])
-      await flushPromises()
-
-      const lightningItem = wrapper.findComponent(LightningTransactionItem)
-      await lightningItem.vm.$emit('click', transactionId)
-      await flushPromises()
-
-      expect(mockRouterPush).toHaveBeenCalledWith({
-        name: '/transaction/[id]',
-        params: { id: transactionId },
-      })
-    })
-
-    it('should handle click events from different transaction types', async () => {
-      const transactions = [createMockMintTransaction({ operationId: 'mint-click-test' })]
-      wrapper = createWrapper(transactions)
-      await flushPromises()
-
-      const ecashItem = wrapper.findComponent(EcashTransactionItem)
-      await ecashItem.vm.$emit('click', 'mint-click-test')
-      await flushPromises()
-
-      expect(mockRouterPush).toHaveBeenCalledWith({
-        name: '/transaction/[id]',
-        params: { id: 'mint-click-test' },
-      })
-    })
+    expect(mockRouterPush).toHaveBeenCalledWith({ path: '/transactions' })
   })
 
-  describe('Loading & Error States', () => {
-    it('should set isLoading to true during fetch', async () => {
-      wrapper = createWrapper([])
+  it('loads history pages in batches of 20 and appends on show more', async () => {
+    mockGetTransactionsPage
+      .mockResolvedValueOnce(
+        createPageResult(
+          [
+            createLightningTransaction({ operationId: 'ln-op-1' }),
+            createEcashTransaction({ operationId: 'mint-op-1' }),
+          ],
+          { hasMore: true, nextCursor: createOperationKey('mint-op-1') },
+        ),
+      )
+      .mockResolvedValueOnce(
+        createPageResult([createWalletTransaction({ operationId: 'wallet-op-1' })], {
+          hasMore: false,
+          nextCursor: null,
+        }),
+      )
 
-      // isLoading should be true initially during mount
-      // After flushPromises, it should be false
-      await flushPromises()
+    wrapper = createWrapper('history')
+    await flushPromises()
 
-      expect(wrapper.vm.isLoading).toBe(false)
-    })
+    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(1, 20)
+    expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(2)
+    expect(wrapper.get('[data-testid="transactions-show-more-btn"]').text()).toContain('Show more')
 
-    it('should set isLoading to false after completion', async () => {
-      wrapper = createWrapper([createMockLnTransaction()])
-      await flushPromises()
+    await wrapper.get('[data-testid="transactions-show-more-btn"]').trigger('click')
+    await flushPromises()
 
-      expect(wrapper.vm.isLoading).toBe(false)
-    })
-
-    it('should set empty array on error', async () => {
-      pinia = createTestingPinia({
-        initialState: {
-          wallet: {},
-        },
-        stubActions: false,
-        createSpy: vi.fn,
-      })
-
-      const walletStore = useWalletStore()
-      vi.spyOn(walletStore, 'getTransactions').mockRejectedValue(new Error('Network error'))
-
-      wrapper = mount(TransactionsList, {
-        global: {
-          plugins: [Quasar, pinia],
-          stubs: {
-            QItem,
-            QItemSection,
-            LightningTransactionItem: true,
-            EcashTransactionItem: true,
-            WalletTransactionItem: true,
-          },
-        },
-      }) as unknown as VueWrapper<TransactionsListExposed>
-
-      await flushPromises()
-
-      expect(wrapper.vm.recentTransactions).toEqual([])
-      expect(wrapper.vm.isLoading).toBe(false)
-    })
+    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(2, 20, createOperationKey('mint-op-1'))
+    expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(3)
+    expect(wrapper.find('[data-testid="transactions-show-more-btn"]').exists()).toBe(false)
   })
 
-  describe('Store Integration', () => {
-    it('should call walletStore.getTransactions', async () => {
-      wrapper = createWrapper([])
-      await flushPromises()
+  it('keeps loaded history visible when show more fails and allows retry', async () => {
+    mockGetTransactionsPage
+      .mockResolvedValueOnce(
+        createPageResult([createLightningTransaction()], {
+          hasMore: true,
+          nextCursor: createOperationKey('ln-op-1'),
+        }),
+      )
+      .mockRejectedValueOnce(new Error('load more failed'))
 
-      const walletStore = useWalletStore()
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(walletStore.getTransactions).toHaveBeenCalledTimes(1)
-    })
+    wrapper = createWrapper('history')
+    await flushPromises()
 
-    it('should update recentTransactions ref with store data', async () => {
-      const mockData = [
-        createMockLnTransaction({ operationId: 'ln-1' }),
-        createMockMintTransaction({ operationId: 'mint-1' }),
-      ]
-      wrapper = createWrapper(mockData)
-      await flushPromises()
+    await wrapper.get('[data-testid="transactions-show-more-btn"]').trigger('click')
+    await flushPromises()
 
-      expect(wrapper.vm.recentTransactions).toHaveLength(2)
-      expect(wrapper.vm.recentTransactions).toEqual(mockData)
-    })
+    expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(1)
+    expect(wrapper.find('[data-testid="transactions-show-more-btn"]').exists()).toBe(true)
+  })
 
-    it('should handle empty response from store', async () => {
-      wrapper = createWrapper([])
-      await flushPromises()
+  it('reloads the first page when the selected federation changes', async () => {
+    mockGetTransactionsPage
+      .mockResolvedValueOnce(
+        createPageResult([createLightningTransaction({ operationId: 'ln-op-fed-1' })], {
+          hasMore: false,
+        }),
+      )
+      .mockResolvedValueOnce(
+        createPageResult([createWalletTransaction({ operationId: 'wallet-op-fed-2' })], {
+          hasMore: false,
+        }),
+      )
 
-      expect(wrapper.vm.recentTransactions).toEqual([])
-      expect(wrapper.text()).toContain('No transactions yet')
+    wrapper = createWrapper('history')
+    await flushPromises()
+    expect(wrapper.text()).toContain('ln-op-fed-1')
+
+    federationStore.selectedFederationId = 'fed-2'
+    await flushPromises()
+
+    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(2, 20)
+    expect(wrapper.text()).toContain('wallet-op-fed-2')
+    expect(wrapper.text()).not.toContain('ln-op-fed-1')
+  })
+
+  it('opens transaction details when a row is clicked', async () => {
+    mockGetTransactionsPage.mockResolvedValue(
+      createPageResult([createWalletTransaction({ operationId: 'wallet-op-detail' })]),
+    )
+
+    wrapper = createWrapper('history')
+    await flushPromises()
+    await wrapper.get('[data-testid="wallet-transaction-item"]').trigger('click')
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      name: '/transaction/[id]',
+      params: {
+        id: 'wallet-op-detail',
+      },
     })
   })
 })

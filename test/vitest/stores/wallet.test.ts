@@ -558,6 +558,329 @@ describe('wallet store', () => {
       fee: 471_000,
     })
   })
+
+  it('getTransactionsPage returns paged transactions with cursor metadata', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+    const firstCursor = {
+      operation_id: 'ln-op-1',
+      creation_time: {
+        secs_since_epoch: 1_234_567_890,
+        nanos_since_epoch: 0,
+      },
+    }
+
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'ln',
+        operationId: 'ln-op-1',
+        type: 'send',
+        invoice: 'lnbc1test',
+        amountMsats: 1_000,
+        fee: 0,
+        timestamp: 1_234_567_890_000,
+      },
+    ])
+    wallet.federation.listOperations.mockResolvedValue([[firstCursor, { meta: {} }]])
+
+    walletStore.wallet = wallet as never
+
+    const page = await walletStore.getTransactionsPage(1)
+
+    expect(wallet.federation.listTransactions).toHaveBeenCalledWith(1, undefined)
+    expect(wallet.federation.listOperations).toHaveBeenCalledWith(1, undefined)
+    expect(page.transactions).toHaveLength(1)
+    expect(page.nextCursor).toEqual(firstCursor)
+    expect(page.hasMore).toBe(true)
+  })
+
+  it('getTransactionsPage keeps fetching until it collects the requested visible transactions', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+    const nonTransactionCursor = {
+      operation_id: 'non-transaction-op-3',
+      creation_time: {
+        secs_since_epoch: 1_234_567_891,
+        nanos_since_epoch: 0,
+      },
+    }
+    const secondPageCursor = {
+      operation_id: 'wallet-op-4',
+      creation_time: {
+        secs_since_epoch: 1_234_567_892,
+        nanos_since_epoch: 0,
+      },
+    }
+
+    wallet.federation.listTransactions
+      .mockResolvedValueOnce([
+        {
+          kind: 'ln',
+          operationId: 'ln-op-1',
+          type: 'send',
+          invoice: 'lnbc1',
+          amountMsats: 1_000,
+          fee: 0,
+          timestamp: 1,
+        },
+        {
+          kind: 'mint',
+          operationId: 'mint-op-2',
+          type: 'receive',
+          amountMsats: 2_000,
+          timestamp: 2,
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          kind: 'wallet',
+          operationId: 'wallet-op-4',
+          type: 'deposit',
+          onchainAddress: 'bc1qtest',
+          amountMsats: 3_000,
+          fee: 0,
+          timestamp: 3,
+        },
+      ])
+    wallet.federation.listOperations
+      .mockResolvedValueOnce([
+        [
+          {
+            operation_id: 'ln-op-1',
+            creation_time: {
+              secs_since_epoch: 1_234_567_889,
+              nanos_since_epoch: 0,
+            },
+          },
+          { meta: {} },
+        ],
+        [
+          {
+            operation_id: 'mint-op-2',
+            creation_time: {
+              secs_since_epoch: 1_234_567_890,
+              nanos_since_epoch: 0,
+            },
+          },
+          { meta: {} },
+        ],
+        [nonTransactionCursor, { meta: {} }],
+      ])
+      .mockResolvedValueOnce([[secondPageCursor, { meta: {} }]])
+
+    walletStore.wallet = wallet as never
+
+    const page = await walletStore.getTransactionsPage(3)
+
+    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(1, 3, undefined)
+    expect(wallet.federation.listOperations).toHaveBeenNthCalledWith(1, 3, undefined)
+    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(2, 1, nonTransactionCursor)
+    expect(wallet.federation.listOperations).toHaveBeenNthCalledWith(2, 1, nonTransactionCursor)
+    expect(page.transactions.map((transaction) => transaction.operationId)).toEqual([
+      'ln-op-1',
+      'mint-op-2',
+      'wallet-op-4',
+    ])
+    expect(page.nextCursor).toEqual(secondPageCursor)
+    expect(page.hasMore).toBe(true)
+  })
+
+  it('getTransactionsPage clears the cursor when the backend is exhausted', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'ln',
+        operationId: 'ln-op-1',
+        type: 'send',
+        invoice: 'lnbc1',
+        amountMsats: 1_000,
+        fee: 0,
+        timestamp: 1,
+      },
+    ])
+    wallet.federation.listOperations.mockResolvedValue([
+      [
+        {
+          operation_id: 'ln-op-1',
+          creation_time: {
+            secs_since_epoch: 1_234_567_890,
+            nanos_since_epoch: 0,
+          },
+        },
+        { meta: {} },
+      ],
+    ])
+
+    walletStore.wallet = wallet as never
+
+    const page = await walletStore.getTransactionsPage(3)
+
+    expect(page.transactions).toHaveLength(1)
+    expect(page.nextCursor).toBeNull()
+    expect(page.hasMore).toBe(false)
+  })
+
+  it('getTransactionsPage falls back to raw transactions when operation metadata fetch fails', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'wallet',
+        operationId: 'wallet-op-raw',
+        type: 'withdraw',
+        amountMsats: 2_000_000,
+        fee: 471_000,
+        onchainAddress: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+        outcome: 'Confirmed',
+        timestamp: 1_234_567_890_000,
+      },
+    ])
+    wallet.federation.listOperations.mockRejectedValue(new Error('RPC timeout'))
+
+    walletStore.wallet = wallet as never
+
+    const page = await walletStore.getTransactionsPage(10)
+
+    expect(wallet.federation.listTransactions).toHaveBeenCalledWith(10, undefined)
+    expect(wallet.federation.listOperations).toHaveBeenCalledWith(10, undefined)
+    expect(page.transactions).toHaveLength(1)
+    expect(page.transactions[0]).toMatchObject({
+      operationId: 'wallet-op-raw',
+      amountMsats: 2_000_000,
+      fee: 471_000,
+    })
+    expect(page.nextCursor).toBeNull()
+    expect(page.hasMore).toBe(false)
+  })
+
+  it('getTransactionsPage keeps wallet normalization in paged mode', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'wallet',
+        operationId: 'wallet-op-1',
+        type: 'withdraw',
+        onchainAddress: 'bc1qtest',
+        amountMsats: 0,
+        fee: 0,
+        timestamp: 1,
+      },
+    ])
+    wallet.federation.listOperations.mockResolvedValue([
+      [
+        {
+          operation_id: 'wallet-op-1',
+          creation_time: {
+            secs_since_epoch: 1_234_567_890,
+            nanos_since_epoch: 0,
+          },
+        },
+        {
+          meta: {
+            variant: {
+              withdraw: {
+                amount: 42,
+                fee: {
+                  fee_rate: {
+                    sats_per_kvb: 2_000,
+                  },
+                  total_weight: 600,
+                },
+              },
+            },
+          },
+        },
+      ],
+    ])
+
+    walletStore.wallet = wallet as never
+
+    const page = await walletStore.getTransactionsPage(1)
+    const transaction = page.transactions[0]
+
+    expect(transaction).toBeDefined()
+    if (transaction == null) {
+      throw new Error('Expected paged wallet transaction')
+    }
+    expect(transaction.kind).toBe('wallet')
+    expect((transaction as { amountMsats: number }).amountMsats).toBe(42_000)
+    expect((transaction as { fee: number }).fee).toBe(300_000)
+  })
+
+  it('getTransactionByOperationId pages until it finds an older transaction', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+    const firstCursor = {
+      operation_id: 'ln-op-1',
+      creation_time: {
+        secs_since_epoch: 1_234_567_890,
+        nanos_since_epoch: 0,
+      },
+    }
+
+    wallet.federation.listTransactions
+      .mockResolvedValueOnce([
+        {
+          kind: 'ln',
+          operationId: 'ln-op-1',
+          type: 'send',
+          invoice: 'lnbc1',
+          amountMsats: 1_000,
+          fee: 0,
+          timestamp: 1,
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          kind: 'wallet',
+          operationId: 'wallet-op-target',
+          type: 'withdraw',
+          onchainAddress: 'bc1qtarget',
+          amountMsats: 2_000,
+          fee: 0,
+          timestamp: 2,
+        },
+      ])
+    wallet.federation.listOperations
+      .mockResolvedValueOnce([
+        ...Array.from({ length: 49 }, (_value, index) => [
+          {
+            operation_id: `non-transaction-op-${index + 1}`,
+            creation_time: {
+              secs_since_epoch: 1_234_567_800 + index,
+              nanos_since_epoch: 0,
+            },
+          },
+          { meta: {} },
+        ]),
+        [firstCursor, { meta: {} }],
+      ])
+      .mockResolvedValueOnce([
+        [
+          {
+            operation_id: 'wallet-op-target',
+            creation_time: {
+              secs_since_epoch: 1_234_567_891,
+              nanos_since_epoch: 0,
+            },
+          },
+          { meta: {} },
+        ],
+      ])
+
+    walletStore.wallet = wallet as never
+
+    const transaction = await walletStore.getTransactionByOperationId('wallet-op-target')
+
+    expect(transaction?.operationId).toBe('wallet-op-target')
+    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(1, 50, undefined)
+    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(2, 49, firstCursor)
+  })
 })
 
 describe('wallet utxo helpers', () => {

@@ -31,7 +31,7 @@ declare module 'vue-router/auto-routes' {
       'not-found',
       '/:path(.*)',
       { path: ParamValue<true> },
-      { path: ParamValue<false> },
+      { path: ParamValue<false>   },
       never
     >
     '/ErrorNotFound': RouteRecordInfo<
@@ -148,6 +148,13 @@ declare module 'vue-router/auto-routes' {
       { id: ParamValue<false> },
       never
     >
+    '/transactions': RouteRecordInfo<
+      '/transactions',
+      '/transactions',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >
   }
 
   /**
@@ -239,6 +246,10 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/transaction/[id].vue': {
       routes: '/transaction/[id]'
+      views: never
+    }
+    'src/pages/transactions.vue': {
+      routes: '/transactions'
       views: never
     }
   }

@@ -13,6 +13,11 @@ const testRoutes: RouteRecordRaw[] = [
   { path: '/receive', name: '/receive', component: { template: '<div>Receive</div>' } },
   { path: '/send', name: '/send', component: { template: '<div>Send</div>' } },
   {
+    path: '/transactions',
+    name: '/transactions',
+    component: { template: '<div>Transactions</div>' },
+  },
+  {
     path: '/send-onchain',
     name: '/send-onchain',
     component: { template: '<div>Send Onchain</div>' },
@@ -106,6 +111,12 @@ describe('Router Catch-All Route', () => {
     it('should resolve /send to the send route', () => {
       const resolved = router.resolve('/send')
       expect(resolved.name).toBe('/send')
+      expect(resolved.name).not.toBe('not-found')
+    })
+
+    it('should resolve /transactions to the transaction history route', () => {
+      const resolved = router.resolve('/transactions')
+      expect(resolved.name).toBe('/transactions')
       expect(resolved.name).not.toBe('not-found')
     })
 

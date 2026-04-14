@@ -74,7 +74,7 @@
       </div>
     </div>
 
-    <TransactionsList />
+    <TransactionsList mode="home" />
 
     <div
       v-if="federationStore.federations.length == 0"
