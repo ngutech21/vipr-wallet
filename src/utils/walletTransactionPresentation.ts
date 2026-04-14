@@ -25,7 +25,7 @@ export function getWalletTransactionListTitle(transaction: WalletTransaction): s
     return 'Sent Bitcoin'
   }
 
-  return getWalletDepositStatusLabel(transaction.outcome)
+  return 'Received Bitcoin'
 }
 
 export function getWalletTransactionDetailTitle(transaction: WalletTransaction): string {
