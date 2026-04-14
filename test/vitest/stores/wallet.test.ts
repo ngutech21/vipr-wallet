@@ -244,6 +244,7 @@ describe('wallet store', () => {
     await expect(walletStore.inspectEcash('notes-1')).rejects.toThrow(
       'eCash inspection is not supported by the current Fedimint SDK yet',
     )
+    expect(fedimintClientMock.init).not.toHaveBeenCalled()
   })
 
   it('redeems ecash only through reissueExternalNotes on the open wallet', async () => {
@@ -255,6 +256,13 @@ describe('wallet store', () => {
 
     expect(wallet.mint.reissueExternalNotes).toHaveBeenCalledWith('notes-import')
     expect(wallet.mint.subscribeReissueExternalNotes).toHaveBeenCalledTimes(1)
+  })
+
+  it('throws when redeeming ecash without an open wallet', async () => {
+    const walletStore = useWalletStore()
+    walletStore.wallet = null
+
+    await expect(walletStore.redeemEcash('notes-import')).rejects.toThrow('Wallet is not open')
   })
 
   it('spendEcashOffline creates notes, converts sats to msats, and refreshes balance', async () => {

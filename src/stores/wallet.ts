@@ -241,16 +241,21 @@ export const useWalletStore = defineStore('wallet', {
       this.needsMnemonicBackup = false
     },
 
-    async inspectEcash(_tokens: string): Promise<EcashInspection> {
-      await this.initClients()
-      throw new Error('eCash inspection is not supported by the current Fedimint SDK yet')
+    inspectEcash(_tokens: string): Promise<EcashInspection> {
+      return Promise.reject(
+        new Error('eCash inspection is not supported by the current Fedimint SDK yet'),
+      )
     },
 
     async redeemEcash(tokens: string): Promise<MSats | undefined> {
-      const amount = await this.wallet?.mint.parseNotes(tokens)
-      const opsId = await this.wallet?.mint.reissueExternalNotes(tokens)
+      if (this.wallet == null) {
+        throw new Error('Wallet is not open')
+      }
+
+      const amount = await this.wallet.mint.parseNotes(tokens)
+      const opsId = await this.wallet.mint.reissueExternalNotes(tokens)
       if (opsId != null && opsId !== '') {
-        this.wallet?.mint.subscribeReissueExternalNotes(opsId, (_state) => {
+        this.wallet.mint.subscribeReissueExternalNotes(opsId, (_state) => {
           this.updateBalance()
             .then(() => logger.logWalletOperation('Balance updated after ecash redemption'))
             .catch((err) => logger.error('Error updating balance after ecash redemption', err))
