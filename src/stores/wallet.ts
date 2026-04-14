@@ -870,37 +870,6 @@ export function parseOutpoint(outpoint: string | { txid?: string; vout?: number 
   }
 }
 
-function findMatchingFederation(
-  federations: Federation[],
-  parsed: ParsedNoteDetails,
-): Federation | null {
-  const federationId = normalizeOptionalString(parsed.federation_id)
-  if (federationId != null) {
-    const exactMatch = federations.find((federation) => federation.federationId === federationId)
-    return exactMatch ?? null
-  }
-
-  const federationIdPrefix = normalizeOptionalString(parsed.federation_id_prefix)
-  if (federationIdPrefix == null) {
-    return null
-  }
-
-  const prefixMatches = federations.filter((federation) =>
-    federation.federationId.toLowerCase().startsWith(federationIdPrefix.toLowerCase()),
-  )
-
-  return prefixMatches.length === 1 ? (prefixMatches[0] ?? null) : null
-}
-
-function normalizeOptionalString(value: string | null | undefined): string | null {
-  if (typeof value !== 'string') {
-    return null
-  }
-
-  const normalized = value.trim()
-  return normalized === '' ? null : normalized
-}
-
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message

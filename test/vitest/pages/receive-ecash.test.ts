@@ -101,12 +101,12 @@ describe('ReceiveEcashPage', () => {
     wrapper = createWrapper()
     const walletStore = useWalletStore()
 
-    vi.spyOn(walletStore, 'redeemEcash').mockResolvedValue(12_000)
+    const redeemEcashSpy = vi.spyOn(walletStore, 'redeemEcash').mockResolvedValue(12_000)
     setEcashToken('notes-1')
 
     await redeemEcash()
 
-    expect(walletStore.redeemEcash).toHaveBeenCalledWith('notes-1')
+    expect(redeemEcashSpy).toHaveBeenCalledWith('notes-1')
     expect(mockRouterPush).toHaveBeenCalledWith({
       name: '/received-lightning',
       query: { amount: 12 },
