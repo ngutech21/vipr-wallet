@@ -40,10 +40,12 @@ Learn more about the project at [vipr.cash](https://vipr.cash)
 - [x] lnurl-p support
 - [x] lightning address support
 - [ ] pay to Nostr contacts
-- [ ] export ecash
+- [x] export ecash
 - [x] import ecash
 - [x] backup wallet
 - [x] restore wallet
+- [x] pay onchain
+- [x] receive onchain
 
 ### Federations
 
@@ -88,13 +90,13 @@ The wallet will be available at `http://localhost:8080`
 - This project uses [Vue 3](https://v3.vuejs.org/) with [TypeScript](https://www.typescriptlang.org/)
 - [Quasar Framework](https://quasar.dev/) provides the UI components
 - [Pinia](https://pinia.vuejs.org/) is used for state management
-- [Fedimint-Web-SDK](https://github.com/fedimint/fedimint-web-sdk) is used for interacting with the fedimint
+- [Fedimint-SDK](https://github.com/fedimint/fedimint-sdk) is used for interacting with the fedimint
 
 ### Prerequisites
 
 Make sure you have the following installed:
 
-- Node.js 20+
+- Node.js 24+
 - pnpm 10+
 
 ### Installation
