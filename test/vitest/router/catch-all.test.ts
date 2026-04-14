@@ -13,6 +13,17 @@ const testRoutes: RouteRecordRaw[] = [
   { path: '/receive', name: '/receive', component: { template: '<div>Receive</div>' } },
   { path: '/send', name: '/send', component: { template: '<div>Send</div>' } },
   {
+    path: '/send-onchain',
+    name: '/send-onchain',
+    component: { template: '<div>Send Onchain</div>' },
+  },
+  { path: '/send-ecash', name: '/send-ecash', component: { template: '<div>Send Ecash</div>' } },
+  {
+    path: '/sent-onchain',
+    name: '/sent-onchain',
+    component: { template: '<div>Sent Onchain</div>' },
+  },
+  {
     path: '/federation/:id',
     name: '/federation/[id]',
     component: { template: '<div>Federation</div>' },
@@ -95,6 +106,24 @@ describe('Router Catch-All Route', () => {
     it('should resolve /send to the send route', () => {
       const resolved = router.resolve('/send')
       expect(resolved.name).toBe('/send')
+      expect(resolved.name).not.toBe('not-found')
+    })
+
+    it('should resolve /send-ecash to the offline send route', () => {
+      const resolved = router.resolve('/send-ecash')
+      expect(resolved.name).toBe('/send-ecash')
+      expect(resolved.name).not.toBe('not-found')
+    })
+
+    it('should resolve /send-onchain to the onchain send route', () => {
+      const resolved = router.resolve('/send-onchain')
+      expect(resolved.name).toBe('/send-onchain')
+      expect(resolved.name).not.toBe('not-found')
+    })
+
+    it('should resolve /sent-onchain to the onchain pending route', () => {
+      const resolved = router.resolve('/sent-onchain')
+      expect(resolved.name).toBe('/sent-onchain')
       expect(resolved.name).not.toBe('not-found')
     })
   })

@@ -54,14 +54,21 @@ function createWalletMock(balanceMsats: number) {
     federation: {
       getFederationId: vi.fn(() => Promise.resolve('fed-1')),
       listTransactions: vi.fn(),
+      listOperations: vi.fn(),
     },
     mint: {
       reissueExternalNotes: vi.fn(() => Promise.resolve('op-1')),
       subscribeReissueExternalNotes: vi.fn(),
+      spendNotes: vi.fn(),
+      subscribeSpendNotes: vi.fn(),
     },
     lightning: {},
     balance: {
       getBalance: vi.fn(() => Promise.resolve(balanceMsats)),
+    },
+    wallet: {
+      getWalletSummary: vi.fn(),
+      sendOnchain: vi.fn(),
     },
   }
 }
@@ -355,6 +362,326 @@ describe('wallet store', () => {
 
     expect(wallet.mint.reissueExternalNotes).toHaveBeenCalledWith('notes-import')
     expect(wallet.mint.subscribeReissueExternalNotes).toHaveBeenCalledTimes(1)
+  })
+
+  it('spendEcashOffline creates notes, converts sats to msats, and refreshes balance', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(21_000)
+    wallet.balance.getBalance = vi.fn().mockResolvedValueOnce(8_000).mockResolvedValueOnce(8_000)
+    wallet.mint.spendNotes.mockResolvedValue({
+      notes: 'cashuA123',
+      operation_id: 'op-offline-1',
+    })
+    wallet.mint.subscribeSpendNotes.mockImplementation((_operationId, onSuccess) => {
+      onSuccess('Success')
+      return vi.fn()
+    })
+
+    walletStore.wallet = wallet as never
+
+    const result = await walletStore.spendEcashOffline(13)
+
+    expect(wallet.mint.spendNotes).toHaveBeenCalledWith(13_000, 86_400, false)
+    expect(wallet.mint.subscribeSpendNotes).toHaveBeenCalledWith(
+      'op-offline-1',
+      expect.any(Function),
+      expect.any(Function),
+    )
+    expect(result).toEqual({
+      notes: 'cashuA123',
+      operationId: 'op-offline-1',
+    })
+    expect(walletStore.balance).toBe(8)
+  })
+
+  it('spendEcashOffline still returns notes when the immediate balance refresh fails', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(21_000)
+    wallet.balance.getBalance = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('balance refresh failed'))
+      .mockResolvedValueOnce(8_000)
+    wallet.mint.spendNotes.mockResolvedValue({
+      notes: 'cashuA123',
+      operation_id: 'op-offline-1',
+    })
+    wallet.mint.subscribeSpendNotes.mockImplementation((_operationId, onSuccess) => {
+      onSuccess('Success')
+      return vi.fn()
+    })
+
+    walletStore.wallet = wallet as never
+
+    const result = await walletStore.spendEcashOffline(13)
+
+    expect(result).toEqual({
+      notes: 'cashuA123',
+      operationId: 'op-offline-1',
+    })
+    expect(wallet.mint.subscribeSpendNotes).toHaveBeenCalledWith(
+      'op-offline-1',
+      expect.any(Function),
+      expect.any(Function),
+    )
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(walletStore.balance).toBe(8)
+  })
+
+  it('spendEcashOffline rejects invalid amounts before touching the wallet', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(21_000)
+    walletStore.wallet = wallet as never
+
+    await expect(walletStore.spendEcashOffline(0)).rejects.toThrow(
+      'Amount must be a positive whole number of sats',
+    )
+    expect(wallet.mint.spendNotes).not.toHaveBeenCalled()
+  })
+
+  it('sendOnchain submits a withdrawal and refreshes balance', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(45_000)
+    wallet.balance.getBalance = vi.fn().mockResolvedValueOnce(33_000)
+    wallet.wallet.sendOnchain.mockResolvedValue({
+      operation_id: 'withdraw-op-1',
+    })
+    walletStore.wallet = wallet as never
+
+    const result = await walletStore.sendOnchain(' bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080 ', 21)
+
+    expect(wallet.wallet.sendOnchain).toHaveBeenCalledWith(
+      21,
+      'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080',
+      {},
+    )
+    expect(result).toEqual({
+      operationId: 'withdraw-op-1',
+    })
+    expect(walletStore.balance).toBe(33)
+  })
+
+  it('sendOnchain rejects missing address before touching the wallet', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(45_000)
+    walletStore.wallet = wallet as never
+
+    await expect(walletStore.sendOnchain('   ', 21)).rejects.toThrow('Bitcoin address is required')
+    expect(wallet.wallet.sendOnchain).not.toHaveBeenCalled()
+  })
+
+  it('getTransactions normalizes wallet withdraw amount and fee from raw operation metadata', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(45_000)
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'wallet',
+        operationId: 'wallet-op-1',
+        type: 'withdraw',
+        amountMsats: 0,
+        fee: 2_000,
+        onchainAddress: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+        outcome: 'Confirmed',
+        timestamp: 1_234_567_890_000,
+      },
+    ])
+    wallet.federation.listOperations.mockResolvedValue([
+      [
+        {
+          creation_time: {
+            nanos_since_epoch: 0,
+            secs_since_epoch: 1_234_567_890,
+          },
+          operation_id: 'wallet-op-1',
+        },
+        {
+          operation_module_kind: 'wallet',
+          meta: {
+            amount: 0,
+            extra_meta: {},
+            variant: {
+              withdraw: {
+                address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+                amountMsats: 2_000_000,
+                fee: {
+                  fee_rate: {
+                    sats_per_kvb: 2_000,
+                  },
+                  total_weight: 560,
+                },
+              },
+            },
+          },
+          outcome: {
+            outcome: 'Confirmed',
+          },
+        },
+      ],
+    ])
+
+    walletStore.wallet = wallet as never
+
+    const transactions = await walletStore.getTransactions()
+
+    expect(transactions).toHaveLength(1)
+    expect(transactions[0]).toMatchObject({
+      amountMsats: 2_000_000,
+      fee: 280_000,
+    })
+  })
+
+  it('getTransactions falls back to requested amount from extra_meta when wallet withdraw amount is missing', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(45_000)
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'wallet',
+        operationId: 'wallet-op-2',
+        type: 'withdraw',
+        amountMsats: 0,
+        fee: 0,
+        onchainAddress: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+        outcome: 'Confirmed',
+        timestamp: 1_234_567_890_000,
+      },
+    ])
+    wallet.federation.listOperations.mockResolvedValue([
+      [
+        {
+          creation_time: {
+            nanos_since_epoch: 0,
+            secs_since_epoch: 1_234_567_890,
+          },
+          operation_id: 'wallet-op-2',
+        },
+        {
+          operation_module_kind: 'wallet',
+          meta: {
+            amount: 0,
+            extra_meta: {
+              requestedAmountSats: 2_000,
+              requestedAmountMsats: 2_000_000,
+            },
+            variant: {
+              withdraw: {
+                address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+                amountMsats: 0,
+                fee: {
+                  fee_rate: {
+                    sats_per_kvb: 3_365,
+                  },
+                  total_weight: 560,
+                },
+              },
+            },
+          },
+          outcome: {
+            outcome: 'Confirmed',
+          },
+        },
+      ],
+    ])
+
+    walletStore.wallet = wallet as never
+
+    const transactions = await walletStore.getTransactions()
+
+    expect(transactions).toHaveLength(1)
+    expect(transactions[0]).toMatchObject({
+      amountMsats: 2_000_000,
+      fee: 472_000,
+    })
+  })
+
+  it('getTransactions reads wallet withdraw amount from raw variant.amount when amountMsats is missing', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(45_000)
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'wallet',
+        operationId: 'wallet-op-3',
+        type: 'withdraw',
+        amountMsats: 0,
+        fee: 0,
+        onchainAddress: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+        outcome: 'Confirmed',
+        timestamp: 1_234_567_890_000,
+      },
+    ])
+    wallet.federation.listOperations.mockResolvedValue([
+      [
+        {
+          creation_time: {
+            nanos_since_epoch: 0,
+            secs_since_epoch: 1_234_567_890,
+          },
+          operation_id: 'wallet-op-3',
+        },
+        {
+          operation_module_kind: 'wallet',
+          meta: {
+            amount: 0,
+            extra_meta: {},
+            variant: {
+              withdraw: {
+                address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+                amount: 2_000,
+                fee: {
+                  fee_rate: {
+                    sats_per_kvb: 3_365,
+                  },
+                  total_weight: 560,
+                },
+              },
+            },
+          },
+          outcome: {
+            outcome: 'Confirmed',
+          },
+        },
+      ],
+    ])
+
+    walletStore.wallet = wallet as never
+
+    const transactions = await walletStore.getTransactions()
+
+    expect(transactions).toHaveLength(1)
+    expect(transactions[0]).toMatchObject({
+      amountMsats: 2_000_000,
+      fee: 472_000,
+    })
+  })
+
+  it('getTransactions falls back to raw transactions when operation metadata fetch fails', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(45_000)
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'wallet',
+        operationId: 'wallet-op-4',
+        type: 'withdraw',
+        amountMsats: 2_000_000,
+        fee: 471_000,
+        onchainAddress: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+        outcome: 'Confirmed',
+        timestamp: 1_234_567_890_000,
+      },
+    ])
+    wallet.federation.listOperations.mockRejectedValue(new Error('RPC timeout'))
+
+    walletStore.wallet = wallet as never
+
+    const transactions = await walletStore.getTransactions()
+
+    expect(transactions).toHaveLength(1)
+    expect(wallet.federation.listTransactions).toHaveBeenCalledWith(10)
+    expect(wallet.federation.listOperations).toHaveBeenCalledWith(10)
+    expect(transactions[0]).toMatchObject({
+      operationId: 'wallet-op-4',
+      amountMsats: 2_000_000,
+      fee: 471_000,
+    })
   })
 })
 

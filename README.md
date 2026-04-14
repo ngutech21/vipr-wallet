@@ -20,6 +20,8 @@ By using this wallet, you acknowledge and accept these risks.
 
 A demo version of the wallet is available at [beta.vipr.cash](https://beta.vipr.cash)
 
+Learn more about the project at [vipr.cash](https://vipr.cash)
+
 ## 📱 App Screenshots
 
 <div align="center">

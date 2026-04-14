@@ -6,7 +6,10 @@
         class="text-h4 text-weight-bold"
         :class="transaction.type === 'withdraw' ? 'text-negative' : 'text-positive'"
       >
-        {{ transaction.type === 'deposit' ? '+' : '-' }}{{ amountInSats }}
+        <template v-if="amountInSats != null">
+          {{ transaction.type === 'deposit' ? '+' : '-' }}{{ amountInSats }}
+        </template>
+        <template v-else>Amount unavailable</template>
       </div>
       <div class="text-caption text-grey">≈ ${{ amountInFiat }} USD</div>
     </div>
@@ -77,17 +80,20 @@
       <div class="value">{{ feeInSats }} sats</div>
     </div>
 
-    <!-- Net Amount -->
+    <!-- Total -->
     <q-separator class="q-my-md" />
     <div class="detail-row">
       <div class="label">
-        {{ transaction.type === 'withdraw' ? 'Net Withdrawn' : 'Net Deposited' }}
+        {{ transaction.type === 'withdraw' ? 'Total Debited' : 'Net Deposited' }}
       </div>
       <div
         class="value"
         :class="transaction.type === 'withdraw' ? 'text-negative' : 'text-positive'"
       >
-        {{ transaction.type === 'withdraw' ? '-' : '+' }}{{ netAmountInSats }} sats
+        <template v-if="totalAmountText != null">
+          {{ transaction.type === 'withdraw' ? '-' : '+' }}{{ totalAmountText }} sats
+        </template>
+        <template v-else>Unknown</template>
       </div>
     </div>
   </div>
@@ -102,8 +108,11 @@ import type { WalletTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
 import {
   getWalletTransactionDetailTitle,
+  getWalletTransactionAmountSats,
+  getWalletTransactionFeeSats,
   getWalletTransactionStatusColor,
   getWalletTransactionStatusLabel,
+  getWalletTransactionTotalDebitedSats,
 } from 'src/utils/walletTransactionPresentation'
 
 interface Props {
@@ -119,18 +128,27 @@ const transactionTitle = computed(() => getWalletTransactionDetailTitle(props.tr
 const statusLabel = computed(() => getWalletTransactionStatusLabel(props.transaction))
 
 const amountInSats = computed(() => {
-  return Math.floor(props.transaction.amountMsats / 1000).toLocaleString()
+  const amountSats = getWalletTransactionAmountSats(props.transaction)
+  return amountSats != null ? amountSats.toLocaleString() : null
 })
 
 const feeInSats = computed(() => {
-  return Math.floor(props.transaction.fee / 1000).toLocaleString()
+  return getWalletTransactionFeeSats(props.transaction).toLocaleString()
 })
 
-const netAmountInSats = computed(() => {
-  const amount = Math.floor(props.transaction.amountMsats / 1000)
-  const fee = Math.floor(props.transaction.fee / 1000)
-  const netAmount = props.transaction.type === 'withdraw' ? amount + fee : amount - fee
-  return Math.abs(netAmount).toLocaleString()
+const totalAmountText = computed(() => {
+  if (props.transaction.type === 'withdraw') {
+    const totalDebited = getWalletTransactionTotalDebitedSats(props.transaction)
+    return totalDebited != null ? totalDebited.toLocaleString() : null
+  }
+
+  const amountSats = getWalletTransactionAmountSats(props.transaction)
+  if (amountSats == null) {
+    return null
+  }
+
+  const feeSats = getWalletTransactionFeeSats(props.transaction)
+  return Math.abs(amountSats - feeSats).toLocaleString()
 })
 
 const federationTitle = computed(() => {
@@ -139,7 +157,7 @@ const federationTitle = computed(() => {
 
 onMounted(async () => {
   try {
-    const sats = Math.floor(props.transaction.amountMsats / 1000)
+    const sats = getWalletTransactionAmountSats(props.transaction) ?? 0
     const fiatValue = await lightningStore.satsToFiat(sats)
     amountInFiat.value = fiatValue.toFixed(2)
   } catch (error) {

@@ -33,6 +33,15 @@
     </q-dialog>
 
     <q-dialog
+      v-model="showSendEcashSelection"
+      position="bottom"
+      transition-show="slide-up"
+      transition-hide="slide-down"
+    >
+      <SendEcashSelection v-if="showSendEcashSelection" @close="showSendEcashSelection = false" />
+    </q-dialog>
+
+    <q-dialog
       v-model="showReceiveEcashSelection"
       position="bottom"
       transition-show="slide-up"
@@ -96,7 +105,7 @@
             label="Send"
             icon="arrow_upward"
             color="primary"
-            :to="'/send'"
+            @click="showSendEcashSelection = true"
             :disable="totalBalance <= 0"
             :data-testid="'home-send-btn'"
           />
@@ -133,6 +142,9 @@ import TransactionsList from 'src/components/TransactionsList.vue'
 const AddFederationSelection = defineAsyncComponent(
   () => import('src/components/AddFederationSelection.vue'),
 )
+const SendEcashSelection = defineAsyncComponent(
+  () => import('src/components/SendEcashSelection.vue'),
+)
 const DiscoverFederations = defineAsyncComponent(
   () => import('src/components/DiscoverFederations.vue'),
 )
@@ -145,6 +157,7 @@ const federationStore = useFederationStore()
 const walletStore = useWalletStore()
 const totalBalance = computed(() => walletStore.balance)
 const showSelection = ref(false)
+const showSendEcashSelection = ref(false)
 const showReceiveEcashSelection = ref(false)
 const showDiscover = ref(false)
 const showAdd = ref(false)
