@@ -206,6 +206,7 @@ import { useFederationStore } from 'src/stores/federation'
 
 const ecashToken = ref('')
 const inspection = ref<EcashInspection | null>(null)
+const inspectedToken = ref('')
 const isProcessing = ref(false)
 const showAddFederationDialog = ref(false)
 
@@ -234,6 +235,7 @@ const federationStatusLabel = computed(() => {
 
 watch(ecashToken, () => {
   inspection.value = null
+  inspectedToken.value = ''
 })
 
 watch(
@@ -275,9 +277,20 @@ async function inspectEcashToken(showLoading = true) {
       Loading.show({ message: 'Parsing eCash...' })
     }
 
-    inspection.value = await walletStore.inspectEcash(token)
+    const nextInspection = await walletStore.inspectEcash(token)
+    if (ecashToken.value.trim() !== token) {
+      return
+    }
+
+    inspection.value = nextInspection
+    inspectedToken.value = token
   } catch (error) {
+    if (ecashToken.value.trim() !== token) {
+      return
+    }
+
     inspection.value = null
+    inspectedToken.value = ''
     $q.notify({
       type: 'negative',
       message: `Failed to inspect eCash: ${getErrorMessage(error)}`,
@@ -306,7 +319,13 @@ async function handleFederationJoined() {
 
 async function importEcash() {
   const preview = inspection.value
-  if (preview == null || preview.matchedFederation == null) {
+  const currentToken = ecashToken.value.trim()
+  if (
+    preview == null ||
+    preview.matchedFederation == null ||
+    inspectedToken.value === '' ||
+    inspectedToken.value !== currentToken
+  ) {
     return
   }
 
@@ -315,7 +334,7 @@ async function importEcash() {
     Loading.show({ message: 'Importing eCash...' })
 
     await federationStore.selectFederation(preview.matchedFederation)
-    await walletStore.redeemEcash(ecashToken.value.trim())
+    await walletStore.redeemEcash(currentToken)
 
     await router.push({
       name: '/received-lightning',

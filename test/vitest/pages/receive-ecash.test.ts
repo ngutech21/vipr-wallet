@@ -97,6 +97,17 @@ function createInspection(overrides: Partial<EcashInspection> = {}): EcashInspec
   }
 }
 
+function createDeferredPromise<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+
+  return { promise, resolve, reject }
+}
+
 describe('ReceiveEcashPage', () => {
   let wrapper: VueWrapper
 
@@ -227,6 +238,28 @@ describe('ReceiveEcashPage', () => {
         message: 'Failed to inspect eCash: invalid notes',
       }),
     )
+
+    wrapper.unmount()
+  })
+
+  it('ignores stale inspection results when the token changes mid-request', async () => {
+    wrapper = createWrapper()
+    const walletStore = useWalletStore()
+    const deferred = createDeferredPromise<EcashInspection>()
+
+    vi.spyOn(walletStore, 'inspectEcash').mockReturnValue(deferred.promise)
+
+    setEcashToken('notes-old')
+    const inspectionPromise = inspectToken()
+
+    setEcashToken('notes-new')
+    deferred.resolve(createInspection())
+
+    await inspectionPromise
+    await flushPromises()
+
+    expect(wrapper.find('[data-testid="ecash-preview-card"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="receive-ecash-import-btn"]').exists()).toBe(false)
 
     wrapper.unmount()
   })
