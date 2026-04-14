@@ -722,6 +722,40 @@ describe('wallet store', () => {
     expect(page.hasMore).toBe(false)
   })
 
+  it('getTransactionsPage falls back to raw transactions when operation metadata fetch fails', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'wallet',
+        operationId: 'wallet-op-raw',
+        type: 'withdraw',
+        amountMsats: 2_000_000,
+        fee: 471_000,
+        onchainAddress: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+        outcome: 'Confirmed',
+        timestamp: 1_234_567_890_000,
+      },
+    ])
+    wallet.federation.listOperations.mockRejectedValue(new Error('RPC timeout'))
+
+    walletStore.wallet = wallet as never
+
+    const page = await walletStore.getTransactionsPage(10)
+
+    expect(wallet.federation.listTransactions).toHaveBeenCalledWith(10, undefined)
+    expect(wallet.federation.listOperations).toHaveBeenCalledWith(10, undefined)
+    expect(page.transactions).toHaveLength(1)
+    expect(page.transactions[0]).toMatchObject({
+      operationId: 'wallet-op-raw',
+      amountMsats: 2_000_000,
+      fee: 471_000,
+    })
+    expect(page.nextCursor).toBeNull()
+    expect(page.hasMore).toBe(false)
+  })
+
   it('getTransactionsPage keeps wallet normalization in paged mode', async () => {
     const walletStore = useWalletStore()
     const wallet = createWalletMock(0)

@@ -601,10 +601,11 @@ async function fetchTransactionsBatch(
   limit: number,
   lastSeen?: OperationKey,
 ): Promise<TransactionsPageResult> {
-  const [transactions, operations] = await Promise.all([
-    wallet.federation.listTransactions(limit, lastSeen),
-    wallet.federation.listOperations(limit, lastSeen),
-  ])
+  const transactions = await wallet.federation.listTransactions(limit, lastSeen)
+  const operations = await wallet.federation.listOperations(limit, lastSeen).catch((error) => {
+    logger.warn('Failed to fetch operation metadata for paged transaction enrichment', error)
+    return []
+  })
 
   const operationLogById = new Map<string, OperationLog>()
   for (const operation of operations) {
