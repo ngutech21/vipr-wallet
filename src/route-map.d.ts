@@ -31,7 +31,7 @@ declare module 'vue-router/auto-routes' {
       'not-found',
       '/:path(.*)',
       { path: ParamValue<true> },
-      { path: ParamValue<false>   },
+      { path: ParamValue<false> },
       never
     >
     '/ErrorNotFound': RouteRecordInfo<
