@@ -4,6 +4,7 @@ import type {
   JSONValue,
   JSONObject,
   MSats,
+  OperationKey,
   OperationLog,
   SpendNotesState,
   Transactions,
@@ -42,6 +43,22 @@ export type OfflineEcashSpendResult = {
 
 export type SendOnchainResult = {
   operationId: string
+}
+
+export type TransactionsPageResult = {
+  transactions: Transactions[]
+  nextCursor: OperationKey | null
+  hasMore: boolean
+}
+
+type TransactionHistoryWallet = {
+  federation: {
+    listTransactions: (limit?: number, lastSeen?: OperationKey) => Promise<Transactions[]>
+    listOperations: (
+      limit?: number,
+      lastSeen?: OperationKey,
+    ) => Promise<Array<[OperationKey, OperationLog]>>
+  }
 }
 
 export const useWalletStore = defineStore('wallet', {
@@ -368,6 +385,85 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
+    async getTransactionsPage(
+      pageSize = 10,
+      lastSeen?: OperationKey,
+    ): Promise<TransactionsPageResult> {
+      if (this.wallet == null) {
+        return {
+          transactions: [],
+          nextCursor: null,
+          hasMore: false,
+        }
+      }
+
+      if (!Number.isInteger(pageSize) || pageSize <= 0) {
+        return {
+          transactions: [],
+          nextCursor: lastSeen ?? null,
+          hasMore: false,
+        }
+      }
+
+      try {
+        const collected: Transactions[] = []
+        let cursor = lastSeen
+
+        while (collected.length < pageSize) {
+          const remaining = pageSize - collected.length
+          // Cursor pagination is sequential because each request depends on the previous page.
+          // eslint-disable-next-line no-await-in-loop
+          const batch = await fetchTransactionsBatch(this.wallet, remaining, cursor)
+
+          collected.push(...batch.transactions)
+
+          if (batch.nextCursor == null || !batch.hasMore) {
+            return {
+              transactions: collected,
+              nextCursor: null,
+              hasMore: false,
+            }
+          }
+
+          cursor = batch.nextCursor
+        }
+
+        return {
+          transactions: collected,
+          nextCursor: cursor ?? null,
+          hasMore: cursor != null,
+        }
+      } catch (error) {
+        logger.error('Failed to fetch paged transactions', error)
+        throw error
+      }
+    },
+
+    async getTransactionByOperationId(operationId: string): Promise<Transactions | null> {
+      if (this.wallet == null || operationId.trim() === '') {
+        return null
+      }
+
+      let cursor: OperationKey | undefined
+
+      while (true) {
+        // Cursor pagination is sequential because each request depends on the previous page.
+        // eslint-disable-next-line no-await-in-loop
+        const page = await this.getTransactionsPage(50, cursor)
+        const transaction = page.transactions.find((entry) => entry.operationId === operationId)
+
+        if (transaction != null) {
+          return transaction
+        }
+
+        if (!page.hasMore || page.nextCursor == null) {
+          return null
+        }
+
+        cursor = page.nextCursor
+      }
+    },
+
     async deleteFederationData(federationId: string): Promise<void> {
       const walletName = getWalletNameForFederationId(federationId)
       try {
@@ -499,6 +595,37 @@ export const useWalletStore = defineStore('wallet', {
     },
   },
 })
+
+async function fetchTransactionsBatch(
+  wallet: TransactionHistoryWallet,
+  limit: number,
+  lastSeen?: OperationKey,
+): Promise<TransactionsPageResult> {
+  const [transactions, operations] = await Promise.all([
+    wallet.federation.listTransactions(limit, lastSeen),
+    wallet.federation.listOperations(limit, lastSeen),
+  ])
+
+  const operationLogById = new Map<string, OperationLog>()
+  for (const operation of operations) {
+    if (!Array.isArray(operation) || operation.length !== 2) {
+      continue
+    }
+
+    const [operationKey, operationLog] = operation
+    operationLogById.set(operationKey.operation_id, operationLog)
+  }
+
+  const nextCursor = operations.at(-1)?.[0] ?? null
+
+  return {
+    transactions: (transactions ?? []).map((transaction) =>
+      normalizeTransaction(transaction, operationLogById.get(transaction.operationId)),
+    ),
+    nextCursor,
+    hasMore: operations.length === limit && nextCursor != null,
+  }
+}
 
 function extractFederationGuardians(
   apiEndpoints:

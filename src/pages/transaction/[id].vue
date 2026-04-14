@@ -84,8 +84,6 @@ async function navigateBack() {
 }
 
 onMounted(async () => {
-  const allTransactions = await walletStore.getTransactions()
-
   try {
     const operationId = route.params.id
 
@@ -95,7 +93,7 @@ onMounted(async () => {
       return
     }
 
-    const foundTransaction = allTransactions.find((tx) => tx.operationId === operationId)
+    const foundTransaction = await walletStore.getTransactionByOperationId(operationId)
 
     if (foundTransaction != null) {
       transaction.value = foundTransaction
