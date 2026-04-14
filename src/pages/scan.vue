@@ -99,6 +99,13 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
 
   if (cleanCode.startsWith('fed')) {
     showAddFederation.value = true
+  } else if (cleanCode.startsWith('bitcoin:') || isBitcoinAddress(rawValue)) {
+    await router
+      .push({
+        path: '/send-onchain',
+        query: { target: rawValue },
+      })
+      .catch((error) => logger.error('Failed to navigate to onchain send page', error))
   } else if (
     cleanCode.startsWith('ln') ||
     cleanCode.includes('@') ||
@@ -111,13 +118,6 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
         query: { invoice },
       })
       .catch((error) => logger.error('Failed to navigate to send page', error))
-  } else if (cleanCode.startsWith('bitcoin:') || isBitcoinAddress(rawValue)) {
-    await router
-      .push({
-        path: '/send-onchain',
-        query: { target: rawValue },
-      })
-      .catch((error) => logger.error('Failed to navigate to onchain send page', error))
   }
 }
 

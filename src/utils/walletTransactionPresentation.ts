@@ -14,9 +14,9 @@ export function getWalletDepositStatusLabel(outcome: WalletDepositOutcome): stri
     case 'pending':
     case 'WaitingForTransaction':
     case undefined:
-      return 'Received Bitcoin'
+      return 'Waiting for Bitcoin'
     default:
-      return 'Received Bitcoin'
+      return 'Waiting for Bitcoin'
   }
 }
 

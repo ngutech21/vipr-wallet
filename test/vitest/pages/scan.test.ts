@@ -115,6 +115,21 @@ describe('ScanPage detection flow', () => {
     wrapper.unmount()
   })
 
+  it('routes bitcoin URIs with @ in query params to the onchain send page', async () => {
+    wrapper = createWrapper()
+    const target =
+      'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021&label=alice@example.com'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).onDetect([{ rawValue: target }])
+    await flushPromises()
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      path: '/send-onchain',
+      query: { target },
+    })
+    wrapper.unmount()
+  })
+
   it('routes raw bitcoin address scans to the onchain send page without lowercasing', async () => {
     wrapper = createWrapper()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
