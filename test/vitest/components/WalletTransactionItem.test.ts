@@ -106,4 +106,55 @@ describe('WalletTransactionItem.vue', () => {
     expect(wrapper.text()).toContain('Bitcoin received')
     expect(wrapper.text()).not.toContain('Deposited')
   })
+
+  it('shows a processing status for pending onchain sends in the list', async () => {
+    const { outcome: _removed, ...transactionWithoutOutcome } = createMockTransaction({
+      type: 'withdraw',
+    })
+    wrapper = mountComponent(transactionWithoutOutcome as WalletTransaction)
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Status: Processing')
+    expect(wrapper.text()).not.toContain('bc1qxy2k')
+  })
+
+  it('shows a broadcast status for completed onchain sends in the list', async () => {
+    wrapper = mountComponent(createMockTransaction({ type: 'withdraw', outcome: 'Confirmed' }))
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Status: Broadcast')
+    expect(wrapper.text()).not.toContain('bc1qxy2k')
+  })
+
+  it('shows a failed status for failed onchain sends in the list', async () => {
+    wrapper = mountComponent(createMockTransaction({ type: 'withdraw', outcome: 'Failed' }))
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Status: Failed')
+    expect(wrapper.text()).not.toContain('bc1qxy2k')
+  })
+
+  it('shows the withdraw fee without adding an extra total line', async () => {
+    wrapper = mountComponent(
+      createMockTransaction({ type: 'withdraw', amountMsats: 2_000_000, fee: 471_000 }),
+    )
+    await flushPromises()
+
+    const normalizedText = wrapper.text().replace(/\s+/g, ' ').trim()
+
+    expect(normalizedText).toContain('- 2,000 sats')
+    expect(normalizedText).toContain('Fee: 471 sats')
+    expect(normalizedText).not.toContain('Total:')
+  })
+
+  it('shows an unknown amount when a withdraw has no recoverable sent amount', async () => {
+    wrapper = mountComponent(
+      createMockTransaction({ type: 'withdraw', amountMsats: 0, fee: 471_000 }),
+    )
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Unknown')
+    expect(wrapper.text()).toContain('Fee: 471 sats')
+    expect(wrapper.text()).not.toContain('Total:')
+  })
 })

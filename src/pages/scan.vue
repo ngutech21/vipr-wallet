@@ -64,6 +64,7 @@ import { useRouter } from 'vue-router'
 import AddFederation from 'src/components/AddFederation.vue'
 import { Notify } from 'quasar'
 import { logger } from 'src/services/logger'
+import { isBitcoinAddress } from 'src/utils/bitcoinUri'
 
 const detectedContent = ref<string | null>('')
 const router = useRouter()
@@ -93,10 +94,18 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
   logger.scanner.debug('Code detected', { rawValue: code.rawValue })
   detectedContent.value = code.rawValue
 
-  const cleanCode = code.rawValue.toLocaleLowerCase()
+  const rawValue = code.rawValue.trim()
+  const cleanCode = rawValue.toLocaleLowerCase()
 
   if (cleanCode.startsWith('fed')) {
     showAddFederation.value = true
+  } else if (cleanCode.startsWith('bitcoin:') || isBitcoinAddress(rawValue)) {
+    await router
+      .push({
+        path: '/send-onchain',
+        query: { target: rawValue },
+      })
+      .catch((error) => logger.error('Failed to navigate to onchain send page', error))
   } else if (
     cleanCode.startsWith('ln') ||
     cleanCode.includes('@') ||

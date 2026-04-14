@@ -1,10 +1,15 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import type {
   FedimintWallet,
+  JSONValue,
+  JSONObject,
   MSats,
+  OperationLog,
   SpendNotesState,
   Transactions,
   TxOutputSummary,
+  WalletTransaction,
+  WalletVariant,
 } from '@fedimint/core'
 import { useFederationStore } from './federation'
 import type {
@@ -32,6 +37,10 @@ export function getWalletNameForFederationId(federationId: string): string {
 
 export type OfflineEcashSpendResult = {
   notes: string
+  operationId: string
+}
+
+export type SendOnchainResult = {
   operationId: string
 }
 
@@ -283,10 +292,76 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
+    async sendOnchain(
+      address: string,
+      amountSats: number,
+      extraMeta: JSONValue = {},
+    ): Promise<SendOnchainResult> {
+      if (this.wallet == null) {
+        throw new Error('Wallet is not initialized')
+      }
+
+      const normalizedAddress = address.trim()
+
+      if (normalizedAddress === '') {
+        throw new Error('Bitcoin address is required')
+      }
+
+      if (!Number.isInteger(amountSats) || amountSats <= 0) {
+        throw new Error('Amount must be a positive whole number of sats')
+      }
+
+      logger.logTransaction('Creating onchain withdrawal', {
+        amount: amountSats,
+        address: normalizedAddress,
+      })
+
+      const result = await this.wallet.wallet.sendOnchain(amountSats, normalizedAddress, extraMeta)
+      const operationId = result?.operation_id
+
+      if (operationId == null || operationId === '') {
+        throw new Error('Failed to submit onchain withdrawal')
+      }
+
+      try {
+        await this.updateBalance()
+      } catch (error) {
+        logger.error('Failed to refresh balance after onchain withdrawal submission', {
+          operationId,
+          error,
+        })
+      }
+
+      return {
+        operationId,
+      }
+    },
+
     async getTransactions(): Promise<Transactions[]> {
       try {
-        const transactions = await this.wallet?.federation.listTransactions(10)
-        return transactions ?? []
+        if (this.wallet == null) {
+          return []
+        }
+
+        const transactions = await this.wallet.federation.listTransactions(10)
+        const operations = await this.wallet.federation.listOperations(10).catch((error) => {
+          logger.warn('Failed to fetch operation metadata for transaction enrichment', error)
+          return []
+        })
+
+        const operationLogById = new Map<string, OperationLog>()
+        for (const operation of operations) {
+          if (!Array.isArray(operation) || operation.length !== 2) {
+            continue
+          }
+
+          const [operationKey, operationLog] = operation
+          operationLogById.set(operationKey.operation_id, operationLog)
+        }
+
+        return (transactions ?? []).map((transaction) =>
+          normalizeTransaction(transaction, operationLogById.get(transaction.operationId)),
+        )
       } catch (error) {
         logger.error('Failed to fetch transactions', error)
         return []
@@ -453,6 +528,161 @@ function extractFederationGuardians(
     })
     .filter((guardian) => guardian.url !== '')
     .sort((left, right) => left.peerId - right.peerId)
+}
+
+function normalizeTransaction(
+  transaction: Transactions,
+  operationLog: OperationLog | undefined,
+): Transactions {
+  if (transaction.kind !== 'wallet') {
+    return transaction
+  }
+
+  return normalizeWalletTransaction(transaction as WalletTransaction, operationLog)
+}
+
+function normalizeWalletTransaction(
+  transaction: WalletTransaction,
+  operationLog: OperationLog | undefined,
+): WalletTransaction {
+  if (operationLog == null) {
+    return transaction
+  }
+
+  const variant = operationLog.meta?.variant as WalletVariant | undefined
+  const metaAmount = operationLog.meta?.amount
+  const variantAmount = getWalletWithdrawAmountMsats(variant?.withdraw)
+  const extraMetaAmount = getRequestedWalletAmountMsats(operationLog.meta?.extra_meta)
+  const normalizedAmountMsats =
+    transaction.amountMsats > 0
+      ? transaction.amountMsats
+      : typeof variantAmount === 'number' && Number.isFinite(variantAmount) && variantAmount > 0
+        ? variantAmount
+        : extraMetaAmount != null && extraMetaAmount > 0
+          ? extraMetaAmount
+          : typeof metaAmount === 'number' && Number.isFinite(metaAmount) && metaAmount > 0
+            ? metaAmount
+            : 0
+
+  const feeEstimateMsats = estimateWalletFeeMsats(variant)
+
+  return {
+    ...transaction,
+    amountMsats: normalizedAmountMsats,
+    fee: feeEstimateMsats ?? transaction.fee,
+  }
+}
+
+function estimateWalletFeeMsats(variant: WalletVariant | undefined): number | undefined {
+  const withdrawFee = variant?.withdraw?.fee
+  const satsPerKvb = withdrawFee?.fee_rate?.sats_per_kvb
+  const totalWeight = withdrawFee?.total_weight
+
+  if (
+    satsPerKvb == null ||
+    totalWeight == null ||
+    !Number.isFinite(satsPerKvb) ||
+    !Number.isFinite(totalWeight) ||
+    satsPerKvb <= 0 ||
+    totalWeight <= 0
+  ) {
+    return undefined
+  }
+
+  // `sats_per_kvb` is sats per 1000 vbytes; `total_weight` is weight units.
+  const feeSats = Math.ceil((satsPerKvb * totalWeight) / 4_000)
+  return feeSats * 1_000
+}
+
+function getWalletWithdrawAmountMsats(
+  withdraw: WalletVariant['withdraw'] | undefined,
+): number | undefined {
+  if (withdraw == null) {
+    return undefined
+  }
+
+  const directAmountMsats = getFiniteNumber(
+    (withdraw as WalletVariant['withdraw'] & { amount_msats?: JSONValue }).amountMsats ??
+      (withdraw as WalletVariant['withdraw'] & { amount_msats?: JSONValue }).amount_msats,
+  )
+
+  if (directAmountMsats != null && directAmountMsats > 0) {
+    return directAmountMsats
+  }
+
+  const rawAmount = (withdraw as WalletVariant['withdraw'] & { amount?: JSONValue }).amount
+
+  if (rawAmount == null) {
+    return undefined
+  }
+
+  if (typeof rawAmount === 'number' || typeof rawAmount === 'string') {
+    const amountSats = getFiniteNumber(rawAmount)
+    return amountSats != null && amountSats > 0 ? amountSats * 1_000 : undefined
+  }
+
+  if (typeof rawAmount !== 'object' || Array.isArray(rawAmount)) {
+    return undefined
+  }
+
+  const amountObject = rawAmount as JSONObject
+  const nestedAmountMsats = getFiniteNumber(
+    amountObject.msats ??
+      amountObject.amountMsats ??
+      amountObject.amount_msats ??
+      amountObject.milli_sats,
+  )
+
+  if (nestedAmountMsats != null && nestedAmountMsats > 0) {
+    return nestedAmountMsats
+  }
+
+  const nestedAmountSats = getFiniteNumber(
+    amountObject.sats ?? amountObject.sat ?? amountObject.amountSats ?? amountObject.amount_sats,
+  )
+
+  if (nestedAmountSats != null && nestedAmountSats > 0) {
+    return nestedAmountSats * 1_000
+  }
+
+  return undefined
+}
+
+function getRequestedWalletAmountMsats(extraMeta: JSONObject | undefined): number | undefined {
+  if (extraMeta == null) {
+    return undefined
+  }
+
+  const requestedAmountMsats = getFiniteNumber(
+    extraMeta.requestedAmountMsats ?? extraMeta.requested_amount_msats,
+  )
+
+  if (requestedAmountMsats != null && requestedAmountMsats > 0) {
+    return requestedAmountMsats
+  }
+
+  const requestedAmountSats = getFiniteNumber(
+    extraMeta.requestedAmountSats ?? extraMeta.requested_amount_sats,
+  )
+
+  if (requestedAmountSats != null && requestedAmountSats > 0) {
+    return requestedAmountSats * 1_000
+  }
+
+  return undefined
+}
+
+function getFiniteNumber(value: JSONValue | undefined): number | undefined {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value
+  }
+
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsedValue = Number(value)
+    return Number.isFinite(parsedValue) ? parsedValue : undefined
+  }
+
+  return undefined
 }
 
 export function mapTxOutputSummaryToFederationUtxo(output: TxOutputSummary): FederationUtxo {

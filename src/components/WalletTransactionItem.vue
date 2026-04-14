@@ -19,9 +19,7 @@
       <q-item-label caption>{{
         date.formatDate(transaction.timestamp, 'MMMM D, YYYY - h:mm A')
       }}</q-item-label>
-      <q-item-label caption class="text-grey-6">
-        {{ formatAddress(transaction.onchainAddress) }}
-      </q-item-label>
+      <q-item-label caption :class="statusColorClass"> Status: {{ statusLabel }} </q-item-label>
     </q-item-section>
 
     <q-item-section side>
@@ -29,8 +27,11 @@
         class="transaction-amount"
         :class="transaction.type === 'withdraw' ? 'text-negative' : 'text-positive'"
       >
-        {{ transaction.type === 'withdraw' ? '- ' : '+ ' }}
-        {{ amountInSats }} sats
+        <template v-if="amountInSats != null">
+          {{ transaction.type === 'withdraw' ? '- ' : '+ ' }}
+          {{ amountInSats }} sats
+        </template>
+        <template v-else>Unknown</template>
       </div>
       <div class="text-caption text-grey">≈ ${{ amountInFiat }} {{ 'usd' }}</div>
       <div class="text-caption text-grey">Fee: {{ feeInSats }} sats</div>
@@ -48,7 +49,12 @@ import { date } from 'quasar'
 import { useLightningStore } from 'src/stores/lightning'
 import type { WalletTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
-import { getWalletTransactionListTitle } from 'src/utils/walletTransactionPresentation'
+import {
+  getWalletTransactionAmountSats,
+  getWalletTransactionFeeSats,
+  getWalletTransactionListTitle,
+  getWalletTransactionStatusLabel,
+} from 'src/utils/walletTransactionPresentation'
 
 interface Props {
   transaction: WalletTransaction
@@ -63,20 +69,36 @@ defineEmits<{
 const lightningStore = useLightningStore()
 const amountInFiat = ref('0.00')
 const transactionTitle = computed(() => getWalletTransactionListTitle(props.transaction))
+const statusLabel = computed(() => getWalletTransactionStatusLabel(props.transaction) ?? 'Unknown')
+const statusColorClass = computed(() => {
+  if (props.transaction.type === 'withdraw') {
+    return props.transaction.outcome === 'Failed' ? 'text-negative' : 'text-orange'
+  }
+
+  return 'text-orange'
+})
 
 const amountInSats = computed(() => {
-  return Math.floor(props.transaction.amountMsats / 1000).toLocaleString()
+  const amountSats = getWalletTransactionAmountSats(props.transaction)
+  return amountSats != null ? amountSats.toLocaleString() : null
 })
 
 const feeInSats = computed(() => {
-  return Math.floor(props.transaction.fee / 1000).toLocaleString()
+  return getWalletTransactionFeeSats(props.transaction).toLocaleString()
 })
 
 watch(
   () => props.transaction.amountMsats,
   async (amountMsats) => {
     try {
-      const sats = Math.floor(amountMsats / 1000)
+      const sats = getWalletTransactionAmountSats({
+        ...props.transaction,
+        amountMsats,
+      } as WalletTransaction)
+      if (sats == null) {
+        amountInFiat.value = '0.00'
+        return
+      }
       const fiatValue = await lightningStore.satsToFiat(sats)
       amountInFiat.value = fiatValue.toFixed(2)
     } catch (error) {
@@ -86,11 +108,6 @@ watch(
   },
   { immediate: true },
 )
-
-function formatAddress(address: string): string {
-  if (address.length <= 16) return address
-  return `${address.slice(0, 8)}...${address.slice(-8)}`
-}
 </script>
 
 <style scoped>
