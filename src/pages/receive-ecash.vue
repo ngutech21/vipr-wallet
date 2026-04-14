@@ -121,14 +121,14 @@ async function redeemEcash() {
     isProcessing.value = true
     Loading.show({ message: 'Redeeming eCash...' })
 
-    const amountMSats = (await walletStore.redeemEcash(ecashToken.value.trim())) ?? 0
-    if (amountMSats === 0) {
+    const amountMsats = (await walletStore.redeemEcash(ecashToken.value.trim())) ?? 0
+    if (amountMsats === 0) {
       return
     }
 
     await router.push({
       name: '/received-lightning',
-      query: { amount: amountMSats / 1_000 },
+      query: { amount: amountMsats / 1_000 },
     })
   } catch (error) {
     $q.notify({
