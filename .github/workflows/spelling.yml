@@ -1,11 +1,11 @@
 name: Spelling
 on:
   push:
-    branches: 
-        - master
+    branches:
+      - master
   pull_request:
-    branches: 
-        - master
+    branches:
+      - master
 
 jobs:
   spelling:
@@ -16,4 +16,3 @@ jobs:
         uses: actions/checkout@v6
       - name: Spell Check Repo
         uses: crate-ci/typos@v1.45.1
-        

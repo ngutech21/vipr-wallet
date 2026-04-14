@@ -41,6 +41,13 @@
       </q-card-section>
     </q-card>
 
+    <q-card v-if="importAmountSats != null" flat class="preview-card q-mb-md">
+      <q-card-section>
+        <div class="text-subtitle1">Import Amount</div>
+        <div class="text-h5 q-mt-sm">{{ formatNumber(importAmountSats) }} sats</div>
+      </q-card-section>
+    </q-card>
+
     <FederationGuardians :guardians="federation.guardians ?? []" class="q-mb-lg" />
 
     <div class="row q-col-gutter-sm">
@@ -71,13 +78,17 @@
 </template>
 
 <script setup lang="ts">
+import { useFormatters } from 'src/utils/formatter'
 import FederationGuardians from 'src/components/FederationGuardians.vue'
 import type { Federation } from 'src/components/models'
 
 defineProps<{
   federation: Federation
   isSubmitting: boolean
+  importAmountSats?: number | null
 }>()
+
+const { formatNumber } = useFormatters()
 
 const emit = defineEmits<{
   back: []

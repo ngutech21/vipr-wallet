@@ -118,6 +118,13 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
         query: { invoice },
       })
       .catch((error) => logger.error('Failed to navigate to send page', error))
+  } else {
+    await router
+      .push({
+        name: '/receive-ecash',
+        query: { token: rawValue },
+      })
+      .catch((error) => logger.error('Failed to navigate to receive ecash page', error))
   }
 }
 

@@ -1,6 +1,7 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import type {
   FedimintWallet,
+  ParsedNoteDetails,
   JSONValue,
   JSONObject,
   MSats,
@@ -34,6 +35,15 @@ export const FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY = 'vipr.fedimint.mnemonic.ba
 
 export function getWalletNameForFederationId(federationId: string): string {
   return `${WALLET_NAME_PREFIX}${federationId}`
+}
+
+export type EcashInspection = {
+  amountMsats: number
+  amountSats: number
+  parsed: ParsedNoteDetails
+  matchedFederation: Federation | null
+  inviteCode: string | null
+  requiresJoin: boolean
 }
 
 export type OfflineEcashSpendResult = {
@@ -231,11 +241,21 @@ export const useWalletStore = defineStore('wallet', {
       this.needsMnemonicBackup = false
     },
 
+    inspectEcash(_tokens: string): Promise<EcashInspection> {
+      return Promise.reject(
+        new Error('eCash inspection is not supported by the current Fedimint SDK yet'),
+      )
+    },
+
     async redeemEcash(tokens: string): Promise<MSats | undefined> {
-      const amount = await this.wallet?.mint.parseNotes(tokens)
-      const opsId = await this.wallet?.mint.reissueExternalNotes(tokens)
+      if (this.wallet == null) {
+        throw new Error('Wallet is not open')
+      }
+
+      const amount = await this.wallet.mint.parseNotes(tokens)
+      const opsId = await this.wallet.mint.reissueExternalNotes(tokens)
       if (opsId != null && opsId !== '') {
-        this.wallet?.mint.subscribeReissueExternalNotes(opsId, (_state) => {
+        this.wallet.mint.subscribeReissueExternalNotes(opsId, (_state) => {
           this.updateBalance()
             .then(() => logger.logWalletOperation('Balance updated after ecash redemption'))
             .catch((err) => logger.error('Error updating balance after ecash redemption', err))

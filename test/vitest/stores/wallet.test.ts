@@ -56,8 +56,8 @@ function createWalletMock(balanceMsats: number) {
       listOperations: vi.fn(),
     },
     mint: {
-      parseNotes: vi.fn(),
-      reissueExternalNotes: vi.fn(),
+      parseNotes: vi.fn(() => Promise.resolve(12_000)),
+      reissueExternalNotes: vi.fn(() => Promise.resolve('op-1')),
       subscribeReissueExternalNotes: vi.fn(),
       spendNotes: vi.fn(),
       subscribeSpendNotes: vi.fn(),
@@ -237,6 +237,32 @@ describe('wallet store', () => {
     expect(hasMnemonic).toBe(true)
     expect(walletStore.hasMnemonic).toBe(true)
     expect(walletStore.needsMnemonicBackup).toBe(false)
+  })
+
+  it('throws a descriptive error when ecash inspection is attempted', async () => {
+    const walletStore = useWalletStore()
+    await expect(walletStore.inspectEcash('notes-1')).rejects.toThrow(
+      'eCash inspection is not supported by the current Fedimint SDK yet',
+    )
+    expect(fedimintClientMock.init).not.toHaveBeenCalled()
+  })
+
+  it('redeems ecash only through reissueExternalNotes on the open wallet', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(12_000)
+    walletStore.wallet = wallet as never
+
+    await walletStore.redeemEcash('notes-import')
+
+    expect(wallet.mint.reissueExternalNotes).toHaveBeenCalledWith('notes-import')
+    expect(wallet.mint.subscribeReissueExternalNotes).toHaveBeenCalledTimes(1)
+  })
+
+  it('throws when redeeming ecash without an open wallet', async () => {
+    const walletStore = useWalletStore()
+    walletStore.wallet = null
+
+    await expect(walletStore.redeemEcash('notes-import')).rejects.toThrow('Wallet is not open')
   })
 
   it('spendEcashOffline creates notes, converts sats to msats, and refreshes balance', async () => {

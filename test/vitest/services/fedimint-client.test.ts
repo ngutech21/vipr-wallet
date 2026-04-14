@@ -93,6 +93,15 @@ vi.mock('@fedimint/core', () => {
         federation_id: `fed-${inviteCode}`,
       }),
     )
+    parseOobNotes = vi.fn((notes: string) =>
+      Promise.resolve({
+        total_amount: 12_000,
+        federation_id_prefix: 'fed1',
+        federation_id: `fed-${notes}`,
+        invite_code: 'fed11invite',
+        note_counts: { '1000': 12 },
+      }),
+    )
     createWallet = vi.fn(() => Promise.resolve(new MockFedimintWallet(this._client)))
     getMnemonic = vi.fn(() => {
       const value = coreMockState.getMnemonicValue
@@ -218,6 +227,18 @@ describe('fedimint client adapter', () => {
 
     await fedimintClient.clearAllWallets()
     expect(await fedimintClient.listWallets()).toEqual([])
+  })
+
+  it('parses oob notes through the wallet director', async () => {
+    const parsed = await fedimintClient.parseOobNotes('notes-1')
+
+    expect(parsed).toEqual({
+      total_amount: 12_000,
+      federation_id_prefix: 'fed1',
+      federation_id: 'fed-notes-1',
+      invite_code: 'fed11invite',
+      note_counts: { '1000': 12 },
+    })
   })
 
   it('normalizes federation preview response', async () => {

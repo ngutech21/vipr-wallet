@@ -12,6 +12,7 @@
     <JoinFederationPreviewStep
       v-else-if="previewFederation != null"
       :federation="previewFederation"
+      :import-amount-sats="importAmountSats ?? null"
       :is-submitting="isSubmitting"
       @back="goBackToInviteStep"
       @join="addFederation"
@@ -41,6 +42,7 @@ const emit = defineEmits<{
 const props = defineProps<{
   initialInviteCode?: string | null
   autoPreview?: boolean
+  importAmountSats?: number | null
 }>()
 
 const inviteCode = ref(props.initialInviteCode ?? '')

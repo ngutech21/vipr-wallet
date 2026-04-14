@@ -77,17 +77,29 @@ defineOptions({
   name: 'ReceiveEcashPage',
 })
 
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useQuasar, Loading } from 'quasar'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter, type LocationQueryValue } from 'vue-router'
 import { getErrorMessage } from 'src/utils/error'
 
 const ecashToken = ref('')
 const isProcessing = ref(false)
 const $q = useQuasar()
+const route = useRoute('/receive-ecash')
 const router = useRouter()
 const walletStore = useWalletStore()
+
+watch(
+  () => route.query.token,
+  (token) => {
+    const nextToken = getQueryString(token)
+    if (nextToken !== '') {
+      ecashToken.value = nextToken
+    }
+  },
+  { immediate: true },
+)
 
 async function pasteFromClipboard() {
   try {
@@ -109,15 +121,14 @@ async function redeemEcash() {
     isProcessing.value = true
     Loading.show({ message: 'Redeeming eCash...' })
 
-    const amountMSats = (await walletStore.redeemEcash(ecashToken.value.trim())) ?? 0
-    if (amountMSats === 0) {
+    const amountMsats = (await walletStore.redeemEcash(ecashToken.value.trim())) ?? 0
+    if (amountMsats === 0) {
       return
     }
 
-    // Navigate back to home
     await router.push({
       name: '/received-lightning',
-      query: { amount: amountMSats / 1_000 },
+      query: { amount: Math.floor(amountMsats / 1_000) },
     })
   } catch (error) {
     $q.notify({
@@ -129,6 +140,11 @@ async function redeemEcash() {
     isProcessing.value = false
     Loading.hide()
   }
+}
+
+function getQueryString(value: LocationQueryValue | LocationQueryValue[] | undefined): string {
+  const firstValue = Array.isArray(value) ? value[0] : value
+  return typeof firstValue === 'string' ? firstValue : ''
 }
 </script>
 
