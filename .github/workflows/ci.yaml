@@ -37,6 +37,9 @@ jobs:
         # also fail on peer dependency incompatibilities.
         run: pnpm install --frozen-lockfile --strict-peer-dependencies
 
+      - name: Check code formatting
+        run: pnpm format:check
+
       - name: Lint
         run: pnpm lint
 
@@ -64,4 +67,14 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
           verbose: true
-      
+
+  docker-build-pr:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build Docker image
+        run: docker build --file Dockerfile --tag vipr-wallet:pr-check .

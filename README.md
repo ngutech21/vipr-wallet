@@ -1,13 +1,14 @@
 [![Actionlint](https://github.com/ngutech21/vipr-wallet/actions/workflows/actionlint.yml/badge.svg)](https://github.com/ngutech21/vipr-wallet/actions/workflows/actionlint.yml)
+[![Spelling](https://github.com/ngutech21/vipr-wallet/actions/workflows/spelling.yml/badge.svg)](https://github.com/ngutech21/vipr-wallet/actions/workflows/spelling.yml)
 [![CI](https://github.com/ngutech21/vipr-wallet/actions/workflows/ci.yaml/badge.svg)](https://github.com/ngutech21/vipr-wallet/actions/workflows/ci.yaml)
 [![Tests](https://github.com/ngutech21/vipr-wallet/actions/workflows/e2e-test.yaml/badge.svg)](https://github.com/ngutech21/vipr-wallet/actions/workflows/e2e-test.yaml)
 [![Coverage](https://img.shields.io/codecov/c/github/ngutech21/vipr-wallet)](https://app.codecov.io/gh/ngutech21/vipr-wallet/)
 
 ---
 
-# Vipr-Wallet
+# Vipr Wallet
 
-Vipr-Wallet is a modern Progressive Web App (PWA) that serves as an ecash wallet for Fedimint. It runs seamlessly on both mobile and desktop devices, enabling private and instant lightning transactions wherever you are.
+Vipr Wallet is a modern Progressive Web App (PWA) that serves as an ecash wallet for Fedimint. It runs seamlessly on both mobile and desktop devices, enabling private and instant lightning transactions wherever you are.
 
 # ⚠️ Disclaimer
 
@@ -40,10 +41,12 @@ Learn more about the project at [vipr.cash](https://vipr.cash)
 - [x] lnurl-p support
 - [x] lightning address support
 - [ ] pay to Nostr contacts
-- [ ] export ecash
+- [x] export ecash
 - [x] import ecash
 - [x] backup wallet
 - [x] restore wallet
+- [x] pay onchain
+- [x] receive onchain
 
 ### Federations
 
@@ -88,13 +91,13 @@ The wallet will be available at `http://localhost:8080`
 - This project uses [Vue 3](https://v3.vuejs.org/) with [TypeScript](https://www.typescriptlang.org/)
 - [Quasar Framework](https://quasar.dev/) provides the UI components
 - [Pinia](https://pinia.vuejs.org/) is used for state management
-- [Fedimint-Web-SDK](https://github.com/fedimint/fedimint-web-sdk) is used for interacting with the fedimint
+- [Fedimint-SDK](https://github.com/fedimint/fedimint-sdk) is used for interacting with the fedimint
 
 ### Prerequisites
 
 Make sure you have the following installed:
 
-- Node.js 20+
+- Node.js 24+
 - pnpm 10+
 
 ### Installation

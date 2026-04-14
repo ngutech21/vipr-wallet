@@ -64,7 +64,7 @@ function createRecommendationEvent({
 }): NDKEvent {
   return {
     id: `recommendation-${pubkey}-${createdAt}`,
-    kind: Nip87Kinds.Reccomendation,
+    kind: Nip87Kinds.Recommendation,
     pubkey,
     created_at: createdAt,
     getMatchingTags(tag: string) {

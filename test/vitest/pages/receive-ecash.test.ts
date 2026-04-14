@@ -4,9 +4,7 @@ import { defineComponent } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import ReceiveEcashPage from 'src/pages/receive-ecash.vue'
-import { useWalletStore, type EcashInspection } from 'src/stores/wallet'
-import { useFederationStore } from 'src/stores/federation'
-import type { Federation } from 'src/components/models'
+import { useWalletStore } from 'src/stores/wallet'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockNotify = vi.hoisted(() => vi.fn())
@@ -52,62 +50,6 @@ const qBtnStub = defineComponent({
   template: '<button @click="$emit(\'click\')">{{ label }}<slot /></button>',
 })
 
-const qDialogStub = defineComponent({
-  name: 'QDialog',
-  props: {
-    modelValue: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  template: '<div><slot v-if="modelValue" /></div>',
-})
-
-const addFederationStub = defineComponent({
-  name: 'AddFederation',
-  emits: ['close'],
-  template:
-    '<div data-testid="add-federation-stub"><button data-testid="add-federation-close" @click="$emit(\'close\')" /></div>',
-})
-
-const federation: Federation = {
-  title: 'Known Federation',
-  inviteCode: 'fed11known',
-  federationId: 'fed-1',
-  guardians: [{ peerId: 0, name: 'Guardian', url: 'https://guardian.example' }],
-  modules: [],
-  metadata: {},
-}
-
-function createInspection(overrides: Partial<EcashInspection> = {}): EcashInspection {
-  return {
-    amountMsats: 12_000,
-    amountSats: 12,
-    parsed: {
-      total_amount: 12_000,
-      federation_id_prefix: 'fed-',
-      federation_id: 'fed-1',
-      invite_code: null,
-      note_counts: { '1000': 12 },
-    },
-    matchedFederation: federation,
-    inviteCode: null,
-    requiresJoin: false,
-    ...overrides,
-  }
-}
-
-function createDeferredPromise<T>() {
-  let resolve!: (value: T | PromiseLike<T>) => void
-  let reject!: (reason?: unknown) => void
-  const promise = new Promise<T>((res, rej) => {
-    resolve = res
-    reject = rej
-  })
-
-  return { promise, resolve, reject }
-}
-
 describe('ReceiveEcashPage', () => {
   let wrapper: VueWrapper
 
@@ -126,15 +68,7 @@ describe('ReceiveEcashPage', () => {
           'q-card-section': passthrough,
           'q-btn': qBtnStub,
           'q-input': passthrough,
-          'q-dialog': qDialogStub,
-          'q-avatar': passthrough,
-          'q-img': passthrough,
-          'q-icon': passthrough,
           'q-spinner-dots': passthrough,
-          AddFederation: addFederationStub,
-          FederationGuardians: defineComponent({
-            template: '<div data-testid="guardians-stub" />',
-          }),
         },
       },
     })
@@ -150,116 +84,65 @@ describe('ReceiveEcashPage', () => {
     ;(wrapper.vm as unknown as { ecashToken: string }).ecashToken = value
   }
 
-  async function inspectToken() {
-    await (
-      wrapper.vm as unknown as { inspectEcashToken: (showLoading?: boolean) => Promise<void> }
-    ).inspectEcashToken(false)
+  async function redeemEcash() {
+    await (wrapper.vm as unknown as { redeemEcash: () => Promise<void> }).redeemEcash()
   }
 
-  async function importToken() {
-    await (wrapper.vm as unknown as { importEcash: () => Promise<void> }).importEcash()
-  }
-
-  it('previews the import amount and imports known federation ecash only after confirmation', async () => {
+  it('prefills token from route query when provided', async () => {
+    routeState.query = { token: 'cashuAquery' }
     wrapper = createWrapper()
-    const walletStore = useWalletStore()
-    const federationStore = useFederationStore()
-
-    vi.spyOn(walletStore, 'inspectEcash').mockResolvedValue(createInspection())
-    const redeemEcashSpy = vi.spyOn(walletStore, 'redeemEcash').mockResolvedValue()
-    const selectFederationSpy = vi.spyOn(federationStore, 'selectFederation').mockResolvedValue()
-    setEcashToken('notes-1')
-    await inspectToken()
     await flushPromises()
 
-    expect(wrapper.text()).toContain('12 sats')
-    expect(wrapper.find('[data-testid="receive-ecash-import-btn"]').exists()).toBe(true)
+    expect((wrapper.vm as unknown as { ecashToken: string }).ecashToken).toBe('cashuAquery')
+    wrapper.unmount()
+  })
 
-    await importToken()
+  it('redeems ecash and navigates with the redeemed amount', async () => {
+    wrapper = createWrapper()
+    const walletStore = useWalletStore()
 
-    expect(selectFederationSpy).toHaveBeenCalledWith(federation)
-    expect(redeemEcashSpy).toHaveBeenCalledWith('notes-1')
+    vi.spyOn(walletStore, 'redeemEcash').mockResolvedValue(12_000)
+    setEcashToken('notes-1')
+
+    await redeemEcash()
+
+    expect(walletStore.redeemEcash).toHaveBeenCalledWith('notes-1')
     expect(mockRouterPush).toHaveBeenCalledWith({
       name: '/received-lightning',
-      query: { amount: '12' },
+      query: { amount: 12 },
     })
-
     wrapper.unmount()
   })
 
-  it('opens federation preview for joinable unknown ecash and returns to import preview after join', async () => {
+  it('does not navigate when redeem returns zero amount', async () => {
     wrapper = createWrapper()
     const walletStore = useWalletStore()
 
-    vi.spyOn(walletStore, 'inspectEcash')
-      .mockResolvedValueOnce(
-        createInspection({
-          matchedFederation: null,
-          inviteCode: 'fed11join',
-          requiresJoin: true,
-        }),
-      )
-      .mockResolvedValueOnce(createInspection())
-    setEcashToken('notes-join')
-    await inspectToken()
-    await flushPromises()
+    vi.spyOn(walletStore, 'redeemEcash').mockResolvedValue(0)
+    setEcashToken('notes-1')
 
-    expect(wrapper.find('[data-testid="receive-ecash-join-btn"]').exists()).toBe(true)
+    await redeemEcash()
 
-    await wrapper.get('[data-testid="receive-ecash-join-btn"]').trigger('click')
-    await flushPromises()
-    expect(wrapper.find('[data-testid="add-federation-stub"]').exists()).toBe(true)
-
-    await wrapper.get('[data-testid="add-federation-close"]').trigger('click')
-    await flushPromises()
-
-    expect(wrapper.find('[data-testid="receive-ecash-import-btn"]').exists()).toBe(true)
-    expect(mockNotify).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: 'positive',
-      }),
-    )
-
+    expect(mockRouterPush).not.toHaveBeenCalled()
     wrapper.unmount()
   })
 
-  it('shows a clean error when oob parsing fails', async () => {
+  it('shows a clean error when redeem fails', async () => {
     wrapper = createWrapper()
     const walletStore = useWalletStore()
 
-    vi.spyOn(walletStore, 'inspectEcash').mockRejectedValue(new Error('invalid notes'))
+    vi.spyOn(walletStore, 'redeemEcash').mockRejectedValue(new Error('invalid notes'))
     setEcashToken('bad-notes')
-    await inspectToken()
+
+    await redeemEcash()
     await flushPromises()
 
     expect(mockNotify).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'negative',
-        message: 'Failed to inspect eCash: invalid notes',
+        message: 'Failed to redeem eCash: invalid notes',
       }),
     )
-
-    wrapper.unmount()
-  })
-
-  it('ignores stale inspection results when the token changes mid-request', async () => {
-    wrapper = createWrapper()
-    const walletStore = useWalletStore()
-    const deferred = createDeferredPromise<EcashInspection>()
-
-    vi.spyOn(walletStore, 'inspectEcash').mockReturnValue(deferred.promise)
-
-    setEcashToken('notes-old')
-    const inspectionPromise = inspectToken()
-
-    setEcashToken('notes-new')
-    deferred.resolve(createInspection())
-
-    await inspectionPromise
-    await flushPromises()
-
-    expect(wrapper.find('[data-testid="ecash-preview-card"]').exists()).toBe(false)
-    expect(wrapper.find('[data-testid="receive-ecash-import-btn"]').exists()).toBe(false)
 
     wrapper.unmount()
   })

@@ -14,7 +14,6 @@ const fedimintClientMock = vi.hoisted(() => ({
   clearAllWallets: vi.fn<() => Promise<void>>(),
   listWallets: vi.fn<() => Promise<string[]>>(),
   previewFederation: vi.fn(),
-  parseOobNotes: vi.fn(),
   reset: vi.fn(),
 }))
 
@@ -57,6 +56,7 @@ function createWalletMock(balanceMsats: number) {
       listOperations: vi.fn(),
     },
     mint: {
+      parseNotes: vi.fn(() => Promise.resolve(12_000)),
       reissueExternalNotes: vi.fn(() => Promise.resolve('op-1')),
       subscribeReissueExternalNotes: vi.fn(),
       spendNotes: vi.fn(),
@@ -113,13 +113,6 @@ describe('wallet store', () => {
       'lima',
     ])
     fedimintClientMock.setMnemonic.mockResolvedValue()
-    fedimintClientMock.parseOobNotes.mockResolvedValue({
-      total_amount: 12_000,
-      federation_id_prefix: 'fed-',
-      federation_id: 'fed-1',
-      invite_code: null,
-      note_counts: { '1000': 12 },
-    })
   })
 
   it('opens the selected federation wallet via deterministic wallet name', async () => {
@@ -246,111 +239,11 @@ describe('wallet store', () => {
     expect(walletStore.needsMnemonicBackup).toBe(false)
   })
 
-  it('inspects ecash and matches federation by full federation id', async () => {
+  it('throws a descriptive error when ecash inspection is attempted', async () => {
     const walletStore = useWalletStore()
-    const federationStore = useFederationStore()
-    const federation = createFederation()
-    federationStore.federations = [federation]
-
-    const inspection = await walletStore.inspectEcash('notes-1')
-
-    expect(inspection.amountMsats).toBe(12_000)
-    expect(inspection.amountSats).toBe(12)
-    expect(inspection.matchedFederation).toEqual(federation)
-    expect(inspection.requiresJoin).toBe(false)
-  })
-
-  it('falls back to federation id prefix matching during ecash inspection', async () => {
-    const walletStore = useWalletStore()
-    const federationStore = useFederationStore()
-    const federation = createFederation({ federationId: 'abcd1234fed' })
-    federationStore.federations = [federation]
-    fedimintClientMock.parseOobNotes.mockResolvedValue({
-      total_amount: 15_000,
-      federation_id_prefix: 'abcd',
-      federation_id: null,
-      invite_code: null,
-      note_counts: { '5000': 3 },
-    })
-
-    const inspection = await walletStore.inspectEcash('notes-prefix')
-
-    expect(inspection.matchedFederation).toEqual(federation)
-    expect(inspection.requiresJoin).toBe(false)
-  })
-
-  it('marks ecash inspection as joinable when invite code is present for unknown federation', async () => {
-    const walletStore = useWalletStore()
-    fedimintClientMock.parseOobNotes.mockResolvedValue({
-      total_amount: 20_000,
-      federation_id_prefix: 'beef',
-      federation_id: null,
-      invite_code: 'fed11joinme',
-      note_counts: { '10000': 2 },
-    })
-
-    const inspection = await walletStore.inspectEcash('notes-join')
-
-    expect(inspection.matchedFederation).toBeNull()
-    expect(inspection.inviteCode).toBe('fed11joinme')
-    expect(inspection.requiresJoin).toBe(true)
-  })
-
-  it('marks ecash inspection as not importable when invite code is missing for unknown federation', async () => {
-    const walletStore = useWalletStore()
-    fedimintClientMock.parseOobNotes.mockResolvedValue({
-      total_amount: 25_000,
-      federation_id_prefix: 'cafe',
-      federation_id: null,
-      invite_code: null,
-      note_counts: { '25000': 1 },
-    })
-
-    const inspection = await walletStore.inspectEcash('notes-unknown')
-
-    expect(inspection.matchedFederation).toBeNull()
-    expect(inspection.inviteCode).toBeNull()
-    expect(inspection.requiresJoin).toBe(false)
-  })
-
-  it('does not fall back to prefix matching when a full federation id is present but unknown', async () => {
-    const walletStore = useWalletStore()
-    const federationStore = useFederationStore()
-    const federation = createFederation({ federationId: 'fed-1-known' })
-    federationStore.federations = [federation]
-    fedimintClientMock.parseOobNotes.mockResolvedValue({
-      total_amount: 30_000,
-      federation_id_prefix: 'fed-1',
-      federation_id: 'fed-1-other',
-      invite_code: null,
-      note_counts: { '10000': 3 },
-    })
-
-    const inspection = await walletStore.inspectEcash('notes-full-id-mismatch')
-
-    expect(inspection.matchedFederation).toBeNull()
-    expect(inspection.requiresJoin).toBe(false)
-  })
-
-  it('does not match ambiguous federation prefixes during ecash inspection', async () => {
-    const walletStore = useWalletStore()
-    const federationStore = useFederationStore()
-    federationStore.federations = [
-      createFederation({ federationId: 'abcd1111fed' }),
-      createFederation({ federationId: 'abcd2222fed', inviteCode: 'fed11testinvite2' }),
-    ]
-    fedimintClientMock.parseOobNotes.mockResolvedValue({
-      total_amount: 35_000,
-      federation_id_prefix: 'abcd',
-      federation_id: null,
-      invite_code: null,
-      note_counts: { '5000': 7 },
-    })
-
-    const inspection = await walletStore.inspectEcash('notes-ambiguous-prefix')
-
-    expect(inspection.matchedFederation).toBeNull()
-    expect(inspection.requiresJoin).toBe(false)
+    await expect(walletStore.inspectEcash('notes-1')).rejects.toThrow(
+      'eCash inspection is not supported by the current Fedimint SDK yet',
+    )
   })
 
   it('redeems ecash only through reissueExternalNotes on the open wallet', async () => {
@@ -682,6 +575,329 @@ describe('wallet store', () => {
       amountMsats: 2_000_000,
       fee: 471_000,
     })
+  })
+
+  it('getTransactionsPage returns paged transactions with cursor metadata', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+    const firstCursor = {
+      operation_id: 'ln-op-1',
+      creation_time: {
+        secs_since_epoch: 1_234_567_890,
+        nanos_since_epoch: 0,
+      },
+    }
+
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'ln',
+        operationId: 'ln-op-1',
+        type: 'send',
+        invoice: 'lnbc1test',
+        amountMsats: 1_000,
+        fee: 0,
+        timestamp: 1_234_567_890_000,
+      },
+    ])
+    wallet.federation.listOperations.mockResolvedValue([[firstCursor, { meta: {} }]])
+
+    walletStore.wallet = wallet as never
+
+    const page = await walletStore.getTransactionsPage(1)
+
+    expect(wallet.federation.listTransactions).toHaveBeenCalledWith(1, undefined)
+    expect(wallet.federation.listOperations).toHaveBeenCalledWith(1, undefined)
+    expect(page.transactions).toHaveLength(1)
+    expect(page.nextCursor).toEqual(firstCursor)
+    expect(page.hasMore).toBe(true)
+  })
+
+  it('getTransactionsPage keeps fetching until it collects the requested visible transactions', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+    const nonTransactionCursor = {
+      operation_id: 'non-transaction-op-3',
+      creation_time: {
+        secs_since_epoch: 1_234_567_891,
+        nanos_since_epoch: 0,
+      },
+    }
+    const secondPageCursor = {
+      operation_id: 'wallet-op-4',
+      creation_time: {
+        secs_since_epoch: 1_234_567_892,
+        nanos_since_epoch: 0,
+      },
+    }
+
+    wallet.federation.listTransactions
+      .mockResolvedValueOnce([
+        {
+          kind: 'ln',
+          operationId: 'ln-op-1',
+          type: 'send',
+          invoice: 'lnbc1',
+          amountMsats: 1_000,
+          fee: 0,
+          timestamp: 1,
+        },
+        {
+          kind: 'mint',
+          operationId: 'mint-op-2',
+          type: 'receive',
+          amountMsats: 2_000,
+          timestamp: 2,
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          kind: 'wallet',
+          operationId: 'wallet-op-4',
+          type: 'deposit',
+          onchainAddress: 'bc1qtest',
+          amountMsats: 3_000,
+          fee: 0,
+          timestamp: 3,
+        },
+      ])
+    wallet.federation.listOperations
+      .mockResolvedValueOnce([
+        [
+          {
+            operation_id: 'ln-op-1',
+            creation_time: {
+              secs_since_epoch: 1_234_567_889,
+              nanos_since_epoch: 0,
+            },
+          },
+          { meta: {} },
+        ],
+        [
+          {
+            operation_id: 'mint-op-2',
+            creation_time: {
+              secs_since_epoch: 1_234_567_890,
+              nanos_since_epoch: 0,
+            },
+          },
+          { meta: {} },
+        ],
+        [nonTransactionCursor, { meta: {} }],
+      ])
+      .mockResolvedValueOnce([[secondPageCursor, { meta: {} }]])
+
+    walletStore.wallet = wallet as never
+
+    const page = await walletStore.getTransactionsPage(3)
+
+    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(1, 3, undefined)
+    expect(wallet.federation.listOperations).toHaveBeenNthCalledWith(1, 3, undefined)
+    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(2, 1, nonTransactionCursor)
+    expect(wallet.federation.listOperations).toHaveBeenNthCalledWith(2, 1, nonTransactionCursor)
+    expect(page.transactions.map((transaction) => transaction.operationId)).toEqual([
+      'ln-op-1',
+      'mint-op-2',
+      'wallet-op-4',
+    ])
+    expect(page.nextCursor).toEqual(secondPageCursor)
+    expect(page.hasMore).toBe(true)
+  })
+
+  it('getTransactionsPage clears the cursor when the backend is exhausted', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'ln',
+        operationId: 'ln-op-1',
+        type: 'send',
+        invoice: 'lnbc1',
+        amountMsats: 1_000,
+        fee: 0,
+        timestamp: 1,
+      },
+    ])
+    wallet.federation.listOperations.mockResolvedValue([
+      [
+        {
+          operation_id: 'ln-op-1',
+          creation_time: {
+            secs_since_epoch: 1_234_567_890,
+            nanos_since_epoch: 0,
+          },
+        },
+        { meta: {} },
+      ],
+    ])
+
+    walletStore.wallet = wallet as never
+
+    const page = await walletStore.getTransactionsPage(3)
+
+    expect(page.transactions).toHaveLength(1)
+    expect(page.nextCursor).toBeNull()
+    expect(page.hasMore).toBe(false)
+  })
+
+  it('getTransactionsPage falls back to raw transactions when operation metadata fetch fails', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'wallet',
+        operationId: 'wallet-op-raw',
+        type: 'withdraw',
+        amountMsats: 2_000_000,
+        fee: 471_000,
+        onchainAddress: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+        outcome: 'Confirmed',
+        timestamp: 1_234_567_890_000,
+      },
+    ])
+    wallet.federation.listOperations.mockRejectedValue(new Error('RPC timeout'))
+
+    walletStore.wallet = wallet as never
+
+    const page = await walletStore.getTransactionsPage(10)
+
+    expect(wallet.federation.listTransactions).toHaveBeenCalledWith(10, undefined)
+    expect(wallet.federation.listOperations).toHaveBeenCalledWith(10, undefined)
+    expect(page.transactions).toHaveLength(1)
+    expect(page.transactions[0]).toMatchObject({
+      operationId: 'wallet-op-raw',
+      amountMsats: 2_000_000,
+      fee: 471_000,
+    })
+    expect(page.nextCursor).toBeNull()
+    expect(page.hasMore).toBe(false)
+  })
+
+  it('getTransactionsPage keeps wallet normalization in paged mode', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'wallet',
+        operationId: 'wallet-op-1',
+        type: 'withdraw',
+        onchainAddress: 'bc1qtest',
+        amountMsats: 0,
+        fee: 0,
+        timestamp: 1,
+      },
+    ])
+    wallet.federation.listOperations.mockResolvedValue([
+      [
+        {
+          operation_id: 'wallet-op-1',
+          creation_time: {
+            secs_since_epoch: 1_234_567_890,
+            nanos_since_epoch: 0,
+          },
+        },
+        {
+          meta: {
+            variant: {
+              withdraw: {
+                amount: 42,
+                fee: {
+                  fee_rate: {
+                    sats_per_kvb: 2_000,
+                  },
+                  total_weight: 600,
+                },
+              },
+            },
+          },
+        },
+      ],
+    ])
+
+    walletStore.wallet = wallet as never
+
+    const page = await walletStore.getTransactionsPage(1)
+    const transaction = page.transactions[0]
+
+    expect(transaction).toBeDefined()
+    if (transaction == null) {
+      throw new Error('Expected paged wallet transaction')
+    }
+    expect(transaction.kind).toBe('wallet')
+    expect((transaction as { amountMsats: number }).amountMsats).toBe(42_000)
+    expect((transaction as { fee: number }).fee).toBe(300_000)
+  })
+
+  it('getTransactionByOperationId pages until it finds an older transaction', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+    const firstCursor = {
+      operation_id: 'ln-op-1',
+      creation_time: {
+        secs_since_epoch: 1_234_567_890,
+        nanos_since_epoch: 0,
+      },
+    }
+
+    wallet.federation.listTransactions
+      .mockResolvedValueOnce([
+        {
+          kind: 'ln',
+          operationId: 'ln-op-1',
+          type: 'send',
+          invoice: 'lnbc1',
+          amountMsats: 1_000,
+          fee: 0,
+          timestamp: 1,
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          kind: 'wallet',
+          operationId: 'wallet-op-target',
+          type: 'withdraw',
+          onchainAddress: 'bc1qtarget',
+          amountMsats: 2_000,
+          fee: 0,
+          timestamp: 2,
+        },
+      ])
+    wallet.federation.listOperations
+      .mockResolvedValueOnce([
+        ...Array.from({ length: 49 }, (_value, index) => [
+          {
+            operation_id: `non-transaction-op-${index + 1}`,
+            creation_time: {
+              secs_since_epoch: 1_234_567_800 + index,
+              nanos_since_epoch: 0,
+            },
+          },
+          { meta: {} },
+        ]),
+        [firstCursor, { meta: {} }],
+      ])
+      .mockResolvedValueOnce([
+        [
+          {
+            operation_id: 'wallet-op-target',
+            creation_time: {
+              secs_since_epoch: 1_234_567_891,
+              nanos_since_epoch: 0,
+            },
+          },
+          { meta: {} },
+        ],
+      ])
+
+    walletStore.wallet = wallet as never
+
+    const transaction = await walletStore.getTransactionByOperationId('wallet-op-target')
+
+    expect(transaction?.operationId).toBe('wallet-op-target')
+    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(1, 50, undefined)
+    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(2, 49, firstCursor)
   })
 })
 

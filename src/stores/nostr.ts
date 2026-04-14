@@ -196,7 +196,7 @@ export const useNostrStore = defineStore('nostr', {
         kinds: [Nip87Kinds.FediInfo],
       } as unknown as NDKFilter
       const recommendationFilter: NDKFilter = {
-        kinds: [Nip87Kinds.Reccomendation],
+        kinds: [Nip87Kinds.Recommendation],
         '#k': [String(Nip87Kinds.FediInfo)],
         limit: 500,
       } as unknown as NDKFilter
@@ -291,7 +291,7 @@ export const useNostrStore = defineStore('nostr', {
     },
 
     async handleRecommendationEvent(event: NDKEvent) {
-      if (event.kind !== Nip87Kinds.Reccomendation) return
+      if (event.kind !== Nip87Kinds.Recommendation) return
       if (event.pubkey == null || event.pubkey === '') return
 
       const recommendedFederationIds = extractRecommendationTargets(event)
