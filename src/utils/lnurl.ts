@@ -28,7 +28,7 @@ async function getLnurlPayParams(lnurl: string) {
     }
 
     if (json.tag !== 'payRequest') {
-      throw new Error(`LNURL is not a valid payRequest Typ: ${JSON.stringify(data)}`)
+      throw new Error(`LNURL is not a valid payRequest Type: ${JSON.stringify(data)}`)
     }
 
     return json
