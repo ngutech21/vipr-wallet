@@ -1,4 +1,5 @@
 [![Actionlint](https://github.com/ngutech21/vipr-wallet/actions/workflows/actionlint.yml/badge.svg)](https://github.com/ngutech21/vipr-wallet/actions/workflows/actionlint.yml)
+[![Spelling](https://github.com/ngutech21/vipr-wallet/actions/workflows/spelling.yml/badge.svg)](https://github.com/ngutech21/vipr-wallet/actions/workflows/spelling.yml)
 [![CI](https://github.com/ngutech21/vipr-wallet/actions/workflows/ci.yaml/badge.svg)](https://github.com/ngutech21/vipr-wallet/actions/workflows/ci.yaml)
 [![Tests](https://github.com/ngutech21/vipr-wallet/actions/workflows/e2e-test.yaml/badge.svg)](https://github.com/ngutech21/vipr-wallet/actions/workflows/e2e-test.yaml)
 [![Coverage](https://img.shields.io/codecov/c/github/ngutech21/vipr-wallet)](https://app.codecov.io/gh/ngutech21/vipr-wallet/)
