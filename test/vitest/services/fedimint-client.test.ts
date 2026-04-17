@@ -14,6 +14,7 @@ const coreMockState = vi.hoisted(() => ({
   ) as unknown,
   joinFederationErrorOnce: null as Error | null,
   openWalletSuccessOnce: false,
+  directorInstances: [] as unknown[],
   generateMnemonicValue: [
     'abandon',
     'ability',
@@ -79,6 +80,11 @@ vi.mock('@fedimint/core', () => {
 
   class MockWalletDirector {
     protected _client = {}
+
+    constructor() {
+      coreMockState.directorInstances.push(this)
+    }
+
     initialize = vi.fn(() => Promise.resolve())
     setLogLevel = vi.fn()
     previewFederation = vi.fn((inviteCode: string) =>
@@ -137,6 +143,7 @@ describe('fedimint client adapter', () => {
     )
     coreMockState.joinFederationErrorOnce = null
     coreMockState.openWalletSuccessOnce = false
+    coreMockState.directorInstances = []
     coreMockState.generateMnemonicValue = [
       'abandon',
       'ability',
@@ -227,6 +234,26 @@ describe('fedimint client adapter', () => {
 
     await fedimintClient.clearAllWallets()
     expect(await fedimintClient.listWallets()).toEqual([])
+  })
+
+  it('recreates the wallet director after active wallet cleanup', async () => {
+    await fedimintClient.ensureWalletOpen({
+      walletName: 'wallet-fed-1',
+      federationId: 'fed-1',
+      inviteCode: 'invite-1',
+    })
+
+    expect(coreMockState.directorInstances).toHaveLength(1)
+
+    await fedimintClient.closeActiveWallet()
+
+    await fedimintClient.ensureWalletOpen({
+      walletName: 'wallet-fed-2',
+      federationId: 'fed-2',
+      inviteCode: 'invite-2',
+    })
+
+    expect(coreMockState.directorInstances).toHaveLength(2)
   })
 
   it('parses oob notes through the wallet director', async () => {

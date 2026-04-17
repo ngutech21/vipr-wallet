@@ -80,6 +80,10 @@ class FedimintClientAdapter {
 
     if (this.activeWallet != null && this.activeWalletName !== walletName) {
       await this.closeActiveWallet()
+      await this.init()
+      if (this.director == null) {
+        throw new Error('Wallet director is not initialized')
+      }
     }
 
     if (this.activeWallet == null) {
@@ -185,9 +189,12 @@ class FedimintClientAdapter {
 
   async closeActiveWallet(): Promise<void> {
     if (this.activeWallet != null) {
+      // The SDK documents cleanup() as terminal for the wallet/transport lifecycle.
+      // Recreate the director on the next init so federation switches start with a fresh worker.
       await this.activeWallet.cleanup()
       this.activeWallet = null
       this.activeWalletName = null
+      this.director = null
     }
 
     logger.logWalletOperation('Fedimint active wallet closed')
