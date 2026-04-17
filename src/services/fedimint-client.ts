@@ -1,4 +1,9 @@
-import { WalletDirector, type FedimintWallet, type ParsedNoteDetails } from '@fedimint/core'
+import {
+  WalletDirector,
+  type FedimintWallet,
+  type ParsedNoteDetails,
+  type WalletDepositState,
+} from '@fedimint/core'
 import { WasmWorkerTransport } from '@fedimint/transport-web'
 import { v5 as uuidv5 } from 'uuid'
 import { logger } from 'src/services/logger'
@@ -89,6 +94,7 @@ class FedimintClientAdapter {
     const wallet = this.activeWallet
     const sdkClientName = getSdkClientName(walletName, federationId)
     applyClientNameToWallet(wallet, sdkClientName)
+    applyLocalWalletOverrides(wallet)
 
     const isKnownWallet = this.knownWalletNames.has(walletName)
     const ready = isKnownWallet
@@ -399,6 +405,61 @@ function applyClientNameToWallet(wallet: FedimintWallet, clientName: string): vo
       ;(service as Record<string, unknown>).clientName = clientName
     }
   }
+}
+
+function applyLocalWalletOverrides(wallet: FedimintWallet): void {
+  const walletWithInternals = wallet as unknown as {
+    _client?: {
+      rpcStream?: (
+        module: string,
+        method: string,
+        body: unknown,
+        clientName: string,
+        onSuccess: (state: WalletDepositState) => void,
+        onError: (error: string) => void,
+        onEnd?: () => void,
+      ) => () => void
+    }
+    _clientName?: string
+    wallet?: {
+      subscribeDeposit?: (
+        operationId: string,
+        onSuccess?: (state: WalletDepositState) => void,
+        onError?: (error: string) => void,
+      ) => () => void
+    }
+  }
+
+  const client = walletWithInternals._client
+  const clientName = walletWithInternals._clientName
+  const walletService = walletWithInternals.wallet
+
+  if (
+    client?.rpcStream == null ||
+    typeof client.rpcStream !== 'function' ||
+    clientName == null ||
+    clientName === '' ||
+    walletService == null
+  ) {
+    logger.warn('Skipping local Fedimint wallet overrides; missing SDK internals')
+    return
+  }
+
+  const rpcStream = client.rpcStream.bind(client)
+
+  walletService.subscribeDeposit = (
+    operationId: string,
+    onSuccess: (state: WalletDepositState) => void = () => {},
+    onError: (error: string) => void = () => {},
+  ) =>
+    rpcStream(
+      'wallet',
+      'subscribe_deposit',
+      { operation_id: operationId },
+      clientName,
+      onSuccess,
+      onError,
+    )
 }
 
 function getErrorMessage(error: unknown): string {

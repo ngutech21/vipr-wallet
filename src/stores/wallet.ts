@@ -714,6 +714,19 @@ function normalizeWalletTransaction(
 
   const feeEstimateMsats = estimateWalletFeeMsats(variant)
 
+  if (transaction.type === 'deposit') {
+    logger.logTransaction('Normalizing wallet deposit transaction', {
+      operationId: transaction.operationId,
+      transactionAmountMsats: transaction.amountMsats,
+      metaAmount,
+      extraMetaAmount,
+      normalizedAmountMsats,
+      feeEstimateMsats,
+      outcome: operationLog.outcome?.outcome,
+      variant,
+    })
+  }
+
   return {
     ...transaction,
     amountMsats: normalizedAmountMsats,

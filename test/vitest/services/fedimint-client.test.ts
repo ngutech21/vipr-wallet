@@ -29,6 +29,7 @@ const coreMockState = vi.hoisted(() => ({
     'accident',
   ] as unknown,
   setMnemonicSpy: vi.fn(() => Promise.resolve(true)),
+  rpcStreamSpy: vi.fn(() => vi.fn()),
 }))
 
 vi.mock('@fedimint/transport-web', () => ({
@@ -38,8 +39,23 @@ vi.mock('@fedimint/transport-web', () => ({
 vi.mock('@fedimint/core', () => {
   class MockFedimintWallet {
     private joined = false
+    private _client: { rpcStream: typeof coreMockState.rpcStreamSpy }
+    private _clientName: string
+    wallet: {
+      subscribeDeposit: ReturnType<typeof vi.fn>
+      clientName: string
+    }
 
-    constructor(_client: unknown, _clientName = 'default-client') {}
+    constructor(_client: unknown, _clientName = 'default-client') {
+      this._client = {
+        rpcStream: coreMockState.rpcStreamSpy,
+      }
+      this._clientName = _clientName
+      this.wallet = {
+        subscribeDeposit: vi.fn(() => vi.fn()),
+        clientName: _clientName,
+      }
+    }
 
     readonly openMock = vi.fn((_clientName?: string) => {
       if (coreMockState.openWalletSuccessOnce) {
@@ -152,6 +168,8 @@ describe('fedimint client adapter', () => {
       'accident',
     ]
     coreMockState.setMnemonicSpy.mockResolvedValue(true)
+    coreMockState.rpcStreamSpy.mockReset()
+    coreMockState.rpcStreamSpy.mockReturnValue(vi.fn())
   })
 
   it('joins federation first for unknown wallets', async () => {
@@ -191,6 +209,28 @@ describe('fedimint client adapter', () => {
 
     expect(openedWallet.openMock).toHaveBeenCalledWith(firstClientName)
     expect(openedWallet.joinMock).not.toHaveBeenCalled()
+  })
+
+  it('overrides wallet deposit subscription to use the wallet module stream', async () => {
+    const wallet = await fedimintClient.ensureWalletOpen({
+      walletName: 'wallet-fed-1',
+      federationId: 'fed-1',
+      inviteCode: 'invite-1',
+    })
+
+    const onSuccess = vi.fn()
+    const onError = vi.fn()
+
+    wallet.wallet.subscribeDeposit('operation-1', onSuccess, onError)
+
+    expect(coreMockState.rpcStreamSpy).toHaveBeenCalledWith(
+      'wallet',
+      'subscribe_deposit',
+      { operation_id: 'operation-1' },
+      expect.stringMatching(UUID_V5_PATTERN),
+      onSuccess,
+      onError,
+    )
   })
 
   it('falls back to open when join reports no modification allowed', async () => {

@@ -125,6 +125,7 @@ const $q = useQuasar()
 const { share, isSupported } = useShare()
 
 let depositPollTimeout: ReturnType<typeof setTimeout> | null = null
+let unsubscribeDepositStream: (() => void) | null = null
 
 const depositStatusText = computed(() => {
   if (depositState.value === null || depositState.value === 'WaitingForTransaction') {
@@ -176,6 +177,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   stopDepositPolling()
+  stopDepositSubscription()
 })
 
 function stopDepositPolling() {
@@ -185,14 +187,29 @@ function stopDepositPolling() {
   }
 }
 
+function stopDepositSubscription() {
+  if (unsubscribeDepositStream != null) {
+    unsubscribeDepositStream()
+    unsubscribeDepositStream = null
+  }
+}
+
 async function completeDeposit(amountSats: number) {
   if (hasCompletedDeposit.value) {
     return
   }
 
+  logger.logTransaction('Completing onchain deposit', {
+    amountSats,
+    operationId: operationId.value,
+    address: bitcoinAddress.value,
+    depositState: depositState.value,
+  })
+
   hasCompletedDeposit.value = true
   isWaitingForDeposit.value = false
   stopDepositPolling()
+  stopDepositSubscription()
   await walletStore.updateBalance()
   await router.push({
     name: '/received-lightning',
@@ -230,6 +247,96 @@ function scheduleDepositPoll() {
   }, 5000)
 }
 
+async function logWalletSummarySnapshot(context: 'initial' | 'unexpected-shape') {
+  try {
+    const summary = await walletStore.wallet?.wallet.getWalletSummary()
+    logger.logTransaction('Wallet summary snapshot', {
+      context,
+      operationId: operationId.value,
+      address: bitcoinAddress.value,
+      summary,
+    })
+  } catch (error) {
+    logger.error('Failed to fetch wallet summary snapshot', error)
+  }
+}
+
+async function logOperationSnapshots(context: 'initial' | 'unexpected-shape') {
+  if (operationId.value === '' || walletStore.wallet == null) {
+    return
+  }
+
+  try {
+    const [operation, operations, transactions] = await Promise.all([
+      walletStore.wallet.federation.getOperation(operationId.value),
+      walletStore.wallet.federation.listOperations(20),
+      walletStore.wallet.federation.listTransactions(20),
+    ])
+
+    logger.logTransaction('Raw getOperation snapshot', {
+      context,
+      operationId: operationId.value,
+      address: bitcoinAddress.value,
+      operation,
+    })
+
+    logger.logTransaction('Raw listOperations snapshot', {
+      context,
+      operationId: operationId.value,
+      address: bitcoinAddress.value,
+      matchingOperation: operations.find(([key]) => key.operation_id === operationId.value),
+      operations,
+    })
+
+    logger.logTransaction('Raw listTransactions snapshot', {
+      context,
+      operationId: operationId.value,
+      address: bitcoinAddress.value,
+      matchingTransaction: transactions.find(
+        (transaction) => transaction.operationId === operationId.value,
+      ),
+      transactions,
+    })
+  } catch (error) {
+    logger.error('Failed to fetch raw operation snapshots', error)
+  }
+}
+
+function handleDepositStateUpdate(nextState: WalletDepositState, source: 'poll' | 'stream') {
+  depositState.value = nextState
+  logger.logTransaction('Deposit state update', {
+    source,
+    operationId: operationId.value,
+    address: bitcoinAddress.value,
+    state: nextState,
+  })
+
+  if (typeof nextState === 'object' && 'Confirmed' in nextState) {
+    completeDeposit(nextState.Confirmed.btc_deposited).catch((error: unknown) => {
+      logger.error('Failed to complete confirmed onchain deposit', error)
+    })
+    return
+  }
+
+  if (typeof nextState === 'object' && 'Claimed' in nextState) {
+    completeDeposit(nextState.Claimed.btc_deposited).catch((error: unknown) => {
+      logger.error('Failed to complete claimed onchain deposit', error)
+    })
+    return
+  }
+
+  if (typeof nextState === 'object' && 'Failed' in nextState) {
+    isWaitingForDeposit.value = false
+    stopDepositPolling()
+    stopDepositSubscription()
+    $q.notify({
+      message: `Deposit monitoring failed: ${nextState.Failed}`,
+      color: 'negative',
+      position: 'top',
+    })
+  }
+}
+
 async function pollDepositState() {
   if (operationId.value === '' || hasCompletedDeposit.value) {
     return
@@ -239,29 +346,32 @@ async function pollDepositState() {
     const operation = await walletStore.wallet?.federation.getOperation(operationId.value)
     const nextState = normalizeDepositState(operation?.outcome?.outcome)
 
+    logger.logTransaction('Polled onchain deposit operation', {
+      operationId: operationId.value,
+      address: bitcoinAddress.value,
+      operation,
+      normalizedState: nextState,
+    })
+
     if (nextState != null) {
-      depositState.value = nextState
-      logger.logTransaction('Deposit state update', { state: nextState })
-    }
-
-    if (nextState != null && typeof nextState === 'object' && 'Confirmed' in nextState) {
-      await completeDeposit(nextState.Confirmed.btc_deposited)
-      return
-    }
-
-    if (nextState != null && typeof nextState === 'object' && 'Claimed' in nextState) {
-      await completeDeposit(nextState.Claimed.btc_deposited)
-      return
-    }
-
-    if (nextState != null && typeof nextState === 'object' && 'Failed' in nextState) {
-      isWaitingForDeposit.value = false
-      stopDepositPolling()
-      $q.notify({
-        message: `Deposit monitoring failed: ${nextState.Failed}`,
-        color: 'negative',
-        position: 'top',
+      handleDepositStateUpdate(nextState, 'poll')
+    } else {
+      logger.warn('Unexpected onchain deposit operation shape', {
+        operationId: operationId.value,
+        address: bitcoinAddress.value,
+        outcome: operation?.outcome,
+        meta: operation?.meta,
+        operationModuleKind: operation?.operation_module_kind,
       })
+      await logOperationSnapshots('unexpected-shape')
+      await logWalletSummarySnapshot('unexpected-shape')
+    }
+
+    if (
+      nextState != null &&
+      typeof nextState === 'object' &&
+      ('Confirmed' in nextState || 'Claimed' in nextState || 'Failed' in nextState)
+    ) {
       return
     }
 
@@ -282,6 +392,34 @@ function startDepositPolling() {
   pollDepositState().catch((error: unknown) => {
     logger.error('Failed to start onchain deposit polling', error)
   })
+}
+
+function startDepositSubscription() {
+  if (operationId.value === '' || walletStore.wallet == null) {
+    return
+  }
+
+  stopDepositSubscription()
+
+  logger.logTransaction('Starting onchain deposit subscription', {
+    operationId: operationId.value,
+    address: bitcoinAddress.value,
+  })
+
+  unsubscribeDepositStream = walletStore.wallet.wallet.subscribeDeposit(
+    operationId.value,
+    (state) => {
+      logger.logTransaction('Received onchain deposit stream event', {
+        operationId: operationId.value,
+        address: bitcoinAddress.value,
+        state,
+      })
+      handleDepositStateUpdate(state, 'stream')
+    },
+    (error) => {
+      logger.error('Onchain deposit subscription error', error)
+    },
+  )
 }
 
 async function generateAddress() {
@@ -312,6 +450,18 @@ async function generateAddress() {
       operationId: response.operation_id,
     })
 
+    const initialOperation = await walletStore.wallet?.federation.getOperation(
+      response.operation_id,
+    )
+    logger.logTransaction('Initial onchain deposit operation snapshot', {
+      operationId: response.operation_id,
+      address: response.deposit_address,
+      operation: initialOperation,
+    })
+    await logOperationSnapshots('initial')
+    await logWalletSummarySnapshot('initial')
+
+    startDepositSubscription()
     startDepositPolling()
   } catch (error) {
     logger.error('Failed to generate onchain address', error)
