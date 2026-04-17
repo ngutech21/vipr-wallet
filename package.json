@@ -71,7 +71,7 @@
     "pinia": "^3.0.4",
     "prettier": "^3.8.3",
     "tsx": "^4.21.0",
-    "typescript": "~6.0.2",
+    "typescript": "~6.0.3",
     "vite": "^8.0.8",
     "vite-plugin-checker": "^0.13.0",
     "vite-plugin-top-level-await": "^1.6.0",
