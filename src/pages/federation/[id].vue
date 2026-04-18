@@ -316,8 +316,8 @@ defineOptions({
 
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useQuasar } from 'quasar'
 import QrcodeVue from 'qrcode.vue'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import FederationGuardians from 'src/components/FederationGuardians.vue'
@@ -329,7 +329,7 @@ import { logger } from 'src/services/logger'
 const { formatNumber } = useFormatters()
 const route = useRoute('/federation/[id]')
 const router = useRouter()
-const $q = useQuasar()
+const notify = useAppNotify()
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
 const confirmLeave = ref(false)
@@ -409,12 +409,7 @@ async function copyInviteCode() {
 
   try {
     await navigator.clipboard.writeText(inviteCode.value)
-    $q.notify({
-      message: 'Invite link copied to clipboard',
-      color: 'positive',
-      position: 'top',
-      timeout: 1000,
-    })
+    notify.success('Invite link copied to clipboard', { timeout: 1000 })
   } catch (error) {
     logger.error('Failed to copy federation invite code', error)
   }

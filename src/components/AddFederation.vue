@@ -28,12 +28,14 @@ import type { Federation } from 'src/components/models'
 import ModalCard from 'src/components/ModalCard.vue'
 import JoinFederationInviteStep from 'src/components/JoinFederationInviteStep.vue'
 import JoinFederationPreviewStep from 'src/components/JoinFederationPreviewStep.vue'
-import { Loading, Notify } from 'quasar'
+import { Loading } from 'quasar'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { getErrorMessage } from 'src/utils/error'
 import { logger } from 'src/services/logger'
 
 const walletStore = useWalletStore()
 const federationStore = useFederationStore()
+const notify = useAppNotify()
 
 const emit = defineEmits<{
   close: []
@@ -89,10 +91,9 @@ async function pasteFromClipboard() {
     inviteCode.value = text
   } catch (error) {
     logger.ui.error('Failed to read clipboard for federation invite code', error)
-    Notify.create({
+    notify.notify({
       type: 'negative',
       message: `Unable to access clipboard ${getErrorMessage(error)}`,
-      position: 'top',
     })
   }
 }
@@ -106,12 +107,11 @@ async function loadPreview() {
     logger.federation.debug('Previewing federation', { inviteCode: cleanInviteCode })
 
     if (federationStore.federations.some((f) => f.inviteCode === cleanInviteCode)) {
-      Notify.create({
+      notify.notify({
         message: 'Federation already exists',
         color: 'negative',
         icon: 'error',
         timeout: 5000,
-        position: 'top',
       })
       return
     }
@@ -123,12 +123,11 @@ async function loadPreview() {
       step.value = 'preview'
     }
   } catch (error) {
-    Notify.create({
+    notify.notify({
       message: `Failed to preview federation: ${getErrorMessage(error)}`,
       color: 'negative',
       icon: 'error',
       timeout: 5000,
-      position: 'top',
     })
   } finally {
     isSubmitting.value = false
@@ -154,12 +153,11 @@ async function addFederation() {
       throw error
     }
   } catch (error) {
-    Notify.create({
+    notify.notify({
       message: `Failed to join federation: ${getErrorMessage(error)}`,
       color: 'negative',
       icon: 'error',
       timeout: 5000,
-      position: 'top',
     })
     return
   } finally {

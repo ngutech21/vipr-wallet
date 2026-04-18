@@ -82,21 +82,17 @@ defineOptions({
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWalletStore } from 'src/stores/wallet'
-import { Notify } from 'quasar'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { getErrorMessage } from 'src/utils/error'
 
 const router = useRouter()
 const walletStore = useWalletStore()
 const recoveryWords = ref<string[]>([])
+const notify = useAppNotify()
 
 onMounted(() => {
   loadRecoveryWords().catch((error) => {
-    Notify.create({
-      message: `Failed to load recovery words: ${getErrorMessage(error)}`,
-      color: 'negative',
-      icon: 'error',
-      position: 'top',
-    })
+    notify.error(`Failed to load recovery words: ${getErrorMessage(error)}`)
   })
 })
 

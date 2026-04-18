@@ -78,7 +78,8 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
-import { date, Notify } from 'quasar'
+import { date } from 'quasar'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { useFederationStore } from 'src/stores/federation'
 import { useLightningStore } from 'src/stores/lightning'
 import type { EcashTransaction } from '@fedimint/core'
@@ -92,6 +93,7 @@ const props = defineProps<Props>()
 
 const federationStore = useFederationStore()
 const lightningStore = useLightningStore()
+const notify = useAppNotify()
 const amountInFiat = ref<string>('0.00')
 
 const amountInSats = computed(() => {
@@ -185,18 +187,10 @@ async function copyNotes() {
   if (props.transaction.notes != null && props.transaction.notes !== '') {
     try {
       await navigator.clipboard.writeText(props.transaction.notes)
-      Notify.create({
-        message: 'Notes copied to clipboard',
-        color: 'positive',
-        position: 'top',
-      })
+      notify.success('Notes copied to clipboard')
     } catch (error) {
       logger.error('Failed to copy ecash notes to clipboard', error)
-      Notify.create({
-        message: 'Failed to copy notes',
-        color: 'negative',
-        position: 'top',
-      })
+      notify.error('Failed to copy notes')
     }
   }
 }

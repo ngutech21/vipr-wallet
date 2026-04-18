@@ -168,7 +168,7 @@ defineOptions({
 })
 
 import { computed, onMounted, ref } from 'vue'
-import { Notify } from 'quasar'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { useRouter } from 'vue-router'
 import { getErrorMessage } from 'src/utils/error'
 import { useWalletStore } from 'src/stores/wallet'
@@ -181,6 +181,7 @@ type SelectableFlow = 'create' | 'restore'
 const router = useRouter()
 const walletStore = useWalletStore()
 const onboardingStore = useOnboardingStore()
+const notify = useAppNotify()
 
 const currentStep = ref<WizardStep>('choice')
 const selectedFlow = ref<SelectableFlow | null>(null)
@@ -208,12 +209,7 @@ const canProceedFromChoice = computed(() => {
 
 onMounted(() => {
   initializeWizard().catch((error) => {
-    Notify.create({
-      color: 'negative',
-      icon: 'error',
-      position: 'top',
-      message: `Failed to initialize startup wizard: ${getErrorMessage(error)}`,
-    })
+    notify.error(`Failed to initialize startup wizard: ${getErrorMessage(error)}`)
   })
 })
 
@@ -278,12 +274,7 @@ async function goFromChoiceNext() {
   }
 
   if (selectedFlow.value == null) {
-    Notify.create({
-      color: 'warning',
-      icon: 'warning',
-      position: 'top',
-      message: 'Please choose how to continue.',
-    })
+    notify.warning('Please choose how to continue.')
     return
   }
 
@@ -295,12 +286,7 @@ async function goFromChoiceNext() {
       try {
         await walletStore.createMnemonic()
       } catch (error) {
-        Notify.create({
-          color: 'negative',
-          icon: 'error',
-          position: 'top',
-          message: `Failed to create wallet: ${getErrorMessage(error)}`,
-        })
+        notify.error(`Failed to create wallet: ${getErrorMessage(error)}`)
         onboardingStore.goToStep('choice')
         return
       } finally {
@@ -342,12 +328,7 @@ async function submitRestore() {
   const words = restoreWords.value.map((word) => word.trim().toLowerCase())
 
   if (words.length !== 12 || words.some((word) => word === '')) {
-    Notify.create({
-      color: 'warning',
-      icon: 'warning',
-      position: 'top',
-      message: 'Please enter all 12 recovery words.',
-    })
+    notify.warning('Please enter all 12 recovery words.')
     return
   }
 
@@ -358,12 +339,7 @@ async function submitRestore() {
     await walletStore.restoreMnemonic(words)
     await finishWizardAndEnterApp()
   } catch (error) {
-    Notify.create({
-      color: 'negative',
-      icon: 'error',
-      position: 'top',
-      message: `Failed to restore wallet: ${getErrorMessage(error)}`,
-    })
+    notify.error(`Failed to restore wallet: ${getErrorMessage(error)}`)
   } finally {
     isRestoring.value = false
   }

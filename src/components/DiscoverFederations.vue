@@ -130,7 +130,7 @@ import { computed, watch, onUnmounted } from 'vue'
 import { useNostrStore } from 'src/stores/nostr'
 import { useFederationStore } from 'src/stores/federation'
 import ModalCard from 'src/components/ModalCard.vue'
-import { Notify } from 'quasar'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import type { Federation } from 'src/components/models'
 import { getErrorMessage } from 'src/utils/error'
 import { logger } from 'src/services/logger'
@@ -143,6 +143,7 @@ type DiscoveryListItem = Federation & {
 
 const nostr = useNostrStore()
 const federationStore = useFederationStore()
+const notify = useAppNotify()
 const isDiscovering = computed(() => nostr.isDiscoveringFederations)
 const visibleFederations = computed<DiscoveryListItem[]>(() => {
   const discoveredById = new Map(
@@ -274,11 +275,10 @@ async function discoverFederations(reset = false) {
     await nostr.discoverFederations({ reset })
   } catch (error) {
     logger.error('Failed to discover federations', error)
-    Notify.create({
+    notify.notify({
       message: `Failed to discover federations ${getErrorMessage(error)}`,
       color: 'negative',
       icon: 'error',
-      position: 'top',
     })
   }
 }
@@ -306,12 +306,11 @@ function formatRecommendationCount(count: number): string {
 
 function openFederationPreview(federation: Federation) {
   if (federationStore.federations.some((f) => f.federationId === federation.federationId)) {
-    Notify.create({
+    notify.notify({
       message: 'Federation already exists',
       color: 'negative',
       icon: 'error',
       timeout: 5000,
-      position: 'top',
     })
     return
   }

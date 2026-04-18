@@ -62,7 +62,7 @@ import { QrcodeStream, type DetectedBarcode, type EmittedError } from 'vue-qrcod
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AddFederation from 'src/components/AddFederation.vue'
-import { Notify } from 'quasar'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { logger } from 'src/services/logger'
 import { isBitcoinAddress } from 'src/utils/bitcoinUri'
 
@@ -71,6 +71,7 @@ const router = useRouter()
 const torchActive = ref(false)
 const hasTorch = ref(false)
 const showAddFederation = ref(false)
+const notify = useAppNotify()
 
 function onCameraOn(capabilities: unknown) {
   logger.scanner.debug('Camera capabilities detected', { capabilities })
@@ -130,11 +131,7 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
 
 function onError(error: EmittedError) {
   logger.error('Camera error occurred', error)
-  Notify.create({
-    message: error.message,
-    color: 'negative',
-    position: 'top',
-  })
+  notify.error(error.message)
 }
 
 function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingContext2D) {

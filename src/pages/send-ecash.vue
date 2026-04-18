@@ -115,10 +115,11 @@ defineOptions({
 })
 
 import { computed, ref } from 'vue'
-import { Loading, useQuasar } from 'quasar'
+import { Loading } from 'quasar'
 import { useShare } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import AnimatedEcashQr from 'src/components/AnimatedEcashQr.vue'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
 import { useNumericInput } from 'src/composables/useNumericInput'
 import { useFederationStore } from 'src/stores/federation'
@@ -129,7 +130,7 @@ const router = useRouter()
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
 const { share, isSupported } = useShare()
-const $q = useQuasar()
+const notify = useAppNotify()
 
 const { value: amount, keypadButtons, clear } = useNumericInput(0)
 const exportedNotes = ref('')
@@ -205,11 +206,7 @@ async function createOfflineEcash() {
     exportedAmount.value = amount.value
     exportedNotes.value = result.notes
   } catch (error) {
-    $q.notify({
-      type: 'negative',
-      message: `Failed to create offline eCash: ${getErrorMessage(error)}`,
-      position: 'top',
-    })
+    notify.error(`Failed to create offline eCash: ${getErrorMessage(error)}`)
   } finally {
     isProcessing.value = false
     Loading.hide()
@@ -228,16 +225,14 @@ async function goBack() {
 async function copyNotes() {
   try {
     await navigator.clipboard.writeText(exportedNotes.value)
-    $q.notify({
+    notify.notify({
       type: 'positive',
       message: 'eCash copied to clipboard',
-      position: 'top',
     })
   } catch (error) {
-    $q.notify({
+    notify.notify({
       type: 'negative',
       message: `Failed to copy eCash: ${getErrorMessage(error)}`,
-      position: 'top',
     })
   }
 }

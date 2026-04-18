@@ -102,7 +102,8 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
-import { date, Notify } from 'quasar'
+import { date } from 'quasar'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { useFederationStore } from 'src/stores/federation'
 import { useLightningStore } from 'src/stores/lightning'
 import type { LightningTransaction } from '@fedimint/core'
@@ -116,6 +117,7 @@ const props = defineProps<Props>()
 
 const federationStore = useFederationStore()
 const lightningStore = useLightningStore()
+const notify = useAppNotify()
 const amountInFiat = ref<string>('0.00')
 
 const amountInSats = computed(() => {
@@ -170,18 +172,10 @@ function getStatusColor(status: string): string {
 async function copyInvoice() {
   try {
     await navigator.clipboard.writeText(props.transaction.invoice)
-    Notify.create({
-      message: 'Invoice copied to clipboard',
-      color: 'positive',
-      position: 'top',
-    })
+    notify.success('Invoice copied to clipboard')
   } catch (error) {
     logger.error('Failed to copy Lightning invoice to clipboard', error)
-    Notify.create({
-      message: 'Failed to copy invoice',
-      color: 'negative',
-      position: 'top',
-    })
+    notify.error('Failed to copy invoice')
   }
 }
 </script>

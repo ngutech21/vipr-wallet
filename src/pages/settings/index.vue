@@ -273,6 +273,7 @@ import { version } from '../../../package.json'
 import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'
 import { Dialog, Notify } from 'quasar'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { useNostrStore } from 'src/stores/nostr'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
@@ -298,6 +299,7 @@ const onboardingStore = useOnboardingStore()
 const pwaUpdateStore = usePwaUpdateStore()
 const router = useRouter()
 const route = useRoute()
+const notify = useAppNotify()
 
 const isUpdateReady = computed(() => pwaUpdateStore.isUpdateReady)
 const isCheckingForUpdates = computed(() => pwaUpdateStore.state === 'checking')
@@ -367,11 +369,7 @@ async function clearLocalAndWalletData() {
   nostrStore.$reset()
   onboardingStore.$reset()
   pwaUpdateStore.$reset()
-  Notify.create({
-    type: 'positive',
-    message: 'Data deleted successfully',
-    position: 'top',
-  })
+  notify.success('Data deleted successfully')
   await router.replace({ name: '/startup-wizard' })
 }
 async function handleUpdateAction() {
@@ -509,38 +507,22 @@ const isValidRelayUrl = computed(() => {
 
 async function addNewRelay() {
   if (isValidRelayUrl.value && (await nostrStore.addRelay(newRelay.value))) {
-    Notify.create({
-      type: 'positive',
-      message: `Added relay: ${newRelay.value}`,
-      position: 'top',
-    })
+    notify.success(`Added relay: ${newRelay.value}`)
     newRelay.value = ''
   } else {
-    Notify.create({
-      type: 'negative',
-      message: 'Invalid relay URL or already exists',
-      position: 'top',
-    })
+    notify.error('Invalid relay URL or already exists')
   }
 }
 
 async function removeRelay(relay: string) {
   if (await nostrStore.removeRelay(relay)) {
-    Notify.create({
-      type: 'info',
-      message: `Removed relay: ${relay}`,
-      position: 'top',
-    })
+    notify.info(`Removed relay: ${relay}`)
   }
 }
 
 async function resetRelays() {
   await nostrStore.resetRelays()
-  Notify.create({
-    type: 'info',
-    message: 'Reset relays to defaults',
-    position: 'top',
-  })
+  notify.info('Reset relays to defaults')
 }
 </script>
 
