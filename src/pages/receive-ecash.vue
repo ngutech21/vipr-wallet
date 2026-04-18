@@ -6,8 +6,8 @@ meta:
 <template>
   <transition
     appear
-    enter-active-class="animated slideInRight"
-    leave-active-class="animated slideOutRight"
+    enter-active-class="animated slideInLeft"
+    leave-active-class="animated slideOutLeft"
   >
     <q-page class="column dark-gradient">
       <q-toolbar class="header-section">

@@ -160,7 +160,7 @@ export default defineConfig((_ctx) => {
 
     // https://v2.quasar.dev/options/animations
     // Keep only animations actually used by route/page transitions.
-    animations: ['slideInLeft', 'slideOutLeft', 'slideInRight', 'slideOutRight'],
+    animations: ['slideInLeft', 'slideOutLeft'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#sourcefiles
     // sourceFiles: {
