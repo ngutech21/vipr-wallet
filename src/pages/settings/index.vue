@@ -226,6 +226,7 @@
               color="primary"
               :href="'https://github.com/ngutech21/vipr-wallet'"
               target="_blank"
+              rel="noopener noreferrer"
               class="full-width"
               data-testid="settings-open-github-btn"
             />

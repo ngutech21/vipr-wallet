@@ -230,6 +230,7 @@
                 tag="a"
                 :href="federation?.metadata?.tos_url"
                 target="_blank"
+                rel="noopener noreferrer"
                 data-testid="federation-details-tos-link"
               >
                 <q-item-section avatar>
