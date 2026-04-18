@@ -6,6 +6,10 @@ on:
       - master
   workflow_dispatch: {}
 
+concurrency:
+  group: deploy-beta
+  cancel-in-progress: false
+
 jobs:
   changes:
     runs-on: ubuntu-latest
