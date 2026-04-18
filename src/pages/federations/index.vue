@@ -1,5 +1,5 @@
 <template>
-  <q-page data-testid="federations-page">
+  <q-page class="dark-gradient" data-testid="federations-page">
     <q-dialog
       v-model="showSelection"
       position="bottom"

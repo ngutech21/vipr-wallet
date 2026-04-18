@@ -1,6 +1,9 @@
 <template>
-  <q-layout view="hHh lpR fFf" class="dark-gradient">
-    <q-page-container>
+  <q-layout view="hHh lpR fFf" class="app-shell">
+    <q-page-container
+      class="app-shell__page-container"
+      :class="{ 'app-shell__page-container--safe-top': useTopSafeArea }"
+    >
       <PwaUpdateBanner />
       <!-- <q-page class="dark-gradient"> -->
       <slot />
@@ -66,9 +69,23 @@ const currentTab = computed(() => {
   }
 })
 const showFooter = computed(() => route.meta?.hideBottomNav !== true)
+const useTopSafeArea = computed(() => route.name !== '/scan')
 </script>
 
 <style scoped>
+.app-shell {
+  background-color: var(--app-surface-bg);
+}
+
+.app-shell__page-container {
+  background-color: var(--app-chrome-bg);
+  min-height: 100%;
+}
+
+.app-shell__page-container--safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
 :deep(.q-tab__label) {
   font-size: 0.8rem;
   line-height: 1;
@@ -80,7 +97,7 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
 }
 
 .dark-bg {
-  background-color: #202020;
+  background-color: var(--app-chrome-bg);
 }
 
 .footer-container {

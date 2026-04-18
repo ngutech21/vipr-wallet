@@ -2,6 +2,17 @@
 
 @use 'sass:color';
 
+:root {
+  --app-chrome-bg: #202020;
+  --app-surface-bg: #1a1a1a;
+}
+
+html,
+body,
+#q-app {
+  background-color: var(--app-surface-bg);
+}
+
 // E2E mode: remove motion to reduce test flakiness in CI.
 html[data-e2e='1'],
 html[data-e2e='1'] body {
@@ -73,7 +84,7 @@ html[data-e2e='1'] *::after {
 }
 
 .header-section {
-  background-color: #202020;
+  background-color: var(--app-chrome-bg);
   color: white;
   padding: 16px;
   display: flex;

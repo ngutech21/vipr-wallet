@@ -1,5 +1,5 @@
 <template>
-  <q-page class="column" data-testid="home-page">
+  <q-page class="column dark-gradient" data-testid="home-page">
     <q-dialog
       v-model="showSelection"
       position="bottom"
@@ -186,6 +186,6 @@ function closeAddFederation() {
   white-space: normal;
 }
 .dark-bg {
-  background-color: #202020;
+  background-color: var(--app-chrome-bg);
 }
 </style>
