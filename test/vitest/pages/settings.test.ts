@@ -5,6 +5,7 @@ import SettingsPage from 'src/pages/settings/index.vue'
 const mockRoute = vi.hoisted(() => ({
   name: '/settings/' as string | null,
 }))
+const mockRouterReplace = vi.hoisted(() => vi.fn())
 
 const mockCheckForUpdatesManual = vi.hoisted(() => vi.fn())
 const mockApplyUpdate = vi.hoisted(() => vi.fn())
@@ -17,6 +18,7 @@ const mockPwaUpdateStore = vi.hoisted(() => ({
   registration: null,
   lastError: null as string | null,
   isUpdateReady: false,
+  $reset: vi.fn(),
   canApplyOnRoute: mockCanApplyOnRoute,
   checkForUpdatesManual: mockCheckForUpdatesManual,
   checkForUpdatesStartup: vi.fn(),
@@ -27,15 +29,27 @@ const walletStoreMock = vi.hoisted(() => ({
   clearAllWallets: vi.fn(),
 }))
 
+const federationStoreMock = vi.hoisted(() => ({
+  $reset: vi.fn(),
+}))
+
 const nostrStoreMock = vi.hoisted(() => ({
   relays: [] as string[],
   addRelay: vi.fn(),
   removeRelay: vi.fn(),
   resetRelays: vi.fn(),
+  $reset: vi.fn(),
+}))
+
+const onboardingStoreMock = vi.hoisted(() => ({
+  $reset: vi.fn(),
 }))
 
 vi.mock('vue-router', () => ({
   useRoute: () => mockRoute,
+  useRouter: () => ({
+    replace: mockRouterReplace,
+  }),
 }))
 
 vi.mock('src/stores/pwa-update', () => ({
@@ -46,8 +60,16 @@ vi.mock('src/stores/wallet', () => ({
   useWalletStore: () => walletStoreMock,
 }))
 
+vi.mock('src/stores/federation', () => ({
+  useFederationStore: () => federationStoreMock,
+}))
+
 vi.mock('src/stores/nostr', () => ({
   useNostrStore: () => nostrStoreMock,
+}))
+
+vi.mock('src/stores/onboarding', () => ({
+  useOnboardingStore: () => onboardingStoreMock,
 }))
 
 vi.mock('@getalby/bitcoin-connect', () => ({
@@ -107,6 +129,7 @@ describe('SettingsPage updates', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.clear()
     mockRoute.name = '/settings/'
     mockPwaUpdateStore.state = 'idle'
     mockPwaUpdateStore.lastError = null
@@ -114,6 +137,8 @@ describe('SettingsPage updates', () => {
     mockCanApplyOnRoute.mockReturnValue(true)
     mockCheckForUpdatesManual.mockResolvedValue('up-to-date')
     mockApplyUpdate.mockResolvedValue('applied')
+    mockRouterReplace.mockResolvedValue(undefined)
+    mockPwaUpdateStore.$reset = vi.fn()
   })
 
   it('shows check button and triggers manual update check', async () => {
@@ -175,6 +200,35 @@ describe('SettingsPage updates', () => {
     expect(mockNotifyCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         message: 'Update is downloading in the background',
+      }),
+    )
+  })
+
+  it('clears only app-owned local storage keys when deleting data', async () => {
+    localStorage.setItem('vipr.federations', '["kept-only-for-reset-test"]')
+    localStorage.setItem('vipr.onboarding.state', '{"status":"in_progress"}')
+    localStorage.setItem('external.key', 'preserve-me')
+
+    mockDialogCreate.mockImplementationOnce(() => ({
+      onOk: vi.fn((callback: () => void | Promise<void>) => {
+        return Promise.resolve(callback()).then(() => undefined)
+      }),
+    }))
+
+    const wrapper = createWrapper()
+    await wrapper.find('[data-testid="settings-delete-data-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(walletStoreMock.clearAllWallets).toHaveBeenCalledTimes(1)
+    expect(federationStoreMock.$reset).toHaveBeenCalledTimes(1)
+    expect(nostrStoreMock.$reset).toHaveBeenCalledTimes(1)
+    expect(onboardingStoreMock.$reset).toHaveBeenCalledTimes(1)
+    expect(mockPwaUpdateStore.$reset).toHaveBeenCalledTimes(1)
+    expect(localStorage.getItem('external.key')).toBe('preserve-me')
+    expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/startup-wizard' })
+    expect(mockNotifyCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Data deleted successfully',
       }),
     )
   })

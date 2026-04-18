@@ -274,10 +274,12 @@ import BuildInfo from 'src/components/BuildInfo.vue'
 import { Dialog, Notify } from 'quasar'
 import { useNostrStore } from 'src/stores/nostr'
 import { useWalletStore } from 'src/stores/wallet'
+import { useFederationStore } from 'src/stores/federation'
+import { useOnboardingStore } from 'src/stores/onboarding'
 import { usePwaUpdateStore } from 'src/stores/pwa-update'
 import { logger } from 'src/services/logger'
 import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   getConnectorConfig,
   launchModal,
@@ -285,9 +287,15 @@ import {
   onDisconnected,
 } from '@getalby/bitcoin-connect'
 
+const APP_LOCAL_STORAGE_PREFIX = 'vipr.'
+
 const connectedProvider = ref('')
+const nostrStore = useNostrStore()
 const walletStore = useWalletStore()
+const federationStore = useFederationStore()
+const onboardingStore = useOnboardingStore()
 const pwaUpdateStore = usePwaUpdateStore()
+const router = useRouter()
 const route = useRoute()
 
 const isUpdateReady = computed(() => pwaUpdateStore.isUpdateReady)
@@ -318,6 +326,24 @@ function configureBitcoinConnect() {
   launchModal()
 }
 
+function clearAppLocalStorage() {
+  if (typeof localStorage === 'undefined') {
+    return
+  }
+
+  const keysToRemove: string[] = []
+  for (let index = 0; index < localStorage.length; index += 1) {
+    const key = localStorage.key(index)
+    if (key != null && key.startsWith(APP_LOCAL_STORAGE_PREFIX)) {
+      keysToRemove.push(key)
+    }
+  }
+
+  for (const key of keysToRemove) {
+    localStorage.removeItem(key)
+  }
+}
+
 function deleteData() {
   logger.ui.debug('User initiated data deletion')
   Dialog.create({
@@ -335,12 +361,17 @@ function deleteData() {
 
 async function clearLocalAndWalletData() {
   await walletStore.clearAllWallets()
-  localStorage.clear()
+  clearAppLocalStorage()
+  federationStore.$reset()
+  nostrStore.$reset()
+  onboardingStore.$reset()
+  pwaUpdateStore.$reset()
   Notify.create({
     type: 'positive',
     message: 'Data deleted successfully',
     position: 'top',
   })
+  await router.replace({ name: '/startup-wizard' })
 }
 async function handleUpdateAction() {
   if (isUpdateReady.value) {
@@ -454,7 +485,6 @@ async function applyUpdate() {
 }
 
 // Nostr settings
-const nostrStore = useNostrStore()
 const relays = ref(nostrStore.relays)
 //const pubkey = ref(nostrStore.pubkey)
 const newRelay = ref('')
