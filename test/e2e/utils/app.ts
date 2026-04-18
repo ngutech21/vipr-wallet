@@ -44,6 +44,15 @@ export async function continuePastStartupWizardIfNeeded(page: Page): Promise<voi
     (await createRadio.isVisible().catch(() => false))
 
   if (shouldContinueWizard) {
+    const installContinueButton = page.getByTestId('startup-wizard-install-next-btn')
+    const shouldContinueInstall =
+      (await installContinueButton.isVisible().catch(() => false)) &&
+      (await installContinueButton.isEnabled().catch(() => false))
+
+    if (shouldContinueInstall) {
+      await installContinueButton.click()
+    }
+
     await expect(createRadio).toBeVisible({ timeout: 15_000 })
     await createRadio.click()
     await page.getByTestId('startup-wizard-choice-next-btn').click()

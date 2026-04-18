@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 export type OnboardingFlow = 'create' | 'restore' | null
 export type OnboardingStatus = 'in_progress' | 'complete'
 type FutureOnboardingStep = string & { readonly __futureOnboardingStep: unique symbol }
-export type OnboardingStep = 'choice' | 'backup' | 'restore' | FutureOnboardingStep
+export type OnboardingStep = 'install' | 'choice' | 'backup' | 'restore' | FutureOnboardingStep
 
 export type OnboardingState = {
   version: 1
@@ -47,7 +47,7 @@ function sanitizeStatus(value: unknown): OnboardingStatus {
 }
 
 function sanitizeStep(value: unknown): OnboardingStep {
-  if (value === 'choice' || value === 'backup' || value === 'restore') {
+  if (value === 'install' || value === 'choice' || value === 'backup' || value === 'restore') {
     return value
   }
   if (typeof value === 'string' && value.trim() !== '') {
