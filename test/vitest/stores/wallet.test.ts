@@ -595,6 +595,60 @@ describe('wallet store', () => {
         nanos_since_epoch: 0,
       },
     }
+    const secondCursor = {
+      operation_id: 'ln-op-2',
+      creation_time: {
+        secs_since_epoch: 1_234_567_891,
+        nanos_since_epoch: 0,
+      },
+    }
+
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'ln',
+        operationId: 'ln-op-1',
+        type: 'send',
+        invoice: 'lnbc1test',
+        amountMsats: 1_000,
+        fee: 0,
+        timestamp: 1_234_567_890_000,
+      },
+      {
+        kind: 'ln',
+        operationId: 'ln-op-2',
+        type: 'receive',
+        invoice: 'lnbc1test2',
+        amountMsats: 2_000,
+        fee: 0,
+        timestamp: 1_234_567_891_000,
+      },
+    ])
+    wallet.federation.listOperations.mockResolvedValue([
+      [firstCursor, { meta: {} }],
+      [secondCursor, { meta: {} }],
+    ])
+
+    walletStore.wallet = wallet as never
+
+    const page = await walletStore.getTransactionsPage(1)
+
+    expect(wallet.federation.listTransactions).toHaveBeenCalledWith(2, undefined)
+    expect(wallet.federation.listOperations).toHaveBeenCalledWith(2, undefined)
+    expect(page.transactions).toHaveLength(1)
+    expect(page.nextCursor).toEqual(firstCursor)
+    expect(page.hasMore).toBe(true)
+  })
+
+  it('getTransactionsPage does not report more when the visible count matches the page size exactly', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+    const firstCursor = {
+      operation_id: 'ln-op-1',
+      creation_time: {
+        secs_since_epoch: 1_234_567_890,
+        nanos_since_epoch: 0,
+      },
+    }
 
     wallet.federation.listTransactions.mockResolvedValue([
       {
@@ -613,11 +667,11 @@ describe('wallet store', () => {
 
     const page = await walletStore.getTransactionsPage(1)
 
-    expect(wallet.federation.listTransactions).toHaveBeenCalledWith(1, undefined)
-    expect(wallet.federation.listOperations).toHaveBeenCalledWith(1, undefined)
+    expect(wallet.federation.listTransactions).toHaveBeenCalledWith(2, undefined)
+    expect(wallet.federation.listOperations).toHaveBeenCalledWith(2, undefined)
     expect(page.transactions).toHaveLength(1)
-    expect(page.nextCursor).toEqual(firstCursor)
-    expect(page.hasMore).toBe(true)
+    expect(page.nextCursor).toBeNull()
+    expect(page.hasMore).toBe(false)
   })
 
   it('getTransactionsPage keeps fetching until it collects the requested visible transactions', async () => {
@@ -667,6 +721,15 @@ describe('wallet store', () => {
           fee: 0,
           timestamp: 3,
         },
+        {
+          kind: 'wallet',
+          operationId: 'wallet-op-5',
+          type: 'withdraw',
+          onchainAddress: 'bc1qtest-2',
+          amountMsats: 4_000,
+          fee: 0,
+          timestamp: 4,
+        },
       ])
     wallet.federation.listOperations
       .mockResolvedValueOnce([
@@ -691,17 +754,51 @@ describe('wallet store', () => {
           { meta: {} },
         ],
         [nonTransactionCursor, { meta: {} }],
+        [
+          {
+            operation_id: 'non-transaction-op-4',
+            creation_time: {
+              secs_since_epoch: 1_234_567_891,
+              nanos_since_epoch: 0,
+            },
+          },
+          { meta: {} },
+        ],
       ])
-      .mockResolvedValueOnce([[secondPageCursor, { meta: {} }]])
+      .mockResolvedValueOnce([
+        [secondPageCursor, { meta: {} }],
+        [
+          {
+            operation_id: 'wallet-op-5',
+            creation_time: {
+              secs_since_epoch: 1_234_567_893,
+              nanos_since_epoch: 0,
+            },
+          },
+          { meta: {} },
+        ],
+      ])
 
     walletStore.wallet = wallet as never
 
     const page = await walletStore.getTransactionsPage(3)
 
-    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(1, 3, undefined)
-    expect(wallet.federation.listOperations).toHaveBeenNthCalledWith(1, 3, undefined)
-    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(2, 1, nonTransactionCursor)
-    expect(wallet.federation.listOperations).toHaveBeenNthCalledWith(2, 1, nonTransactionCursor)
+    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(1, 4, undefined)
+    expect(wallet.federation.listOperations).toHaveBeenNthCalledWith(1, 4, undefined)
+    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(2, 2, {
+      operation_id: 'non-transaction-op-4',
+      creation_time: {
+        secs_since_epoch: 1_234_567_891,
+        nanos_since_epoch: 0,
+      },
+    })
+    expect(wallet.federation.listOperations).toHaveBeenNthCalledWith(2, 2, {
+      operation_id: 'non-transaction-op-4',
+      creation_time: {
+        secs_since_epoch: 1_234_567_891,
+        nanos_since_epoch: 0,
+      },
+    })
     expect(page.transactions.map((transaction) => transaction.operationId)).toEqual([
       'ln-op-1',
       'mint-op-2',
@@ -770,8 +867,8 @@ describe('wallet store', () => {
 
     const page = await walletStore.getTransactionsPage(10)
 
-    expect(wallet.federation.listTransactions).toHaveBeenCalledWith(10, undefined)
-    expect(wallet.federation.listOperations).toHaveBeenCalledWith(10, undefined)
+    expect(wallet.federation.listTransactions).toHaveBeenCalledWith(11, undefined)
+    expect(wallet.federation.listOperations).toHaveBeenCalledWith(11, undefined)
     expect(page.transactions).toHaveLength(1)
     expect(page.transactions[0]).toMatchObject({
       operationId: 'wallet-op-raw',
@@ -874,7 +971,7 @@ describe('wallet store', () => {
       ])
     wallet.federation.listOperations
       .mockResolvedValueOnce([
-        ...Array.from({ length: 49 }, (_value, index) => [
+        ...Array.from({ length: 50 }, (_value, index) => [
           {
             operation_id: `non-transaction-op-${index + 1}`,
             creation_time: {
@@ -904,8 +1001,8 @@ describe('wallet store', () => {
     const transaction = await walletStore.getTransactionByOperationId('wallet-op-target')
 
     expect(transaction?.operationId).toBe('wallet-op-target')
-    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(1, 50, undefined)
-    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(2, 49, firstCursor)
+    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(1, 51, undefined)
+    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(2, 50, firstCursor)
   })
 })
 

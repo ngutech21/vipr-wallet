@@ -105,7 +105,7 @@ let activeLoadRequestId = 0
 
 const pageSize = computed(() => (props.mode === 'history' ? HISTORY_PAGE_SIZE : HOME_PAGE_SIZE))
 const showFullHistoryAction = computed(() => {
-  return props.mode === 'home' && transactions.value.length > 0
+  return props.mode === 'home' && hasMore.value
 })
 const showLoadMoreAction = computed(() => {
   return props.mode === 'history' && transactions.value.length > 0 && hasMore.value

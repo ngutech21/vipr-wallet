@@ -61,6 +61,17 @@ export type TransactionsPageResult = {
   hasMore: boolean
 }
 
+type TransactionsBatchEntry = {
+  transaction: Transactions
+  operationKey: OperationKey | null
+}
+
+type TransactionsBatchResult = {
+  entries: TransactionsBatchEntry[]
+  nextCursor: OperationKey | null
+  hasMore: boolean
+}
+
 type TransactionHistoryWallet = {
   federation: {
     listTransactions: (limit?: number, lastSeen?: OperationKey) => Promise<Transactions[]>
@@ -426,32 +437,37 @@ export const useWalletStore = defineStore('wallet', {
       }
 
       try {
-        const collected: Transactions[] = []
+        const collected: TransactionsBatchEntry[] = []
+        const visibleLimit = pageSize + 1
         let cursor = lastSeen
 
-        while (collected.length < pageSize) {
-          const remaining = pageSize - collected.length
+        while (collected.length < visibleLimit) {
+          const remaining = visibleLimit - collected.length
           // Cursor pagination is sequential because each request depends on the previous page.
           // eslint-disable-next-line no-await-in-loop
           const batch = await fetchTransactionsBatch(this.wallet, remaining, cursor)
 
-          collected.push(...batch.transactions)
+          collected.push(...batch.entries)
 
           if (batch.nextCursor == null || !batch.hasMore) {
+            const visibleEntries = collected.slice(0, pageSize)
+            const hasMore = collected.length > pageSize
             return {
-              transactions: collected,
-              nextCursor: null,
-              hasMore: false,
+              transactions: visibleEntries.map((entry) => entry.transaction),
+              nextCursor: hasMore ? (visibleEntries.at(-1)?.operationKey ?? null) : null,
+              hasMore,
             }
           }
 
           cursor = batch.nextCursor
         }
 
+        const visibleEntries = collected.slice(0, pageSize)
+
         return {
-          transactions: collected,
-          nextCursor: cursor ?? null,
-          hasMore: cursor != null,
+          transactions: visibleEntries.map((entry) => entry.transaction),
+          nextCursor: visibleEntries.at(-1)?.operationKey ?? null,
+          hasMore: true,
         }
       } catch (error) {
         logger.error('Failed to fetch paged transactions', error)
@@ -620,7 +636,7 @@ async function fetchTransactionsBatch(
   wallet: TransactionHistoryWallet,
   limit: number,
   lastSeen?: OperationKey,
-): Promise<TransactionsPageResult> {
+): Promise<TransactionsBatchResult> {
   const transactions = await wallet.federation.listTransactions(limit, lastSeen)
   const operations = await wallet.federation.listOperations(limit, lastSeen).catch((error) => {
     logger.warn('Failed to fetch operation metadata for paged transaction enrichment', error)
@@ -628,6 +644,7 @@ async function fetchTransactionsBatch(
   })
 
   const operationLogById = new Map<string, OperationLog>()
+  const operationKeyById = new Map<string, OperationKey>()
   for (const operation of operations) {
     if (!Array.isArray(operation) || operation.length !== 2) {
       continue
@@ -635,14 +652,16 @@ async function fetchTransactionsBatch(
 
     const [operationKey, operationLog] = operation
     operationLogById.set(operationKey.operation_id, operationLog)
+    operationKeyById.set(operationKey.operation_id, operationKey)
   }
 
   const nextCursor = operations.at(-1)?.[0] ?? null
 
   return {
-    transactions: (transactions ?? []).map((transaction) =>
-      normalizeTransaction(transaction, operationLogById.get(transaction.operationId)),
-    ),
+    entries: (transactions ?? []).map((transaction) => ({
+      transaction: normalizeTransaction(transaction, operationLogById.get(transaction.operationId)),
+      operationKey: operationKeyById.get(transaction.operationId) ?? null,
+    })),
     nextCursor,
     hasMore: operations.length === limit && nextCursor != null,
   }
