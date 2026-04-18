@@ -25,7 +25,7 @@
         :data-testid="emptyTransactionsTestId"
       >
         <q-item-section>
-          <p class="text-grey-6">No transactions yet</p>
+          <p class="text-grey-6">{{ emptyStateLabel }}</p>
         </q-item-section>
       </q-item>
     </ul>
@@ -110,9 +110,12 @@ const showFullHistoryAction = computed(() => {
 const showLoadMoreAction = computed(() => {
   return props.mode === 'history' && transactions.value.length > 0 && hasMore.value
 })
+const emptyStateLabel = computed(() =>
+  walletStore.recoveryInProgress ? 'Recovering wallet history...' : 'No transactions yet',
+)
 
 watch(
-  () => federationStore.selectedFederationId,
+  () => [federationStore.selectedFederationId, walletStore.transactionsRefreshVersion],
   () => {
     loadInitialTransactions().catch((error) => {
       logger.error('Failed to reload transactions after federation change', error)

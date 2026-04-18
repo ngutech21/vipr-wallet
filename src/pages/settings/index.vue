@@ -186,7 +186,7 @@
           </q-item-section>
           <q-item-section data-testid="settings-personal-backup-section">
             <q-item-label>Personal Backup</q-item-label>
-            <q-item-label caption>Backup your wallet with recovery words</q-item-label>
+            <q-item-label caption>Backup your wallet secret with recovery words</q-item-label>
           </q-item-section>
         </template>
         <q-card>
@@ -194,6 +194,10 @@
             <div class="text-subtitle1 q-mb-md">
               Create a backup of your wallet using recovery words. Write them down and store them
               safely to recover your wallet if you lose access to this device.
+            </div>
+            <div class="text-caption text-warning q-mb-md">
+              Keep your federation invite codes as well. Recovery words do not restore which
+              federations were added in this browser.
             </div>
             <q-btn
               label="Create Backup"

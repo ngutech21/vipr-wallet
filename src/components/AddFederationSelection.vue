@@ -1,5 +1,5 @@
 <template>
-  <ModalCard title="Join a federation" data-testid="join-federation-selection">
+  <ModalCard title="Add or restore a federation" data-testid="join-federation-selection">
     <div class="q-pa-md">
       <div class="row q-col-gutter-md">
         <div class="col-12">
@@ -40,6 +40,25 @@
             </q-card-section>
           </q-card>
         </div>
+
+        <div class="col-12">
+          <q-card
+            class="cursor-pointer"
+            v-ripple
+            @click="onRestore"
+            data-testid="restore-trusted-federation-card"
+          >
+            <q-card-section class="row">
+              <q-icon name="settings_backup_restore" size="48px" color="primary" class="col-2" />
+              <div class="col-10">
+                <div class="text-h6 q-mt-sm">Restore a federation</div>
+                <div class="text-caption text-grey-7">
+                  Use an invite code to explicitly recover a federation for this restored wallet
+                </div>
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
       </div>
     </div>
 
@@ -54,6 +73,7 @@ const emit = defineEmits<{
   close: []
   showDiscover: []
   showAdd: []
+  showRestore: []
 }>()
 
 function onDiscover() {
@@ -64,6 +84,11 @@ function onDiscover() {
 function onAdd() {
   emit('close')
   emit('showAdd')
+}
+
+function onRestore() {
+  emit('close')
+  emit('showRestore')
 }
 </script>
 

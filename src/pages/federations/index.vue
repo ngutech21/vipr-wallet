@@ -10,6 +10,7 @@
         @close="showSelection = false"
         @show-discover="showDiscover = true"
         @show-add="showAdd = true"
+        @show-restore="showRestore = true"
       />
     </q-dialog>
 
@@ -27,6 +28,10 @@
         :initial-invite-code="selectedInviteCode"
         :auto-preview="selectedInviteCode != null"
       />
+    </q-dialog>
+
+    <q-dialog v-model="showRestore" position="bottom">
+      <AddFederation @close="closeRestoreFederation" mode="restore" />
     </q-dialog>
 
     <q-toolbar class="header-section">
@@ -64,6 +69,7 @@ import { ref } from 'vue'
 const showSelection = ref(false)
 const showDiscover = ref(false)
 const showAdd = ref(false)
+const showRestore = ref(false)
 const selectedInviteCode = ref<string | null>(null)
 
 function openAddFederationPreview(inviteCode: string) {
@@ -75,6 +81,10 @@ function openAddFederationPreview(inviteCode: string) {
 function closeAddFederation() {
   showAdd.value = false
   selectedInviteCode.value = null
+}
+
+function closeRestoreFederation() {
+  showRestore.value = false
 }
 </script>
 

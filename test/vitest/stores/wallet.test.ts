@@ -66,6 +66,11 @@ function createWalletMock(balanceMsats: number) {
     balance: {
       getBalance: vi.fn(() => Promise.resolve(balanceMsats)),
     },
+    recovery: {
+      hasPendingRecoveries: vi.fn(() => Promise.resolve(false)),
+      waitForAllRecoveries: vi.fn(() => Promise.resolve()),
+      subscribeToRecoveryProgress: vi.fn(() => vi.fn()),
+    },
     wallet: {
       getWalletSummary: vi.fn(),
       sendOnchain: vi.fn(),
@@ -133,9 +138,64 @@ describe('wallet store', () => {
       walletName: getWalletNameForFederationId(federation.federationId),
       federationId: federation.federationId,
       inviteCode: federation.inviteCode,
+      forceRecover: false,
     })
     expect(walletStore.activeWalletName).toBe(getWalletNameForFederationId(federation.federationId))
     expect(walletStore.balance).toBe(12)
+  })
+
+  it('refreshes balance and transactions after wallet recovery completes', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    const federation = createFederation()
+
+    federationStore.addFederation(federation, { recover: true })
+    federationStore.selectedFederationId = federation.federationId
+
+    let resolveRecovery: (() => void) | undefined
+    const recoveryFinished = new Promise<void>((resolve) => {
+      resolveRecovery = resolve
+    })
+
+    const wallet = createWalletMock(0)
+    wallet.balance.getBalance = vi.fn().mockResolvedValueOnce(0).mockResolvedValueOnce(34_000)
+    wallet.recovery.hasPendingRecoveries.mockResolvedValue(true)
+    wallet.recovery.waitForAllRecoveries.mockImplementation(() => recoveryFinished)
+    fedimintClientMock.ensureWalletOpen.mockResolvedValue(wallet)
+
+    await walletStore.openWallet()
+
+    expect(walletStore.recoveryInProgress).toBe(true)
+    expect(walletStore.balance).toBe(0)
+
+    resolveRecovery?.()
+    await vi.waitFor(() => {
+      expect(walletStore.recoveryInProgress).toBe(false)
+      expect(walletStore.balance).toBe(34)
+      expect(walletStore.transactionsRefreshVersion).toBe(1)
+      expect(federationStore.shouldRecoverFederation(federation.federationId)).toBe(false)
+    })
+  })
+
+  it('passes forceRecover for federations explicitly marked for restore', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    const federation = createFederation()
+
+    federationStore.addFederation(federation, { recover: true })
+    federationStore.selectedFederationId = federation.federationId
+
+    const wallet = createWalletMock(12_000)
+    fedimintClientMock.ensureWalletOpen.mockResolvedValue(wallet)
+
+    await walletStore.openWallet()
+
+    expect(fedimintClientMock.ensureWalletOpen).toHaveBeenCalledWith({
+      walletName: getWalletNameForFederationId(federation.federationId),
+      federationId: federation.federationId,
+      inviteCode: federation.inviteCode,
+      forceRecover: true,
+    })
   })
 
   it('throws when opening a federation wallet without mnemonic', async () => {
@@ -172,6 +232,7 @@ describe('wallet store', () => {
     expect(fedimintClientMock.clearAllWallets).toHaveBeenCalledTimes(1)
     expect(federationStore.federations).toEqual([])
     expect(federationStore.selectedFederationId).toBeNull()
+    expect(federationStore.pendingRecoveryFederationIds).toEqual([])
     expect(localStorage.getItem(FEDIMINT_STORAGE_SCHEMA_KEY)).toBe(FEDIMINT_STORAGE_SCHEMA_VERSION)
     expect(localStorage.getItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY)).toBe('0')
 

@@ -3,7 +3,12 @@ import { defineStore } from 'pinia'
 export type OnboardingFlow = 'create' | 'restore' | null
 export type OnboardingStatus = 'in_progress' | 'complete'
 type FutureOnboardingStep = string & { readonly __futureOnboardingStep: unique symbol }
-export type OnboardingStep = 'choice' | 'backup' | 'restore' | FutureOnboardingStep
+export type OnboardingStep =
+  | 'choice'
+  | 'backup'
+  | 'restore'
+  | 'restore-federation'
+  | FutureOnboardingStep
 
 export type OnboardingState = {
   version: 1
@@ -47,7 +52,12 @@ function sanitizeStatus(value: unknown): OnboardingStatus {
 }
 
 function sanitizeStep(value: unknown): OnboardingStep {
-  if (value === 'choice' || value === 'backup' || value === 'restore') {
+  if (
+    value === 'choice' ||
+    value === 'backup' ||
+    value === 'restore' ||
+    value === 'restore-federation'
+  ) {
     return value
   }
   if (typeof value === 'string' && value.trim() !== '') {
@@ -183,6 +193,12 @@ export const useOnboardingStore = defineStore('onboarding', {
       if (needsMnemonicBackup && this.flow === 'create') {
         this.status = 'in_progress'
         this.step = 'backup'
+        this.touch()
+        return
+      }
+
+      if (this.flow === 'restore' && this.step === 'restore-federation') {
+        this.status = 'in_progress'
         this.touch()
         return
       }

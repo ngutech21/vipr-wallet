@@ -113,6 +113,10 @@ meta:
               <div class="text-body2 q-mb-md">
                 Enter your 12 recovery words in order to restore your wallet.
               </div>
+              <div class="text-caption text-warning q-mb-md">
+                Recovery words restore your wallet secret. In the next step, you can optionally
+                restore one federation with its invite code on this device.
+              </div>
 
               <div class="restore-grid q-mb-md">
                 <q-input
@@ -155,6 +159,65 @@ meta:
                 </div>
               </div>
             </q-step>
+
+            <q-step
+              name="restore-federation"
+              title="Restore Federation"
+              icon="account_balance"
+              :done="false"
+              :header-nav="false"
+            >
+              <div class="text-body2 q-mb-md">
+                Optionally restore one federation now. You can skip this and add more later from the
+                app.
+              </div>
+              <div class="text-caption text-warning q-mb-md">
+                Only federations restored in this step will use the recovery flow. Normal joins stay
+                normal joins.
+              </div>
+
+              <JoinFederationInviteStep
+                v-if="restoreFederationPreview == null"
+                :invite-code="restoreFederationInviteCode"
+                :is-submitting="isRestoringFederation"
+                @update:invite-code="updateRestoreFederationInviteCode"
+                @paste="pasteRestoreFederationFromClipboard"
+                @submit="loadRestoreFederationPreview"
+              />
+
+              <JoinFederationPreviewStep
+                v-else
+                :federation="restoreFederationPreview"
+                :is-submitting="isRestoringFederation"
+                submit-label="Restore Federation"
+                @back="goBackToRestoreFederationInvite"
+                @join="submitFederationRestore"
+              />
+
+              <div v-if="restoreFederationPreview == null" class="row q-col-gutter-sm q-mt-md">
+                <div class="col-12 col-sm-6">
+                  <q-btn
+                    label="Back"
+                    flat
+                    color="grey-7"
+                    class="full-width"
+                    :disable="isRestoringFederation"
+                    @click="backFromRestoreFederationToRestoreWords"
+                    data-testid="startup-wizard-restore-federation-back-btn"
+                  />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <q-btn
+                    label="Skip for Now"
+                    color="primary"
+                    class="full-width"
+                    :disable="isRestoringFederation"
+                    @click="skipRestoreFederation"
+                    data-testid="startup-wizard-restore-federation-skip-btn"
+                  />
+                </div>
+              </div>
+            </q-step>
           </q-stepper>
         </q-card-section>
       </q-card>
@@ -167,26 +230,34 @@ defineOptions({
   name: 'StartupWizardPage',
 })
 
+import type { Federation } from 'src/components/models'
 import { computed, onMounted, ref } from 'vue'
-import { Notify } from 'quasar'
+import { Loading, Notify } from 'quasar'
 import { useRouter } from 'vue-router'
 import { getErrorMessage } from 'src/utils/error'
 import { useWalletStore } from 'src/stores/wallet'
 import { useOnboardingStore } from 'src/stores/onboarding'
+import { useFederationStore } from 'src/stores/federation'
 import { logger } from 'src/services/logger'
+import JoinFederationInviteStep from 'src/components/JoinFederationInviteStep.vue'
+import JoinFederationPreviewStep from 'src/components/JoinFederationPreviewStep.vue'
 
-type WizardStep = 'choice' | 'backup' | 'restore'
+type WizardStep = 'choice' | 'backup' | 'restore' | 'restore-federation'
 type SelectableFlow = 'create' | 'restore'
 
 const router = useRouter()
 const walletStore = useWalletStore()
 const onboardingStore = useOnboardingStore()
+const federationStore = useFederationStore()
 
 const currentStep = ref<WizardStep>('choice')
 const selectedFlow = ref<SelectableFlow | null>(null)
 const isCreating = ref(false)
 const isRestoring = ref(false)
+const isRestoringFederation = ref(false)
 const restoreWords = ref<string[]>(Array.from({ length: 12 }, () => ''))
+const restoreFederationInviteCode = ref('')
+const restoreFederationPreview = ref<Federation | null>(null)
 
 const mnemonicWords = computed(() => walletStore.mnemonicWords)
 const isCreateLocked = computed(
@@ -224,6 +295,19 @@ async function initializeWizard() {
     needsMnemonicBackup: walletStore.needsMnemonicBackup,
   })
 
+  if (
+    walletStore.hasMnemonic &&
+    !walletStore.needsMnemonicBackup &&
+    onboardingStore.flow === 'restore' &&
+    onboardingStore.step === 'restore-federation'
+  ) {
+    currentStep.value = 'restore-federation'
+    selectedFlow.value = 'restore'
+    onboardingStore.markInProgress()
+    onboardingStore.goToStep('restore-federation')
+    return
+  }
+
   if (walletStore.hasMnemonic && !walletStore.needsMnemonicBackup) {
     await finishWizardAndEnterApp()
     return
@@ -256,14 +340,17 @@ async function initializeWizard() {
   onboardingStore.goToStep('choice')
 }
 
-async function finishWizardAndEnterApp() {
+async function finishWizardAndEnterApp(options: { openWallet?: boolean } = {}) {
+  const { openWallet = true } = options
   onboardingStore.complete()
-  try {
-    await walletStore.openWallet()
-  } catch (error) {
-    logger.warn('Opening wallet after onboarding failed', {
-      reason: getErrorMessage(error),
-    })
+  if (openWallet) {
+    try {
+      await walletStore.openWallet()
+    } catch (error) {
+      logger.warn('Opening wallet after onboarding failed', {
+        reason: getErrorMessage(error),
+      })
+    }
   }
   await router.replace('/')
 }
@@ -331,6 +418,8 @@ function backFromRestoreToChoice() {
   currentStep.value = 'choice'
   selectedFlow.value = isCreateLocked.value ? 'create' : 'restore'
   restoreWords.value = Array.from({ length: 12 }, () => '')
+  restoreFederationInviteCode.value = ''
+  restoreFederationPreview.value = null
 }
 
 async function confirmBackupAndFinish() {
@@ -356,7 +445,10 @@ async function submitRestore() {
   onboardingStore.goToStep('restore')
   try {
     await walletStore.restoreMnemonic(words)
-    await finishWizardAndEnterApp()
+    restoreFederationInviteCode.value = ''
+    restoreFederationPreview.value = null
+    onboardingStore.goToStep('restore-federation')
+    currentStep.value = 'restore-federation'
   } catch (error) {
     Notify.create({
       color: 'negative',
@@ -367,6 +459,108 @@ async function submitRestore() {
   } finally {
     isRestoring.value = false
   }
+}
+
+function updateRestoreFederationInviteCode(value: string | number | null) {
+  restoreFederationInviteCode.value = typeof value === 'string' ? value : ''
+  restoreFederationPreview.value = null
+}
+
+function backFromRestoreFederationToRestoreWords() {
+  onboardingStore.markInProgress()
+  onboardingStore.goToStep('restore')
+  currentStep.value = 'restore'
+  restoreFederationInviteCode.value = ''
+  restoreFederationPreview.value = null
+}
+
+function goBackToRestoreFederationInvite() {
+  restoreFederationPreview.value = null
+}
+
+async function pasteRestoreFederationFromClipboard() {
+  try {
+    restoreFederationInviteCode.value = await navigator.clipboard.readText()
+  } catch (error) {
+    Notify.create({
+      type: 'negative',
+      message: `Unable to access clipboard ${getErrorMessage(error)}`,
+      position: 'top',
+    })
+  }
+}
+
+async function loadRestoreFederationPreview() {
+  Loading.show({ message: 'Loading federation preview' })
+  isRestoringFederation.value = true
+
+  try {
+    const cleanInviteCode = restoreFederationInviteCode.value.trim()
+    if (federationStore.federations.some((f) => f.inviteCode === cleanInviteCode)) {
+      Notify.create({
+        message: 'Federation already exists',
+        color: 'negative',
+        icon: 'error',
+        timeout: 5000,
+        position: 'top',
+      })
+      return
+    }
+
+    const federation = await walletStore.previewFederation(cleanInviteCode)
+    if (federation != null) {
+      restoreFederationPreview.value = federation
+    }
+  } catch (error) {
+    Notify.create({
+      message: `Failed to preview federation: ${getErrorMessage(error)}`,
+      color: 'negative',
+      icon: 'error',
+      timeout: 5000,
+      position: 'top',
+    })
+  } finally {
+    isRestoringFederation.value = false
+    Loading.hide()
+  }
+}
+
+async function submitFederationRestore() {
+  const federation = restoreFederationPreview.value
+  if (federation == null) {
+    return
+  }
+
+  Loading.show({ message: 'Restoring Federation' })
+  isRestoringFederation.value = true
+
+  try {
+    federationStore.addFederation(federation, { recover: true })
+    try {
+      await federationStore.selectFederation(federation)
+    } catch (error) {
+      federationStore.deleteFederation(federation.federationId)
+      throw error
+    }
+  } catch (error) {
+    Notify.create({
+      message: `Failed to restore federation: ${getErrorMessage(error)}`,
+      color: 'negative',
+      icon: 'error',
+      timeout: 5000,
+      position: 'top',
+    })
+    return
+  } finally {
+    isRestoringFederation.value = false
+    Loading.hide()
+  }
+
+  await finishWizardAndEnterApp({ openWallet: false })
+}
+
+async function skipRestoreFederation() {
+  await finishWizardAndEnterApp()
 }
 </script>
 
