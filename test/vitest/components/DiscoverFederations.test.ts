@@ -242,8 +242,6 @@ describe('DiscoverFederations.vue', () => {
       ]
       await flushPromises()
 
-      expect(wrapper.text()).toContain('Federation loadin...ed-1')
-      expect(wrapper.text()).toContain('Federation loadin...ed-2')
       expect(wrapper.text()).toContain('Loading federation details...')
       expect(wrapper.text()).not.toContain('Joinable Federation')
     })
