@@ -21,6 +21,7 @@ const walletStoreMock = vi.hoisted(() => ({
 const onboardingStoreMock = vi.hoisted(() => ({
   status: 'complete' as 'in_progress' | 'complete',
   flow: null as 'create' | 'restore' | null,
+  step: 'choice' as 'install' | 'choice' | 'backup' | 'restore' | 'restore-federation',
   normalizeForWalletState: vi.fn(),
 }))
 
@@ -88,6 +89,7 @@ describe('fedimint boot', () => {
     walletStoreMock.closeWallet.mockResolvedValue()
     onboardingStoreMock.status = 'complete'
     onboardingStoreMock.flow = null
+    onboardingStoreMock.step = 'choice'
     walletStoreMock.openWallet.mockResolvedValue()
     federationStoreMock.ensureValidSelection.mockReset()
     pwaUpdateStoreMock.checkForUpdatesStartup.mockResolvedValue('up-to-date')
@@ -170,6 +172,49 @@ describe('fedimint boot', () => {
 
     expect(walletStoreMock.openWallet).not.toHaveBeenCalled()
     expect(router.replace).toHaveBeenCalledWith('/startup-wizard')
+  })
+
+  it('redirects to startup wizard when restore federation is still in progress', async () => {
+    walletStoreMock.hasMnemonic = true
+    walletStoreMock.needsMnemonicBackup = false
+    onboardingStoreMock.status = 'in_progress'
+    onboardingStoreMock.flow = 'restore'
+    onboardingStoreMock.step = 'restore-federation'
+
+    const router = {
+      currentRoute: { value: { name: '/', path: '/' } },
+      replace: vi.fn(() => Promise.resolve()),
+      beforeEach: vi.fn(),
+    }
+
+    await fedimintBoot({ app: {}, router } as never)
+
+    expect(walletStoreMock.openWallet).not.toHaveBeenCalled()
+    expect(router.replace).toHaveBeenCalledWith('/startup-wizard')
+  })
+
+  it('keeps startup wizard route guarded during restore federation resume', async () => {
+    walletStoreMock.hasMnemonic = true
+    onboardingStoreMock.status = 'in_progress'
+    onboardingStoreMock.flow = 'restore'
+    onboardingStoreMock.step = 'restore-federation'
+
+    const router = {
+      currentRoute: { value: { name: '/', path: '/startup-wizard' } },
+      replace: vi.fn(() => Promise.resolve()),
+      beforeEach: vi.fn(),
+    }
+
+    await fedimintBoot({ app: {}, router } as never)
+
+    const navigationGuard = router.beforeEach.mock.calls[0]?.[0] as
+      | ((to: { name?: string; path?: string }) => string | true)
+      | undefined
+
+    expect(navigationGuard).toBeTypeOf('function')
+    expect(navigationGuard?.({ name: '/', path: '/' })).toBe('/startup-wizard')
+    expect(navigationGuard?.({ name: '/startup-wizard', path: '/startup-wizard' })).toBe(true)
+    expect(router.replace).not.toHaveBeenCalledWith('/')
   })
 
   it('keeps the selected federation when startup wallet open fails', async () => {
