@@ -8,7 +8,7 @@ import VueRouter from 'vue-router/vite'
 import fs from 'node:fs'
 import { loadEnv } from 'vite'
 
-export default defineConfig((_ctx) => {
+export default defineConfig((ctx) => {
   const env = loadEnv('dev', process.cwd(), '')
   // use env variables HTTPS_KEY and HTTPS_CERT for enabling https using self-signed certificates
   console.log('- HTTPS_KEY:', env.HTTPS_KEY)
@@ -53,6 +53,7 @@ export default defineConfig((_ctx) => {
               routesFolder: 'src/pages',
               extensions: ['.vue'],
               dts: 'src/route-map.d.ts',
+              watch: ctx.dev,
             }),
             wasm(),
             topLevelAwait(), // Optional
