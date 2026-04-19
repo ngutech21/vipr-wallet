@@ -597,6 +597,21 @@ export const useNostrStore = defineStore('nostr', {
             continue
           }
 
+          if (!doesPreviewMatchCandidate(candidate, federation)) {
+            this.previewStatusByFederation[candidate.federationId] = 'failed'
+            this.removeCachedPreview(candidate.federationId)
+            this.sortDiscoveryCandidates()
+            logger.nostr.warn(
+              'Skipping federation candidate with mismatched preview federation id',
+              {
+                federationId: candidate.federationId,
+                resolvedFederationId: federation.federationId,
+                createdAt: candidate.createdAt,
+              },
+            )
+            continue
+          }
+
           this.previewStatusByFederation[candidate.federationId] = 'ready'
           this.cacheFederationPreview(candidate, federation)
         }
@@ -838,4 +853,11 @@ function isCachedPreviewValid(
     cached.inviteCode === candidate.inviteCode &&
     cached.candidateCreatedAt === candidate.createdAt
   )
+}
+
+function doesPreviewMatchCandidate(
+  candidate: DiscoveredFederationCandidate,
+  federation: Federation,
+): boolean {
+  return federation.federationId === candidate.federationId
 }

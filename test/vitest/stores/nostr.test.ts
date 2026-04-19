@@ -507,6 +507,42 @@ describe('nostr store discovery queue', () => {
     expect(nostr.discoveryCandidates[0]?.recommendationCount).toBe(2)
   })
 
+  it('marks candidates as failed when preview resolves a different federation id', async () => {
+    const warnSpy = vi.spyOn(logger.nostr, 'warn')
+
+    const nostr = useNostrStore()
+    nostr.isDiscoveringFederations = true
+    nostr.previewTargetCount = 1
+    nostr.discoveryCandidates = [
+      { federationId: 'candidate-fed', inviteCode: 'invite-candidate', createdAt: 10 },
+    ]
+
+    walletStoreMock.previewFederation.mockResolvedValue(
+      createFederation('resolved-fed', 'invite-candidate', 'Resolved Federation'),
+    )
+
+    nostr.enqueueCandidatesForPreview()
+    await nostr.processPreviewQueue()
+
+    const candidate = nostr.discoveryCandidates[0]
+    if (candidate == null) {
+      throw new Error('Expected discovery candidate to exist')
+    }
+
+    expect(nostr.previewStatusByFederation['candidate-fed']).toBe('failed')
+    expect(nostr.previewCacheByFederation['candidate-fed']).toBeUndefined()
+    expect(nostr.discoveredFederations).toEqual([])
+    expect(nostr.getCachedPreviewForCandidate(candidate)).toBeUndefined()
+    expect(warnSpy).toHaveBeenCalledWith(
+      'Skipping federation candidate with mismatched preview federation id',
+      expect.objectContaining({
+        federationId: 'candidate-fed',
+        resolvedFederationId: 'resolved-fed',
+        createdAt: 10,
+      }),
+    )
+  })
+
   it('queues a newly top-ranked candidate even when enough cached previews already exist', async () => {
     const nostr = useNostrStore()
     nostr.isDiscoveringFederations = true
