@@ -54,6 +54,7 @@
             fontconfig
             fontconfig.bin
             pkgs.playwright-driver.browsers
+            typos
           ] ++ playwrightFonts ++ [
             # Use latest playwright from unstable
             pkgs-unstable.playwright-driver.browsers

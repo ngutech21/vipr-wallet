@@ -6,8 +6,8 @@ meta:
 <template>
   <transition
     appear
-    enter-active-class="animated slideInRight"
-    leave-active-class="animated slideOutRight"
+    enter-active-class="animated slideInLeft"
+    leave-active-class="animated slideOutLeft"
   >
     <q-page class="column dark-gradient">
       <q-toolbar class="header-section">
@@ -79,16 +79,17 @@ defineOptions({
 
 import { ref, watch } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
-import { useQuasar, Loading } from 'quasar'
+import { Loading } from 'quasar'
 import { useRoute, useRouter, type LocationQueryValue } from 'vue-router'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { getErrorMessage } from 'src/utils/error'
 
 const ecashToken = ref('')
 const isProcessing = ref(false)
-const $q = useQuasar()
 const route = useRoute('/receive-ecash')
 const router = useRouter()
 const walletStore = useWalletStore()
+const notify = useAppNotify()
 
 watch(
   () => route.query.token,
@@ -106,10 +107,9 @@ async function pasteFromClipboard() {
     const text = await navigator.clipboard.readText()
     ecashToken.value = text
   } catch (error) {
-    $q.notify({
+    notify.notify({
       type: 'negative',
       message: `Unable to access clipboard ${getErrorMessage(error)}`,
-      position: 'top',
     })
   }
 }
@@ -131,10 +131,9 @@ async function redeemEcash() {
       query: { amount: Math.floor(amountMsats / 1_000) },
     })
   } catch (error) {
-    $q.notify({
+    notify.notify({
       type: 'negative',
       message: `Failed to redeem eCash: ${getErrorMessage(error)}`,
-      position: 'top',
     })
   } finally {
     isProcessing.value = false

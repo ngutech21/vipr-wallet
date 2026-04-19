@@ -25,8 +25,7 @@
     "test:e2e:headed": "playwright test --headed",
     "typecheck": "exec vue-tsc --noEmit",
     "typecheck:pwa": "exec tsc -p src-pwa/tsconfig.json --noEmit",
-    "run-devimint": "pnpm run test:setup playwright test",
-    "final-check": "pnpm format && pnpm lint && pnpm typecheck && pnpm typecheck:pwa && pnpm test:unit:ci"
+    "final-check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm typecheck:pwa && pnpm test:unit:ci && pnpm audit --prod"
   },
   "dependencies": {
     "@fedimint/core": "0.0.0-canary-50fca06f9c3a3dc13e16b2f3440e66e852dc0d35",
@@ -50,6 +49,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@lhci/cli": "0.15.1",
     "@pinia/testing": "^1.0.3",
     "@playwright/test": "1.58.2",
     "@quasar/app-vite": "2.6.0",
@@ -63,21 +63,20 @@
     "@vue/eslint-config-typescript": "^14.7.0",
     "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.5.0",
-    "eslint": "10.2.0",
+    "eslint": "10.2.1",
     "eslint-plugin-vue": "^10.8.0",
     "globals": "^17.5.0",
     "happy-dom": "20.9.0",
-    "lighthouse": "^13.1.0",
     "pinia": "^3.0.4",
     "prettier": "^3.8.3",
     "tsx": "^4.21.0",
-    "typescript": "~6.0.2",
+    "typescript": "~6.0.3",
     "vite": "^8.0.8",
     "vite-plugin-checker": "^0.13.0",
     "vite-plugin-top-level-await": "^1.6.0",
     "vite-plugin-wasm": "^3.6.0",
     "vitest": "^4.1.4",
-    "vue-tsc": "^3.2.6",
+    "vue-tsc": "^3.2.7",
     "workbox-build": "^7.4.0",
     "workbox-cacheable-response": "^7.4.0",
     "workbox-core": "^7.4.0",
@@ -102,7 +101,8 @@
     ],
     "overrides": {
       "http-proxy-middleware": "^3.0.5",
-      "@rollup/plugin-terser": "1.0.0"
+      "@rollup/plugin-terser": "1.0.0",
+      "tmp": "0.2.5"
     }
   }
 }

@@ -1,14 +1,5 @@
 <template>
   <q-layout view="hHh lpR fFf" class="dark-gradient">
-    <q-dialog
-      v-model="showAddFederationOverlay"
-      position="bottom"
-      transition-show="slide-up"
-      transition-hide="slide-down"
-    >
-      <AddFederation @close="showAddFederationOverlay = false" />
-    </q-dialog>
-
     <q-page-container>
       <PwaUpdateBanner />
       <!-- <q-page class="dark-gradient"> -->
@@ -55,12 +46,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import AddFederation from 'src/components/AddFederation.vue'
-import PwaUpdateBanner from 'src/components/PwaUpdateBanner.vue'
 
-const showAddFederationOverlay = ref(false)
+import PwaUpdateBanner from 'src/components/PwaUpdateBanner.vue'
 
 const route = useRoute()
 

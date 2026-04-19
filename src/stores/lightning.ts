@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Bolt11Invoice } from 'src/components/models'
+import type { Bolt11Invoice } from 'src/types/lightning'
 import { getFiatValue, Invoice } from '@getalby/lightning-tools'
 
 export const useLightningStore = defineStore('lightning', {

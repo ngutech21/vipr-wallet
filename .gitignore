@@ -8,6 +8,7 @@ certs
 test-results
 playwright-report
 coverage
+.lighthouseci
 
 # Quasar core related directories
 .quasar

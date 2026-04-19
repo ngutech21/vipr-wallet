@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Federation } from 'src/components/models'
+import type { Federation } from 'src/types/federation'
 import { useWalletStore } from './wallet'
 import { useLocalStorage } from '@vueuse/core'
 

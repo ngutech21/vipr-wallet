@@ -101,7 +101,8 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
-import { date, Notify } from 'quasar'
+import { date } from 'quasar'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { useFederationStore } from 'src/stores/federation'
 import { useLightningStore } from 'src/stores/lightning'
 import type { WalletTransaction } from '@fedimint/core'
@@ -123,6 +124,7 @@ const props = defineProps<Props>()
 
 const federationStore = useFederationStore()
 const lightningStore = useLightningStore()
+const notify = useAppNotify()
 const amountInFiat = ref<string>('0.00')
 const transactionTitle = computed(() => getWalletTransactionDetailTitle(props.transaction))
 const statusLabel = computed(() => getWalletTransactionStatusLabel(props.transaction))
@@ -173,18 +175,10 @@ function formatDate(timestamp: number): string {
 async function copyAddress() {
   try {
     await navigator.clipboard.writeText(props.transaction.onchainAddress)
-    Notify.create({
-      message: 'Address copied to clipboard',
-      color: 'positive',
-      position: 'top',
-    })
+    notify.success('Address copied to clipboard')
   } catch (error) {
     logger.error('Failed to copy address to clipboard', error)
-    Notify.create({
-      message: 'Failed to copy address',
-      color: 'negative',
-      position: 'top',
-    })
+    notify.error('Failed to copy address')
   }
 }
 </script>

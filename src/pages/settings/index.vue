@@ -230,6 +230,7 @@
               color="primary"
               :href="'https://github.com/ngutech21/vipr-wallet'"
               target="_blank"
+              rel="noopener noreferrer"
               class="full-width"
               data-testid="settings-open-github-btn"
             />
@@ -276,12 +277,15 @@ import { version } from '../../../package.json'
 import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'
 import { Dialog, Notify } from 'quasar'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { useNostrStore } from 'src/stores/nostr'
 import { useWalletStore } from 'src/stores/wallet'
+import { useFederationStore } from 'src/stores/federation'
+import { useOnboardingStore } from 'src/stores/onboarding'
 import { usePwaUpdateStore } from 'src/stores/pwa-update'
 import { logger } from 'src/services/logger'
 import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   getConnectorConfig,
   launchModal,
@@ -289,10 +293,17 @@ import {
   onDisconnected,
 } from '@getalby/bitcoin-connect'
 
+const APP_LOCAL_STORAGE_PREFIX = 'vipr.'
+
 const connectedProvider = ref('')
+const nostrStore = useNostrStore()
 const walletStore = useWalletStore()
+const federationStore = useFederationStore()
+const onboardingStore = useOnboardingStore()
 const pwaUpdateStore = usePwaUpdateStore()
+const router = useRouter()
 const route = useRoute()
+const notify = useAppNotify()
 
 const isUpdateReady = computed(() => pwaUpdateStore.isUpdateReady)
 const isCheckingForUpdates = computed(() => pwaUpdateStore.state === 'checking')
@@ -322,6 +333,24 @@ function configureBitcoinConnect() {
   launchModal()
 }
 
+function clearAppLocalStorage() {
+  if (typeof localStorage === 'undefined') {
+    return
+  }
+
+  const keysToRemove: string[] = []
+  for (let index = 0; index < localStorage.length; index += 1) {
+    const key = localStorage.key(index)
+    if (key != null && key.startsWith(APP_LOCAL_STORAGE_PREFIX)) {
+      keysToRemove.push(key)
+    }
+  }
+
+  for (const key of keysToRemove) {
+    localStorage.removeItem(key)
+  }
+}
+
 function deleteData() {
   logger.ui.debug('User initiated data deletion')
   Dialog.create({
@@ -339,12 +368,13 @@ function deleteData() {
 
 async function clearLocalAndWalletData() {
   await walletStore.clearAllWallets()
-  localStorage.clear()
-  Notify.create({
-    type: 'positive',
-    message: 'Data deleted successfully',
-    position: 'top',
-  })
+  clearAppLocalStorage()
+  federationStore.$reset()
+  nostrStore.$reset()
+  onboardingStore.$reset()
+  pwaUpdateStore.$reset()
+  notify.success('Data deleted successfully')
+  await router.replace({ name: '/startup-wizard' })
 }
 async function handleUpdateAction() {
   if (isUpdateReady.value) {
@@ -458,7 +488,6 @@ async function applyUpdate() {
 }
 
 // Nostr settings
-const nostrStore = useNostrStore()
 const relays = ref(nostrStore.relays)
 //const pubkey = ref(nostrStore.pubkey)
 const newRelay = ref('')
@@ -482,38 +511,22 @@ const isValidRelayUrl = computed(() => {
 
 async function addNewRelay() {
   if (isValidRelayUrl.value && (await nostrStore.addRelay(newRelay.value))) {
-    Notify.create({
-      type: 'positive',
-      message: `Added relay: ${newRelay.value}`,
-      position: 'top',
-    })
+    notify.success(`Added relay: ${newRelay.value}`)
     newRelay.value = ''
   } else {
-    Notify.create({
-      type: 'negative',
-      message: 'Invalid relay URL or already exists',
-      position: 'top',
-    })
+    notify.error('Invalid relay URL or already exists')
   }
 }
 
 async function removeRelay(relay: string) {
   if (await nostrStore.removeRelay(relay)) {
-    Notify.create({
-      type: 'info',
-      message: `Removed relay: ${relay}`,
-      position: 'top',
-    })
+    notify.info(`Removed relay: ${relay}`)
   }
 }
 
 async function resetRelays() {
   await nostrStore.resetRelays()
-  Notify.create({
-    type: 'info',
-    message: 'Reset relays to defaults',
-    position: 'top',
-  })
+  notify.info('Reset relays to defaults')
 }
 </script>
 

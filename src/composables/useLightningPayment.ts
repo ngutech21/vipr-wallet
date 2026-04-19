@@ -1,5 +1,6 @@
 import { ref } from 'vue'
-import { useQuasar, Loading } from 'quasar'
+import { Loading } from 'quasar'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { useWalletStore } from 'src/stores/wallet'
 import { getErrorMessage } from 'src/utils/error'
 import { logger } from 'src/services/logger'
@@ -27,7 +28,7 @@ export interface InvoiceWaitResult {
 
 export function useLightningPayment() {
   const walletStore = useWalletStore()
-  const $q = useQuasar()
+  const notify = useAppNotify()
   const isProcessing = ref(false)
 
   /**
@@ -59,11 +60,7 @@ export function useLightningPayment() {
       }
     } catch (error) {
       logger.error('Failed to pay invoice', error)
-      $q.notify({
-        type: 'negative',
-        message: `Failed to pay invoice: ${getErrorMessage(error)}`,
-        position: 'top',
-      })
+      notify.error(`Failed to pay invoice: ${getErrorMessage(error)}`)
 
       return {
         success: false,
@@ -113,11 +110,7 @@ export function useLightningPayment() {
       }
     } catch (error) {
       logger.error('Failed to create invoice', error)
-      $q.notify({
-        type: 'negative',
-        message: `Failed to create invoice: ${getErrorMessage(error)}`,
-        position: 'top',
-      })
+      notify.error(`Failed to create invoice: ${getErrorMessage(error)}`)
 
       return {
         success: false,
@@ -160,11 +153,7 @@ export function useLightningPayment() {
         errorMessage = error
       }
 
-      $q.notify({
-        message: `Error receiving payment: ${errorMessage}`,
-        color: 'negative',
-        position: 'top',
-      })
+      notify.error(`Error receiving payment: ${errorMessage}`)
 
       return {
         success: false,

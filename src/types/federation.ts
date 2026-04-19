@@ -11,6 +11,11 @@ export type Federation = {
   metadata?: FederationMeta
 }
 
+export type DiscoverySelectionPayload = {
+  inviteCode: string
+  prefetchedFederation?: Federation
+}
+
 export type FederationGuardian = {
   peerId: number
   name: string
@@ -56,13 +61,4 @@ export type FederationMeta = {
   popup_end_timestamp?: string
   popup_countdown_message?: string
   vetted_gateways?: string[]
-}
-
-export type Bolt11Invoice = {
-  invoice: string
-  paymentHash: string
-  amount: number
-  timestamp: number
-  expiry: number | undefined
-  description: string | null
 }

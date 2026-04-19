@@ -123,9 +123,10 @@ defineOptions({
 })
 
 import { computed, ref, watch } from 'vue'
-import { Loading, useQuasar } from 'quasar'
+import { Loading } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { useNumericInput } from 'src/composables/useNumericInput'
 import { logger } from 'src/services/logger'
 import { useFederationStore } from 'src/stores/federation'
@@ -140,9 +141,9 @@ import {
 
 const router = useRouter()
 const route = useRoute()
-const $q = useQuasar()
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
+const notify = useAppNotify()
 
 const paymentTarget = ref('')
 const isProcessing = ref(false)
@@ -284,11 +285,7 @@ async function submitOnchainPayment() {
     })
   } catch (error) {
     logger.error('Failed to submit onchain transfer', error)
-    $q.notify({
-      type: 'negative',
-      message: `Failed to send Bitcoin: ${getErrorMessage(error)}`,
-      position: 'top',
-    })
+    notify.error(`Failed to send Bitcoin: ${getErrorMessage(error)}`)
   } finally {
     isProcessing.value = false
     Loading.hide()

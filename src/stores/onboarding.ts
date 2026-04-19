@@ -4,6 +4,7 @@ export type OnboardingFlow = 'create' | 'restore' | null
 export type OnboardingStatus = 'in_progress' | 'complete'
 type FutureOnboardingStep = string & { readonly __futureOnboardingStep: unique symbol }
 export type OnboardingStep =
+  | 'install'
   | 'choice'
   | 'backup'
   | 'restore'
@@ -53,6 +54,7 @@ function sanitizeStatus(value: unknown): OnboardingStatus {
 
 function sanitizeStep(value: unknown): OnboardingStep {
   if (
+    value === 'install' ||
     value === 'choice' ||
     value === 'backup' ||
     value === 'restore' ||

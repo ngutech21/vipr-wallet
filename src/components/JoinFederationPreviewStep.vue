@@ -80,7 +80,7 @@
 <script setup lang="ts">
 import { useFormatters } from 'src/utils/formatter'
 import FederationGuardians from 'src/components/FederationGuardians.vue'
-import type { Federation } from 'src/components/models'
+import type { Federation } from 'src/types/federation'
 
 defineProps<{
   federation: Federation

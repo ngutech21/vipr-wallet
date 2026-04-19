@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { useLocalStorage } from '@vueuse/core'
 import NDK, { type NDKEvent, type NDKFilter, type NDKSubscription } from '@nostr-dev-kit/ndk'
-import type { Federation } from 'src/components/models'
+import type { Federation } from 'src/types/federation'
 import { Nip87Kinds } from 'src/types/nip87'
 import { useWalletStore } from './wallet'
 import { logger } from 'src/services/logger'
@@ -10,7 +10,19 @@ type DiscoveredFederationCandidate = {
   federationId: string
   inviteCode: string
   createdAt: number
+  displayName?: string
+  about?: string
+  pictureUrl?: string
+  network?: string
   recommendationCount?: number
+}
+
+type CachedFederationPreview = {
+  federation: Federation
+  candidateCreatedAt: number
+  inviteCode: string
+  cachedAt: number
+  completeness: 'full'
 }
 
 type PreviewStatus = 'loading' | 'failed' | 'timed_out' | 'ready'
@@ -21,12 +33,16 @@ const DEFAULT_RELAYS = [
   'wss://relay.damus.io',
   'wss://relay.snort.social',
   'wss://bitcoiner.social',
+  'wss://nostr.wine',
+  'wss://relay.nostr.band',
 ]
 
 const DISCOVERY_PAGE_SIZE = 5
 const MAX_DISCOVERY_CACHE_SIZE = 50
+const PREVIEW_QUEUE_OVERSCAN = 3
 const PREVIEW_TIMEOUT_MS = 7_000
 const PREVIEW_QUEUE_IDLE_POLL_MS = 50
+const PREVIEW_CACHE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000
 const PREVIEW_TIMEOUT_TOKEN = Symbol('preview-timeout')
 const EXPECTED_DISCOVERY_ERROR_PATTERNS = [
   /failed to download client config/i,
@@ -45,6 +61,10 @@ export const useNostrStore = defineStore('nostr', {
     pubkey: useLocalStorage<string>('vipr.nostr.pubkey', ''),
     ndk: null as NDK | null,
     discoveredFederations: useLocalStorage<Federation[]>('vipr.nostr.discovery.federations', []),
+    previewCacheByFederation: useLocalStorage<Record<string, CachedFederationPreview>>(
+      'vipr.nostr.discovery.preview-cache',
+      {},
+    ),
     discoveryCandidates: useLocalStorage<DiscoveredFederationCandidate[]>(
       'vipr.nostr.discovery.candidates',
       [],
@@ -105,6 +125,19 @@ export const useNostrStore = defineStore('nostr', {
       return this.recommendationCountsByFederation[federationId] ?? 0
     },
 
+    getCachedPreviewForCandidate(candidate: DiscoveredFederationCandidate): Federation | undefined {
+      const cached = this.previewCacheByFederation[candidate.federationId]
+      if (!isCachedPreviewValid(cached, candidate)) {
+        return undefined
+      }
+
+      return cached.federation
+    },
+
+    getPreviewStatusForFederationId(federationId: string): PreviewStatus | undefined {
+      return this.previewStatusByFederation[federationId]
+    },
+
     setJoinInProgress(isInProgress: boolean) {
       this.isJoinInProgress = isInProgress
       if (!isInProgress) {
@@ -132,6 +165,7 @@ export const useNostrStore = defineStore('nostr', {
 
     clearDiscoveryCache() {
       this.discoveredFederations = []
+      this.previewCacheByFederation = {}
       this.discoveryCandidates = []
       this.previewQueue = []
       this.previewAttemptedCreatedAt = {}
@@ -190,6 +224,7 @@ export const useNostrStore = defineStore('nostr', {
       }
 
       this.isDiscoveringFederations = true
+      this.syncDiscoveredFederationsFromCache()
       this.resetPreviewTargetCount()
 
       const mintInfoFilter: NDKFilter = {
@@ -269,6 +304,7 @@ export const useNostrStore = defineStore('nostr', {
             ...candidate,
             recommendationCount: Math.max(existing.recommendationCount ?? 0, recommendationCount),
           }
+          this.removeCachedPreview(candidate.federationId)
           delete this.previewAttemptedCreatedAt[candidate.federationId]
           delete this.previewStatusByFederation[candidate.federationId]
         }
@@ -362,33 +398,113 @@ export const useNostrStore = defineStore('nostr', {
       })
     },
 
-    enqueueCandidatesForPreview() {
-      const discoveredIds = new Set(this.discoveredFederations.map((f) => f.federationId))
-      const validCandidateIds = new Set(
-        this.discoveryCandidates.map((candidate) => candidate.federationId),
-      )
-      this.previewQueue = this.previewQueue.filter(
-        (federationId) => validCandidateIds.has(federationId) && !discoveredIds.has(federationId),
-      )
+    cacheFederationPreview(candidate: DiscoveredFederationCandidate, federation: Federation) {
+      this.previewCacheByFederation = {
+        ...this.previewCacheByFederation,
+        [candidate.federationId]: {
+          federation,
+          candidateCreatedAt: candidate.createdAt,
+          inviteCode: candidate.inviteCode,
+          cachedAt: Date.now(),
+          completeness: 'full',
+        },
+      }
 
-      const queuedIds = new Set(this.previewQueue)
-      const missingPreviews = Math.max(
-        0,
-        this.previewTargetCount - this.discoveredFederations.length - this.previewQueue.length,
-      )
-      if (missingPreviews === 0) {
+      this.trimPreviewCache()
+      this.syncDiscoveredFederationsFromCache()
+    },
+
+    removeCachedPreview(federationId: string) {
+      if (!(federationId in this.previewCacheByFederation)) {
+        this.discoveredFederations = this.discoveredFederations.filter(
+          (federation) => federation.federationId !== federationId,
+        )
         return
       }
 
-      let queuedCount = 0
-      for (const candidate of this.discoveryCandidates) {
-        if (queuedCount >= missingPreviews) {
-          break
+      const { [federationId]: _removed, ...remaining } = this.previewCacheByFederation
+      this.previewCacheByFederation = remaining
+      this.discoveredFederations = this.discoveredFederations.filter(
+        (federation) => federation.federationId !== federationId,
+      )
+    },
+
+    trimPreviewCache() {
+      const entries = Object.entries(this.previewCacheByFederation)
+      if (entries.length <= MAX_DISCOVERY_CACHE_SIZE) {
+        return
+      }
+
+      entries.sort(([, left], [, right]) => right.cachedAt - left.cachedAt)
+      this.previewCacheByFederation = Object.fromEntries(entries.slice(0, MAX_DISCOVERY_CACHE_SIZE))
+    },
+
+    syncDiscoveredFederationsFromCache() {
+      const validEntries = this.discoveryCandidates
+        .map((candidate) => {
+          const cached = this.previewCacheByFederation[candidate.federationId]
+          if (!isCachedPreviewValid(cached, candidate)) {
+            return undefined
+          }
+
+          return cached
+        })
+        .filter((cached): cached is CachedFederationPreview => cached != null)
+
+      const remainingEntries = Object.entries(this.previewCacheByFederation)
+        .filter(([federationId, cached]) => {
+          const candidate = this.discoveryCandidates.find(
+            (item) => item.federationId === federationId,
+          )
+          return candidate == null && !isPreviewCacheExpired(cached)
+        })
+        .map(([, cached]) => cached)
+
+      const deduped = [...validEntries, ...remainingEntries]
+      const seenIds = new Set<string>()
+      this.discoveredFederations = deduped
+        .filter((cached) => {
+          const federationId = cached.federation.federationId
+          if (seenIds.has(federationId)) {
+            return false
+          }
+          seenIds.add(federationId)
+          return true
+        })
+        .sort((left, right) => right.cachedAt - left.cachedAt)
+        .map((cached) => cached.federation)
+    },
+
+    enqueueCandidatesForPreview() {
+      const validCandidateIds = new Set(
+        this.discoveryCandidates.map((candidate) => candidate.federationId),
+      )
+      this.previewQueue = this.previewQueue.filter((federationId) => {
+        if (!validCandidateIds.has(federationId)) {
+          return false
         }
 
-        if (discoveredIds.has(candidate.federationId) || queuedIds.has(candidate.federationId)) {
+        const candidate = this.discoveryCandidates.find(
+          (item) => item.federationId === federationId,
+        )
+        return candidate != null && this.getCachedPreviewForCandidate(candidate) == null
+      })
+
+      const queuedIds = new Set(this.previewQueue)
+      const previewWindow = this.discoveryCandidates.slice(
+        0,
+        this.previewTargetCount + PREVIEW_QUEUE_OVERSCAN,
+      )
+
+      for (const candidate of previewWindow) {
+        if (this.getCachedPreviewForCandidate(candidate) != null) {
+          this.previewStatusByFederation[candidate.federationId] = 'ready'
           continue
         }
+        if (queuedIds.has(candidate.federationId)) {
+          continue
+        }
+
         const attemptedCreatedAt = this.previewAttemptedCreatedAt[candidate.federationId]
         if (attemptedCreatedAt != null && attemptedCreatedAt >= candidate.createdAt) {
           continue
@@ -396,7 +512,6 @@ export const useNostrStore = defineStore('nostr', {
 
         this.previewQueue.push(candidate.federationId)
         queuedIds.add(candidate.federationId)
-        queuedCount += 1
       }
     },
 
@@ -411,11 +526,7 @@ export const useNostrStore = defineStore('nostr', {
       try {
         await walletStore.initClients()
 
-        while (
-          this.discoveredFederations.length < this.previewTargetCount &&
-          !this.isJoinInProgress &&
-          this.isDiscoveringFederations
-        ) {
+        while (!this.isJoinInProgress && this.isDiscoveringFederations) {
           if (this.previewQueue.length === 0) {
             this.enqueueCandidatesForPreview()
             if (this.previewQueue.length === 0) {
@@ -428,14 +539,16 @@ export const useNostrStore = defineStore('nostr', {
             continue
           }
 
-          if (this.discoveredFederations.some((f) => f.federationId === federationId)) {
-            continue
-          }
-
           const candidate = this.discoveryCandidates.find(
             (item) => item.federationId === federationId,
           )
           if (candidate == null) {
+            continue
+          }
+
+          const cachedPreview = this.getCachedPreviewForCandidate(candidate)
+          if (cachedPreview != null) {
+            this.previewStatusByFederation[candidate.federationId] = 'ready'
             continue
           }
 
@@ -484,20 +597,23 @@ export const useNostrStore = defineStore('nostr', {
             continue
           }
 
-          if (!this.discoveredFederations.some((f) => f.federationId === federation.federationId)) {
-            this.previewStatusByFederation[candidate.federationId] = 'ready'
-            this.discoveredFederations.push(federation)
-            this.discoveredFederations.sort((a, b) => {
-              return (a.title ?? '').localeCompare(b.title ?? '')
-            })
-
-            if (this.discoveredFederations.length > MAX_DISCOVERY_CACHE_SIZE) {
-              this.discoveredFederations = this.discoveredFederations.slice(
-                0,
-                MAX_DISCOVERY_CACHE_SIZE,
-              )
-            }
+          if (!doesPreviewMatchCandidate(candidate, federation)) {
+            this.previewStatusByFederation[candidate.federationId] = 'failed'
+            this.removeCachedPreview(candidate.federationId)
+            this.sortDiscoveryCandidates()
+            logger.nostr.warn(
+              'Skipping federation candidate with mismatched preview federation id',
+              {
+                federationId: candidate.federationId,
+                resolvedFederationId: federation.federationId,
+                createdAt: candidate.createdAt,
+              },
+            )
+            continue
           }
+
+          this.previewStatusByFederation[candidate.federationId] = 'ready'
+          this.cacheFederationPreview(candidate, federation)
         }
       } catch (error) {
         logger.error('Error processing federation preview queue', error)
@@ -556,10 +672,16 @@ function extractFederationCandidate(event: NDKEvent): DiscoveredFederationCandid
     return null
   }
 
+  const summary = extractCandidateSummary(event)
+
   return {
     federationId,
     inviteCode,
     createdAt: event.created_at ?? 0,
+    ...(summary.displayName != null ? { displayName: summary.displayName } : {}),
+    ...(summary.about != null ? { about: summary.about } : {}),
+    ...(summary.pictureUrl != null ? { pictureUrl: summary.pictureUrl } : {}),
+    ...(summary.network != null ? { network: summary.network } : {}),
   }
 }
 
@@ -642,4 +764,100 @@ function isExpectedDiscoveryError(error: unknown): boolean {
   }
 
   return EXPECTED_DISCOVERY_ERROR_PATTERNS.some((pattern) => pattern.test(message))
+}
+
+function extractCandidateSummary(
+  event: NDKEvent,
+): Pick<DiscoveredFederationCandidate, 'displayName' | 'about' | 'pictureUrl' | 'network'> {
+  const content =
+    typeof event.content === 'string' && event.content.trim() !== ''
+      ? safeJsonParse(event.content)
+      : undefined
+
+  const networkTag = event
+    .getMatchingTags('n')
+    .map((tag) => tag[1])
+    .find((value): value is string => typeof value === 'string' && value.trim() !== '')
+
+  const displayName = getStringValue(content, ['name', 'federation_name'])
+  const about = getStringValue(content, ['about', 'description'])
+  const pictureUrl = getStringValue(content, [
+    'picture',
+    'image',
+    'icon',
+    'icon_url',
+    'picture_url',
+    'federation_icon_url',
+  ])
+  const network = networkTag ?? getStringValue(content, ['network'])
+
+  return {
+    ...(displayName != null ? { displayName } : {}),
+    ...(about != null ? { about } : {}),
+    ...(pictureUrl != null ? { pictureUrl } : {}),
+    ...(network != null ? { network } : {}),
+  }
+}
+
+function safeJsonParse(value: string): Record<string, unknown> | undefined {
+  try {
+    const parsed = JSON.parse(value) as unknown
+    return typeof parsed === 'object' && parsed !== null
+      ? (parsed as Record<string, unknown>)
+      : undefined
+  } catch {
+    return undefined
+  }
+}
+
+function getStringValue(
+  content: Record<string, unknown> | undefined,
+  keys: string[],
+): string | undefined {
+  if (content == null) {
+    return undefined
+  }
+
+  for (const key of keys) {
+    const value = content[key]
+    if (typeof value === 'string' && value.trim() !== '') {
+      return value.trim()
+    }
+  }
+
+  return undefined
+}
+
+function isPreviewCacheExpired(cached: CachedFederationPreview): boolean {
+  return Date.now() - cached.cachedAt > PREVIEW_CACHE_MAX_AGE_MS
+}
+
+function isCachedPreviewValid(
+  cached: CachedFederationPreview | undefined,
+  candidate: DiscoveredFederationCandidate,
+): cached is CachedFederationPreview {
+  if (cached == null) {
+    return false
+  }
+
+  if (cached.completeness !== 'full') {
+    return false
+  }
+
+  if (isPreviewCacheExpired(cached)) {
+    return false
+  }
+
+  return (
+    cached.federation.federationId === candidate.federationId &&
+    cached.inviteCode === candidate.inviteCode &&
+    cached.candidateCreatedAt === candidate.createdAt
+  )
+}
+
+function doesPreviewMatchCandidate(
+  candidate: DiscoveredFederationCandidate,
+  federation: Federation,
+): boolean {
+  return federation.federationId === candidate.federationId
 }

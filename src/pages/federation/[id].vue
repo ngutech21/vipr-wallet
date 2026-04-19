@@ -41,7 +41,24 @@
               </template>
             </div>
             <div class="col">
-              <div class="text-h6">{{ federation?.title }}</div>
+              <div class="row items-center q-gutter-xs no-wrap">
+                <div class="text-h6 ellipsis">{{ federation?.title }}</div>
+                <q-btn
+                  v-if="observerUrl"
+                  flat
+                  round
+                  dense
+                  size="sm"
+                  icon="open_in_new"
+                  type="a"
+                  :href="observerUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-testid="federation-details-observer-link"
+                >
+                  <q-tooltip>Open in Fedimint Observer</q-tooltip>
+                </q-btn>
+              </div>
               <div class="text-subtitle2 text-grey">
                 {{ federation?.metadata?.default_currency }}
               </div>
@@ -57,6 +74,41 @@
                   {{ module.kind }}
                 </q-chip>
               </div>
+            </div>
+          </q-card-section>
+        </q-card>
+
+        <div class="text-subtitle1 q-mb-xs" v-if="inviteCode">Invite</div>
+        <q-card flat class="q-mb-md" v-if="inviteCode">
+          <q-card-section>
+            <div class="text-caption text-grey-6 q-mb-md">
+              Share this invite link to let others join this federation.
+            </div>
+
+            <div class="invite-qr-container q-mb-md">
+              <qrcode-vue
+                :value="inviteCode"
+                level="M"
+                render-as="svg"
+                :size="0"
+                class="invite-qr"
+              />
+            </div>
+
+            <div class="row items-center q-gutter-sm no-wrap">
+              <q-input
+                :model-value="inviteCode"
+                readonly
+                dense
+                class="col"
+                data-testid="federation-details-invite-input"
+              />
+              <q-btn
+                icon="content_copy"
+                flat
+                @click="copyInviteCode"
+                data-testid="federation-details-copy-invite-btn"
+              />
             </div>
           </q-card-section>
         </q-card>
@@ -178,6 +230,7 @@
                 tag="a"
                 :href="federation?.metadata?.tos_url"
                 target="_blank"
+                rel="noopener noreferrer"
                 data-testid="federation-details-tos-link"
               >
                 <q-item-section avatar>
@@ -263,17 +316,20 @@ defineOptions({
 
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import QrcodeVue from 'qrcode.vue'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import FederationGuardians from 'src/components/FederationGuardians.vue'
 import FederationUtxos from 'src/components/FederationUtxos.vue'
-import type { FederationUtxo } from 'src/components/models'
+import type { FederationUtxo } from 'src/types/federation'
 import { useFormatters } from '../../utils/formatter'
 import { logger } from 'src/services/logger'
 
 const { formatNumber } = useFormatters()
 const route = useRoute('/federation/[id]')
 const router = useRouter()
+const notify = useAppNotify()
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
 const confirmLeave = ref(false)
@@ -283,6 +339,20 @@ const utxoError = ref<string | null>(null)
 
 const federation = computed(() => {
   return federationStore.federations.find((f) => f.federationId === route.params.id)
+})
+
+const inviteCode = computed(() => {
+  const metadataInviteCode = federation.value?.metadata?.invite_code
+  return metadataInviteCode != null && metadataInviteCode !== ''
+    ? metadataInviteCode
+    : (federation.value?.inviteCode ?? '')
+})
+
+const observerUrl = computed(() => {
+  const federationId = federation.value?.federationId ?? ''
+  return federationId !== ''
+    ? `https://observer.fedimint.org/federations/${encodeURIComponent(federationId)}`
+    : ''
 })
 
 const hasMetadata = computed(() => {
@@ -329,6 +399,19 @@ function formatDate(timestamp: string) {
   } catch (e) {
     logger.error('Failed to parse metadata date', e)
     return timestamp
+  }
+}
+
+async function copyInviteCode() {
+  if (inviteCode.value === '') {
+    return
+  }
+
+  try {
+    await navigator.clipboard.writeText(inviteCode.value)
+    notify.success('Invite link copied to clipboard', { timeout: 1000 })
+  } catch (error) {
+    logger.error('Failed to copy federation invite code', error)
   }
 }
 
@@ -390,5 +473,21 @@ async function leaveFederation() {
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.85em;
   word-break: break-all;
+}
+.invite-qr-container {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 1;
+  padding: 16px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  border-radius: 12px;
+}
+.invite-qr {
+  width: 100%;
+  height: 100%;
 }
 </style>

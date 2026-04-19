@@ -56,7 +56,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { FederationUtxo } from 'src/components/models'
+import type { FederationUtxo } from 'src/types/federation'
 import { useFormatters } from 'src/utils/formatter'
 
 const props = defineProps<{

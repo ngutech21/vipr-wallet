@@ -115,13 +115,14 @@ defineOptions({
 
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import QrcodeVue from 'qrcode.vue'
-import { Loading, Notify } from 'quasar'
+import { Loading } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useShare } from '@vueuse/core'
 import { init, requestProvider } from '@getalby/bitcoin-connect'
 import { useFederationStore } from 'src/stores/federation'
 import { logger } from 'src/services/logger'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
 import { useNumericInput } from 'src/composables/useNumericInput'
 import { getErrorMessage } from 'src/utils/error'
@@ -135,6 +136,7 @@ const isWaiting = ref(false)
 const { share, isSupported } = useShare()
 const isCreatingInvoice = ref(false)
 const federationStore = useFederationStore()
+const notify = useAppNotify()
 
 // Use the lightning payment composable
 const { createInvoice, waitForInvoicePayment } = useLightningPayment()
@@ -196,11 +198,7 @@ async function payWithBitcoinConnect() {
     logger.logTransaction('Payment sent via Bitcoin Connect')
   } catch (error) {
     logger.error('Failed to pay with Bitcoin Connect', error)
-    Notify.create({
-      type: 'negative',
-      message: `Failed to pay with connected wallet: ${getErrorMessage(error)}`,
-      position: 'top',
-    })
+    notify.error(`Failed to pay with connected wallet: ${getErrorMessage(error)}`)
   } finally {
     Loading.hide()
   }

@@ -4,7 +4,7 @@ import { Quasar, QCard, QItem, QItemSection, QAvatar, QIcon, QImg, QChip, QBtn }
 import { createTestingPinia, type TestingPinia } from '@pinia/testing'
 import FederationList from 'src/components/FederationList.vue'
 import { useFederationStore } from 'src/stores/federation'
-import type { Federation } from 'src/components/models'
+import type { Federation } from 'src/types/federation'
 
 // Helper function to create mock federations
 const createMockFederation = (overrides: Partial<Federation> = {}): Federation => ({

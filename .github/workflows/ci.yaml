@@ -8,6 +8,8 @@ on:
     branches:
       - master
 
+permissions: read-all
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,7 +23,7 @@ jobs:
         uses: actions/dependency-review-action@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v5
+        uses: pnpm/action-setup@v6
         with:
           version: 10.28.0
 
@@ -48,6 +50,9 @@ jobs:
 
       - name: Type check PWA
         run: pnpm typecheck:pwa
+
+      - name: Audit production dependencies
+        run: pnpm audit --prod
 
       - name: Check circular dependencies
         run: pnpm dlx madge src --circular

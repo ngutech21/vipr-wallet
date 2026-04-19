@@ -1,10 +1,11 @@
 import { ref } from 'vue'
-import { useQuasar, Loading } from 'quasar'
+import { Loading } from 'quasar'
 import { useLightningStore } from 'src/stores/lightning'
 import { LightningAddress } from '@getalby/lightning-tools'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { requestInvoice } from 'src/utils/lnurl'
 import { getErrorMessage } from 'src/utils/error'
-import type { Bolt11Invoice } from 'src/components/models'
+import type { Bolt11Invoice } from 'src/types/lightning'
 
 export interface InvoiceDecodingResult {
   decodedInvoice: Bolt11Invoice | null
@@ -14,7 +15,7 @@ export interface InvoiceDecodingResult {
 
 export function useInvoiceDecoding() {
   const lightningStore = useLightningStore()
-  const $q = useQuasar()
+  const notify = useAppNotify()
   const isProcessing = ref(false)
   const amountRequired = ref(false)
   const lnAddress = ref<LightningAddress | null>(null)
@@ -42,19 +43,11 @@ export function useInvoiceDecoding() {
           if (lnAddress.value.lnurlpData == null) {
             amountRequired.value = false
             lnAddress.value = null
-            $q.notify({
-              type: 'negative',
-              message: 'Invalid lightning address',
-              position: 'top',
-            })
+            notify.error('Invalid lightning address')
             return null
           }
         } catch (error) {
-          $q.notify({
-            type: 'negative',
-            message: `Failed to fetch lightning address: ${getErrorMessage(error)}`,
-            position: 'top',
-          })
+          notify.error(`Failed to fetch lightning address: ${getErrorMessage(error)}`)
           return null
         }
 
@@ -72,11 +65,7 @@ export function useInvoiceDecoding() {
         decodedInvoice.value = lightningStore.decodeInvoice(invoice)
         return decodedInvoice.value
       } catch (error) {
-        $q.notify({
-          type: 'negative',
-          message: `Failed to decode invoice: ${getErrorMessage(error)}`,
-          position: 'top',
-        })
+        notify.error(`Failed to decode invoice: ${getErrorMessage(error)}`)
         return null
       }
     } finally {
@@ -123,11 +112,7 @@ export function useInvoiceDecoding() {
 
       return null
     } catch (error) {
-      $q.notify({
-        type: 'negative',
-        message: `Failed to create invoice: ${getErrorMessage(error)}`,
-        position: 'top',
-      })
+      notify.error(`Failed to create invoice: ${getErrorMessage(error)}`)
       return null
     } finally {
       isProcessing.value = false

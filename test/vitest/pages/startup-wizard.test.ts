@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import StartupWizardPage from 'src/pages/startup-wizard.vue'
-import type { Federation } from 'src/components/models'
+import type { Federation } from 'src/types/federation'
 
 const routerReplaceMock = vi.hoisted(() => vi.fn(() => Promise.resolve()))
 const notifyCreateMock = vi.hoisted(() => vi.fn())
@@ -33,7 +33,7 @@ const walletStoreMock = vi.hoisted(() => ({
 
 const onboardingStoreMock = vi.hoisted(() => ({
   flow: null as 'create' | 'restore' | null,
-  step: 'choice' as 'choice' | 'backup' | 'restore' | 'restore-federation',
+  step: 'choice' as 'install' | 'choice' | 'backup' | 'restore' | 'restore-federation',
   status: 'complete' as 'in_progress' | 'complete',
   normalizeForWalletState: vi.fn(),
   start: vi.fn(),
@@ -116,6 +116,42 @@ const JoinPreviewStepStub = {
     '<div><button data-testid="startup-wizard-restore-federation-preview-back-btn" @click="$emit(\'back\')">Back</button><button data-testid="add-federation-submit-btn" @click="$emit(\'join\')">{{ submitLabel }}</button></div>',
 }
 
+const QIconStub = {
+  template: '<span><slot /></span>',
+}
+
+function setUserAgent(userAgent: string) {
+  Object.defineProperty(window.navigator, 'userAgent', {
+    configurable: true,
+    value: userAgent,
+  })
+}
+
+function setStandaloneState({
+  matches = false,
+  standalone = false,
+}: {
+  matches?: boolean
+  standalone?: boolean
+} = {}) {
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    writable: true,
+    value: vi.fn().mockImplementation(() => ({
+      matches,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+    })),
+  })
+
+  Object.defineProperty(window.navigator, 'standalone', {
+    configurable: true,
+    value: standalone,
+  })
+}
+
 function createWrapper() {
   return mount(StartupWizardPage, {
     global: {
@@ -131,6 +167,7 @@ function createWrapper() {
         'q-input': QInputStub,
         JoinFederationInviteStep: JoinInviteStepStub,
         JoinFederationPreviewStep: JoinPreviewStepStub,
+        'q-icon': QIconStub,
       },
     },
   })
@@ -139,6 +176,8 @@ function createWrapper() {
 describe('StartupWizardPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)')
+    setStandaloneState()
     walletStoreMock.hasMnemonic = false
     walletStoreMock.needsMnemonicBackup = false
     walletStoreMock.loadMnemonic.mockResolvedValue(false)
@@ -169,7 +208,7 @@ describe('StartupWizardPage', () => {
       onboardingStoreMock.step = flow === 'create' ? 'backup' : 'restore'
     })
     onboardingStoreMock.goToStep.mockImplementation(
-      (step: 'choice' | 'backup' | 'restore' | 'restore-federation') => {
+      (step: 'install' | 'choice' | 'backup' | 'restore' | 'restore-federation') => {
         onboardingStoreMock.step = step
       },
     )
@@ -183,8 +222,47 @@ describe('StartupWizardPage', () => {
     })
   })
 
+  it('shows Android install guidance when onboarding in Chrome browser mode', async () => {
+    setUserAgent(
+      'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36',
+    )
+
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    expect(wrapper.find('[data-testid="startup-wizard-install-panel"]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Add Vipr to your home screen')
+    expect(wrapper.text()).toContain('Install from Chrome on Android')
+    expect(onboardingStoreMock.goToStep).toHaveBeenCalledWith('install')
+  })
+
+  it('shows generic install guidance on desktop browsers', async () => {
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    expect(wrapper.find('[data-testid="startup-wizard-install-panel"]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Install on your phone before setup')
+    expect(wrapper.text()).toContain('On iPhone, open Vipr in Safari')
+    expect(onboardingStoreMock.goToStep).toHaveBeenCalledWith('install')
+  })
+
+  it('hides install guidance when already running in standalone mode', async () => {
+    setUserAgent(
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+    )
+    setStandaloneState({ matches: true, standalone: true })
+
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    expect(wrapper.find('[data-testid="startup-wizard-install-panel"]').exists()).toBe(false)
+  })
+
   it('create flow does not recreate mnemonic after going back to choice', async () => {
     const wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.find('[data-testid="startup-wizard-install-next-btn"]').trigger('click')
     await flushPromises()
 
     await wrapper.find('[data-testid="startup-wizard-create-radio"]').trigger('change')
@@ -204,6 +282,9 @@ describe('StartupWizardPage', () => {
     const wrapper = createWrapper()
     await flushPromises()
 
+    await wrapper.find('[data-testid="startup-wizard-install-next-btn"]').trigger('click')
+    await flushPromises()
+
     await wrapper.find('[data-testid="startup-wizard-restore-radio"]').trigger('change')
     await wrapper.find('[data-testid="startup-wizard-choice-next-btn"]').trigger('click')
     await wrapper.find('[data-testid="startup-wizard-restore-submit-btn"]').trigger('click')
@@ -218,6 +299,9 @@ describe('StartupWizardPage', () => {
 
   it('restore flow submits normalized 12-word mnemonic and moves to federation restore step', async () => {
     const wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.find('[data-testid="startup-wizard-install-next-btn"]').trigger('click')
     await flushPromises()
 
     await wrapper.find('[data-testid="startup-wizard-restore-radio"]').trigger('change')

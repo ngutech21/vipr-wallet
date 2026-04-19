@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Bolt11Invoice } from 'src/components/models'
+import type { Bolt11Invoice } from 'src/types/lightning'
 
 const props = defineProps<{
   decodedInvoice: Bolt11Invoice

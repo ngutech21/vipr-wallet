@@ -102,10 +102,10 @@ defineOptions({
 
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useQuasar } from 'quasar'
 import { useShare } from '@vueuse/core'
 import QrcodeVue from 'qrcode.vue'
 import type { WalletDepositState } from '@fedimint/core'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { useFederationStore } from 'src/stores/federation'
 import { logger } from 'src/services/logger'
 import { useWalletStore } from 'src/stores/wallet'
@@ -121,8 +121,8 @@ const hasCompletedDeposit = ref(false)
 const walletStore = useWalletStore()
 const federationStore = useFederationStore()
 const router = useRouter()
-const $q = useQuasar()
 const { share, isSupported } = useShare()
+const notify = useAppNotify()
 
 let depositPollTimeout: ReturnType<typeof setTimeout> | null = null
 
@@ -257,11 +257,7 @@ async function pollDepositState() {
     if (nextState != null && typeof nextState === 'object' && 'Failed' in nextState) {
       isWaitingForDeposit.value = false
       stopDepositPolling()
-      $q.notify({
-        message: `Deposit monitoring failed: ${nextState.Failed}`,
-        color: 'negative',
-        position: 'top',
-      })
+      notify.error(`Deposit monitoring failed: ${nextState.Failed}`)
       return
     }
 
@@ -287,11 +283,7 @@ function startDepositPolling() {
 async function generateAddress() {
   if (federationStore.selectedFederation == null) {
     logger.error('No federation selected')
-    $q.notify({
-      message: 'No federation selected',
-      color: 'negative',
-      position: 'top',
-    })
+    notify.error('No federation selected')
     return
   }
 
@@ -315,11 +307,7 @@ async function generateAddress() {
     startDepositPolling()
   } catch (error) {
     logger.error('Failed to generate onchain address', error)
-    $q.notify({
-      message: `Error generating address: ${getErrorMessage(error)}`,
-      color: 'negative',
-      position: 'top',
-    })
+    notify.error(`Error generating address: ${getErrorMessage(error)}`)
   } finally {
     isGenerating.value = false
   }
@@ -328,12 +316,7 @@ async function generateAddress() {
 async function copyToClipboard() {
   try {
     await navigator.clipboard.writeText(bitcoinAddress.value)
-    $q.notify({
-      message: 'Address copied to clipboard',
-      color: 'positive',
-      position: 'top',
-      timeout: 1000,
-    })
+    notify.success('Address copied to clipboard', { timeout: 1000 })
   } catch (error) {
     logger.error('Failed to copy onchain address to clipboard', error)
   }

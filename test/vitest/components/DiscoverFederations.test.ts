@@ -5,7 +5,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import DiscoverFederations from 'src/components/DiscoverFederations.vue'
 import { useFederationStore } from 'src/stores/federation'
 import { useNostrStore } from 'src/stores/nostr'
-import type { Federation } from 'src/components/models'
+import type { Federation } from 'src/types/federation'
 
 // Mock factory for creating test federations
 const createMockFederation = (overrides: Partial<Federation> = {}): Federation => ({
@@ -18,6 +18,23 @@ const createMockFederation = (overrides: Partial<Federation> = {}): Federation =
   },
   ...overrides,
 })
+
+function setCachedPreview(
+  nostrStore: ReturnType<typeof useNostrStore>,
+  federation: Federation,
+  createdAt = 1,
+) {
+  nostrStore.previewCacheByFederation = {
+    ...nostrStore.previewCacheByFederation,
+    [federation.federationId]: {
+      federation,
+      candidateCreatedAt: createdAt,
+      inviteCode: federation.inviteCode,
+      cachedAt: Date.now(),
+      completeness: 'full',
+    },
+  }
+}
 
 describe('DiscoverFederations.vue', () => {
   let wrapper: VueWrapper
@@ -114,7 +131,11 @@ describe('DiscoverFederations.vue', () => {
     it('should display list when federations are discovered', async () => {
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
-      nostrStore.discoveredFederations = [createMockFederation()]
+      const federation = createMockFederation()
+      nostrStore.discoveryCandidates = [
+        { federationId: federation.federationId, inviteCode: federation.inviteCode, createdAt: 1 },
+      ]
+      setCachedPreview(nostrStore, federation)
       await flushPromises()
 
       expect(wrapper.text()).toContain('Test Federation')
@@ -123,11 +144,31 @@ describe('DiscoverFederations.vue', () => {
     it('should display multiple federations', async () => {
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
-      nostrStore.discoveredFederations = [
-        createMockFederation({ title: 'Federation 1', federationId: 'fed-1' }),
-        createMockFederation({ title: 'Federation 2', federationId: 'fed-2' }),
-        createMockFederation({ title: 'Federation 3', federationId: 'fed-3' }),
+      const federations = [
+        createMockFederation({
+          title: 'Federation 1',
+          federationId: 'fed-1',
+          inviteCode: 'invite-1',
+        }),
+        createMockFederation({
+          title: 'Federation 2',
+          federationId: 'fed-2',
+          inviteCode: 'invite-2',
+        }),
+        createMockFederation({
+          title: 'Federation 3',
+          federationId: 'fed-3',
+          inviteCode: 'invite-3',
+        }),
       ]
+      nostrStore.discoveryCandidates = federations.map((federation, index) => ({
+        federationId: federation.federationId,
+        inviteCode: federation.inviteCode,
+        createdAt: index + 1,
+      }))
+      federations.forEach((federation, index) => {
+        setCachedPreview(nostrStore, federation, index + 1)
+      })
       await flushPromises()
 
       expect(wrapper.text()).toContain('Federation 1')
@@ -138,12 +179,15 @@ describe('DiscoverFederations.vue', () => {
     it('should display federation title and ID', async () => {
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
-      nostrStore.discoveredFederations = [
-        createMockFederation({
-          title: 'My Federation',
-          federationId: 'my-fed-id-123',
-        }),
+      const federation = createMockFederation({
+        title: 'My Federation',
+        federationId: 'my-fed-id-123',
+        inviteCode: 'invite-my-fed',
+      })
+      nostrStore.discoveryCandidates = [
+        { federationId: federation.federationId, inviteCode: federation.inviteCode, createdAt: 1 },
       ]
+      setCachedPreview(nostrStore, federation)
       await flushPromises()
 
       expect(wrapper.text()).toContain('My Federation')
@@ -153,27 +197,26 @@ describe('DiscoverFederations.vue', () => {
     it('should show recommendation count when available', async () => {
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
-      nostrStore.discoveredFederations = [
-        createMockFederation({
-          title: 'Recommended Federation',
-          federationId: 'recommended-fed-id',
-          inviteCode: 'invite-recommended',
-        }),
-      ]
+      const federation = createMockFederation({
+        title: 'Recommended Federation',
+        federationId: 'recommended-fed-id',
+        inviteCode: 'invite-recommended',
+      })
       nostrStore.discoveryCandidates = [
         {
-          federationId: 'recommended-fed-id',
-          inviteCode: 'invite-recommended',
+          federationId: federation.federationId,
+          inviteCode: federation.inviteCode,
           createdAt: 1,
           recommendationCount: 3,
         },
       ]
+      setCachedPreview(nostrStore, federation)
       await flushPromises()
 
       expect(wrapper.text()).toContain('Recommended by 3 users')
     })
 
-    it('should prioritize ready federations over loading placeholders', async () => {
+    it('should prioritize top-ranked candidates even when preview is still pending', async () => {
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
       nostrStore.previewTargetCount = 2
@@ -197,17 +240,10 @@ describe('DiscoverFederations.vue', () => {
           recommendationCount: 7,
         },
       ]
-      nostrStore.discoveredFederations = [
-        createMockFederation({
-          title: 'Joinable Federation',
-          federationId: 'ready-fed',
-          inviteCode: 'invite-ready',
-        }),
-      ]
       await flushPromises()
 
-      expect(wrapper.text()).toContain('Joinable Federation')
       expect(wrapper.text()).toContain('Loading federation details...')
+      expect(wrapper.text()).not.toContain('Joinable Federation')
     })
 
     it('should show unavailable state instead of loading spinner for failed candidate', async () => {
@@ -252,10 +288,19 @@ describe('DiscoverFederations.vue', () => {
     it('should only show federations up to preview target count', async () => {
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
-      nostrStore.previewTargetCount = 10
-      nostrStore.discoveredFederations = [
-        createMockFederation({ title: 'Federation 1', federationId: 'fed-1' }),
-        createMockFederation({ title: 'Federation 2', federationId: 'fed-2' }),
+      nostrStore.discoveryCandidates = [
+        {
+          federationId: 'fed-1',
+          inviteCode: 'invite-1',
+          createdAt: 1,
+          displayName: 'Federation 1',
+        },
+        {
+          federationId: 'fed-2',
+          inviteCode: 'invite-2',
+          createdAt: 2,
+          displayName: 'Federation 2',
+        },
       ]
       nostrStore.previewTargetCount = 1
       await flushPromises()
@@ -283,7 +328,12 @@ describe('DiscoverFederations.vue', () => {
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
       nostrStore.isDiscoveringFederations = true
-      nostrStore.discoveredFederations = [createMockFederation({ federationId: 'fed-1' })]
+      const federation = createMockFederation({ federationId: 'fed-1', inviteCode: 'invite-fed-1' })
+      nostrStore.discoveryCandidates = [
+        { federationId: federation.federationId, inviteCode: federation.inviteCode, createdAt: 1 },
+      ]
+      setCachedPreview(nostrStore, federation)
+      nostrStore.discoveredFederations = [federation]
       await flushPromises()
 
       expect(wrapper.text()).toContain('1 loaded, live updates on')
@@ -393,7 +443,9 @@ describe('DiscoverFederations.vue', () => {
 
       expect(stopSpy).not.toHaveBeenCalled()
       expect(wrapper.emitted('close')).toEqual([[]])
-      expect(wrapper.emitted('showAdd')).toEqual([[federation.inviteCode]])
+      expect(wrapper.emitted('showAdd')).toEqual([
+        [{ inviteCode: federation.inviteCode, prefetchedFederation: undefined }],
+      ])
     })
 
     it('should show error notification when federation already exists', async () => {
@@ -446,7 +498,26 @@ describe('DiscoverFederations.vue', () => {
       component.openFederationPreview(federation)
       await flushPromises()
 
-      expect(wrapper.emitted('showAdd')).toEqual([[federation.inviteCode]])
+      expect(wrapper.emitted('showAdd')).toEqual([
+        [{ inviteCode: federation.inviteCode, prefetchedFederation: undefined }],
+      ])
+    })
+
+    it('should emit prefetched federation when cached preview exists', async () => {
+      const federation = createMockFederation()
+      wrapper = createWrapper()
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const component = wrapper.vm as any
+      component.openFederationPreview({
+        ...federation,
+        prefetchedFederation: federation,
+      })
+      await flushPromises()
+
+      expect(wrapper.emitted('showAdd')).toEqual([
+        [{ inviteCode: federation.inviteCode, prefetchedFederation: federation }],
+      ])
     })
   })
 
@@ -474,7 +545,14 @@ describe('DiscoverFederations.vue', () => {
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
       const { metadata: _, ...fedWithoutMetadata } = createMockFederation()
-      nostrStore.discoveredFederations = [fedWithoutMetadata as Federation]
+      nostrStore.discoveryCandidates = [
+        {
+          federationId: fedWithoutMetadata.federationId,
+          inviteCode: fedWithoutMetadata.inviteCode,
+          createdAt: 1,
+        },
+      ]
+      setCachedPreview(nostrStore, fedWithoutMetadata)
       await flushPromises()
 
       expect(wrapper.exists()).toBe(true)
@@ -484,11 +562,13 @@ describe('DiscoverFederations.vue', () => {
     it('should handle federations with empty metadata', async () => {
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
-      nostrStore.discoveredFederations = [
-        createMockFederation({
-          metadata: {},
-        }),
+      const federation = createMockFederation({
+        metadata: {},
+      })
+      nostrStore.discoveryCandidates = [
+        { federationId: federation.federationId, inviteCode: federation.inviteCode, createdAt: 1 },
       ]
+      setCachedPreview(nostrStore, federation)
       await flushPromises()
 
       expect(wrapper.exists()).toBe(true)
@@ -498,11 +578,13 @@ describe('DiscoverFederations.vue', () => {
     it('should handle federations with empty title', async () => {
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
-      nostrStore.discoveredFederations = [
-        createMockFederation({
-          title: '',
-        }),
+      const federation = createMockFederation({
+        title: '',
+      })
+      nostrStore.discoveryCandidates = [
+        { federationId: federation.federationId, inviteCode: federation.inviteCode, createdAt: 1 },
       ]
+      setCachedPreview(nostrStore, federation)
       await flushPromises()
 
       expect(wrapper.exists()).toBe(true)
@@ -512,11 +594,13 @@ describe('DiscoverFederations.vue', () => {
       const longTitle = 'A'.repeat(200)
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
-      nostrStore.discoveredFederations = [
-        createMockFederation({
-          title: longTitle,
-        }),
+      const federation = createMockFederation({
+        title: longTitle,
+      })
+      nostrStore.discoveryCandidates = [
+        { federationId: federation.federationId, inviteCode: federation.inviteCode, createdAt: 1 },
       ]
+      setCachedPreview(nostrStore, federation)
       await flushPromises()
 
       expect(wrapper.text()).toContain(longTitle)
@@ -526,11 +610,13 @@ describe('DiscoverFederations.vue', () => {
       const longId = `fed-${'a'.repeat(200)}`
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
-      nostrStore.discoveredFederations = [
-        createMockFederation({
-          federationId: longId,
-        }),
+      const federation = createMockFederation({
+        federationId: longId,
+      })
+      nostrStore.discoveryCandidates = [
+        { federationId: federation.federationId, inviteCode: federation.inviteCode, createdAt: 1 },
       ]
+      setCachedPreview(nostrStore, federation)
       await flushPromises()
 
       expect(wrapper.text()).toContain(longId)

@@ -7,11 +7,11 @@
           :key="federation.federationId"
           clickable
           @click="openFederationPreview(federation)"
-          :disable="isAdded(federation) || !federation.previewReady"
+          :disable="isAdded(federation)"
           :data-testid="`discover-federation-item-${federation.federationId}`"
         >
-          <q-item-section avatar v-if="federation?.metadata?.federation_icon_url">
-            <q-img :src="federation?.metadata?.federation_icon_url" class="logo" />
+          <q-item-section avatar v-if="federation.pictureUrl != null">
+            <q-img :src="federation.pictureUrl" class="logo" />
           </q-item-section>
           <template v-else>
             <q-avatar color="grey-3" text-color="grey-7" class="logo q-mr-md">
@@ -22,6 +22,9 @@
             <q-item-label>{{ federation.title }}</q-item-label>
             <q-item-label caption class="federation-id">
               {{ federation.federationId }}
+            </q-item-label>
+            <q-item-label v-if="federation.about" caption class="federation-about-caption">
+              {{ federation.about }}
             </q-item-label>
             <q-item-label
               v-if="federation.recommendationCount > 0"
@@ -130,8 +133,8 @@ import { computed, watch, onUnmounted } from 'vue'
 import { useNostrStore } from 'src/stores/nostr'
 import { useFederationStore } from 'src/stores/federation'
 import ModalCard from 'src/components/ModalCard.vue'
-import { Notify } from 'quasar'
-import type { Federation } from 'src/components/models'
+import { useAppNotify } from 'src/composables/useAppNotify'
+import type { DiscoverySelectionPayload, Federation } from 'src/types/federation'
 import { getErrorMessage } from 'src/utils/error'
 import { logger } from 'src/services/logger'
 
@@ -139,90 +142,55 @@ type DiscoveryListItem = Federation & {
   previewReady: boolean
   recommendationCount: number
   previewStatus: 'loading' | 'failed' | 'timed_out' | 'ready'
+  about?: string
+  pictureUrl?: string
+  prefetchedFederation?: Federation
 }
 
 const nostr = useNostrStore()
 const federationStore = useFederationStore()
+const notify = useAppNotify()
 const isDiscovering = computed(() => nostr.isDiscoveringFederations)
 const visibleFederations = computed<DiscoveryListItem[]>(() => {
-  const discoveredById = new Map(
-    nostr.discoveredFederations.map((federation) => [federation.federationId, federation]),
-  )
-  const seenCandidateIds = new Set<string>()
-  const usedDiscoveredIds = new Set<string>()
-  const readyEntries: DiscoveryListItem[] = []
-  const pendingEntries: DiscoveryListItem[] = []
+  return nostr.discoveryCandidates.slice(0, nostr.previewTargetCount).map((candidate) => {
+    const prefetchedFederation = nostr.getCachedPreviewForCandidate(candidate)
+    const recommendationCount = Math.max(
+      candidate.recommendationCount ?? 0,
+      nostr.getRecommendationCountForFederationId(candidate.federationId),
+    )
+    const previewStatus =
+      prefetchedFederation != null
+        ? 'ready'
+        : (nostr.getPreviewStatusForFederationId(candidate.federationId) ?? 'loading')
 
-  const buildReadyEntry = (
-    federation: Federation,
-    recommendationCount: number,
-  ): DiscoveryListItem => {
     return {
-      ...federation,
-      previewReady: true,
-      recommendationCount,
-      previewStatus: 'ready',
-    }
-  }
-
-  for (const candidate of nostr.discoveryCandidates) {
-    if (seenCandidateIds.has(candidate.federationId)) {
-      continue
-    }
-    seenCandidateIds.add(candidate.federationId)
-
-    const discovered = discoveredById.get(candidate.federationId)
-    if (discovered != null) {
-      if (!usedDiscoveredIds.has(discovered.federationId)) {
-        readyEntries.push(
-          buildReadyEntry(
-            discovered,
-            Math.max(
-              candidate.recommendationCount ?? 0,
-              nostr.getRecommendationCountForFederationId(candidate.federationId),
-            ),
-          ),
-        )
-        usedDiscoveredIds.add(discovered.federationId)
-      }
-      continue
-    }
-
-    pendingEntries.push({
-      title: `Federation ${truncateFederationId(candidate.federationId)}`,
+      title:
+        prefetchedFederation?.title ??
+        candidate.displayName ??
+        `Federation ${truncateFederationId(candidate.federationId)}`,
       federationId: candidate.federationId,
       inviteCode: candidate.inviteCode,
-      modules: [],
-      guardians: [],
-      metadata: {},
-      previewReady: false,
-      recommendationCount: Math.max(
-        candidate.recommendationCount ?? 0,
-        nostr.getRecommendationCountForFederationId(candidate.federationId),
-      ),
-      previewStatus: nostr.previewStatusByFederation[candidate.federationId] ?? 'loading',
-    })
-  }
-
-  for (const discovered of nostr.discoveredFederations) {
-    if (usedDiscoveredIds.has(discovered.federationId)) {
-      continue
+      modules: prefetchedFederation?.modules ?? [],
+      guardians: prefetchedFederation?.guardians ?? [],
+      metadata: prefetchedFederation?.metadata ?? {},
+      previewReady: prefetchedFederation != null,
+      recommendationCount,
+      previewStatus,
+      ...(prefetchedFederation?.metaUrl != null ? { metaUrl: prefetchedFederation.metaUrl } : {}),
+      ...(prefetchedFederation?.network != null
+        ? { network: prefetchedFederation.network }
+        : candidate.network != null
+          ? { network: candidate.network }
+          : {}),
+      ...(candidate.about != null ? { about: candidate.about } : {}),
+      ...(prefetchedFederation?.metadata?.federation_icon_url != null
+        ? { pictureUrl: prefetchedFederation.metadata.federation_icon_url }
+        : candidate.pictureUrl != null
+          ? { pictureUrl: candidate.pictureUrl }
+          : {}),
+      ...(prefetchedFederation != null ? { prefetchedFederation } : {}),
     }
-    readyEntries.push(
-      buildReadyEntry(
-        discovered,
-        nostr.getRecommendationCountForFederationId(discovered.federationId),
-      ),
-    )
-    usedDiscoveredIds.add(discovered.federationId)
-  }
-
-  const entries = readyEntries.slice(0, nostr.previewTargetCount)
-  if (entries.length < nostr.previewTargetCount) {
-    entries.push(...pendingEntries.slice(0, nostr.previewTargetCount - entries.length))
-  }
-
-  return entries
+  })
 })
 const discoveryStatusText = computed(() => {
   const loaded = nostr.discoveredFederations.length
@@ -244,7 +212,7 @@ const props = defineProps({
 
 const emit = defineEmits<{
   close: []
-  showAdd: [inviteCode: string]
+  showAdd: [payload: DiscoverySelectionPayload]
 }>()
 
 watch(
@@ -274,11 +242,10 @@ async function discoverFederations(reset = false) {
     await nostr.discoverFederations({ reset })
   } catch (error) {
     logger.error('Failed to discover federations', error)
-    Notify.create({
+    notify.notify({
       message: `Failed to discover federations ${getErrorMessage(error)}`,
       color: 'negative',
       icon: 'error',
-      position: 'top',
     })
   }
 }
@@ -304,20 +271,29 @@ function formatRecommendationCount(count: number): string {
   return `${count} ${suffix}`
 }
 
-function openFederationPreview(federation: Federation) {
+function openFederationPreview(federation: DiscoveryListItem) {
   if (federationStore.federations.some((f) => f.federationId === federation.federationId)) {
-    Notify.create({
+    notify.notify({
       message: 'Federation already exists',
       color: 'negative',
       icon: 'error',
       timeout: 5000,
-      position: 'top',
     })
     return
   }
 
   emit('close')
-  emit('showAdd', federation.inviteCode)
+  emit(
+    'showAdd',
+    federation.prefetchedFederation != null
+      ? {
+          inviteCode: federation.inviteCode,
+          prefetchedFederation: federation.prefetchedFederation,
+        }
+      : {
+          inviteCode: federation.inviteCode,
+        },
+  )
 }
 
 function truncateFederationId(federationId: string): string {
@@ -391,6 +367,10 @@ function truncateFederationId(federationId: string): string {
 
 .federation-loading-caption {
   color: rgba(255, 255, 255, 0.45);
+}
+
+.federation-about-caption {
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .federation-recommendation-caption {

@@ -173,7 +173,7 @@ describe('TransactionsList.vue', () => {
     wrapper = undefined
   })
 
-  it('loads the latest 5 transactions on home and shows the full history action', async () => {
+  it('loads the latest 5 transactions on home and shows the full history action when more exist', async () => {
     mockGetTransactionsPage.mockResolvedValue(
       createPageResult(
         [
@@ -195,6 +195,20 @@ describe('TransactionsList.vue', () => {
     expect(wrapper.get('[data-testid="transactions-show-full-history-btn"]').text()).toContain(
       'Show full history',
     )
+  })
+
+  it('hides the full history action on home when all transactions are already shown', async () => {
+    mockGetTransactionsPage.mockResolvedValue(
+      createPageResult([createLightningTransaction()], {
+        hasMore: false,
+      }),
+    )
+
+    wrapper = createWrapper('home')
+    await flushPromises()
+
+    expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(1)
+    expect(wrapper.find('[data-testid="transactions-show-full-history-btn"]').exists()).toBe(false)
   })
 
   it('keeps the empty state on home when no transactions exist', async () => {

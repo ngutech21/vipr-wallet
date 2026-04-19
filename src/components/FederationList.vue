@@ -68,7 +68,7 @@
 
 <script setup lang="ts">
 import { useFederationStore } from 'src/stores/federation'
-import type { Federation } from './models'
+import type { Federation } from 'src/types/federation'
 import { storeToRefs } from 'pinia'
 import { logger } from 'src/services/logger'
 
