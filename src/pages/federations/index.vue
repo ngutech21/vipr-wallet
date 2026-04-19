@@ -25,6 +25,7 @@
       <AddFederation
         @close="closeAddFederation"
         :initial-invite-code="selectedInviteCode"
+        :initial-preview-federation="selectedPreviewFederation"
         :auto-preview="selectedInviteCode != null"
       />
     </q-dialog>
@@ -59,15 +60,18 @@ import AddFederation from 'src/components/AddFederation.vue'
 import AddFederationSelection from 'src/components/AddFederationSelection.vue'
 import DiscoverFederations from 'src/components/DiscoverFederations.vue'
 import FederationList from 'src/components/FederationList.vue'
+import type { DiscoverySelectionPayload, Federation } from 'src/components/models'
 import { ref } from 'vue'
 
 const showSelection = ref(false)
 const showDiscover = ref(false)
 const showAdd = ref(false)
 const selectedInviteCode = ref<string | null>(null)
+const selectedPreviewFederation = ref<Federation | null>(null)
 
-function openAddFederationPreview(inviteCode: string) {
-  selectedInviteCode.value = inviteCode
+function openAddFederationPreview(payload: DiscoverySelectionPayload) {
+  selectedInviteCode.value = payload.inviteCode
+  selectedPreviewFederation.value = payload.prefetchedFederation ?? null
   showDiscover.value = false
   showAdd.value = true
 }
@@ -75,6 +79,7 @@ function openAddFederationPreview(inviteCode: string) {
 function closeAddFederation() {
   showAdd.value = false
   selectedInviteCode.value = null
+  selectedPreviewFederation.value = null
 }
 </script>
 

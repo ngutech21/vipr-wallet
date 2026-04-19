@@ -4,6 +4,8 @@ import { defineComponent } from 'vue'
 import { Quasar, Notify } from 'quasar'
 import { createTestingPinia, type TestingPinia } from '@pinia/testing'
 import AddFederation from 'src/components/AddFederation.vue'
+import { useWalletStore } from 'src/stores/wallet'
+import type { Federation } from 'src/components/models'
 
 describe('AddFederation.vue', () => {
   let wrapper: VueWrapper | undefined
@@ -18,8 +20,9 @@ describe('AddFederation.vue', () => {
     })
   }
 
-  function createWrapper(): VueWrapper {
+  function createWrapper(props: Record<string, unknown> = {}): VueWrapper {
     return mount(AddFederation, {
+      props,
       global: {
         plugins: [Quasar, pinia],
         stubs: {
@@ -84,5 +87,35 @@ describe('AddFederation.vue', () => {
       message: 'Unable to access clipboard Permission denied',
       position: 'top',
     })
+  })
+
+  it('opens directly in preview step when prefetched federation is provided', async () => {
+    const walletStore = useWalletStore()
+    const federation: Federation = {
+      title: 'Cached Federation',
+      inviteCode: 'fed11cached',
+      federationId: 'cached-fed-id',
+      modules: [],
+      metadata: {},
+    }
+
+    wrapper = createWrapper({
+      initialInviteCode: federation.inviteCode,
+      initialPreviewFederation: federation,
+      autoPreview: true,
+    })
+    await flushPromises()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((wrapper.vm as any).step).toBe('preview')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((wrapper.vm as any).previewFederation).toEqual(federation)
+    expect(
+      (
+        walletStore as unknown as {
+          previewFederation: { mock: { calls: unknown[] } }
+        }
+      ).previewFederation.mock.calls,
+    ).toHaveLength(0)
   })
 })

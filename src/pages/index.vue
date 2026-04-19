@@ -28,6 +28,7 @@
         v-if="showAdd"
         @close="closeAddFederation"
         :initial-invite-code="selectedInviteCode"
+        :initial-preview-federation="selectedPreviewFederation"
         :auto-preview="selectedInviteCode != null"
       />
     </q-dialog>
@@ -135,6 +136,7 @@ import { computed, ref, defineAsyncComponent } from 'vue'
 defineOptions({
   name: 'IndexPage',
 })
+import type { DiscoverySelectionPayload, Federation } from 'src/components/models'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import TransactionsList from 'src/components/TransactionsList.vue'
@@ -162,9 +164,11 @@ const showReceiveEcashSelection = ref(false)
 const showDiscover = ref(false)
 const showAdd = ref(false)
 const selectedInviteCode = ref<string | null>(null)
+const selectedPreviewFederation = ref<Federation | null>(null)
 
-function openAddFederationPreview(inviteCode: string) {
-  selectedInviteCode.value = inviteCode
+function openAddFederationPreview(payload: DiscoverySelectionPayload) {
+  selectedInviteCode.value = payload.inviteCode
+  selectedPreviewFederation.value = payload.prefetchedFederation ?? null
   showDiscover.value = false
   showAdd.value = true
 }
@@ -172,6 +176,7 @@ function openAddFederationPreview(inviteCode: string) {
 function closeAddFederation() {
   showAdd.value = false
   selectedInviteCode.value = null
+  selectedPreviewFederation.value = null
 }
 </script>
 

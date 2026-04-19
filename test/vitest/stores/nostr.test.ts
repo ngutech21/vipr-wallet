@@ -26,6 +26,23 @@ function createFederation(id: string, inviteCode: string, title: string): Federa
   }
 }
 
+function setCachedPreview(
+  nostr: ReturnType<typeof useNostrStore>,
+  federation: Federation,
+  createdAt: number,
+) {
+  nostr.previewCacheByFederation = {
+    ...nostr.previewCacheByFederation,
+    [federation.federationId]: {
+      federation,
+      candidateCreatedAt: createdAt,
+      inviteCode: federation.inviteCode,
+      cachedAt: Date.now(),
+      completeness: 'full',
+    },
+  }
+}
+
 function createFederationEvent({
   federationId,
   inviteCode,
@@ -119,7 +136,10 @@ describe('nostr store discovery queue', () => {
     expect(walletStoreMock.previewFederation).toHaveBeenNthCalledWith(2, 'invite-2')
     expect(walletStoreMock.previewFederation).toHaveBeenNthCalledWith(3, 'invite-3')
     expect(nostr.discoveredFederations).toHaveLength(2)
-    expect(nostr.discoveredFederations.map((f) => f.federationId)).toEqual(['fed-2', 'fed-3'])
+    expect(nostr.discoveredFederations.map((f) => f.federationId).sort()).toEqual([
+      'fed-2',
+      'fed-3',
+    ])
   })
 
   it('does not retry unchanged candidates that already failed preview', async () => {
@@ -163,6 +183,48 @@ describe('nostr store discovery queue', () => {
     expect(nostr.discoveredFederations).toHaveLength(1)
     expect(nostr.discoveredFederations[0]?.federationId).toBe('fed-1')
     expect(nostr.discoveredFederations[0]?.inviteCode).toBe('invite-1-updated')
+  })
+
+  it('uses cached previews without calling previewFederation again', async () => {
+    const nostr = useNostrStore()
+    nostr.isDiscoveringFederations = true
+    nostr.previewTargetCount = 1
+    nostr.discoveryCandidates = [{ federationId: 'fed-1', inviteCode: 'invite-1', createdAt: 30 }]
+    setCachedPreview(nostr, createFederation('fed-1', 'invite-1', 'Cached Federation'), 30)
+
+    nostr.enqueueCandidatesForPreview()
+    await nostr.processPreviewQueue()
+
+    const candidate = nostr.discoveryCandidates[0]
+    expect(candidate).toBeDefined()
+    if (candidate == null) {
+      throw new Error('Expected discovery candidate to exist')
+    }
+
+    expect(walletStoreMock.previewFederation).not.toHaveBeenCalled()
+    expect(nostr.getCachedPreviewForCandidate(candidate)).toEqual(
+      createFederation('fed-1', 'invite-1', 'Cached Federation'),
+    )
+    expect(nostr.getPreviewStatusForFederationId('fed-1')).toBe('ready')
+  })
+
+  it('invalidates cached previews when a newer federation event arrives', async () => {
+    const nostr = useNostrStore()
+    nostr.isDiscoveringFederations = true
+    nostr.previewTargetCount = 1
+    nostr.discoveryCandidates = [{ federationId: 'fed-1', inviteCode: 'invite-1', createdAt: 30 }]
+    setCachedPreview(nostr, createFederation('fed-1', 'invite-1', 'Cached Federation'), 30)
+
+    await nostr.handleFederationEvent(
+      createFederationEvent({
+        federationId: 'fed-1',
+        inviteCode: 'invite-1-updated',
+        createdAt: 31,
+      }),
+    )
+
+    expect(nostr.previewCacheByFederation['fed-1']).toBeUndefined()
+    expect(nostr.discoveryCandidates[0]?.inviteCode).toBe('invite-1-updated')
   })
 
   it('times out hanging previews and continues with remaining candidates', async () => {
@@ -443,5 +505,98 @@ describe('nostr store discovery queue', () => {
     expect(nostr.discoveredFederations[0]?.federationId).toBe('resolved-fed')
     expect(nostr.recommendationCountsByFederation['resolved-fed']).toBe(2)
     expect(nostr.discoveryCandidates[0]?.recommendationCount).toBe(2)
+  })
+
+  it('marks candidates as failed when preview resolves a different federation id', async () => {
+    const warnSpy = vi.spyOn(logger.nostr, 'warn')
+
+    const nostr = useNostrStore()
+    nostr.isDiscoveringFederations = true
+    nostr.previewTargetCount = 1
+    nostr.discoveryCandidates = [
+      { federationId: 'candidate-fed', inviteCode: 'invite-candidate', createdAt: 10 },
+    ]
+
+    walletStoreMock.previewFederation.mockResolvedValue(
+      createFederation('resolved-fed', 'invite-candidate', 'Resolved Federation'),
+    )
+
+    nostr.enqueueCandidatesForPreview()
+    await nostr.processPreviewQueue()
+
+    const candidate = nostr.discoveryCandidates[0]
+    if (candidate == null) {
+      throw new Error('Expected discovery candidate to exist')
+    }
+
+    expect(nostr.previewStatusByFederation['candidate-fed']).toBe('failed')
+    expect(nostr.previewCacheByFederation['candidate-fed']).toBeUndefined()
+    expect(nostr.discoveredFederations).toEqual([])
+    expect(nostr.getCachedPreviewForCandidate(candidate)).toBeUndefined()
+    expect(warnSpy).toHaveBeenCalledWith(
+      'Skipping federation candidate with mismatched preview federation id',
+      expect.objectContaining({
+        federationId: 'candidate-fed',
+        resolvedFederationId: 'resolved-fed',
+        createdAt: 10,
+      }),
+    )
+  })
+
+  it('queues a newly top-ranked candidate even when enough cached previews already exist', async () => {
+    const nostr = useNostrStore()
+    nostr.isDiscoveringFederations = true
+    nostr.isJoinInProgress = true
+    nostr.previewTargetCount = 1
+    nostr.discoveryCandidates = [
+      { federationId: 'fed-1', inviteCode: 'invite-1', createdAt: 50, recommendationCount: 4 },
+      { federationId: 'fed-2', inviteCode: 'invite-2', createdAt: 40, recommendationCount: 4 },
+      { federationId: 'fed-3', inviteCode: 'invite-3', createdAt: 30, recommendationCount: 3 },
+      { federationId: 'fed-4', inviteCode: 'invite-4', createdAt: 20, recommendationCount: 2 },
+      { federationId: 'fed-5', inviteCode: 'invite-5', createdAt: 10, recommendationCount: 1 },
+    ]
+    setCachedPreview(nostr, createFederation('fed-1', 'invite-1', 'Cached Top'), 50)
+
+    nostr.enqueueCandidatesForPreview()
+    expect(nostr.previewQueue).not.toContain('fed-5')
+
+    await nostr.handleRecommendationEvent(
+      createRecommendationEvent({
+        pubkey: 'pubkey-a',
+        createdAt: 100,
+        federationIds: ['fed-5'],
+      }),
+    )
+    await nostr.handleRecommendationEvent(
+      createRecommendationEvent({
+        pubkey: 'pubkey-b',
+        createdAt: 101,
+        federationIds: ['fed-5'],
+      }),
+    )
+    await nostr.handleRecommendationEvent(
+      createRecommendationEvent({
+        pubkey: 'pubkey-c',
+        createdAt: 102,
+        federationIds: ['fed-5'],
+      }),
+    )
+    await nostr.handleRecommendationEvent(
+      createRecommendationEvent({
+        pubkey: 'pubkey-d',
+        createdAt: 103,
+        federationIds: ['fed-5'],
+      }),
+    )
+    await nostr.handleRecommendationEvent(
+      createRecommendationEvent({
+        pubkey: 'pubkey-e',
+        createdAt: 104,
+        federationIds: ['fed-5'],
+      }),
+    )
+
+    expect(nostr.discoveryCandidates[0]?.federationId).toBe('fed-5')
+    expect(nostr.previewQueue).toContain('fed-5')
   })
 })
