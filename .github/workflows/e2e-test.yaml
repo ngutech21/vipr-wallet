@@ -9,6 +9,8 @@ on:
       - master
   workflow_dispatch: {} 
 
+permissions: read-all
+
 jobs:
   e2e-test:
     runs-on: self-hosted
