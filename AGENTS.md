@@ -20,8 +20,10 @@ Vipr Wallet is a Progressive Web App (PWA) that serves as an ecash wallet for Fe
 - `pnpm lint` - Run ESLint on source files
 - `pnpm lint:fix` - Fix ESLint errors and warnings
 - `pnpm format` - Format code with Prettier
+- `pnpm format:check` - Verify formatting without modifying files
 - `pnpm typecheck` - Run Vue TypeScript compiler checks
-- `pnpm final-check` - Run all checks: format, lint, typecheck, and tests
+- `pnpm final-check` - Run all checks: format check, lint, typecheck, and tests
+- After every change made by an agent, run `pnpm format`.
 - After every code change made by an agent, run `pnpm final-check` before finalizing the work.
 
 ### Testing
