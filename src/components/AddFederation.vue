@@ -43,6 +43,7 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   initialInviteCode?: string | null
+  initialPreviewFederation?: Federation | null
   autoPreview?: boolean
   importAmountSats?: number | null
 }>()
@@ -57,16 +58,23 @@ const dialogTitle = computed(() => {
 })
 
 watch(
-  () => props.initialInviteCode,
-  async (newCode) => {
+  () => [props.initialInviteCode, props.initialPreviewFederation] as const,
+  async ([newCode, newPreview]) => {
     if (newCode != null && newCode !== '') {
       inviteCode.value = newCode
-      previewFederation.value = null
-      step.value = 'invite'
+      previewFederation.value = newPreview ?? null
+      step.value = newPreview != null ? 'preview' : 'invite'
+      if (newPreview != null) {
+        return
+      }
       if (props.autoPreview === true) {
         await loadPreview()
       }
+      return
     }
+
+    previewFederation.value = newPreview ?? null
+    step.value = newPreview != null ? 'preview' : 'invite'
   },
   { immediate: true },
 )

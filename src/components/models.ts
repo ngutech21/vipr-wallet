@@ -11,6 +11,11 @@ export type Federation = {
   metadata?: FederationMeta
 }
 
+export type DiscoverySelectionPayload = {
+  inviteCode: string
+  prefetchedFederation?: Federation
+}
+
 export type FederationGuardian = {
   peerId: number
   name: string
