@@ -49,6 +49,9 @@ jobs:
       - name: Type check PWA
         run: pnpm typecheck:pwa
 
+      - name: Audit production dependencies
+        run: pnpm audit --prod
+
       - name: Check circular dependencies
         run: pnpm dlx madge src --circular
 
