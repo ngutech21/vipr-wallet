@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import type { Federation } from 'src/components/models'
+import type { Federation } from 'src/types/federation'
 
 const fedimintClientMock = vi.hoisted(() => ({
   init: vi.fn<() => Promise<void>>(),

@@ -24,7 +24,7 @@
 import { computed, ref, watch } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
-import type { Federation } from 'src/components/models'
+import type { Federation } from 'src/types/federation'
 import ModalCard from 'src/components/ModalCard.vue'
 import JoinFederationInviteStep from 'src/components/JoinFederationInviteStep.vue'
 import JoinFederationPreviewStep from 'src/components/JoinFederationPreviewStep.vue'

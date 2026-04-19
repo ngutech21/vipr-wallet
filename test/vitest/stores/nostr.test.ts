@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import type { Federation } from 'src/components/models'
+import type { Federation } from 'src/types/federation'
 import type { NDKEvent } from '@nostr-dev-kit/ndk'
 import { Nip87Kinds } from 'src/types/nip87'
 import { logger } from 'src/services/logger'

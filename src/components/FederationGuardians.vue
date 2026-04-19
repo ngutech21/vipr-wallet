@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { FederationGuardian } from 'src/components/models'
+import type { FederationGuardian } from 'src/types/federation'
 
 const props = withDefaults(
   defineProps<{

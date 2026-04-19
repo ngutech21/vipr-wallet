@@ -5,7 +5,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import DiscoverFederations from 'src/components/DiscoverFederations.vue'
 import { useFederationStore } from 'src/stores/federation'
 import { useNostrStore } from 'src/stores/nostr'
-import type { Federation } from 'src/components/models'
+import type { Federation } from 'src/types/federation'
 
 // Mock factory for creating test federations
 const createMockFederation = (overrides: Partial<Federation> = {}): Federation => ({
@@ -552,7 +552,7 @@ describe('DiscoverFederations.vue', () => {
           createdAt: 1,
         },
       ]
-      setCachedPreview(nostrStore, fedWithoutMetadata as Federation)
+      setCachedPreview(nostrStore, fedWithoutMetadata)
       await flushPromises()
 
       expect(wrapper.exists()).toBe(true)

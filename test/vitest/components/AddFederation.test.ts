@@ -5,7 +5,7 @@ import { Quasar, Notify } from 'quasar'
 import { createTestingPinia, type TestingPinia } from '@pinia/testing'
 import AddFederation from 'src/components/AddFederation.vue'
 import { useWalletStore } from 'src/stores/wallet'
-import type { Federation } from 'src/components/models'
+import type { Federation } from 'src/types/federation'
 
 describe('AddFederation.vue', () => {
   let wrapper: VueWrapper | undefined

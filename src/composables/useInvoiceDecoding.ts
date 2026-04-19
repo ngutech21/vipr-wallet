@@ -5,7 +5,7 @@ import { LightningAddress } from '@getalby/lightning-tools'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { requestInvoice } from 'src/utils/lnurl'
 import { getErrorMessage } from 'src/utils/error'
-import type { Bolt11Invoice } from 'src/components/models'
+import type { Bolt11Invoice } from 'src/types/lightning'
 
 export interface InvoiceDecodingResult {
   decodedInvoice: Bolt11Invoice | null

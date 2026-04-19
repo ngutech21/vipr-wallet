@@ -136,7 +136,7 @@ import { computed, ref, defineAsyncComponent } from 'vue'
 defineOptions({
   name: 'IndexPage',
 })
-import type { DiscoverySelectionPayload, Federation } from 'src/components/models'
+import type { DiscoverySelectionPayload, Federation } from 'src/types/federation'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import TransactionsList from 'src/components/TransactionsList.vue'

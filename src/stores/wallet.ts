@@ -20,7 +20,7 @@ import type {
   FederationMeta,
   ModuleConfig,
   FederationUtxo,
-} from 'src/components/models'
+} from 'src/types/federation'
 import { logger } from 'src/services/logger'
 import { fedimintClient } from 'src/services/fedimint-client'
 

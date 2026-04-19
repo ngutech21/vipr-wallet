@@ -60,7 +60,7 @@ import AddFederation from 'src/components/AddFederation.vue'
 import AddFederationSelection from 'src/components/AddFederationSelection.vue'
 import DiscoverFederations from 'src/components/DiscoverFederations.vue'
 import FederationList from 'src/components/FederationList.vue'
-import type { DiscoverySelectionPayload, Federation } from 'src/components/models'
+import type { DiscoverySelectionPayload, Federation } from 'src/types/federation'
 import { ref } from 'vue'
 
 const showSelection = ref(false)

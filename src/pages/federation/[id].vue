@@ -322,7 +322,7 @@ import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import FederationGuardians from 'src/components/FederationGuardians.vue'
 import FederationUtxos from 'src/components/FederationUtxos.vue'
-import type { FederationUtxo } from 'src/components/models'
+import type { FederationUtxo } from 'src/types/federation'
 import { useFormatters } from '../../utils/formatter'
 import { logger } from 'src/services/logger'
 

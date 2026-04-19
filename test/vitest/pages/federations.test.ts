@@ -4,7 +4,7 @@ import { Quasar } from 'quasar'
 import { createTestingPinia } from '@pinia/testing'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import FederationsPage from 'src/pages/federations/index.vue'
-import type { Federation } from 'src/components/models'
+import type { Federation } from 'src/types/federation'
 
 const createMockFederation = (overrides: Partial<Federation> = {}): Federation => ({
   title: 'Test Federation',

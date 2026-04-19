@@ -134,7 +134,7 @@ import { useNostrStore } from 'src/stores/nostr'
 import { useFederationStore } from 'src/stores/federation'
 import ModalCard from 'src/components/ModalCard.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
-import type { DiscoverySelectionPayload, Federation } from 'src/components/models'
+import type { DiscoverySelectionPayload, Federation } from 'src/types/federation'
 import { getErrorMessage } from 'src/utils/error'
 import { logger } from 'src/services/logger'
 
