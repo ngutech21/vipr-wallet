@@ -149,8 +149,8 @@ describe('SendPage query invoice handling', () => {
     wrapper = createWrapper()
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Kontakte')
-    expect(wrapper.text()).toContain('Keine Kontakte')
+    expect(wrapper.text()).toContain('Contacts')
+    expect(wrapper.text()).toContain('No Contacts')
     expect(wrapper.find('[data-testid="send-no-contacts"]').exists()).toBe(true)
     wrapper.unmount()
   })

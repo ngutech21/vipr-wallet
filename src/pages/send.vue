@@ -41,7 +41,7 @@
           </q-card>
 
           <div class="q-mb-md">
-            <div class="text-subtitle2 text-white q-mb-sm">Kontakte</div>
+            <div class="text-subtitle2 text-white q-mb-sm">Contacts</div>
 
             <q-list v-if="hasSyncedContacts" bordered separator class="rounded-contact-list">
               <q-item
@@ -75,7 +75,7 @@
                 <div class="col-auto">
                   <q-icon name="account_circle" size="md" color="grey-5" />
                 </div>
-                <div class="col text-subtitle1 text-grey-5">Keine Kontakte</div>
+                <div class="col text-subtitle1 text-grey-5">No Contacts</div>
               </q-card-section>
             </q-card>
           </div>
