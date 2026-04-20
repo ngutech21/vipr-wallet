@@ -232,7 +232,7 @@
                 </q-item>
 
                 <q-item
-                  v-for="contact in syncedContacts"
+                  v-for="contact in visibleContacts"
                   :key="contact.pubkey"
                   :data-testid="`settings-contact-item-${contact.pubkey}`"
                 >
@@ -251,6 +251,23 @@
                   </q-item-section>
                 </q-item>
               </q-list>
+
+              <div
+                v-if="syncedContacts.length > 0"
+                class="row items-center justify-between q-mt-sm q-gutter-sm"
+              >
+                <div class="text-caption text-grey-8" data-testid="settings-contact-visible-count">
+                  Showing {{ visibleContacts.length }} of {{ syncedContacts.length }} contacts
+                </div>
+                <q-btn
+                  v-if="hasMoreContacts"
+                  label="Show more"
+                  flat
+                  color="primary"
+                  @click="showMoreContacts"
+                  data-testid="settings-show-more-contacts-btn"
+                />
+              </div>
             </div>
           </q-card-section>
         </q-card>
@@ -436,6 +453,9 @@ const updateButtonIcon = computed(() => 'refresh')
 const syncedContacts = computed(() => nostrStore.contacts)
 const isSyncingContacts = computed(() => nostrStore.syncStatus === 'syncing')
 const contactSyncError = computed(() => nostrStore.contactSyncMeta.lastSyncError)
+const INITIAL_VISIBLE_CONTACTS = 10
+const CONTACTS_PAGE_SIZE = 10
+const visibleContactCount = ref(INITIAL_VISIBLE_CONTACTS)
 const lastSyncedLabel = computed(() => {
   if (nostrStore.contactSyncMeta.lastSyncedAt == null) {
     return ''
@@ -443,6 +463,8 @@ const lastSyncedLabel = computed(() => {
 
   return `Last synced: ${new Date(nostrStore.contactSyncMeta.lastSyncedAt).toLocaleString()}`
 })
+const visibleContacts = computed(() => syncedContacts.value.slice(0, visibleContactCount.value))
+const hasMoreContacts = computed(() => visibleContactCount.value < syncedContacts.value.length)
 const contactSourceOptions = [
   { label: 'NIP-05', value: 'nip05' },
   { label: 'npub', value: 'npub' },
@@ -643,6 +665,10 @@ watch(
   { deep: true },
 )
 
+watch(syncedContacts, () => {
+  visibleContactCount.value = INITIAL_VISIBLE_CONTACTS
+})
+
 const isValidRelayUrl = computed(() => {
   return newRelay.value !== '' && newRelay.value.startsWith('wss://')
 })
@@ -694,6 +720,10 @@ async function syncContacts() {
 function clearContacts() {
   nostrStore.clearContacts()
   notify.info('Cleared imported contacts')
+}
+
+function showMoreContacts() {
+  visibleContactCount.value += CONTACTS_PAGE_SIZE
 }
 
 function getContactDisplayName(contact: SyncedNostrContact): string {

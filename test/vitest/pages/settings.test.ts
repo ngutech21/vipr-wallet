@@ -331,4 +331,28 @@ describe('SettingsPage updates', () => {
       }),
     )
   })
+
+  it('shows contacts incrementally and reveals more on demand', async () => {
+    nostrStoreMock.contacts = Array.from({ length: 12 }, (_, index) => ({
+      pubkey: `${String(index).padStart(2, '0')}${'a'.repeat(62)}`,
+      npub: `npub1contact${index}`,
+      paymentTarget: `contact${index}@getalby.com`,
+      displayName: `Contact ${index + 1}`,
+      lud16: `contact${index}@getalby.com`,
+    }))
+
+    const wrapper = createWrapper()
+
+    expect(wrapper.text()).toContain('Showing 10 of 12 contacts')
+    expect(wrapper.text()).not.toContain('Contact 11')
+    expect(wrapper.text()).not.toContain('Contact 12')
+
+    await wrapper.find('[data-testid="settings-show-more-contacts-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Showing 12 of 12 contacts')
+    expect(wrapper.text()).toContain('Contact 11')
+    expect(wrapper.text()).toContain('Contact 12')
+    expect(wrapper.find('[data-testid="settings-show-more-contacts-btn"]').exists()).toBe(false)
+  })
 })
