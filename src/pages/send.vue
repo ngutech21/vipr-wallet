@@ -22,7 +22,7 @@
                 dense
                 dark
                 type="textarea"
-                placeholder="Enter Lightning Invoice, Address or LNURL"
+                placeholder="Enter Lightning invoice, address or contact"
                 class="custom-input"
                 data-testid="send-invoice-input"
               >
@@ -39,6 +39,46 @@
               </q-input>
             </q-card-section>
           </q-card>
+
+          <div class="q-mb-md">
+            <div class="text-subtitle2 text-white q-mb-sm">Kontakte</div>
+
+            <q-list v-if="hasSyncedContacts" bordered separator class="rounded-contact-list">
+              <q-item
+                v-for="contact in suggestedContacts"
+                :key="contact.pubkey"
+                clickable
+                @click="selectContact(contact.paymentTarget)"
+                :data-testid="`send-contact-item-${contact.pubkey}`"
+              >
+                <q-item-section avatar>
+                  <q-avatar v-if="contact.picture">
+                    <img :src="contact.picture" :alt="getContactDisplayName(contact)" />
+                  </q-avatar>
+                  <q-icon v-else name="account_circle" size="md" color="grey-5" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>{{ getContactDisplayName(contact) }}</q-item-label>
+                  <q-item-label caption>{{ getContactSubtitle(contact) }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+
+            <q-card
+              v-else
+              flat
+              bordered
+              class="glass-effect empty-contacts-card"
+              data-testid="send-no-contacts"
+            >
+              <q-card-section class="row items-center q-col-gutter-sm">
+                <div class="col-auto">
+                  <q-icon name="account_circle" size="md" color="grey-5" />
+                </div>
+                <div class="col text-subtitle1 text-grey-5">Keine Kontakte</div>
+              </q-card-section>
+            </q-card>
+          </div>
 
           <!-- Amount input section (for lightning address) -->
           <q-slide-transition>
@@ -116,16 +156,20 @@ defineOptions({
   name: 'SendPage',
 })
 
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import VerifyPayment from 'components/VerifyPayment.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useInvoiceDecoding } from 'src/composables/useInvoiceDecoding'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
+import { useNostrStore } from 'src/stores/nostr'
+import type { SyncedNostrContact } from 'src/types/nostr'
+import { getNostrContactDisplayName, getNostrContactSubtitle } from 'src/utils/nostrContacts'
 
 const lightningInvoice = ref('')
 
 const route = useRoute('/send')
 const router = useRouter()
+const nostrStore = useNostrStore()
 const invoiceAmount = ref(0)
 const invoiceMemo = ref('')
 
@@ -141,6 +185,8 @@ const {
 
 // Use the lightning payment composable
 const { payInvoice: payInvoiceFromComposable } = useLightningPayment()
+const hasSyncedContacts = computed(() => nostrStore.contacts.length > 0)
+const suggestedContacts = computed(() => nostrStore.getSuggestedContacts(lightningInvoice.value))
 
 // FIXME
 // Validate input before allowing to continue
@@ -182,10 +228,16 @@ async function createInvoice() {
   await createInvoiceFromInput(lightningInvoice.value, invoiceAmount.value, invoiceMemo.value)
 }
 
+async function selectContact(paymentTarget: string) {
+  lightningInvoice.value = paymentTarget
+  await decodeInvoice()
+}
+
 async function payInvoice() {
   const amountInSats = decodedInvoice.value?.amount ?? 0
+  const invoiceToPay = decodedInvoice.value?.invoice ?? lightningInvoice.value
 
-  const result = await payInvoiceFromComposable(lightningInvoice.value, amountInSats)
+  const result = await payInvoiceFromComposable(invoiceToPay, amountInSats)
 
   if (result.success) {
     await router.push({
@@ -193,6 +245,14 @@ async function payInvoice() {
       query: { amount: result.amountSats, fee: result.fee },
     })
   }
+}
+
+function getContactDisplayName(contact: SyncedNostrContact): string {
+  return getNostrContactDisplayName(contact)
+}
+
+function getContactSubtitle(contact: SyncedNostrContact): string {
+  return getNostrContactSubtitle(contact)
 }
 </script>
 
@@ -220,5 +280,19 @@ async function payInvoice() {
 
 .bg-dark {
   background-color: rgba(255, 255, 255, 0.03);
+}
+
+.rounded-contact-list {
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.rounded-contact-list :deep(.q-item__label--caption) {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.empty-contacts-card {
+  border-radius: 16px;
 }
 </style>

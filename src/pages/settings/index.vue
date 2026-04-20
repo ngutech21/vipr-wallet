@@ -136,6 +136,126 @@
         </q-card>
       </q-expansion-item>
 
+      <q-expansion-item
+        expand-separator
+        icon="perm_contact_calendar"
+        label="Contacts"
+        caption="Import payable Nostr contacts for Lightning"
+        header-class="settings-header"
+        expand-icon-class="text-primary"
+        data-testid="settings-contacts-section"
+      >
+        <q-card>
+          <q-card-section>
+            <div class="contacts-section">
+              <div class="text-subtitle2 q-mb-sm">Sync Contacts</div>
+              <q-btn-toggle
+                v-model="contactSourceType"
+                unelevated
+                toggle-color="primary"
+                :options="contactSourceOptions"
+                class="q-mb-md full-width contacts-source-toggle"
+                data-testid="settings-contact-source-toggle"
+              />
+
+              <q-input
+                v-model="contactSourceValue"
+                outlined
+                :label="contactSourceLabel"
+                :placeholder="contactSourcePlaceholder"
+                class="relay-input"
+                data-testid="settings-contact-source-input"
+              />
+
+              <div class="text-caption text-grey-8 q-mt-xs">
+                {{ contactSourceHint }}
+              </div>
+
+              <div class="contacts-actions q-mt-md">
+                <q-btn
+                  label="Sync contacts"
+                  color="primary"
+                  class="full-width"
+                  :loading="isSyncingContacts"
+                  :disable="isSyncingContacts"
+                  @click="syncContacts"
+                  data-testid="settings-sync-contacts-btn"
+                />
+                <q-btn
+                  label="Clear contacts"
+                  outline
+                  color="secondary"
+                  class="full-width q-mt-sm"
+                  :disable="isSyncingContacts"
+                  @click="clearContacts"
+                  data-testid="settings-clear-contacts-btn"
+                />
+              </div>
+
+              <div
+                v-if="contactSyncError"
+                class="text-negative text-caption q-mt-sm"
+                data-testid="settings-contact-sync-error"
+              >
+                {{ contactSyncError }}
+              </div>
+
+              <div class="contacts-summary q-mt-md">
+                <div class="text-caption text-grey-8" data-testid="settings-contact-count">
+                  {{ syncedContacts.length }} imported contacts
+                </div>
+                <div
+                  v-if="lastSyncedLabel"
+                  class="text-caption text-grey-8 q-mt-xs"
+                  data-testid="settings-contact-last-synced"
+                >
+                  {{ lastSyncedLabel }}
+                </div>
+              </div>
+
+              <q-list
+                bordered
+                separator
+                class="rounded-borders q-mt-md"
+                data-testid="settings-contact-list"
+              >
+                <q-item v-if="syncedContacts.length === 0">
+                  <q-item-section avatar>
+                    <div class="empty-contact-avatar" aria-hidden="true"></div>
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>No contacts imported yet</q-item-label>
+                    <q-item-label caption>
+                      Sync a NIP-05 or npub to import payable Nostr contacts.
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+
+                <q-item
+                  v-for="contact in syncedContacts"
+                  :key="contact.pubkey"
+                  :data-testid="`settings-contact-item-${contact.pubkey}`"
+                >
+                  <q-item-section avatar>
+                    <q-avatar v-if="contact.picture">
+                      <img :src="contact.picture" :alt="getContactDisplayName(contact)" />
+                    </q-avatar>
+                    <q-icon v-else name="account_circle" size="md" color="grey-5" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>{{ getContactDisplayName(contact) }}</q-item-label>
+                    <q-item-label caption>{{ getContactSubtitle(contact) }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section side>
+                    <q-chip dense outline :label="contact.lud16 ? 'Lightning Address' : 'LNURL'" />
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </div>
+          </q-card-section>
+        </q-card>
+      </q-expansion-item>
+
       <!-- App Version Section -->
       <q-expansion-item
         expand-separator
@@ -282,6 +402,8 @@ import { usePwaUpdateStore } from 'src/stores/pwa-update'
 import { logger } from 'src/services/logger'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import type { NostrContactSourceType, SyncedNostrContact } from 'src/types/nostr'
+import { getNostrContactDisplayName, getNostrContactSubtitle } from 'src/utils/nostrContacts'
 import {
   getConnectorConfig,
   launchModal,
@@ -311,6 +433,20 @@ const updateButtonLabel = computed(() =>
   isUpdateReady.value ? 'Update ready' : 'Check for Updates',
 )
 const updateButtonIcon = computed(() => 'refresh')
+const syncedContacts = computed(() => nostrStore.contacts)
+const isSyncingContacts = computed(() => nostrStore.syncStatus === 'syncing')
+const contactSyncError = computed(() => nostrStore.contactSyncMeta.lastSyncError)
+const lastSyncedLabel = computed(() => {
+  if (nostrStore.contactSyncMeta.lastSyncedAt == null) {
+    return ''
+  }
+
+  return `Last synced: ${new Date(nostrStore.contactSyncMeta.lastSyncedAt).toLocaleString()}`
+})
+const contactSourceOptions = [
+  { label: 'NIP-05', value: 'nip05' },
+  { label: 'npub', value: 'npub' },
+]
 
 function updateConnectedProvider() {
   const config = getConnectorConfig()
@@ -485,8 +621,9 @@ async function applyUpdate() {
 
 // Nostr settings
 const relays = ref(nostrStore.relays)
-//const pubkey = ref(nostrStore.pubkey)
 const newRelay = ref('')
+const contactSourceType = ref<NostrContactSourceType>(nostrStore.contactSource.sourceType)
+const contactSourceValue = ref(nostrStore.contactSource.sourceValue)
 
 // Watch for store changes to keep local refs in sync
 watch(
@@ -497,13 +634,32 @@ watch(
   { deep: true },
 )
 
+watch(
+  () => nostrStore.contactSource,
+  (newSource) => {
+    contactSourceType.value = newSource.sourceType
+    contactSourceValue.value = newSource.sourceValue
+  },
+  { deep: true },
+)
+
 const isValidRelayUrl = computed(() => {
   return newRelay.value !== '' && newRelay.value.startsWith('wss://')
 })
 
-// function updatePubkey() {
-//   nostrStore.setPubkey(pubkey.value)
-// }
+const contactSourceLabel = computed(() => {
+  return contactSourceType.value === 'nip05' ? 'NIP-05 Identifier' : 'npub'
+})
+
+const contactSourcePlaceholder = computed(() => {
+  return contactSourceType.value === 'nip05' ? 'user@domain.com' : 'npub1...'
+})
+
+const contactSourceHint = computed(() => {
+  return contactSourceType.value === 'nip05'
+    ? 'Enter a NIP-05 identifier like user@domain.com.'
+    : 'Enter the npub for the account whose follows should be imported.'
+})
 
 async function addNewRelay() {
   if (isValidRelayUrl.value && (await nostrStore.addRelay(newRelay.value))) {
@@ -523,6 +679,29 @@ async function removeRelay(relay: string) {
 async function resetRelays() {
   await nostrStore.resetRelays()
   notify.info('Reset relays to defaults')
+}
+
+async function syncContacts() {
+  nostrStore.setContactSource(contactSourceType.value, contactSourceValue.value)
+
+  if (await nostrStore.syncContacts()) {
+    notify.success(`Imported ${nostrStore.contacts.length} contacts`)
+  } else {
+    notify.error(nostrStore.contactSyncMeta.lastSyncError ?? 'Failed to sync contacts')
+  }
+}
+
+function clearContacts() {
+  nostrStore.clearContacts()
+  notify.info('Cleared imported contacts')
+}
+
+function getContactDisplayName(contact: SyncedNostrContact): string {
+  return getNostrContactDisplayName(contact)
+}
+
+function getContactSubtitle(contact: SyncedNostrContact): string {
+  return getNostrContactSubtitle(contact)
 }
 </script>
 
@@ -544,12 +723,61 @@ async function resetRelays() {
   align-items: center;
 }
 
+.contacts-section {
+  max-width: 720px;
+}
+
+.contacts-source-toggle {
+  display: block;
+}
+
+.contacts-summary {
+  min-height: 20px;
+}
+
+.empty-contact-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  position: relative;
+}
+
+.empty-contact-avatar::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.52);
+  transform: translateX(-50%);
+}
+
+.empty-contact-avatar::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 16px;
+  height: 8px;
+  border-radius: 999px 999px 6px 6px;
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateX(-50%);
+}
+
 .relay-input :deep(.q-field__bottom) {
   padding: 4px 12px 0;
 }
 
 .rounded-borders {
   border-radius: 8px;
+}
+
+.rounded-borders :deep(.q-item__section--avatar) {
+  min-width: 48px;
 }
 
 :deep(.q-expansion-item) {
@@ -580,6 +808,10 @@ async function resetRelays() {
   .justify-end {
     justify-content: flex-start;
     margin-top: 8px;
+  }
+
+  .contacts-section {
+    max-width: none;
   }
 }
 </style>

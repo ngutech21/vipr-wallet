@@ -35,9 +35,33 @@ const federationStoreMock = vi.hoisted(() => ({
 
 const nostrStoreMock = vi.hoisted(() => ({
   relays: [] as string[],
+  contactSource: {
+    sourceType: 'nip05',
+    sourceValue: '',
+    resolvedPubkey: null as string | null,
+  },
+  contacts: [] as Array<{
+    pubkey: string
+    npub: string
+    paymentTarget: string
+    displayName?: string
+    name?: string
+    nip05?: string
+    picture?: string
+    lud16?: string
+    lud06?: string
+  }>,
+  contactSyncMeta: {
+    lastSyncedAt: null as number | null,
+    lastSyncError: null as string | null,
+  },
+  syncStatus: 'idle',
   addRelay: vi.fn(),
   removeRelay: vi.fn(),
   resetRelays: vi.fn(),
+  setContactSource: vi.fn(),
+  syncContacts: vi.fn(),
+  clearContacts: vi.fn(),
   $reset: vi.fn(),
 }))
 
@@ -98,6 +122,20 @@ const QBtnStub = {
     '<button v-bind="$attrs" :disabled="disable || loading" @click="$emit(\'click\')">{{ label }}</button>',
 }
 
+const QInputStub = {
+  props: ['modelValue', 'label', 'placeholder'],
+  emits: ['update:modelValue'],
+  template:
+    '<label v-bind="$attrs"><span>{{ label }}</span><input :value="modelValue" :placeholder="placeholder" @input="$emit(\'update:modelValue\', $event.target.value)" /></label>',
+}
+
+const QBtnToggleStub = {
+  props: ['modelValue', 'options'],
+  emits: ['update:modelValue'],
+  template:
+    '<div v-bind="$attrs"><button v-for="option in options" :key="option.value" type="button" @click="$emit(\'update:modelValue\', option.value)">{{ option.label }}</button></div>',
+}
+
 const SlotStub = {
   template: '<div><slot /></div>',
 }
@@ -120,8 +158,11 @@ describe('SettingsPage updates', () => {
           'q-item-section': SlotStub,
           'q-item-label': SlotStub,
           'q-icon': SlotStub,
-          'q-input': SlotStub,
+          'q-input': QInputStub,
+          'q-btn-toggle': QBtnToggleStub,
           'q-btn': QBtnStub,
+          'q-avatar': SlotStub,
+          'q-chip': SlotStub,
         },
       },
     })
@@ -139,6 +180,18 @@ describe('SettingsPage updates', () => {
     mockApplyUpdate.mockResolvedValue('applied')
     mockRouterReplace.mockResolvedValue(undefined)
     mockPwaUpdateStore.$reset = vi.fn()
+    nostrStoreMock.contactSource = {
+      sourceType: 'nip05',
+      sourceValue: '',
+      resolvedPubkey: null,
+    }
+    nostrStoreMock.contacts = []
+    nostrStoreMock.contactSyncMeta = {
+      lastSyncedAt: null,
+      lastSyncError: null,
+    }
+    nostrStoreMock.syncStatus = 'idle'
+    nostrStoreMock.syncContacts.mockResolvedValue(true)
   })
 
   it('shows check button and triggers manual update check', async () => {
@@ -229,6 +282,52 @@ describe('SettingsPage updates', () => {
     expect(mockNotifyCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         message: 'Data deleted successfully',
+      }),
+    )
+  })
+
+  it('syncs contacts from the configured source and renders imported contacts', async () => {
+    nostrStoreMock.contactSource = {
+      sourceType: 'npub',
+      sourceValue: 'npub1example',
+      resolvedPubkey: null,
+    }
+    nostrStoreMock.contacts = [
+      {
+        pubkey: 'a'.repeat(64),
+        npub: 'npub1example',
+        paymentTarget: 'alice@getalby.com',
+        displayName: 'Alice',
+        lud16: 'alice@getalby.com',
+      },
+    ]
+
+    const wrapper = createWrapper()
+    await wrapper.find('[data-testid="settings-sync-contacts-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(nostrStoreMock.setContactSource).toHaveBeenCalledWith('npub', 'npub1example')
+    expect(nostrStoreMock.syncContacts).toHaveBeenCalledTimes(1)
+    expect(wrapper.text()).toContain('Alice')
+    expect(wrapper.text()).toContain('1 imported contacts')
+  })
+
+  it('shows sync errors and clears imported contacts', async () => {
+    nostrStoreMock.contactSyncMeta = {
+      lastSyncedAt: null,
+      lastSyncError: 'Invalid npub identifier.',
+    }
+
+    const wrapper = createWrapper()
+    expect(wrapper.text()).toContain('Invalid npub identifier.')
+
+    await wrapper.find('[data-testid="settings-clear-contacts-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(nostrStoreMock.clearContacts).toHaveBeenCalledTimes(1)
+    expect(mockNotifyCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Cleared imported contacts',
       }),
     )
   })
