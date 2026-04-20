@@ -1,9 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
 
 // Mock wallet store
 const mockUpdateBalance = vi.fn()
 const mockPayInvoice = vi.fn()
+const mockWaitForPay = vi.fn()
+const mockSubscribeInternalPayment = vi.fn()
 const mockCreateInvoice = vi.fn()
 const mockWaitForReceive = vi.fn()
 
@@ -12,6 +14,8 @@ vi.mock('src/stores/wallet', () => ({
     wallet: {
       lightning: {
         payInvoice: mockPayInvoice,
+        waitForPay: mockWaitForPay,
+        subscribeInternalPayment: mockSubscribeInternalPayment,
         createInvoice: mockCreateInvoice,
         waitForReceive: mockWaitForReceive,
       },
@@ -36,9 +40,24 @@ describe('useLightningPayment', () => {
     vi.clearAllMocks()
   })
 
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   describe('payInvoice', () => {
     it('should successfully pay an invoice', async () => {
-      mockPayInvoice.mockResolvedValue({ fee: 100 })
+      mockPayInvoice.mockResolvedValue({
+        fee: 100,
+        payment_type: {
+          lightning: 'ln-op-123',
+        },
+      })
+      mockWaitForPay.mockResolvedValue({
+        success: true,
+        data: {
+          preimage: 'abc',
+        },
+      })
 
       const { payInvoice } = useLightningPayment()
 
@@ -48,7 +67,38 @@ describe('useLightningPayment', () => {
       expect(result.amountSats).toBe(1000)
       expect(result.fee).toBe(100)
       expect(mockPayInvoice).toHaveBeenCalledWith('lnbc1000n1...')
+      expect(mockWaitForPay).toHaveBeenCalledWith('ln-op-123')
       expect(mockUpdateBalance).toHaveBeenCalled()
+    })
+
+    it('waits for internal payments via the internal payment subscription', async () => {
+      vi.useFakeTimers()
+      mockPayInvoice.mockResolvedValue({
+        fee: 100,
+        payment_type: {
+          internal: 'internal-op-123',
+        },
+      })
+      mockSubscribeInternalPayment.mockImplementation((_paymentId, onSuccess) => {
+        window.setTimeout(() => {
+          onSuccess({ preimage: 'abc' })
+        }, 100)
+
+        return vi.fn()
+      })
+
+      const { payInvoice } = useLightningPayment()
+      const paymentPromise = payInvoice('lnbc1000n1...', 1000)
+
+      await vi.advanceTimersByTimeAsync(100)
+      const result = await paymentPromise
+
+      expect(result.success).toBe(true)
+      expect(mockSubscribeInternalPayment).toHaveBeenCalledWith(
+        'internal-op-123',
+        expect.any(Function),
+        expect.any(Function),
+      )
     })
 
     it('should handle payment errors', async () => {
