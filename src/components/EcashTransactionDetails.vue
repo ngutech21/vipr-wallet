@@ -46,17 +46,19 @@
     </section>
 
     <section v-if="transaction.notes" class="transaction-card">
-      <div class="detail-row">
-        <div class="label">Notes</div>
-        <q-btn
-          flat
-          dense
-          round
-          icon="content_copy"
-          @click="copyNotes"
-          class="copy-button"
-          data-testid="ecash-transaction-details-copy-notes-btn"
-        />
+      <div class="detail-row detail-row--header">
+        <div class="detail-row__heading">
+          <div class="label">Notes</div>
+          <q-btn
+            flat
+            dense
+            round
+            icon="content_copy"
+            @click="copyNotes"
+            class="copy-button"
+            data-testid="ecash-transaction-details-copy-notes-btn"
+          />
+        </div>
       </div>
 
       <div class="notes-section q-mt-sm">
@@ -302,6 +304,17 @@ async function copyNotes() {
     font-family: monospace;
     scrollbar-width: thin;
   }
+}
+
+.detail-row--header {
+  justify-content: flex-start;
+  padding-bottom: 10px;
+}
+
+.detail-row__heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .copy-button {

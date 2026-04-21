@@ -73,17 +73,19 @@
     </section>
 
     <section class="transaction-card">
-      <div class="detail-row">
-        <div class="label">Lightning Invoice</div>
-        <q-btn
-          flat
-          dense
-          round
-          icon="content_copy"
-          @click="copyInvoice"
-          class="copy-button"
-          data-testid="lightning-transaction-details-copy-invoice-btn"
-        />
+      <div class="detail-row detail-row--header">
+        <div class="detail-row__heading">
+          <div class="label">Lightning Invoice</div>
+          <q-btn
+            flat
+            dense
+            round
+            icon="content_copy"
+            @click="copyInvoice"
+            class="copy-button"
+            data-testid="lightning-transaction-details-copy-invoice-btn"
+          />
+        </div>
       </div>
 
       <div class="invoice-section q-mt-sm">
@@ -276,6 +278,17 @@ async function copyInvoice() {
     word-break: break-all;
     text-align: right;
   }
+}
+
+.detail-row--header {
+  justify-content: flex-start;
+  padding-bottom: 10px;
+}
+
+.detail-row__heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .copy-button {

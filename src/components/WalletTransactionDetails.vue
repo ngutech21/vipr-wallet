@@ -15,13 +15,13 @@
       </div>
 
       <div class="summary-row">
-        <div class="transaction-type transaction-type--stacked">
+        <div class="transaction-type">
           <q-icon
             :name="transaction.type === 'withdraw' ? 'arrow_upward' : 'arrow_downward'"
             :color="transaction.type === 'withdraw' ? 'negative' : 'positive'"
             size="2rem"
           />
-          <div class="summary-meta summary-meta--stacked">
+          <div class="summary-meta">
             <span class="summary-title">
               {{ transactionTitle }}
             </span>
@@ -70,17 +70,19 @@
     </section>
 
     <section class="transaction-card">
-      <div class="detail-row">
-        <div class="label">Bitcoin Address</div>
-        <q-btn
-          flat
-          dense
-          round
-          icon="content_copy"
-          @click="copyAddress"
-          class="copy-button"
-          data-testid="wallet-transaction-details-copy-address-btn"
-        />
+      <div class="detail-row detail-row--header">
+        <div class="detail-row__heading">
+          <div class="label">Bitcoin address</div>
+          <q-btn
+            flat
+            dense
+            round
+            icon="content_copy"
+            @click="copyAddress"
+            class="copy-button"
+            data-testid="wallet-transaction-details-copy-address-btn"
+          />
+        </div>
       </div>
 
       <div class="address-section q-mt-sm">
@@ -208,17 +210,7 @@ async function copyAddress() {
   align-items: center;
   gap: 10px;
   min-width: 0;
-  flex-wrap: nowrap;
-}
-
-.transaction-type--stacked {
-  align-items: flex-start;
-}
-
-.summary-meta--stacked {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .status-badge {
@@ -287,6 +279,17 @@ async function copyAddress() {
     word-break: break-all;
     text-align: right;
   }
+}
+
+.detail-row--header {
+  justify-content: flex-start;
+  padding-bottom: 10px;
+}
+
+.detail-row__heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .copy-button {

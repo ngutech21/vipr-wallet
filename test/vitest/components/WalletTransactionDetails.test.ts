@@ -266,7 +266,7 @@ describe('WalletTransactionDetails.vue', () => {
       })
       wrapper = createWrapper(transaction)
 
-      expect(wrapper.text()).toContain('Bitcoin Address')
+      expect(wrapper.text()).toContain('Bitcoin address')
       expect(wrapper.text()).toContain('bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh')
     })
 
