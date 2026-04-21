@@ -193,7 +193,7 @@ describe('TransactionsList.vue', () => {
     expect(mockGetTransactionsPage).toHaveBeenCalledWith(5)
     expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(5)
     expect(wrapper.get('[data-testid="transactions-show-full-history-btn"]').text()).toContain(
-      'Show full history',
+      'View all',
     )
   })
 

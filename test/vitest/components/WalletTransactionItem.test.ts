@@ -113,7 +113,8 @@ describe('WalletTransactionItem.vue', () => {
     wrapper = mountComponent(transactionWithoutOutcome)
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Status: Processing')
+    expect(wrapper.text()).toContain('Processing')
+    expect(wrapper.text()).not.toContain('Status:')
     expect(wrapper.text()).not.toContain('bc1qxy2k')
   })
 
@@ -121,7 +122,8 @@ describe('WalletTransactionItem.vue', () => {
     wrapper = mountComponent(createMockTransaction({ type: 'withdraw', outcome: 'Confirmed' }))
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Status: Broadcast')
+    expect(wrapper.text()).toContain('Broadcast')
+    expect(wrapper.text()).not.toContain('Status:')
     expect(wrapper.text()).not.toContain('bc1qxy2k')
   })
 
@@ -129,7 +131,8 @@ describe('WalletTransactionItem.vue', () => {
     wrapper = mountComponent(createMockTransaction({ type: 'withdraw', outcome: 'Failed' }))
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Status: Failed')
+    expect(wrapper.text()).toContain('Failed')
+    expect(wrapper.text()).not.toContain('Status:')
     expect(wrapper.text()).not.toContain('bc1qxy2k')
   })
 
@@ -142,7 +145,7 @@ describe('WalletTransactionItem.vue', () => {
     const normalizedText = wrapper.text().replace(/\s+/g, ' ').trim()
 
     expect(normalizedText).toContain('- 2,000 sats')
-    expect(normalizedText).toContain('Fee: 471 sats')
+    expect(normalizedText).toContain('Fee 471 sats')
     expect(normalizedText).not.toContain('Total:')
   })
 
@@ -153,7 +156,7 @@ describe('WalletTransactionItem.vue', () => {
     await flushPromises()
 
     expect(wrapper.text()).toContain('Unknown')
-    expect(wrapper.text()).toContain('Fee: 471 sats')
+    expect(wrapper.text()).toContain('Fee 471 sats')
     expect(wrapper.text()).not.toContain('Total:')
   })
 })

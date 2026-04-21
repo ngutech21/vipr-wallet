@@ -1,64 +1,88 @@
 <template>
-  <div class="transactions-list q-ml-md q-mr-md q-pt-md">
-    <ul class="transaction-list-container">
-      <template v-for="transaction in transactions" :key="String(transaction.operationId)">
-        <LightningTransactionItem
-          v-if="transaction.kind === 'ln'"
-          :transaction="transaction as LightningTransaction"
-          @click="viewTransactionDetails"
-        />
-        <EcashTransactionItem
-          v-else-if="transaction.kind === 'mint'"
-          :transaction="transaction as EcashTransaction"
-          @click="viewTransactionDetails"
-        />
-        <WalletTransactionItem
-          v-else-if="transaction.kind === 'wallet'"
-          :transaction="transaction as WalletTransaction"
-          @click="viewTransactionDetails"
-        />
-      </template>
+  <div class="transactions-list q-px-md q-pb-md">
+    <div class="transactions-card">
+      <div class="transactions-header">
+        <div>
+          <div class="transactions-title">
+            {{ props.mode === 'home' ? 'Recent activity' : 'Transaction history' }}
+          </div>
+          <div v-if="transactions.length > 0" class="transactions-subtitle">
+            {{
+              props.mode === 'home'
+                ? 'Latest wallet activity'
+                : 'All transactions for this federation'
+            }}
+          </div>
+        </div>
 
-      <q-item
-        v-if="!isInitialLoading && transactions.length === 0"
-        class="text-center"
-        :data-testid="emptyTransactionsTestId"
-      >
-        <q-item-section>
-          <p class="text-grey-6">No transactions yet</p>
-        </q-item-section>
-      </q-item>
-    </ul>
+        <q-btn
+          v-if="showFullHistoryAction"
+          flat
+          dense
+          no-caps
+          color="white"
+          class="transactions-header-action"
+          label="View all"
+          icon-right="chevron_right"
+          @click="openFullHistory"
+          data-testid="transactions-show-full-history-btn"
+        />
+      </div>
 
-    <div v-if="showFullHistoryAction" class="transactions-footer">
-      <q-btn
-        flat
-        no-caps
-        color="white"
-        class="transactions-footer-btn transactions-footer-btn--link"
-        label="Show full history"
-        icon-right="chevron_right"
-        @click="openFullHistory"
-        data-testid="transactions-show-full-history-btn"
-      />
-    </div>
-
-    <div v-if="showLoadMoreAction" class="transactions-footer transactions-footer--history">
-      <q-btn
-        outline
-        no-caps
-        color="white"
-        class="transactions-footer-btn"
-        label="Show more"
-        :loading="isLoadingMore"
-        :disable="isLoadingMore"
-        @click="loadMoreTransactions"
-        data-testid="transactions-show-more-btn"
-      >
-        <template #loading>
-          <q-spinner-dots color="white" />
+      <ul class="transaction-list-container">
+        <template v-for="transaction in transactions" :key="String(transaction.operationId)">
+          <LightningTransactionItem
+            v-if="transaction.kind === 'ln'"
+            :transaction="transaction as LightningTransaction"
+            @click="viewTransactionDetails"
+          />
+          <EcashTransactionItem
+            v-else-if="transaction.kind === 'mint'"
+            :transaction="transaction as EcashTransaction"
+            @click="viewTransactionDetails"
+          />
+          <WalletTransactionItem
+            v-else-if="transaction.kind === 'wallet'"
+            :transaction="transaction as WalletTransaction"
+            @click="viewTransactionDetails"
+          />
         </template>
-      </q-btn>
+
+        <q-item
+          v-if="!isInitialLoading && transactions.length === 0"
+          class="transactions-empty-state text-center"
+          :data-testid="emptyTransactionsTestId"
+        >
+          <q-item-section>
+            <div class="transactions-empty-state__title">No transactions yet</div>
+            <div class="transactions-empty-state__body">
+              {{
+                props.mode === 'home'
+                  ? 'Your latest activity will show up here.'
+                  : 'Transactions for this federation will appear here once you start using it.'
+              }}
+            </div>
+          </q-item-section>
+        </q-item>
+      </ul>
+
+      <div v-if="showLoadMoreAction" class="transactions-footer transactions-footer--history">
+        <q-btn
+          outline
+          no-caps
+          color="white"
+          class="transactions-footer-btn"
+          label="Show more"
+          :loading="isLoadingMore"
+          :disable="isLoadingMore"
+          @click="loadMoreTransactions"
+          data-testid="transactions-show-more-btn"
+        >
+          <template #loading>
+            <q-spinner-dots color="white" />
+          </template>
+        </q-btn>
+      </div>
     </div>
   </div>
 </template>
@@ -237,7 +261,34 @@ defineExpose({
 
 <style scoped>
 .transactions-list {
-  padding-bottom: 120px;
+  padding-bottom: 24px;
+}
+
+.transactions-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 16px;
+}
+
+.transactions-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.transactions-title {
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.transactions-subtitle {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.875rem;
 }
 
 .transaction-list-container {
@@ -246,10 +297,28 @@ defineExpose({
   margin: 0;
 }
 
+.transactions-empty-state {
+  min-height: 132px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.transactions-empty-state__title {
+  color: white;
+  font-weight: 600;
+}
+
+.transactions-empty-state__body {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.9rem;
+}
+
 .transactions-footer {
   display: flex;
   justify-content: center;
-  padding-top: 8px;
+  padding-top: 12px;
 }
 
 .transactions-footer--history {
@@ -260,29 +329,13 @@ defineExpose({
   font-weight: 600;
 }
 
-.transactions-footer-btn--link {
-  opacity: 0.92;
+.transactions-header-action {
+  flex-shrink: 0;
 }
 
-.transaction-item {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-  margin-bottom: 4px;
-  padding-left: 0;
-  padding-right: 0;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+@media (max-width: 520px) {
+  .transactions-header {
+    flex-direction: column;
   }
-
-  &:active {
-    background-color: rgba(255, 255, 255, 0.08);
-  }
-}
-
-.transaction-amount {
-  font-weight: 500;
-  text-align: right;
 }
 </style>

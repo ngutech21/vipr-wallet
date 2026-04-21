@@ -8,22 +8,33 @@
     :data-testid="`lightning-transaction-item-${transaction.operationId}`"
   >
     <q-item-section avatar>
-      <q-icon
-        :name="transaction.type === 'send' ? 'arrow_upward' : 'arrow_downward'"
-        :color="transaction.type === 'send' ? 'negative' : 'positive'"
-        size="md"
-      />
+      <div class="transaction-icon-shell">
+        <q-icon
+          :name="transaction.type === 'send' ? 'arrow_upward' : 'arrow_downward'"
+          :color="transaction.type === 'send' ? 'negative' : 'positive'"
+          size="md"
+        />
+      </div>
     </q-item-section>
 
     <q-item-section>
-      <q-item-label>{{
-        transaction.type === 'send' ? 'Sent Lightning' : 'Received Lightning'
-      }}</q-item-label>
-      <q-item-label caption>{{
-        date.formatDate(transaction.timestamp, 'MMMM D, YYYY - h:mm A')
-      }}</q-item-label>
-      <q-item-label caption v-if="transaction.outcome !== 'success'" class="text-orange">
-        Status: {{ formatOutcome(transaction.outcome) }}
+      <q-item-label class="transaction-title-row">
+        <span class="transaction-title">
+          {{ transaction.type === 'send' ? 'Sent Lightning' : 'Received Lightning' }}
+        </span>
+        <q-badge
+          v-if="statusLabel != null"
+          rounded
+          :color="statusColor"
+          text-color="white"
+          class="transaction-status-badge"
+        >
+          {{ statusLabel }}
+        </q-badge>
+      </q-item-label>
+      <q-item-label caption class="transaction-meta">
+        {{ formattedTimestamp }}
+        <template v-if="showFeeMeta"> • Fee {{ feeInSats }} sats</template>
       </q-item-label>
     </q-item-section>
 
@@ -35,10 +46,7 @@
         {{ transaction.type === 'send' ? '- ' : '+ ' }}
         {{ amountInSats }} sats
       </div>
-      <div class="text-caption text-grey">≈ ${{ amountInFiat }} {{ 'usd' }}</div>
-      <div v-if="transaction.fee" class="text-caption text-grey">
-        Fee: {{ Math.round(transaction.fee / 1000) }} sats
-      </div>
+      <div class="transaction-fiat">≈ ${{ amountInFiat }} usd</div>
     </q-item-section>
 
     <q-item-section side>
@@ -66,9 +74,36 @@ defineEmits<{
 
 const lightningStore = useLightningStore()
 const amountInFiat = ref<string>('0.00')
+const formattedTimestamp = computed(() => {
+  return date.formatDate(props.transaction.timestamp, 'MMM D, YYYY • h:mm A')
+})
 
 const hasValidOutcome = computed(() => {
   return Boolean(props.transaction.outcome?.trim())
+})
+const statusLabel = computed(() => {
+  return props.transaction.outcome != null ? formatOutcome(props.transaction.outcome) : null
+})
+const statusColor = computed(() => {
+  if (props.transaction.outcome == null) {
+    return 'grey'
+  }
+
+  switch (props.transaction.outcome) {
+    case 'success':
+    case 'claimed':
+    case 'funded':
+      return 'positive'
+    case 'created':
+    case 'pending':
+    case 'awaiting_funds':
+    case 'canceled':
+      return 'warning'
+    case 'unexpected_error':
+      return 'negative'
+    default:
+      return 'grey'
+  }
 })
 const amountInSats = computed(() => {
   try {
@@ -78,6 +113,10 @@ const amountInSats = computed(() => {
     logger.error('Failed to decode Lightning invoice', error)
     return '0'
   }
+})
+const feeInSats = computed(() => Math.round((props.transaction.fee ?? 0) / 1000).toLocaleString())
+const showFeeMeta = computed(() => {
+  return props.transaction.type === 'send' && (props.transaction.fee ?? 0) > 0
 })
 
 onMounted(async () => {
@@ -105,11 +144,10 @@ function formatOutcome(outcome: string | undefined): string {
 
 <style scoped>
 .transaction-item {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-  margin-bottom: 4px;
-  padding-left: 0px;
-  padding-right: 0px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  margin-bottom: 2px;
+  padding: 10px 0;
   transition: background-color 0.2s;
 
   &:hover {
@@ -121,8 +159,49 @@ function formatOutcome(outcome: string | undefined): string {
   }
 }
 
+.transaction-icon-shell {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.transaction-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.transaction-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.transaction-status-badge {
+  flex-shrink: 0;
+}
+
+.transaction-meta {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.54);
+}
+
 .transaction-amount {
-  font-weight: 500;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.transaction-fiat {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.48);
   text-align: right;
 }
 </style>

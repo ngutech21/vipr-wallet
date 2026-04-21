@@ -58,26 +58,26 @@
       />
     </q-dialog>
 
-    <div class="text-white q-pa-md dark-bg" style="width: 100%">
-      <div class="text-h4 text-center" data-testid="home-balance">
-        {{ Math.ceil(totalBalance).toLocaleString() }} sats
-      </div>
+    <section class="home-hero q-pa-md">
+      <div class="hero-card">
+        <div class="hero-balance" data-testid="home-balance">
+          {{ Math.ceil(totalBalance).toLocaleString() }} sats
+        </div>
 
-      <div class="text-center" v-if="federationStore.selectedFederation">
-        <q-chip
-          class="q-mt-sm"
-          color="white"
-          text-color="primary"
-          outline
-          data-testid="home-selected-federation-chip"
-        >
-          <q-icon name="account_balance" class="q-mr-sm" />
-          {{ federationStore.selectedFederation?.title }}
-        </q-chip>
+        <div v-if="federationStore.selectedFederation" class="hero-federation">
+          <q-chip
+            class="hero-federation__chip"
+            color="white"
+            text-color="primary"
+            outline
+            data-testid="home-selected-federation-chip"
+          >
+            <q-icon name="account_balance" class="q-mr-sm" />
+            {{ federationStore.selectedFederation.title }}
+          </q-chip>
+        </div>
       </div>
-    </div>
-
-    <TransactionsList mode="home" />
+    </section>
 
     <div
       v-if="federationStore.federations.length == 0"
@@ -96,37 +96,47 @@
       />
     </div>
 
-    <!-- Added fixed bottom buttons using q-page-sticky -->
+    <div v-if="federationStore.federations.length > 0" class="home-transactions">
+      <TransactionsList mode="home" />
+    </div>
+
     <q-page-sticky
-      position="bottom"
-      :offset="[0, 50]"
       v-if="federationStore.federations.length > 0"
+      position="bottom"
+      :offset="[0, 28]"
     >
-      <div class="q-pa-md">
-        <div class="row items-center justify-evenly q-gutter-md">
-          <q-btn
-            label="Send"
-            icon="arrow_upward"
-            color="primary"
-            @click="showSendEcashSelection = true"
-            :disable="totalBalance <= 0"
-            :data-testid="'home-send-btn'"
-          />
-          <q-btn
-            label=""
-            color="primary"
-            icon="qr_code_scanner"
-            :to="'/scan'"
-            :data-testid="'home-scan-btn'"
-          />
-          <q-btn
-            label="Receive"
-            icon="arrow_downward"
-            color="primary"
-            @click="showReceiveEcashSelection = true"
-            :data-testid="'home-receive-btn'"
-          />
-        </div>
+      <div class="home-actions q-px-md">
+        <q-btn
+          no-caps
+          unelevated
+          label="Send"
+          icon="arrow_upward"
+          color="primary"
+          class="home-action-btn"
+          @click="showSendEcashSelection = true"
+          :disable="totalBalance <= 0"
+          :data-testid="'home-send-btn'"
+        />
+        <q-btn
+          no-caps
+          outline
+          label="Scan"
+          color="white"
+          icon="qr_code_scanner"
+          class="home-action-btn home-action-btn--secondary"
+          :to="'/scan'"
+          :data-testid="'home-scan-btn'"
+        />
+        <q-btn
+          no-caps
+          unelevated
+          label="Receive"
+          icon="arrow_downward"
+          color="primary"
+          class="home-action-btn"
+          @click="showReceiveEcashSelection = true"
+          :data-testid="'home-receive-btn'"
+        />
       </div>
     </q-page-sticky>
   </q-page>
@@ -194,16 +204,65 @@ function returnToDiscovery() {
 </script>
 
 <style scoped>
-/* Target the q-btn that has the .small-label class */
-.q-btn.small-label .q-btn__content .q-btn__label {
-  font-size: 0.75rem !important;
+.home-hero {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hero-card {
+  background:
+    radial-gradient(circle at top left, rgba(156, 39, 255, 0.18), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 18px 20px 16px;
   text-align: center;
 }
-.word-wrap {
-  word-wrap: break-word;
-  white-space: normal;
+
+.hero-balance {
+  font-size: clamp(2rem, 6vw, 2.75rem);
+  line-height: 1.05;
+  font-weight: 700;
+  color: white;
 }
-.dark-bg {
-  background-color: #202020;
+
+.hero-federation {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-federation__chip {
+  max-width: 100%;
+}
+
+.home-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  width: min(100%, 520px);
+}
+
+.home-action-btn {
+  min-height: 56px;
+  border-radius: 18px;
+}
+
+.home-action-btn--secondary {
+  border-color: rgba(255, 255, 255, 0.18);
+  color: white;
+}
+
+.home-transactions {
+  padding-bottom: 96px;
+}
+
+@media (max-width: 520px) {
+  .home-actions {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
