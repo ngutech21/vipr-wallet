@@ -8,6 +8,7 @@ import type {
   OperationKey,
   OperationLog,
   SpendNotesState,
+  NoteCountByDenomination,
   Transactions,
   TxOutputSummary,
   WalletTransaction,
@@ -338,6 +339,14 @@ export const useWalletStore = defineStore('wallet', {
         notes,
         operationId,
       }
+    },
+
+    async getOfflineEcashNoteCounts(): Promise<NoteCountByDenomination> {
+      if (this.wallet == null) {
+        throw new Error('Wallet is not initialized')
+      }
+
+      return await this.wallet.mint.getNotesByDenomination()
     },
 
     async sendOnchain(
