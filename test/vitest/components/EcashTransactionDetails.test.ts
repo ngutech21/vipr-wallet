@@ -8,18 +8,17 @@ import { useLightningStore } from 'src/stores/lightning'
 import type { EcashTransaction } from '@fedimint/core'
 
 // Mock factory for creating test transactions
-const createMockTransaction = (overrides: Partial<EcashTransaction> = {}): EcashTransaction =>
-  ({
-    kind: 'mint',
-    operationId: 'mint-op-123',
-    type: 'reissue',
-    amountMsats: 50000,
-    outcome: 'Success',
-    timestamp: 1234567890000,
-    txId: 'tx-id-abc123',
-    notes: 'cashuAeyJ0b2tlbiI6WyJzYXQiXX0=',
-    ...overrides,
-  }) as EcashTransaction
+const createMockTransaction = (overrides: Partial<EcashTransaction> = {}): EcashTransaction => ({
+  kind: 'mint',
+  operationId: 'mint-op-123',
+  type: 'reissue',
+  amountMsats: 50000,
+  outcome: 'Success',
+  timestamp: 1234567890000,
+  txId: 'tx-id-abc123',
+  notes: 'cashuAeyJ0b2tlbiI6WyJzYXQiXX0=',
+  ...overrides,
+})
 
 describe('EcashTransactionDetails.vue', () => {
   let wrapper: VueWrapper

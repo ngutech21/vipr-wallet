@@ -2,6 +2,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import StartupWizardPage from 'src/pages/startup-wizard.vue'
 
+type OnboardingStoreMock = {
+  flow: 'create' | 'restore' | null
+  step: 'install' | 'choice' | 'backup' | 'restore'
+  status: 'in_progress' | 'complete'
+  normalizeForWalletState: ReturnType<typeof vi.fn>
+  start: ReturnType<typeof vi.fn>
+  goToStep: ReturnType<typeof vi.fn>
+  markInProgress: ReturnType<typeof vi.fn>
+  complete: ReturnType<typeof vi.fn>
+}
+
 const routerReplaceMock = vi.hoisted(() => vi.fn(() => Promise.resolve()))
 const notifyCreateMock = vi.hoisted(() => vi.fn())
 
@@ -29,10 +40,10 @@ const walletStoreMock = vi.hoisted(() => ({
   openWallet: vi.fn<() => Promise<void>>(),
 }))
 
-const onboardingStoreMock = vi.hoisted(() => ({
-  flow: null as 'create' | 'restore' | null,
-  step: 'choice' as 'install' | 'choice' | 'backup' | 'restore',
-  status: 'complete' as 'in_progress' | 'complete',
+const onboardingStoreMock: OnboardingStoreMock = vi.hoisted(() => ({
+  flow: null,
+  step: 'choice',
+  status: 'complete',
   normalizeForWalletState: vi.fn(),
   start: vi.fn(),
   goToStep: vi.fn(),

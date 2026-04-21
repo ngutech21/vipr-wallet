@@ -2,8 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import SettingsPage from 'src/pages/settings/index.vue'
 
-const mockRoute = vi.hoisted(() => ({
-  name: '/settings/' as string | null,
+type MockRoute = {
+  name: string | null
+}
+
+const mockRoute: MockRoute = vi.hoisted(() => ({
+  name: '/settings/',
 }))
 const mockRouterReplace = vi.hoisted(() => vi.fn())
 

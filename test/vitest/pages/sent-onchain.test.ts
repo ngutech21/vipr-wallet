@@ -46,7 +46,7 @@ describe('SentOnchainPage', () => {
       outcome: 'Confirmed',
       timestamp: 1_234_567_890_000,
       ...overrides,
-    } as WalletTransaction
+    }
   }
 
   function createWrapper() {

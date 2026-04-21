@@ -41,6 +41,22 @@ type CachedFederationPreview = {
 
 type PreviewStatus = 'loading' | 'failed' | 'timed_out' | 'ready'
 
+function createInitialNostrSyncStatus(): NostrContactSyncStatus {
+  return 'idle'
+}
+
+function createRecommendationVotersByFederation(): Record<string, Record<string, number>> {
+  return {}
+}
+
+function createNumberLookup(): Record<string, number> {
+  return {}
+}
+
+function createPreviewStatusLookup(): Record<string, PreviewStatus> {
+  return {}
+}
+
 const DEFAULT_RELAYS = [
   'wss://nos.lol',
   'wss://relay.primal.net',
@@ -91,7 +107,7 @@ export const useNostrStore = defineStore('nostr', {
       'vipr.nostr.contact-sync-meta',
       DEFAULT_CONTACT_SYNC_META,
     ),
-    syncStatus: 'idle' as NostrContactSyncStatus,
+    syncStatus: createInitialNostrSyncStatus(),
     ndk: null as NDK | null,
     discoveredFederations: useLocalStorage<Federation[]>('vipr.nostr.discovery.federations', []),
     previewCacheByFederation: useLocalStorage<Record<string, CachedFederationPreview>>(
@@ -111,7 +127,7 @@ export const useNostrStore = defineStore('nostr', {
       'vipr.nostr.discovery.recommendation-counts',
       {},
     ),
-    recommendationVotersByFederation: {} as Record<string, Record<string, number>>,
+    recommendationVotersByFederation: createRecommendationVotersByFederation(),
     isDiscoveringFederations: false,
     federationSubscription: null as NDKSubscription | null,
     recommendationSubscription: null as NDKSubscription | null,
@@ -119,9 +135,9 @@ export const useNostrStore = defineStore('nostr', {
     previewQueue: [] as string[],
     isPreviewQueueRunning: false,
     isJoinInProgress: false,
-    previewAttemptedCreatedAt: {} as Record<string, number>,
-    previewErrorLoggedCreatedAt: {} as Record<string, number>,
-    previewStatusByFederation: {} as Record<string, PreviewStatus>,
+    previewAttemptedCreatedAt: createNumberLookup(),
+    previewErrorLoggedCreatedAt: createNumberLookup(),
+    previewStatusByFederation: createPreviewStatusLookup(),
   }),
 
   getters: {},

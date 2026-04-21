@@ -11,6 +11,10 @@ const APPLY_INTENT_TTL_MS = 5 * 60_000
 
 export type PwaUpdateState = 'idle' | 'checking' | 'waiting' | 'applying' | 'error'
 
+function createInitialPwaUpdateState(): PwaUpdateState {
+  return 'idle'
+}
+
 export type UpdateCheckResult =
   | 'update-ready'
   | 'up-to-date'
@@ -127,7 +131,7 @@ function waitForControllerChange(): Promise<void> {
 
 export const usePwaUpdateStore = defineStore('pwaUpdate', {
   state: () => ({
-    state: 'idle' as PwaUpdateState,
+    state: createInitialPwaUpdateState(),
     registration: null as ServiceWorkerRegistration | null,
     lastError: null as string | null,
     isUpdateReady: false,

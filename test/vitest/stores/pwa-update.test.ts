@@ -39,7 +39,7 @@ function createRegistration(
   overrides: Partial<ServiceWorkerRegistration> = {},
 ): ServiceWorkerRegistration {
   return {
-    update: vi.fn().mockResolvedValue(undefined) as unknown as ServiceWorkerRegistration['update'],
+    update: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
     waiting: null,
     installing: null,
     ...overrides,

@@ -8,18 +8,17 @@ import { useLightningStore } from 'src/stores/lightning'
 import type { WalletTransaction } from '@fedimint/core'
 
 // Mock factory for creating test transactions
-const createMockTransaction = (overrides: Partial<WalletTransaction> = {}): WalletTransaction =>
-  ({
-    kind: 'wallet',
-    operationId: 'wallet-op-123',
-    type: 'deposit',
-    onchainAddress: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
-    amountMsats: 100000000,
-    fee: 5000000,
-    outcome: 'Confirmed',
-    timestamp: 1234567890000,
-    ...overrides,
-  }) as WalletTransaction
+const createMockTransaction = (overrides: Partial<WalletTransaction> = {}): WalletTransaction => ({
+  kind: 'wallet',
+  operationId: 'wallet-op-123',
+  type: 'deposit',
+  onchainAddress: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+  amountMsats: 100000000,
+  fee: 5000000,
+  outcome: 'Confirmed',
+  timestamp: 1234567890000,
+  ...overrides,
+})
 
 describe('WalletTransactionDetails.vue', () => {
   let wrapper: VueWrapper
@@ -186,14 +185,14 @@ describe('WalletTransactionDetails.vue', () => {
       const { outcome: _removed, ...transactionWithoutOutcome } = createMockTransaction({
         amountMsats: 0,
       })
-      wrapper = createWrapper(transactionWithoutOutcome as WalletTransaction)
+      wrapper = createWrapper(transactionWithoutOutcome)
 
       expect(wrapper.text()).toContain('Waiting for Bitcoin')
     })
 
     it('should not show status badge when outcome is undefined', () => {
       const { outcome: _removed, ...transactionWithoutOutcome } = createMockTransaction()
-      const transaction = transactionWithoutOutcome as WalletTransaction
+      const transaction = transactionWithoutOutcome
       wrapper = createWrapper(transaction)
 
       const badge = wrapper.find('.status-badge')

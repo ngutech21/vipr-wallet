@@ -94,7 +94,7 @@ watch(
       const sats = getWalletTransactionAmountSats({
         ...props.transaction,
         amountMsats,
-      } as WalletTransaction)
+      })
       if (sats == null) {
         amountInFiat.value = '0.00'
         return

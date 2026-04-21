@@ -6,15 +6,24 @@ type MockWalletLike = {
   isOpen: () => boolean
 }
 
+type MnemonicResponse = Error | string[] | null | { unexpected: true } | { mnemonic: string[] }
+type GeneratedMnemonicResponse = Error | string[]
+type CoreMockState = {
+  getMnemonicValue: MnemonicResponse
+  joinFederationErrorOnce: Error | null
+  openWalletSuccessOnce: boolean
+  directorInstances: unknown[]
+  generateMnemonicValue: GeneratedMnemonicResponse
+  setMnemonicSpy: ReturnType<typeof vi.fn<() => Promise<boolean>>>
+}
+
 const UUID_V5_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
-const coreMockState = vi.hoisted(() => ({
-  getMnemonicValue: new Error(
-    'No wallet mnemonic set. Please set or generate a mnemonic first.',
-  ) as unknown,
-  joinFederationErrorOnce: null as Error | null,
+const coreMockState: CoreMockState = vi.hoisted(() => ({
+  getMnemonicValue: new Error('No wallet mnemonic set. Please set or generate a mnemonic first.'),
+  joinFederationErrorOnce: null,
   openWalletSuccessOnce: false,
-  directorInstances: [] as unknown[],
+  directorInstances: [],
   generateMnemonicValue: [
     'abandon',
     'ability',
@@ -28,7 +37,7 @@ const coreMockState = vi.hoisted(() => ({
     'abuse',
     'access',
     'accident',
-  ] as unknown,
+  ],
   setMnemonicSpy: vi.fn(() => Promise.resolve(true)),
 }))
 

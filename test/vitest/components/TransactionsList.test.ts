@@ -40,22 +40,28 @@ function createOperationKey(operationId: string): OperationKey {
       secs_since_epoch: 1_234_567_890,
       nanos_since_epoch: 0,
     },
-  } as OperationKey
+  }
 }
 
 function createLightningTransaction(
   overrides: Partial<LightningTransaction> = {},
 ): LightningTransaction {
-  return {
+  const baseTransaction: LightningTransaction = {
     kind: 'ln',
     operationId: 'ln-op-1',
     type: 'send',
     invoice: 'lnbc1test',
-    amountMsats: 1_000,
+    outcome: 'success',
+    gateway: 'gateway-1',
+    txId: 'tx-1',
     fee: 0,
     timestamp: 1_234_567_890_000,
+  }
+
+  return {
+    ...baseTransaction,
     ...overrides,
-  } as LightningTransaction
+  }
 }
 
 function createEcashTransaction(overrides: Partial<EcashTransaction> = {}): EcashTransaction {
@@ -79,7 +85,7 @@ function createWalletTransaction(overrides: Partial<WalletTransaction> = {}): Wa
     fee: 0,
     timestamp: 1_234_567_890_000,
     ...overrides,
-  } as WalletTransaction
+  }
 }
 
 function createPageResult(
