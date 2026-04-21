@@ -4,26 +4,31 @@
     enter-active-class="animated slideInLeft"
     leave-active-class="animated slideOutLeft"
   >
-    <q-page class="column dark-gradient">
-      <q-toolbar class="header-section">
-        <q-btn flat round icon="arrow_back" :to="{ name: '/' }" data-testid="send-back-btn" />
-        <q-toolbar-title class="text-center no-wrap">Send</q-toolbar-title>
-        <div class="q-ml-md" style="width: 40px"></div>
-      </q-toolbar>
-      <div class="q-px-md">
+    <q-page class="column dark-gradient send-page">
+      <div class="send-topbar">
+        <q-btn
+          flat
+          round
+          icon="arrow_back"
+          :to="{ name: '/' }"
+          class="send-topbar__back"
+          data-testid="send-back-btn"
+        />
+      </div>
+      <div class="send-content q-px-md">
         <!-- Payment input section -->
         <template v-if="!decodedInvoice">
-          <q-card flat class="glass-effect q-mb-md">
+          <q-card flat class="task-card q-mb-md">
             <q-card-section>
+              <div class="section-title q-mb-sm">Send payment</div>
               <q-input
                 v-model="lightningInvoice"
                 filled
-                autogrow
                 dense
                 dark
-                type="textarea"
+                type="text"
                 placeholder="Enter Lightning invoice, address or contact"
-                class="custom-input"
+                class="custom-input custom-input--single-line"
                 data-testid="send-invoice-input"
               >
                 <template #after>
@@ -41,9 +46,13 @@
           </q-card>
 
           <div class="q-mb-md">
-            <div class="text-subtitle2 text-white q-mb-sm">Contacts</div>
-
-            <q-list v-if="hasSyncedContacts" bordered separator class="rounded-contact-list">
+            <q-list
+              v-if="showFilteredContacts"
+              bordered
+              separator
+              class="rounded-contact-list"
+              data-testid="send-contacts-results"
+            >
               <q-item
                 v-for="contact in suggestedContacts"
                 :key="contact.pubkey"
@@ -65,10 +74,48 @@
             </q-list>
 
             <q-card
+              v-else-if="hasSyncedContacts && !hasContactQuery"
+              flat
+              class="task-card empty-contacts-card contacts-hint-card"
+              data-testid="send-contacts-hint"
+            >
+              <q-card-section class="row items-center q-col-gutter-sm">
+                <div class="col-auto">
+                  <q-icon name="search" size="md" color="grey-5" />
+                </div>
+                <div class="col">
+                  <div class="text-subtitle1 text-grey-4">Contacts appear as you type</div>
+                  <div class="text-caption text-grey-6">
+                    Use the field above to search by name or Lightning address.
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card>
+
+            <q-card
+              v-else-if="hasSyncedContacts"
+              flat
+              class="task-card empty-contacts-card contacts-hint-card"
+              data-testid="send-no-contact-matches"
+            >
+              <q-card-section class="row items-center q-col-gutter-sm">
+                <div class="col-auto">
+                  <q-icon name="search_off" size="md" color="grey-5" />
+                </div>
+                <div class="col">
+                  <div class="text-subtitle1 text-grey-4">No matching contacts</div>
+                  <div class="text-caption text-grey-6">
+                    Try a different name or Lightning address.
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card>
+
+            <q-card
               v-else
               flat
               bordered
-              class="glass-effect empty-contacts-card"
+              class="task-card empty-contacts-card"
               data-testid="send-no-contacts"
             >
               <q-card-section class="row items-center q-col-gutter-sm">
@@ -82,24 +129,25 @@
 
           <!-- Amount input section (for lightning address) -->
           <q-slide-transition>
-            <q-card v-if="amountRequired" flat bordered class="glass-effect q-mb-md">
+            <q-card v-if="amountRequired" flat class="task-card q-mb-md">
               <q-card-section>
-                <div class="text-subtitle2 text-grey q-mb-sm">Payment Details</div>
+                <div class="section-title q-mb-sm">Payment details</div>
 
                 <div class="row q-col-gutter-md">
                   <div class="col-12">
                     <q-input
                       filled
-                      dense
-                      dark
                       v-model.number="invoiceAmount"
                       label="Amount in sats"
                       type="number"
-                      class="custom-input"
+                      readonly
+                      class="custom-input no-spinner q-mb-md"
                       data-testid="send-amount-input"
                     />
                   </div>
                 </div>
+
+                <NumericKeypad :buttons="keypadButtons" class="q-mb-md" />
 
                 <div class="row q-col-gutter-md q-mt-md" v-if="lnAddress">
                   <div class="col-12">
@@ -123,7 +171,7 @@
             <q-btn
               :label="amountRequired ? 'Create Invoice' : 'Continue'"
               color="primary"
-              class="full-width q-py-sm"
+              class="full-width q-py-sm send-action-btn"
               size="lg"
               :loading="isProcessing"
               :disable="isProcessing"
@@ -158,9 +206,11 @@ defineOptions({
 
 import { computed, ref, watch } from 'vue'
 import VerifyPayment from 'components/VerifyPayment.vue'
+import NumericKeypad from 'src/components/NumericKeypad.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useInvoiceDecoding } from 'src/composables/useInvoiceDecoding'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
+import { useNumericInput } from 'src/composables/useNumericInput'
 import { useNostrStore } from 'src/stores/nostr'
 import type { SyncedNostrContact } from 'src/types/nostr'
 import { getNostrContactDisplayName, getNostrContactSubtitle } from 'src/utils/nostrContacts'
@@ -170,8 +220,8 @@ const lightningInvoice = ref('')
 const route = useRoute('/send')
 const router = useRouter()
 const nostrStore = useNostrStore()
-const invoiceAmount = ref(0)
 const invoiceMemo = ref('')
+const { value: invoiceAmount, keypadButtons } = useNumericInput(0)
 
 // Use the invoice decoding composable
 const {
@@ -186,7 +236,17 @@ const {
 // Use the lightning payment composable
 const { payInvoice: payInvoiceFromComposable } = useLightningPayment()
 const hasSyncedContacts = computed(() => nostrStore.contacts.length > 0)
-const suggestedContacts = computed(() => nostrStore.getSuggestedContacts(lightningInvoice.value))
+const hasContactQuery = computed(() => lightningInvoice.value.trim().length >= 2)
+const suggestedContacts = computed(() => {
+  if (!hasContactQuery.value) {
+    return []
+  }
+
+  return nostrStore.getSuggestedContacts(lightningInvoice.value.trim())
+})
+const showFilteredContacts = computed(
+  () => hasContactQuery.value && suggestedContacts.value.length > 0,
+)
 
 // FIXME
 // Validate input before allowing to continue
@@ -263,8 +323,56 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   border-radius: 16px;
 }
 
+.send-page {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.send-topbar {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 12px 16px 4px;
+}
+
+.send-topbar__back {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.send-content {
+  width: 100%;
+}
+
+.task-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+}
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
 .custom-input :deep(.q-field__control) {
   background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+}
+
+.custom-input--single-line :deep(.q-field__native),
+.custom-input--single-line :deep(.q-field__input) {
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  text-overflow: ellipsis;
+  scrollbar-width: none;
+}
+
+.custom-input--single-line :deep(.q-field__input::-webkit-scrollbar),
+.custom-input--single-line :deep(.q-field__native::-webkit-scrollbar) {
+  display: none;
 }
 
 .custom-input :deep(.q-field__native),
@@ -283,9 +391,10 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .rounded-contact-list {
-  border-radius: 16px;
+  border-radius: 24px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.06);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .rounded-contact-list :deep(.q-item__label--caption) {
@@ -293,6 +402,15 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .empty-contacts-card {
-  border-radius: 16px;
+  border-radius: 24px;
+}
+
+.contacts-hint-card {
+  opacity: 0.92;
+}
+
+.send-action-btn {
+  min-height: 54px;
+  border-radius: 18px;
 }
 </style>

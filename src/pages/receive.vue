@@ -11,98 +11,115 @@ meta:
   >
     <!-- Only render layout if not leaving -->
 
-    <q-page class="dark-gradient" data-testid="receive-page">
-      <q-toolbar class="header-section">
-        <q-btn flat round icon="arrow_back" @click="goBack" data-testid="receive-back-btn" />
-        <q-toolbar-title class="text-center no-wrap">Receive</q-toolbar-title>
-        <div class="q-ml-md" style="width: 40px"></div>
-      </q-toolbar>
-
-      <div class="flex flex-center full-width">
-        <div v-if="!qrData" class="amount-entry-container q-pa-lg glass-effect">
-          <div class="text-h6 q-mb-md text-center">Enter Amount</div>
-
-          <q-input
-            filled
-            v-model.number="amount"
-            label="Amount (Sats)"
-            type="number"
-            ref="amountInput"
-            class="no-spinner q-mb-lg"
-            readonly
-            :rules="[(val) => val > 0 || 'Enter a positive amount']"
-            data-testid="amount-input"
-          />
-
-          <NumericKeypad :buttons="keypadButtons" class="q-mb-lg" />
-
-          <q-btn
-            label="Create Invoice"
-            color="primary"
-            class="full-width"
-            :disable="amount <= 0 || isCreatingInvoice"
-            @click="onRequest"
-            icon="bolt"
-            :loading="isCreatingInvoice"
-            data-testid="receive-create-invoice-btn"
-            :data-busy="isCreatingInvoice ? 'true' : 'false'"
-          >
-            <template #loading>
-              <q-spinner-dots color="white" />
-            </template>
-            <q-icon name="bolt" class="q-ml-sm" />
-          </q-btn>
-        </div>
-      </div>
-
-      <!-- QR Code Card -->
-      <div class="column items-center justify-center">
-        <q-card v-if="qrData" class="qr-card" data-testid="receive-qr-container">
-          <q-card-section class="qr-container">
-            <qrcode-vue :value="qrData" level="M" render-as="svg" :size="0" class="responsive-qr" />
-          </q-card-section>
-          <q-separator />
-          <q-card-section>
-            <div class="row items-center q-gutter-sm">
-              <q-input v-model="qrData" readonly class="col" data-testid="receive-invoice-input" />
-              <q-btn
-                icon="content_copy"
-                flat
-                @click="copyToClipboard"
-                data-testid="receive-copy-invoice-btn"
-              />
-              <q-btn
-                icon="share"
-                flat
-                @click="shareQrcode"
-                v-if="isSupported"
-                data-testid="receive-share-invoice-btn"
-              />
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
-
-      <!-- Payment Status -->
-      <div v-if="qrData" class="column items-center justify-center q-mt-xs">
-        <span class="highlight">{{ formattedCountdown }}</span>
-        <span class="countdown-text">
-          Waiting for Lightning payment...
-          <q-spinner v-if="isWaiting" size="20px" class="q-ml-sm" />
-        </span>
-      </div>
-
-      <!-- Request button -->
-      <!-- <q-btn label="Create Invoice" color="primary" @click="onRequest" v-if="!qrData" /> -->
-      <div class="row justify-center q-mt-lg">
+    <q-page class="dark-gradient receive-page" data-testid="receive-page">
+      <div class="receive-topbar">
         <q-btn
-          v-if="qrData"
-          label="Pay with Bitcoin Wallet"
-          color="primary"
-          icon="account_balance_wallet"
-          @click="payWithBitcoinConnect"
-          data-testid="receive-pay-with-wallet-btn"
+          flat
+          round
+          icon="arrow_back"
+          @click="goBack"
+          class="receive-topbar__back"
+          data-testid="receive-back-btn"
         />
+      </div>
+
+      <div class="receive-content">
+        <div class="flex flex-center full-width">
+          <div v-if="!qrData" class="amount-entry-container q-pa-lg task-card">
+            <div class="entry-title text-center">Enter amount</div>
+
+            <q-input
+              filled
+              v-model.number="amount"
+              label="Amount (Sats)"
+              type="number"
+              ref="amountInput"
+              class="no-spinner q-mb-lg receive-input"
+              readonly
+              :rules="[(val) => val > 0 || 'Enter a positive amount']"
+              data-testid="amount-input"
+            />
+
+            <NumericKeypad :buttons="keypadButtons" class="q-mb-lg" />
+
+            <q-btn
+              label="Create Invoice"
+              color="primary"
+              class="full-width receive-action-btn"
+              :disable="amount <= 0 || isCreatingInvoice"
+              @click="onRequest"
+              icon="bolt"
+              :loading="isCreatingInvoice"
+              data-testid="receive-create-invoice-btn"
+              :data-busy="isCreatingInvoice ? 'true' : 'false'"
+            >
+              <template #loading>
+                <q-spinner-dots color="white" />
+              </template>
+              <q-icon name="bolt" class="q-ml-sm" />
+            </q-btn>
+          </div>
+        </div>
+
+        <!-- QR Code Card -->
+        <div class="column items-center justify-center">
+          <q-card v-if="qrData" class="qr-card task-card" data-testid="receive-qr-container">
+            <q-card-section class="qr-container">
+              <qrcode-vue
+                :value="qrData"
+                level="M"
+                render-as="svg"
+                :size="0"
+                class="responsive-qr"
+              />
+            </q-card-section>
+            <q-separator />
+            <q-card-section>
+              <div class="row items-center q-gutter-sm">
+                <q-input
+                  v-model="qrData"
+                  readonly
+                  class="col receive-input"
+                  data-testid="receive-invoice-input"
+                />
+                <q-btn
+                  icon="content_copy"
+                  flat
+                  @click="copyToClipboard"
+                  data-testid="receive-copy-invoice-btn"
+                />
+                <q-btn
+                  icon="share"
+                  flat
+                  @click="shareQrcode"
+                  v-if="isSupported"
+                  data-testid="receive-share-invoice-btn"
+                />
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+
+        <!-- Payment Status -->
+        <div v-if="qrData" class="column items-center justify-center q-mt-xs">
+          <span class="highlight">{{ formattedCountdown }}</span>
+          <span class="countdown-text">
+            Waiting for Lightning payment...
+            <q-spinner v-if="isWaiting" size="20px" class="q-ml-sm" />
+          </span>
+        </div>
+
+        <div class="row justify-center q-mt-lg">
+          <q-btn
+            v-if="qrData"
+            label="Pay with Bitcoin Wallet"
+            color="primary"
+            icon="account_balance_wallet"
+            class="receive-wallet-btn"
+            @click="payWithBitcoinConnect"
+            data-testid="receive-pay-with-wallet-btn"
+          />
+        </div>
       </div>
     </q-page>
   </transition>
@@ -266,10 +283,44 @@ async function goBack() {
 </script>
 
 <style scoped>
+.receive-page {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.receive-topbar {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 12px 16px 4px;
+}
+
+.receive-topbar__back {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.receive-content {
+  width: 100%;
+  padding: 0 16px 24px;
+}
+
+.task-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+}
+
 .amount-entry-container {
   width: 100%;
-  max-width: 500px;
-  border-radius: 16px;
+  max-width: 560px;
+}
+
+.entry-title {
+  margin-bottom: 16px;
+  font-size: 1.05rem;
+  font-weight: 600;
 }
 .input-width {
   width: 100%;
@@ -294,7 +345,7 @@ async function goBack() {
 
 .qr-card {
   width: 100%;
-  max-width: 512px;
+  max-width: 560px;
   margin-bottom: 0;
 }
 
@@ -309,5 +360,16 @@ async function goBack() {
 .responsive-qr {
   width: 100%;
   height: 100%;
+}
+
+.receive-input :deep(.q-field__control) {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+}
+
+.receive-action-btn,
+.receive-wallet-btn {
+  min-height: 54px;
+  border-radius: 18px;
 }
 </style>

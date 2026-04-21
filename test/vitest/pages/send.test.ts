@@ -12,6 +12,8 @@ const mockDecodedInvoiceRef = vi.hoisted(() => ({
   value: null as Record<string, unknown> | null,
   __v_isRef: true,
 }))
+const mockAmountRequiredRef = vi.hoisted(() => ({ value: false, __v_isRef: true }))
+const mockAmountRef = vi.hoisted(() => ({ value: 0, __v_isRef: true }))
 const mockNostrStore = vi.hoisted(() => ({
   contacts: [] as Array<{
     pubkey: string
@@ -37,7 +39,7 @@ vi.mock('vue-router', () => ({
 vi.mock('src/composables/useInvoiceDecoding', () => ({
   useInvoiceDecoding: () => ({
     isProcessing: ref(false),
-    amountRequired: ref(false),
+    amountRequired: mockAmountRequiredRef,
     lnAddress: ref(''),
     decodedInvoice: mockDecodedInvoiceRef,
     decodeInvoice: mockDecodeInvoiceFromComposable,
@@ -48,6 +50,13 @@ vi.mock('src/composables/useInvoiceDecoding', () => ({
 vi.mock('src/composables/useLightningPayment', () => ({
   useLightningPayment: () => ({
     payInvoice: mockPayInvoiceFromComposable,
+  }),
+}))
+
+vi.mock('src/composables/useNumericInput', () => ({
+  useNumericInput: () => ({
+    value: mockAmountRef,
+    keypadButtons: [],
   }),
 }))
 
@@ -71,6 +80,15 @@ describe('SendPage query invoice handling', () => {
     template: '<div v-bind="$attrs"><slot /></div>',
   }
 
+  const QInputStub = {
+    props: {
+      modelValue: { type: [String, Number], required: false, default: '' },
+    },
+    emits: ['update:modelValue'],
+    template:
+      '<input v-bind="$attrs" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+  }
+
   function createWrapper() {
     return mount(SendPage, {
       global: {
@@ -83,7 +101,8 @@ describe('SendPage query invoice handling', () => {
           'q-toolbar-title': SlotStub,
           'q-card': SlotStub,
           'q-card-section': SlotStub,
-          'q-input': SlotStub,
+          'q-input': QInputStub,
+          NumericKeypad: true,
           'q-slide-transition': SlotStub,
           'q-spinner-dots': SlotStub,
           'q-list': SlotStub,
@@ -109,6 +128,8 @@ describe('SendPage query invoice handling', () => {
     mockCreateInvoiceFromInput.mockResolvedValue(undefined)
     mockPayInvoiceFromComposable.mockResolvedValue({ success: true, amountSats: 1, fee: 0 })
     mockDecodedInvoiceRef.value = null
+    mockAmountRequiredRef.value = false
+    mockAmountRef.value = 0
     mockNostrStore.contacts = []
     mockNostrStore.getSuggestedContacts.mockReturnValue([])
   })
@@ -149,13 +170,31 @@ describe('SendPage query invoice handling', () => {
     wrapper = createWrapper()
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Contacts')
     expect(wrapper.text()).toContain('No Contacts')
     expect(wrapper.find('[data-testid="send-no-contacts"]').exists()).toBe(true)
     wrapper.unmount()
   })
 
-  it('shows synced contact suggestions and decodes the selected contact target', async () => {
+  it('shows a search hint when contacts exist but no query was entered', async () => {
+    mockNostrStore.contacts = [
+      {
+        pubkey: 'a'.repeat(64),
+        npub: 'npub1example',
+        paymentTarget: 'alice@getalby.com',
+        displayName: 'Alice',
+        lud16: 'alice@getalby.com',
+      },
+    ]
+
+    wrapper = createWrapper()
+    await flushPromises()
+
+    expect(wrapper.find('[data-testid="send-contacts-hint"]').exists()).toBe(true)
+    expect(mockNostrStore.getSuggestedContacts).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('shows filtered contact suggestions and decodes the selected contact target', async () => {
     mockNostrStore.contacts = [
       {
         pubkey: 'a'.repeat(64),
@@ -170,6 +209,9 @@ describe('SendPage query invoice handling', () => {
     wrapper = createWrapper()
     await flushPromises()
 
+    await wrapper.get('[data-testid="send-invoice-input"]').setValue('ali')
+    await flushPromises()
+
     expect(wrapper.text()).toContain('Alice')
     await wrapper
       .find(
@@ -177,8 +219,23 @@ describe('SendPage query invoice handling', () => {
       )
       .trigger('click')
 
-    expect(mockNostrStore.getSuggestedContacts).toHaveBeenCalled()
+    expect(mockNostrStore.getSuggestedContacts).toHaveBeenCalledWith('ali')
     expect(mockDecodeInvoiceFromComposable).toHaveBeenCalledWith('alice@getalby.com')
+    wrapper.unmount()
+  })
+
+  it('uses the keypad amount when creating an invoice for lightning addresses', async () => {
+    mockAmountRequiredRef.value = true
+    mockAmountRef.value = 42
+
+    wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.get('[data-testid="send-continue-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('[data-testid="send-amount-input"]').exists()).toBe(true)
+    expect(mockCreateInvoiceFromInput).toHaveBeenCalledWith('', 42, '')
     wrapper.unmount()
   })
 
@@ -205,7 +262,8 @@ describe('SendPage query invoice handling', () => {
           'q-toolbar-title': SlotStub,
           'q-card': SlotStub,
           'q-card-section': SlotStub,
-          'q-input': SlotStub,
+          'q-input': QInputStub,
+          NumericKeypad: true,
           'q-slide-transition': SlotStub,
           'q-spinner-dots': SlotStub,
           'q-list': SlotStub,
