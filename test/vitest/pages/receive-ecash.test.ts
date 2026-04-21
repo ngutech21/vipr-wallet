@@ -6,12 +6,16 @@ import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import ReceiveEcashPage from 'src/pages/receive-ecash.vue'
 import { useWalletStore } from 'src/stores/wallet'
 
+type RouteState = {
+  query: Record<string, string>
+}
+
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockNotify = vi.hoisted(() => vi.fn())
 const mockLoadingShow = vi.hoisted(() => vi.fn())
 const mockLoadingHide = vi.hoisted(() => vi.fn())
-const routeState = vi.hoisted(() => ({
-  query: {} as Record<string, string>,
+const routeState: RouteState = vi.hoisted(() => ({
+  query: {},
 }))
 
 vi.mock('vue-router', () => ({

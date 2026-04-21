@@ -37,7 +37,7 @@
       </div>
       <div class="text-caption text-grey">≈ ${{ amountInFiat }} {{ 'usd' }}</div>
       <div v-if="transaction.fee" class="text-caption text-grey">
-        Fee: {{ transaction.fee }} sats
+        Fee: {{ Math.round(transaction.fee / 1000) }} sats
       </div>
     </q-item-section>
 

@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+type OnboardingStoreMock = {
+  status: 'in_progress' | 'complete'
+  flow: 'create' | 'restore' | null
+  step: 'install' | 'choice' | 'backup' | 'restore' | 'restore-federation'
+  normalizeForWalletState: ReturnType<typeof vi.fn>
+}
+
 const loadingMock = vi.hoisted(() => ({
   show: vi.fn(),
   hide: vi.fn(),
@@ -18,10 +25,10 @@ const walletStoreMock = vi.hoisted(() => ({
   closeWallet: vi.fn<() => Promise<void>>(),
 }))
 
-const onboardingStoreMock = vi.hoisted(() => ({
-  status: 'complete' as 'in_progress' | 'complete',
-  flow: null as 'create' | 'restore' | null,
-  step: 'choice' as 'install' | 'choice' | 'backup' | 'restore' | 'restore-federation',
+const onboardingStoreMock: OnboardingStoreMock = vi.hoisted(() => ({
+  status: 'complete',
+  flow: null,
+  step: 'choice',
   normalizeForWalletState: vi.fn(),
 }))
 

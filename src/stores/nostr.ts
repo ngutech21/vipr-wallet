@@ -1,7 +1,21 @@
 import { defineStore } from 'pinia'
 import { useLocalStorage } from '@vueuse/core'
-import NDK, { type NDKEvent, type NDKFilter, type NDKSubscription } from '@nostr-dev-kit/ndk'
+import NDK, {
+  isValidNip05,
+  nip19,
+  profileFromEvent,
+  type NDKEvent,
+  type NDKFilter,
+  type NDKSubscription,
+} from '@nostr-dev-kit/ndk'
 import type { Federation } from 'src/types/federation'
+import type {
+  NostrContactSource,
+  NostrContactSourceType,
+  NostrContactSyncMeta,
+  NostrContactSyncStatus,
+  SyncedNostrContact,
+} from 'src/types/nostr'
 import { Nip87Kinds } from 'src/types/nip87'
 import { useWalletStore } from './wallet'
 import { logger } from 'src/services/logger'
@@ -27,6 +41,22 @@ type CachedFederationPreview = {
 
 type PreviewStatus = 'loading' | 'failed' | 'timed_out' | 'ready'
 
+function createInitialNostrSyncStatus(): NostrContactSyncStatus {
+  return 'idle'
+}
+
+function createRecommendationVotersByFederation(): Record<string, Record<string, number>> {
+  return {}
+}
+
+function createNumberLookup(): Record<string, number> {
+  return {}
+}
+
+function createPreviewStatusLookup(): Record<string, PreviewStatus> {
+  return {}
+}
+
 const DEFAULT_RELAYS = [
   'wss://nos.lol',
   'wss://relay.primal.net',
@@ -44,6 +74,15 @@ const PREVIEW_TIMEOUT_MS = 7_000
 const PREVIEW_QUEUE_IDLE_POLL_MS = 50
 const PREVIEW_CACHE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000
 const PREVIEW_TIMEOUT_TOKEN = Symbol('preview-timeout')
+const DEFAULT_CONTACT_SOURCE: NostrContactSource = {
+  sourceType: 'nip05',
+  sourceValue: '',
+  resolvedPubkey: null,
+}
+const DEFAULT_CONTACT_SYNC_META: NostrContactSyncMeta = {
+  lastSyncedAt: null,
+  lastSyncError: null,
+}
 const EXPECTED_DISCOVERY_ERROR_PATTERNS = [
   /failed to download client config/i,
   /failed to fetch/i,
@@ -59,6 +98,16 @@ export const useNostrStore = defineStore('nostr', {
   state: () => ({
     relays: useLocalStorage<string[]>('vipr.nostr.relays', DEFAULT_RELAYS),
     pubkey: useLocalStorage<string>('vipr.nostr.pubkey', ''),
+    contactSource: useLocalStorage<NostrContactSource>(
+      'vipr.nostr.contact-source',
+      DEFAULT_CONTACT_SOURCE,
+    ),
+    contacts: useLocalStorage<SyncedNostrContact[]>('vipr.nostr.contacts', []),
+    contactSyncMeta: useLocalStorage<NostrContactSyncMeta>(
+      'vipr.nostr.contact-sync-meta',
+      DEFAULT_CONTACT_SYNC_META,
+    ),
+    syncStatus: createInitialNostrSyncStatus(),
     ndk: null as NDK | null,
     discoveredFederations: useLocalStorage<Federation[]>('vipr.nostr.discovery.federations', []),
     previewCacheByFederation: useLocalStorage<Record<string, CachedFederationPreview>>(
@@ -78,7 +127,7 @@ export const useNostrStore = defineStore('nostr', {
       'vipr.nostr.discovery.recommendation-counts',
       {},
     ),
-    recommendationVotersByFederation: {} as Record<string, Record<string, number>>,
+    recommendationVotersByFederation: createRecommendationVotersByFederation(),
     isDiscoveringFederations: false,
     federationSubscription: null as NDKSubscription | null,
     recommendationSubscription: null as NDKSubscription | null,
@@ -86,9 +135,9 @@ export const useNostrStore = defineStore('nostr', {
     previewQueue: [] as string[],
     isPreviewQueueRunning: false,
     isJoinInProgress: false,
-    previewAttemptedCreatedAt: {} as Record<string, number>,
-    previewErrorLoggedCreatedAt: {} as Record<string, number>,
-    previewStatusByFederation: {} as Record<string, PreviewStatus>,
+    previewAttemptedCreatedAt: createNumberLookup(),
+    previewErrorLoggedCreatedAt: createNumberLookup(),
+    previewStatusByFederation: createPreviewStatusLookup(),
   }),
 
   getters: {},
@@ -119,6 +168,122 @@ export const useNostrStore = defineStore('nostr', {
 
     setPubkey(pubkey: string) {
       this.pubkey = pubkey
+    },
+
+    setContactSource(sourceType: NostrContactSourceType, sourceValue: string) {
+      this.contactSource = {
+        sourceType,
+        sourceValue,
+        resolvedPubkey: null,
+      }
+    },
+
+    clearContacts() {
+      this.contactSource = { ...DEFAULT_CONTACT_SOURCE }
+      this.contacts = []
+      this.contactSyncMeta = { ...DEFAULT_CONTACT_SYNC_META }
+      this.syncStatus = 'idle'
+    },
+
+    getSuggestedContacts(query: string): SyncedNostrContact[] {
+      const normalizedQuery = normalizeContactSearchValue(query)
+      const sortedContacts = [...this.contacts].sort(compareSyncedContacts)
+
+      if (normalizedQuery === '') {
+        return sortedContacts
+      }
+
+      return sortedContacts.filter((contact) =>
+        getContactSearchValues(contact).some((value) => value.includes(normalizedQuery)),
+      )
+    },
+
+    async syncContacts(): Promise<boolean> {
+      const sourceValue = this.contactSource.sourceValue.trim()
+      if (sourceValue === '') {
+        this.syncStatus = 'error'
+        this.contactSyncMeta = {
+          ...this.contactSyncMeta,
+          lastSyncError: 'Enter a Nostr identifier before syncing contacts.',
+        }
+        return false
+      }
+
+      if (!isValidContactSource(this.contactSource.sourceType, sourceValue)) {
+        this.syncStatus = 'error'
+        this.contactSyncMeta = {
+          ...this.contactSyncMeta,
+          lastSyncError: getInvalidContactSourceMessage(this.contactSource.sourceType),
+        }
+        return false
+      }
+
+      this.syncStatus = 'syncing'
+      this.contactSyncMeta = {
+        ...this.contactSyncMeta,
+        lastSyncError: null,
+      }
+
+      try {
+        if (this.ndk === null) {
+          await this.initNdk()
+        }
+
+        if (this.ndk === null) {
+          throw new Error('NDK is not initialized')
+        }
+
+        const sourceUser = await this.ndk.fetchUser(sourceValue)
+        if (sourceUser == null) {
+          throw new Error('Nostr user not found')
+        }
+
+        const followedPubkeys = Array.from(await sourceUser.followSet())
+        const profileEvents =
+          followedPubkeys.length > 0
+            ? await this.ndk.fetchEvents({ kinds: [0], authors: followedPubkeys })
+            : new Set<NDKEvent>()
+        const latestProfileEvents = getLatestProfileEvents(profileEvents)
+        const contacts = followedPubkeys
+          .map((pubkey) => {
+            const profileEvent = latestProfileEvents.get(pubkey)
+            if (profileEvent == null) {
+              return null
+            }
+
+            return mapProfileEventToContact(pubkey, profileEvent)
+          })
+          .filter((contact): contact is SyncedNostrContact => contact != null)
+          .sort(compareSyncedContacts)
+
+        this.contactSource = {
+          sourceType: this.contactSource.sourceType,
+          sourceValue,
+          resolvedPubkey: sourceUser.pubkey,
+        }
+        this.contacts = contacts
+        this.contactSyncMeta = {
+          lastSyncedAt: Date.now(),
+          lastSyncError: null,
+        }
+        this.syncStatus = 'success'
+
+        logger.nostr.info('Synced Nostr contacts', {
+          sourceType: this.contactSource.sourceType,
+          count: contacts.length,
+        })
+
+        return true
+      } catch (error) {
+        const errorMessage = getErrorMessage(error)
+        this.contactSyncMeta = {
+          ...this.contactSyncMeta,
+          lastSyncError: errorMessage,
+        }
+        this.syncStatus = 'error'
+        logger.error('Failed to sync Nostr contacts', error)
+        return false
+      }
     },
 
     getRecommendationCountForFederationId(federationId: string): number {
@@ -860,4 +1025,116 @@ function doesPreviewMatchCandidate(
   federation: Federation,
 ): boolean {
   return federation.federationId === candidate.federationId
+}
+
+function isValidContactSource(sourceType: NostrContactSourceType, sourceValue: string): boolean {
+  if (sourceType === 'nip05') {
+    return isValidNip05(sourceValue)
+  }
+
+  try {
+    const decoded = nip19.decode(sourceValue)
+    return decoded.type === 'npub'
+  } catch {
+    return false
+  }
+}
+
+function getInvalidContactSourceMessage(sourceType: NostrContactSourceType): string {
+  return sourceType === 'nip05'
+    ? 'Enter a valid NIP-05 identifier like user@domain.com.'
+    : 'Enter a valid npub identifier.'
+}
+
+function getLatestProfileEvents(profileEvents: Set<NDKEvent>): Map<string, NDKEvent> {
+  const latestEvents = new Map<string, NDKEvent>()
+
+  for (const event of profileEvents) {
+    if (event.pubkey == null || event.pubkey === '') {
+      continue
+    }
+
+    const existingEvent = latestEvents.get(event.pubkey)
+    if (existingEvent == null || (event.created_at ?? 0) > (existingEvent.created_at ?? 0)) {
+      latestEvents.set(event.pubkey, event)
+    }
+  }
+
+  return latestEvents
+}
+
+function mapProfileEventToContact(
+  pubkey: string,
+  profileEvent: NDKEvent,
+): SyncedNostrContact | null {
+  try {
+    const profile = profileFromEvent(profileEvent)
+    const displayName = normalizeOptionalString(profile.displayName)
+    const name = normalizeOptionalString(profile.name)
+    const nip05 = normalizeOptionalString(profile.nip05)
+    const picture = normalizeOptionalString(profile.picture)
+    const lud16 = normalizeOptionalString(profile.lud16)
+    const lud06 = normalizeOptionalString(profile.lud06)
+    const paymentTarget = lud16 ?? lud06
+
+    if (paymentTarget == null) {
+      return null
+    }
+
+    return {
+      pubkey,
+      npub: nip19.npubEncode(pubkey),
+      ...(displayName != null ? { displayName } : {}),
+      ...(name != null ? { name } : {}),
+      ...(nip05 != null ? { nip05 } : {}),
+      ...(picture != null ? { picture } : {}),
+      ...(lud16 != null ? { lud16 } : {}),
+      ...(lud06 != null ? { lud06 } : {}),
+      paymentTarget,
+    }
+  } catch (error) {
+    logger.nostr.warn('Skipping invalid Nostr profile while syncing contacts', {
+      pubkey,
+      reason: getErrorMessage(error),
+    })
+    return null
+  }
+}
+
+function compareSyncedContacts(left: SyncedNostrContact, right: SyncedNostrContact): number {
+  const leftLabel = getComparableContactLabel(left)
+  const rightLabel = getComparableContactLabel(right)
+
+  if (leftLabel === rightLabel) {
+    return left.npub.localeCompare(right.npub)
+  }
+
+  return leftLabel.localeCompare(rightLabel)
+}
+
+function getComparableContactLabel(contact: SyncedNostrContact): string {
+  return normalizeContactSearchValue(
+    contact.displayName ?? contact.name ?? contact.nip05 ?? contact.npub,
+  )
+}
+
+function getContactSearchValues(contact: SyncedNostrContact): string[] {
+  return [
+    contact.displayName,
+    contact.name,
+    contact.nip05,
+    contact.npub,
+    contact.lud16,
+    contact.paymentTarget,
+  ]
+    .map((value) => normalizeContactSearchValue(value))
+    .filter((value) => value !== '')
+}
+
+function normalizeOptionalString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() !== '' ? value.trim() : undefined
+}
+
+function normalizeContactSearchValue(value: unknown): string {
+  return typeof value === 'string' ? value.trim().toLocaleLowerCase() : ''
 }

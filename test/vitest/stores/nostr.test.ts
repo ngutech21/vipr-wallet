@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import type { Federation } from 'src/types/federation'
-import type { NDKEvent } from '@nostr-dev-kit/ndk'
+import { nip19, type NDKEvent } from '@nostr-dev-kit/ndk'
 import { Nip87Kinds } from 'src/types/nip87'
 import { logger } from 'src/services/logger'
 
@@ -98,6 +98,40 @@ function createRecommendationEvent({
     },
   } as unknown as NDKEvent
 }
+
+function createProfileEvent(
+  pubkey: string,
+  createdAt: number,
+  profile: Record<string, unknown>,
+): NDKEvent {
+  const id = `profile-${pubkey}-${createdAt}`
+  const content = JSON.stringify(profile)
+
+  return {
+    id,
+    kind: 0,
+    pubkey,
+    created_at: createdAt,
+    content,
+    rawEvent() {
+      return {
+        id,
+        kind: 0,
+        pubkey,
+        created_at: createdAt,
+        content,
+        tags: [],
+        sig: '',
+      }
+    },
+  } as unknown as NDKEvent
+}
+
+const SOURCE_PUBKEY = '1'.repeat(64)
+const SOURCE_NPUB = nip19.npubEncode(SOURCE_PUBKEY)
+const PAYABLE_LUD16_PUBKEY = '2'.repeat(64)
+const PAYABLE_LUD06_PUBKEY = '3'.repeat(64)
+const NON_PAYABLE_PUBKEY = '4'.repeat(64)
 
 describe('nostr store discovery queue', () => {
   beforeEach(() => {
@@ -598,5 +632,128 @@ describe('nostr store discovery queue', () => {
 
     expect(nostr.discoveryCandidates[0]?.federationId).toBe('fed-5')
     expect(nostr.previewQueue).toContain('fed-5')
+  })
+
+  it('syncs payable contacts from a NIP-05 identifier', async () => {
+    const nostr = useNostrStore()
+    const followSet = new Set([PAYABLE_LUD16_PUBKEY, PAYABLE_LUD06_PUBKEY, NON_PAYABLE_PUBKEY])
+    const fetchUser = vi.fn().mockResolvedValue({
+      pubkey: SOURCE_PUBKEY,
+      followSet: vi.fn().mockResolvedValue(followSet),
+    })
+    const fetchEvents = vi.fn().mockResolvedValue(
+      new Set([
+        createProfileEvent(PAYABLE_LUD16_PUBKEY, 10, {
+          display_name: 'Alice',
+          lud16: 'alice@getalby.com',
+        }),
+        createProfileEvent(PAYABLE_LUD06_PUBKEY, 11, {
+          name: 'Bob',
+          lud06: 'lnurl1dp68gurn8ghj7m',
+        }),
+        createProfileEvent(NON_PAYABLE_PUBKEY, 12, {
+          name: 'Carol',
+        }),
+      ]),
+    )
+
+    nostr.ndk = {
+      fetchUser,
+      fetchEvents,
+    } as unknown as NonNullable<typeof nostr.ndk>
+    nostr.setContactSource('nip05', 'alice@example.com')
+
+    await expect(nostr.syncContacts()).resolves.toBe(true)
+
+    expect(fetchUser).toHaveBeenCalledWith('alice@example.com')
+    expect(fetchEvents).toHaveBeenCalledWith({
+      kinds: [0],
+      authors: [PAYABLE_LUD16_PUBKEY, PAYABLE_LUD06_PUBKEY, NON_PAYABLE_PUBKEY],
+    })
+    expect(nostr.contactSource.resolvedPubkey).toBe(SOURCE_PUBKEY)
+    expect(nostr.contacts).toHaveLength(2)
+    expect(nostr.contacts.map((contact) => contact.paymentTarget)).toEqual([
+      'alice@getalby.com',
+      'lnurl1dp68gurn8ghj7m',
+    ])
+    expect(nostr.contacts.find((contact) => contact.pubkey === PAYABLE_LUD16_PUBKEY)?.lud16).toBe(
+      'alice@getalby.com',
+    )
+    expect(nostr.contactSyncMeta.lastSyncedAt).not.toBeNull()
+    expect(nostr.contactSyncMeta.lastSyncError).toBeNull()
+    expect(nostr.syncStatus).toBe('success')
+  })
+
+  it('syncs contacts from an npub source and replaces the stored contacts on re-sync', async () => {
+    const nostr = useNostrStore()
+    const firstContact = createProfileEvent(PAYABLE_LUD16_PUBKEY, 10, {
+      display_name: 'Alice',
+      lud16: 'alice@getalby.com',
+    })
+    const secondContact = createProfileEvent(PAYABLE_LUD06_PUBKEY, 11, {
+      display_name: 'Bob',
+      lud06: 'lnurl1dp68gurn8ghj7m',
+    })
+    const followSet = vi
+      .fn()
+      .mockResolvedValueOnce(new Set([PAYABLE_LUD16_PUBKEY]))
+      .mockResolvedValueOnce(new Set([PAYABLE_LUD06_PUBKEY]))
+    const fetchUser = vi.fn().mockResolvedValue({
+      pubkey: SOURCE_PUBKEY,
+      followSet,
+    })
+    const fetchEvents = vi
+      .fn()
+      .mockResolvedValueOnce(new Set([firstContact]))
+      .mockResolvedValueOnce(new Set([secondContact]))
+
+    nostr.ndk = {
+      fetchUser,
+      fetchEvents,
+    } as unknown as NonNullable<typeof nostr.ndk>
+    nostr.contacts = [
+      {
+        pubkey: NON_PAYABLE_PUBKEY,
+        npub: nip19.npubEncode(NON_PAYABLE_PUBKEY),
+        paymentTarget: 'stale@getalby.com',
+      },
+    ]
+    nostr.setContactSource('npub', SOURCE_NPUB)
+
+    await expect(nostr.syncContacts()).resolves.toBe(true)
+    expect(fetchUser).toHaveBeenCalledWith(SOURCE_NPUB)
+    expect(nostr.contacts).toHaveLength(1)
+    expect(nostr.contacts[0]?.pubkey).toBe(PAYABLE_LUD16_PUBKEY)
+
+    await expect(nostr.syncContacts()).resolves.toBe(true)
+    expect(nostr.contacts).toHaveLength(1)
+    expect(nostr.contacts[0]?.pubkey).toBe(PAYABLE_LUD06_PUBKEY)
+  })
+
+  it('does not sync contacts implicitly on store creation', () => {
+    const nostr = useNostrStore()
+
+    expect(nostr.contacts).toEqual([])
+    expect(nostr.contactSource).toEqual({
+      sourceType: 'nip05',
+      sourceValue: '',
+      resolvedPubkey: null,
+    })
+    expect(nostr.syncStatus).toBe('idle')
+    expect(nostr.contactSyncMeta.lastSyncedAt).toBeNull()
+  })
+
+  it('stores sync errors when contact sync fails', async () => {
+    const nostr = useNostrStore()
+    nostr.ndk = {
+      fetchUser: vi.fn().mockRejectedValue(new Error('Relay timeout')),
+    } as unknown as NonNullable<typeof nostr.ndk>
+    nostr.setContactSource('nip05', 'alice@example.com')
+
+    await expect(nostr.syncContacts()).resolves.toBe(false)
+
+    expect(nostr.contacts).toEqual([])
+    expect(nostr.contactSyncMeta.lastSyncError).toBe('Relay timeout')
+    expect(nostr.syncStatus).toBe('error')
   })
 })

@@ -41,7 +41,7 @@ Learn more about the project at [vipr.cash](https://vipr.cash)
 - [x] pay lightning invoice using nostr wallet connect
 - [x] lnurl-p support
 - [x] lightning address support
-- [ ] pay to Nostr contacts
+- [x] pay to Nostr contacts
 - [x] export ecash
 - [x] import ecash
 - [x] backup wallet
@@ -54,7 +54,7 @@ Learn more about the project at [vipr.cash](https://vipr.cash)
 - [x] join multiple federations
 - [x] Discover federations using nostr
 - [ ] show guardian health
-- [ ] show nostr votes for federation
+- [x] show nostr votes for federation
 
 ## 🐳 Deployment
 

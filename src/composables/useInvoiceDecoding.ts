@@ -21,6 +21,11 @@ export function useInvoiceDecoding() {
   const lnAddress = ref<LightningAddress | null>(null)
   const decodedInvoice = ref<Bolt11Invoice | null>(null)
 
+  function resetLightningAddressState() {
+    amountRequired.value = false
+    lnAddress.value = null
+  }
+
   /**
    * Decode a lightning invoice, LNURL, or lightning address
    * @param invoice - The invoice string to decode
@@ -41,12 +46,12 @@ export function useInvoiceDecoding() {
         try {
           await lnAddress.value.fetchWithProxy()
           if (lnAddress.value.lnurlpData == null) {
-            amountRequired.value = false
-            lnAddress.value = null
+            resetLightningAddressState()
             notify.error('Invalid lightning address')
             return null
           }
         } catch (error) {
+          resetLightningAddressState()
           notify.error(`Failed to fetch lightning address: ${getErrorMessage(error)}`)
           return null
         }
@@ -92,6 +97,12 @@ export function useInvoiceDecoding() {
 
       // If we have a lightning address
       if (lnAddress.value != null) {
+        if (lnAddress.value.lnurlpData == null) {
+          resetLightningAddressState()
+          notify.error('Lightning address could not be loaded. Please try again.')
+          return null
+        }
+
         const invoice = await lnAddress.value.requestInvoice({
           satoshi: amountSats,
           comment: memo,

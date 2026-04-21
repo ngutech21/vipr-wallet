@@ -2,8 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import PwaUpdateBanner from 'src/components/PwaUpdateBanner.vue'
 
-const mockRoute = vi.hoisted(() => ({
-  name: '/' as string | null,
+type MockRoute = {
+  name: string | null
+}
+
+const mockRoute: MockRoute = vi.hoisted(() => ({
+  name: '/',
 }))
 
 const mockApplyUpdate = vi.hoisted(() => vi.fn())

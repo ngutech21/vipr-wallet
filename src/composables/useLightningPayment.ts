@@ -5,6 +5,8 @@ import { useWalletStore } from 'src/stores/wallet'
 import { getErrorMessage } from 'src/utils/error'
 import { logger } from 'src/services/logger'
 
+const INTERNAL_PAYMENT_TIMEOUT_MS = 15_000
+
 export interface PaymentResult {
   success: boolean
   amountSats?: number
@@ -43,6 +45,22 @@ export function useLightningPayment() {
       Loading.show({ message: 'Processing payment...' })
 
       const paymentResult = await walletStore.wallet?.lightning.payInvoice(invoice)
+      if (paymentResult == null) {
+        throw new Error('Failed to start Lightning payment')
+      }
+
+      if ('lightning' in paymentResult.payment_type) {
+        const waitResult = await walletStore.wallet?.lightning.waitForPay(
+          paymentResult.payment_type.lightning,
+        )
+
+        if (!waitResult?.success) {
+          throw new Error(waitResult?.error ?? 'Lightning payment failed')
+        }
+      } else if ('internal' in paymentResult.payment_type) {
+        await waitForInternalPayment(paymentResult.payment_type.internal)
+      }
+
       await walletStore.updateBalance()
 
       const amount = expectedAmountSats ?? 0
@@ -70,6 +88,53 @@ export function useLightningPayment() {
       isProcessing.value = false
       Loading.hide()
     }
+  }
+
+  function waitForInternalPayment(paymentId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      let unsubscribe = () => {}
+      const timeoutId = window.setTimeout(() => {
+        unsubscribe()
+        reject(new Error('Payment timeout'))
+      }, INTERNAL_PAYMENT_TIMEOUT_MS)
+
+      const finishSuccess = () => {
+        window.clearTimeout(timeoutId)
+        unsubscribe()
+        resolve()
+      }
+
+      const finishFailure = (error: string) => {
+        window.clearTimeout(timeoutId)
+        unsubscribe()
+        reject(new Error(error))
+      }
+
+      unsubscribe =
+        walletStore.wallet?.lightning.subscribeInternalPayment(
+          paymentId,
+          (state) => {
+            if (typeof state === 'string') {
+              return
+            }
+
+            if ('preimage' in state) {
+              finishSuccess()
+            } else if ('refund_success' in state) {
+              finishFailure(state.refund_success.error)
+            } else if ('refund_error' in state) {
+              finishFailure(state.refund_error.error_message)
+            } else if ('funding_failed' in state) {
+              finishFailure(state.funding_failed.error)
+            } else if ('unexpected_error' in state) {
+              finishFailure(state.unexpected_error)
+            }
+          },
+          (error) => {
+            finishFailure(error)
+          },
+        ) ?? unsubscribe
+    })
   }
 
   /**

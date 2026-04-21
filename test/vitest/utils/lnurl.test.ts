@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import type { Decoded } from 'bech32'
 import { requestInvoice } from 'src/utils/lnurl'
 
 // Mock bech32 module at the top level
@@ -31,6 +32,13 @@ describe('lnurl.ts', () => {
     globalThis.fetch = originalFetch
   })
 
+  function createDecodedLnurl(words: number[]): Decoded {
+    return {
+      prefix: 'lnurl',
+      words,
+    }
+  }
+
   describe('requestInvoice', () => {
     it('should successfully request an invoice', async () => {
       const mockLnurl = 'lnurl1test'
@@ -41,11 +49,7 @@ describe('lnurl.ts', () => {
       const { bech32 } = await import('bech32')
 
       // Mock bech32 decoding
-      vi.mocked(bech32.decode).mockReturnValue({
-        prefix: 'lnurl',
-        words: [1, 2, 3, 4],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
+      vi.mocked(bech32.decode).mockReturnValue(createDecodedLnurl([1, 2, 3, 4]))
 
       // Mock fromWords to return bytes that Buffer.from will convert
       vi.mocked(bech32.fromWords).mockReturnValue(
@@ -85,11 +89,7 @@ describe('lnurl.ts', () => {
       const mockLnurl = 'lnurl1test'
 
       const { bech32 } = await import('bech32')
-      vi.mocked(bech32.decode).mockReturnValue({
-        prefix: 'lnurl',
-        words: [1, 2, 3],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
+      vi.mocked(bech32.decode).mockReturnValue(createDecodedLnurl([1, 2, 3]))
       vi.mocked(bech32.fromWords).mockReturnValue(
         Array.from('https://example.com', (c) => c.charCodeAt(0)),
       )
@@ -112,11 +112,7 @@ describe('lnurl.ts', () => {
       const mockLnurl = 'lnurl1test'
 
       const { bech32 } = await import('bech32')
-      vi.mocked(bech32.decode).mockReturnValue({
-        prefix: 'lnurl',
-        words: [1, 2, 3],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
+      vi.mocked(bech32.decode).mockReturnValue(createDecodedLnurl([1, 2, 3]))
       vi.mocked(bech32.fromWords).mockReturnValue(
         Array.from('https://example.com', (c) => c.charCodeAt(0)),
       )
@@ -141,11 +137,7 @@ describe('lnurl.ts', () => {
       const mockCallbackUrl = 'https://example.com/callback'
 
       const { bech32 } = await import('bech32')
-      vi.mocked(bech32.decode).mockReturnValue({
-        prefix: 'lnurl',
-        words: [1, 2, 3],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
+      vi.mocked(bech32.decode).mockReturnValue(createDecodedLnurl([1, 2, 3]))
       vi.mocked(bech32.fromWords).mockReturnValue(
         Array.from('https://example.com', (c) => c.charCodeAt(0)),
       )
@@ -179,11 +171,7 @@ describe('lnurl.ts', () => {
       const amountSat = 5000
 
       const { bech32 } = await import('bech32')
-      vi.mocked(bech32.decode).mockReturnValue({
-        prefix: 'lnurl',
-        words: [1, 2, 3],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
+      vi.mocked(bech32.decode).mockReturnValue(createDecodedLnurl([1, 2, 3]))
       vi.mocked(bech32.fromWords).mockReturnValue(
         Array.from('https://example.com', (c) => c.charCodeAt(0)),
       )
@@ -220,11 +208,7 @@ describe('lnurl.ts', () => {
       const mockCallbackUrl = 'https://example.com/callback'
 
       const { bech32 } = await import('bech32')
-      vi.mocked(bech32.decode).mockReturnValue({
-        prefix: 'lnurl',
-        words: [1, 2, 3],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
+      vi.mocked(bech32.decode).mockReturnValue(createDecodedLnurl([1, 2, 3]))
       vi.mocked(bech32.fromWords).mockReturnValue(
         Array.from('https://example.com', (c) => c.charCodeAt(0)),
       )

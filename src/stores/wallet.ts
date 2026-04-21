@@ -945,7 +945,7 @@ function getWalletWithdrawAmountMsats(
     return undefined
   }
 
-  const amountObject = rawAmount as JSONObject
+  const amountObject = rawAmount
   const nestedAmountMsats = getFiniteNumber(
     amountObject.msats ??
       amountObject.amountMsats ??

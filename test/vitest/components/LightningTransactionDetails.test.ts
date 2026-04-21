@@ -10,20 +10,19 @@ import type { LightningTransaction } from '@fedimint/core'
 // Mock factory for creating test transactions
 const createMockTransaction = (
   overrides: Partial<LightningTransaction> = {},
-): LightningTransaction =>
-  ({
-    kind: 'ln',
-    operationId: 'ln-op-123',
-    invoice: 'lnbc1000n1p0test',
-    type: 'send',
-    outcome: 'success',
-    timestamp: 1234567890000,
-    fee: 1000,
-    gateway: 'gateway.example.com',
-    txId: 'tx-id-abc123',
-    preimage: 'preimage-xyz789',
-    ...overrides,
-  }) as LightningTransaction
+): LightningTransaction => ({
+  kind: 'ln',
+  operationId: 'ln-op-123',
+  invoice: 'lnbc1000n1p0test',
+  type: 'send',
+  outcome: 'success',
+  timestamp: 1234567890000,
+  fee: 1000,
+  gateway: 'gateway.example.com',
+  txId: 'tx-id-abc123',
+  preimage: 'preimage-xyz789',
+  ...overrides,
+})
 
 describe('LightningTransactionDetails.vue', () => {
   let wrapper: VueWrapper
