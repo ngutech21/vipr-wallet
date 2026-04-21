@@ -189,6 +189,22 @@ describe('AddFederation.vue', () => {
     expect(wrapper.find('[data-testid="join-federation-preview-step"]').exists()).toBe(false)
   })
 
+  it('emits back when preview was opened from discovery', async () => {
+    const walletStore = useWalletStore()
+    ;(walletStore.previewFederation as Mock).mockResolvedValue(federation)
+
+    wrapper = createWrapper({
+      initialInviteCode: federation.inviteCode,
+      autoPreview: true,
+      backTarget: 'discover',
+    })
+    await flushPromises()
+    await wrapper.get('[data-testid="modal-back-btn"]').trigger('click')
+
+    expect(wrapper.emitted('back')).toHaveLength(1)
+    expect(wrapper.find('[data-testid="join-federation-preview-step"]').exists()).toBe(true)
+  })
+
   it('opens directly in the review step when prefetched federation data is provided', async () => {
     const walletStore = useWalletStore()
     const previewFederationMock = walletStore.previewFederation as Mock

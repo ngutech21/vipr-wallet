@@ -69,9 +69,11 @@
               v-else
               flat
               round
-              :icon="isAdded(federation) ? 'check_circle' : 'add'"
+              :icon="isAdded(federation) ? 'check_circle' : 'visibility'"
               :color="isAdded(federation) ? 'positive' : 'primary'"
               :disable="isAdded(federation)"
+              :aria-label="isAdded(federation) ? 'Federation already added' : 'Preview federation'"
+              :title="isAdded(federation) ? 'Federation already added' : 'Preview federation'"
               :data-testid="`discover-federation-action-${federation.federationId}`"
               @click.stop="openFederationPreview(federation)"
             />

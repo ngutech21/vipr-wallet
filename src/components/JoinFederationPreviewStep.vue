@@ -30,23 +30,14 @@
               {{ moduleCount }} Modules
             </q-chip>
           </div>
-        </div>
-      </q-card-section>
-    </q-card>
 
-    <q-card flat class="preview-card q-mb-md">
-      <q-card-section>
-        <div class="text-subtitle1 text-weight-medium">Trust & details</div>
-        <div class="text-body2 text-grey-5 q-mt-sm">
-          Join only if you recognize this federation and trust its guardians.
-        </div>
+          <div v-if="previewMessage" class="preview-note q-mt-md">
+            {{ previewMessage }}
+          </div>
 
-        <div v-if="previewMessage" class="preview-note q-mt-md">
-          {{ previewMessage }}
-        </div>
-
-        <div v-if="welcomeMessage" class="preview-note q-mt-sm">
-          {{ welcomeMessage }}
+          <div v-if="welcomeMessage" class="preview-note q-mt-sm">
+            {{ welcomeMessage }}
+          </div>
         </div>
       </q-card-section>
     </q-card>
@@ -75,13 +66,24 @@
       </q-card-section>
     </q-card>
 
-    <FederationGuardians :guardians="federation.guardians ?? []" class="q-mb-md" />
+    <q-expansion-item
+      class="detail-accordion q-mb-md"
+      expand-separator
+      icon="groups"
+      label="Guardians"
+      header-class="text-white"
+      data-testid="guardian-details-accordion"
+    >
+      <div class="detail-accordion__body q-pa-md">
+        <FederationGuardians :guardians="federation.guardians ?? []" :show-header="false" />
+      </div>
+    </q-expansion-item>
 
     <q-expansion-item
-      class="technical-details"
+      class="detail-accordion"
       expand-separator
       icon="info"
-      label="Technical details"
+      label="Federation details"
       header-class="text-white"
     >
       <div class="technical-details__body q-pa-md">
@@ -144,14 +146,14 @@ const welcomeMessage = computed(() => props.federation.metadata?.welcome_message
   color: rgba(255, 255, 255, 0.82);
 }
 
-.technical-details {
+.detail-accordion {
   border-radius: 18px;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.technical-details__body {
+.detail-accordion__body {
   background: rgba(0, 0, 0, 0.1);
 }
 </style>

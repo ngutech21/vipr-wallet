@@ -66,6 +66,7 @@ const notify = useAppNotify()
 
 const emit = defineEmits<{
   close: []
+  back: []
 }>()
 
 const props = defineProps<{
@@ -73,6 +74,7 @@ const props = defineProps<{
   initialPreviewFederation?: Federation | null
   autoPreview?: boolean
   importAmountSats?: number | null
+  backTarget?: 'invite' | 'discover'
 }>()
 
 const inviteCode = ref(props.initialInviteCode ?? '')
@@ -116,6 +118,10 @@ function onClose() {
 }
 
 function goBackToInviteStep() {
+  if (props.backTarget === 'discover') {
+    emit('back')
+    return
+  }
   step.value = 'invite'
 }
 

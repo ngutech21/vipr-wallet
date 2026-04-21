@@ -23,7 +23,9 @@
 
     <q-dialog v-model="showAdd" position="bottom">
       <AddFederation
+        :back-target="addFederationBackTarget"
         @close="closeAddFederation"
+        @back="returnToDiscovery"
         :initial-invite-code="selectedInviteCode"
         :initial-preview-federation="selectedPreviewFederation"
         :auto-preview="selectedInviteCode != null"
@@ -68,10 +70,12 @@ const showDiscover = ref(false)
 const showAdd = ref(false)
 const selectedInviteCode = ref<string | null>(null)
 const selectedPreviewFederation = ref<Federation | null>(null)
+const addFederationBackTarget = ref<'invite' | 'discover'>('invite')
 
 function openAddFederationPreview(payload: DiscoverySelectionPayload) {
   selectedInviteCode.value = payload.inviteCode
   selectedPreviewFederation.value = payload.prefetchedFederation ?? null
+  addFederationBackTarget.value = 'discover'
   showDiscover.value = false
   showAdd.value = true
 }
@@ -80,6 +84,15 @@ function closeAddFederation() {
   showAdd.value = false
   selectedInviteCode.value = null
   selectedPreviewFederation.value = null
+  addFederationBackTarget.value = 'invite'
+}
+
+function returnToDiscovery() {
+  showAdd.value = false
+  selectedInviteCode.value = null
+  selectedPreviewFederation.value = null
+  addFederationBackTarget.value = 'invite'
+  showDiscover.value = true
 }
 </script>
 
