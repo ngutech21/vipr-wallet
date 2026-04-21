@@ -162,7 +162,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
         timeout: 60_000,
       })
       await expect(page.getByTestId('back-home-button')).toBeVisible({ timeout: 60_000 })
-      await expect(page.getByTestId('received-lightning-title')).toHaveText('Payment Received!')
+      await expect(page.getByTestId('received-lightning-title')).toHaveText('Payment received')
       await expect(page.getByTestId('received-lightning-amount')).toHaveText('1,000 sats')
     })
 
