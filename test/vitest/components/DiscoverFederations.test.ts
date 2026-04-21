@@ -176,7 +176,7 @@ describe('DiscoverFederations.vue', () => {
       expect(wrapper.text()).toContain('Federation 3')
     })
 
-    it('should display federation title and ID', async () => {
+    it('should display federation title without surfacing the raw federation ID', async () => {
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
       const federation = createMockFederation({
@@ -191,7 +191,33 @@ describe('DiscoverFederations.vue', () => {
       await flushPromises()
 
       expect(wrapper.text()).toContain('My Federation')
-      expect(wrapper.text()).toContain('my-fed-id-123')
+      expect(wrapper.text()).not.toContain('my-fed-id-123')
+    })
+
+    it('should show a compact preview summary when federation details are available', async () => {
+      wrapper = createWrapper()
+      const nostrStore = useNostrStore()
+      const federation = createMockFederation({
+        title: 'Summary Federation',
+        federationId: 'summary-fed-id',
+        inviteCode: 'invite-summary',
+        guardians: [
+          { peerId: 0, name: 'Guardian One', url: 'wss://guardian-one.example' },
+          { peerId: 1, name: 'Guardian Two', url: 'wss://guardian-two.example' },
+        ],
+        modules: [
+          { kind: 'mint', config: 'mint-config', version: { major: 0, minor: 1 } },
+          { kind: 'wallet', config: 'wallet-config', version: { major: 0, minor: 1 } },
+        ],
+        network: 'mainnet',
+      })
+      nostrStore.discoveryCandidates = [
+        { federationId: federation.federationId, inviteCode: federation.inviteCode, createdAt: 1 },
+      ]
+      setCachedPreview(nostrStore, federation)
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('2 guardians • 2 modules')
     })
 
     it('should show recommendation count when available', async () => {
@@ -214,6 +240,7 @@ describe('DiscoverFederations.vue', () => {
       await flushPromises()
 
       expect(wrapper.text()).toContain('Recommended by 3 users')
+      expect(wrapper.text().match(/Recommended by 3 users/g)).toHaveLength(1)
     })
 
     it('should prioritize top-ranked candidates even when preview is still pending', async () => {
@@ -606,7 +633,7 @@ describe('DiscoverFederations.vue', () => {
       expect(wrapper.text()).toContain(longTitle)
     })
 
-    it('should handle federations with very long IDs', async () => {
+    it('should not surface very long federation IDs in the discovery list', async () => {
       const longId = `fed-${'a'.repeat(200)}`
       wrapper = createWrapper()
       const nostrStore = useNostrStore()
@@ -619,7 +646,7 @@ describe('DiscoverFederations.vue', () => {
       setCachedPreview(nostrStore, federation)
       await flushPromises()
 
-      expect(wrapper.text()).toContain(longId)
+      expect(wrapper.text()).not.toContain(longId)
     })
 
     it('should handle empty discovered federations array', async () => {

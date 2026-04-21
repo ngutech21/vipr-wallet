@@ -1,6 +1,6 @@
 <template>
   <ModalCard title="Discover Federations">
-    <div class="q-pa-md">
+    <div class="discover-sheet q-pa-md">
       <q-list bordered separator v-if="visibleFederations.length > 0">
         <q-item
           v-for="federation in visibleFederations"
@@ -19,40 +19,34 @@
             </q-avatar>
           </template>
           <q-item-section>
-            <q-item-label>{{ federation.title }}</q-item-label>
-            <q-item-label caption class="federation-id">
-              {{ federation.federationId }}
+            <q-item-label class="federation-title row items-center no-wrap">
+              <span class="federation-title__text">{{ federation.title }}</span>
+              <q-badge
+                v-if="isAdded(federation)"
+                outline
+                color="grey-6"
+                text-color="grey-4"
+                class="q-ml-sm"
+              >
+                Added
+              </q-badge>
             </q-item-label>
-            <q-item-label v-if="federation.about" caption class="federation-about-caption">
-              {{ federation.about }}
+            <q-item-label v-if="federationSummary(federation)" caption class="federation-summary">
+              {{ federationSummary(federation) }}
             </q-item-label>
             <q-item-label
               v-if="federation.recommendationCount > 0"
               caption
-              class="federation-recommendation-caption"
+              class="federation-recommendation"
             >
               Recommended by {{ formatRecommendationCount(federation.recommendationCount) }}
             </q-item-label>
             <q-item-label
-              v-if="federation.previewStatus === 'loading'"
+              v-if="federationMetaLine(federation)"
               caption
-              class="federation-loading-caption"
+              :class="federationMetaClass(federation)"
             >
-              Loading federation details...
-            </q-item-label>
-            <q-item-label
-              v-else-if="federation.previewStatus === 'failed'"
-              caption
-              class="federation-error-caption"
-            >
-              Federation details unavailable.
-            </q-item-label>
-            <q-item-label
-              v-else-if="federation.previewStatus === 'timed_out'"
-              caption
-              class="federation-error-caption"
-            >
-              Federation details request timed out.
+              {{ federationMetaLine(federation) }}
             </q-item-label>
           </q-item-section>
           <q-item-section side>
@@ -81,19 +75,6 @@
         </q-item>
       </q-list>
 
-      <div class="text-center q-mt-md" v-if="canLoadMore">
-        <q-btn
-          unelevated
-          color="primary"
-          text-color="white"
-          no-caps
-          label="Load more"
-          icon="expand_more"
-          @click="loadMoreFederations"
-          data-testid="discover-federations-load-more-btn"
-        />
-      </div>
-
       <div
         v-if="!isDiscovering && visibleFederations.length === 0"
         class="text-center q-pa-lg text-grey-7"
@@ -111,20 +92,34 @@
         </div>
       </div>
 
-      <div class="discovery-status row items-center justify-between q-mt-md">
-        <div class="row items-center text-caption text-grey-7">
+      <div class="discovery-footer q-mt-md">
+        <div class="discovery-status row items-center text-caption text-grey-7">
           <q-spinner v-if="isDiscovering" color="primary" size="16px" class="q-mr-sm" />
           <span>{{ discoveryStatusText }}</span>
         </div>
-        <q-btn
-          flat
-          dense
-          no-caps
-          color="primary"
-          :label="isDiscovering ? 'Stop' : 'Start'"
-          @click="toggleDiscovery"
-          data-testid="discover-federations-toggle-btn"
-        />
+
+        <div class="discovery-actions">
+          <q-btn
+            v-if="canLoadMore"
+            flat
+            dense
+            no-caps
+            color="grey-4"
+            label="Load more"
+            icon="expand_more"
+            @click="loadMoreFederations"
+            data-testid="discover-federations-load-more-btn"
+          />
+          <q-btn
+            flat
+            dense
+            no-caps
+            color="primary"
+            :label="isDiscovering ? 'Stop' : 'Start'"
+            @click="toggleDiscovery"
+            data-testid="discover-federations-toggle-btn"
+          />
+        </div>
       </div>
     </div>
   </ModalCard>
@@ -273,6 +268,59 @@ function formatRecommendationCount(count: number): string {
   return `${count} ${suffix}`
 }
 
+function formatCountLabel(count: number, noun: string): string {
+  return count === 1 ? `1 ${noun}` : `${count} ${noun}s`
+}
+
+function federationSummary(federation: DiscoveryListItem): string | null {
+  if (federation.about != null && federation.about.trim() !== '') {
+    return federation.about
+  }
+
+  if (federation.previewReady) {
+    const summaryParts = [
+      federation.guardians != null && federation.guardians.length > 0
+        ? formatCountLabel(federation.guardians.length, 'guardian')
+        : null,
+      federation.modules.length > 0 ? formatCountLabel(federation.modules.length, 'module') : null,
+    ].filter((part): part is string => part != null && part !== '')
+
+    if (summaryParts.length > 0) {
+      return summaryParts.join(' • ')
+    }
+  }
+
+  return null
+}
+
+function federationMetaLine(federation: DiscoveryListItem): string | null {
+  if (federation.previewStatus === 'loading') {
+    return 'Loading federation details...'
+  }
+
+  if (federation.previewStatus === 'failed') {
+    return 'Federation details unavailable.'
+  }
+
+  if (federation.previewStatus === 'timed_out') {
+    return 'Federation details request timed out.'
+  }
+
+  return null
+}
+
+function federationMetaClass(federation: DiscoveryListItem): string {
+  if (federation.previewStatus === 'failed' || federation.previewStatus === 'timed_out') {
+    return 'federation-meta federation-meta--warning'
+  }
+
+  if (isAdded(federation)) {
+    return 'federation-meta federation-meta--muted'
+  }
+
+  return 'federation-meta'
+}
+
 function openFederationPreview(federation: DiscoveryListItem) {
   if (federationStore.federations.some((f) => f.federationId === federation.federationId)) {
     notify.notify({
@@ -307,19 +355,14 @@ function truncateFederationId(federationId: string): string {
 </script>
 
 <style scoped>
-/* .federation-id {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.discover-sheet {
+  display: flex;
+  flex-direction: column;
 }
-.logo {
-  width: 40px;
-  height: 40px;
-} */
 
 .q-list {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px !important;
+  border-radius: 16px !important;
   border: none !important;
 }
 
@@ -358,32 +401,45 @@ function truncateFederationId(federationId: string): string {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Improve text styling */
-.federation-id {
-  white-space: nowrap;
+.federation-title {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 0;
+}
+
+.federation-title__text {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.8rem;
+  white-space: nowrap;
+  font-weight: 600;
 }
 
-.federation-loading-caption {
-  color: rgba(255, 255, 255, 0.45);
+.federation-summary {
+  color: rgba(255, 255, 255, 0.68);
+  margin-top: 2px;
+  line-height: 1.35;
 }
 
-.federation-about-caption {
-  color: rgba(255, 255, 255, 0.6);
+.federation-meta {
+  color: rgba(255, 255, 255, 0.56);
+  margin-top: 4px;
 }
 
-.federation-recommendation-caption {
-  color: rgba(255, 255, 255, 0.7);
+.federation-recommendation {
+  color: rgba(255, 255, 255, 0.72);
+  margin-top: 4px;
 }
 
-.federation-error-caption {
+.federation-meta--muted {
+  color: rgba(255, 255, 255, 0.44);
+}
+
+.federation-meta--warning {
   color: rgba(255, 193, 7, 0.9);
 }
 
-/* Enhance the loading state */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -392,8 +448,22 @@ function truncateFederationId(federationId: string): string {
   padding: 32px 16px;
 }
 
-.discovery-status {
+.discovery-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.discovery-status {
+  min-height: 16px;
+}
+
+.discovery-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 </style>
