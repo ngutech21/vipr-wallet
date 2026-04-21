@@ -211,6 +211,7 @@ async function copyInvoice() {
 }
 
 .status-badge {
+  color: rgba(0, 0, 0, 0.82);
   border-radius: 999px;
   padding: 4px 10px;
   font-weight: 500;

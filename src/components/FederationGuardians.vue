@@ -48,7 +48,7 @@ const props = withDefaults(
 
 const guardianCountLabel = computed(() => {
   const count = props.guardians.length
-  return `${count} of ${count} Federation`
+  return `${count} guardians`
 })
 
 function guardianLabel(guardian: FederationGuardian): string {
@@ -58,12 +58,13 @@ function guardianLabel(guardian: FederationGuardian): string {
 
 <style scoped>
 .guardian-card {
-  background: #232323;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
   border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 24px;
 }
 
 .guardian-list {
-  background: #232323;
+  background: transparent;
 }
 
 .guardian-url {
