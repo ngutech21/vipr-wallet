@@ -191,3 +191,59 @@ html[data-e2e='1'] *::after {
     letter-spacing: -0.5px;
   }
 }
+
+.vipr-notify {
+  min-height: 60px;
+  max-width: min(92vw, 420px);
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+    rgba(18, 18, 18, 0.96) !important;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.38);
+  color: white !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    border-radius: 18px 0 0 18px;
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .q-notification__wrapper {
+    padding: 0;
+  }
+
+  .q-notification__icon {
+    margin-right: 12px;
+    font-size: 1.2rem;
+    opacity: 0.95;
+  }
+
+  .q-notification__message {
+    font-size: 0.98rem;
+    line-height: 1.4;
+    font-weight: 500;
+  }
+}
+
+.vipr-notify--positive::before {
+  background: #17d97a;
+}
+
+.vipr-notify--info::before {
+  background: #4db8ff;
+}
+
+.vipr-notify--warning::before {
+  background: #ffb648;
+}
+
+.vipr-notify--negative::before {
+  background: #ff5d7d;
+}

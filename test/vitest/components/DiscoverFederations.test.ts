@@ -489,13 +489,15 @@ describe('DiscoverFederations.vue', () => {
       component.openFederationPreview(federation)
       await flushPromises()
 
-      expect(mockNotify).toHaveBeenCalledWith({
-        message: 'Federation already exists',
-        color: 'negative',
-        icon: 'error',
-        timeout: 5000,
-        position: 'top',
-      })
+      expect(mockNotify).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Federation already exists',
+          color: 'negative',
+          icon: 'error',
+          timeout: 5000,
+          position: 'top',
+        }),
+      )
     })
 
     it('should not emit close when federation already exists', async () => {
@@ -558,12 +560,14 @@ describe('DiscoverFederations.vue', () => {
       const component = wrapper.vm as any
       await component.discoverFederations()
 
-      expect(mockNotify).toHaveBeenCalledWith({
-        message: 'Failed to discover federations boom',
-        color: 'negative',
-        icon: 'error',
-        position: 'top',
-      })
+      expect(mockNotify).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Failed to discover federations boom',
+          color: 'negative',
+          icon: 'error',
+          position: 'top',
+        }),
+      )
     })
   })
 

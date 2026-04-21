@@ -417,7 +417,7 @@ defineOptions({
 import { version } from '../../../package.json'
 import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'
-import { Dialog, Notify } from 'quasar'
+import { Dialog } from 'quasar'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useNostrStore } from 'src/stores/nostr'
 import { useWalletStore } from 'src/stores/wallet'
@@ -550,102 +550,58 @@ async function checkForUpdates() {
   const result = await pwaUpdateStore.checkForUpdatesManual()
 
   if (result === 'update-ready') {
-    Notify.create({
-      message: 'Update ready',
-      color: 'positive',
-      position: 'top',
-    })
+    notify.success('Update ready')
     return
   }
 
   if (result === 'up-to-date') {
-    Notify.create({
-      message: 'No updates available',
-      color: 'info',
-      position: 'top',
-    })
+    notify.info('No updates available')
     return
   }
 
   if (result === 'checking') {
-    Notify.create({
-      message: 'Update is downloading in the background',
-      color: 'info',
-      position: 'top',
-    })
+    notify.info('Update is downloading in the background')
     return
   }
 
   if (result === 'not-supported') {
-    Notify.create({
-      message: 'Service Worker not supported',
-      color: 'negative',
-      position: 'top',
-    })
+    notify.error('Service Worker not supported')
     return
   }
 
   if (result === 'not-registered') {
-    Notify.create({
-      message: 'Service Worker not registered',
-      color: 'warning',
-      position: 'top',
-    })
+    notify.warning('Service Worker not registered')
     return
   }
 
-  Notify.create({
-    message: pwaUpdateStore.lastError ?? 'Error checking for updates',
-    color: 'negative',
-    position: 'top',
-  })
+  notify.error(pwaUpdateStore.lastError ?? 'Error checking for updates')
 }
 
 async function applyUpdate() {
   const result = await pwaUpdateStore.applyUpdate(route.name)
 
   if (result === 'blocked-route') {
-    Notify.create({
-      message: 'Update is ready. Open Home or Settings to apply safely.',
-      color: 'warning',
-      position: 'top',
-    })
+    notify.warning('Update is ready. Open Home or Settings to apply safely.')
     return
   }
 
   if (result === 'no-update') {
-    Notify.create({
-      message: 'No update is ready yet',
-      color: 'info',
-      position: 'top',
-    })
+    notify.info('No update is ready yet')
     return
   }
 
   if (result === 'checking') {
-    Notify.create({
-      message: 'Update is downloading in the background',
-      color: 'info',
-      position: 'top',
-    })
+    notify.info('Update is downloading in the background')
     return
   }
 
   if (result === 'not-supported') {
-    Notify.create({
-      message: 'Service Worker not supported',
-      color: 'negative',
-      position: 'top',
-    })
+    notify.error('Service Worker not supported')
     return
   }
 
   if (result === 'error') {
-    Notify.create({
-      message: pwaUpdateStore.lastError ?? 'Error applying update',
-      color: 'negative',
-      position: 'top',
-    })
+    notify.error(pwaUpdateStore.lastError ?? 'Error applying update')
   }
 }
 

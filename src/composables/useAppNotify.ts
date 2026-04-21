@@ -5,6 +5,54 @@ import type { NamedColor, QNotifyCreateOptions } from 'quasar'
 type AppNotifyOptions = Omit<QNotifyCreateOptions, 'message' | 'position' | 'color'>
 
 const DEFAULT_POSITION: NonNullable<QNotifyCreateOptions['position']> = 'top'
+const DEFAULT_TIMEOUT = 2600
+
+function getTone(color?: string): 'positive' | 'info' | 'warning' | 'negative' | 'neutral' {
+  if (color === 'positive' || color === 'info' || color === 'warning' || color === 'negative') {
+    return color
+  }
+
+  return 'neutral'
+}
+
+function getToneIcon(tone: ReturnType<typeof getTone>): string | undefined {
+  switch (tone) {
+    case 'positive':
+      return 'check_circle'
+    case 'info':
+      return 'info'
+    case 'warning':
+      return 'warning'
+    case 'negative':
+      return 'error'
+    default:
+      return undefined
+  }
+}
+
+function buildNotifyPayload(options: QNotifyCreateOptions): QNotifyCreateOptions {
+  const tone = getTone(typeof options.color === 'string' ? options.color : undefined)
+  const classes = ['vipr-notify', `vipr-notify--${tone}`, options.classes]
+    .filter((value) => value != null && value !== '')
+    .join(' ')
+  const toneIcon = options.icon ?? getToneIcon(tone)
+
+  const payload: QNotifyCreateOptions = {
+    timeout: DEFAULT_TIMEOUT,
+    textColor: 'white',
+    color: 'dark',
+    progress: false,
+    ...options,
+    position: options.position ?? DEFAULT_POSITION,
+    classes,
+  }
+
+  if (toneIcon != null) {
+    payload.icon = toneIcon
+  }
+
+  return payload
+}
 
 export function useAppNotify() {
   const vm = getCurrentInstance()
@@ -40,22 +88,14 @@ export function useAppNotify() {
 
   function notify(options: QNotifyCreateOptions | string) {
     if (typeof options === 'string') {
-      const payload = {
+      const payload = buildNotifyPayload({
         message: options,
-        position: DEFAULT_POSITION,
-      }
+      })
 
       return quasarNotify?.(payload) ?? fallbackNotify?.(payload)
     }
 
-    if (options.position != null) {
-      return quasarNotify?.(options) ?? fallbackNotify?.(options)
-    }
-
-    const payload = {
-      ...options,
-      position: DEFAULT_POSITION,
-    }
+    const payload = buildNotifyPayload(options)
 
     return quasarNotify?.(payload) ?? fallbackNotify?.(payload)
   }

@@ -321,11 +321,13 @@ describe('LightningTransactionDetails.vue', () => {
       await copyButton.trigger('click')
       await flushPromises()
 
-      expect(mockNotify).toHaveBeenCalledWith({
-        message: 'Invoice copied to clipboard',
-        color: 'positive',
-        position: 'top',
-      })
+      expect(mockNotify).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Invoice copied to clipboard',
+          color: 'positive',
+          position: 'top',
+        }),
+      )
     })
 
     it('should handle clipboard errors gracefully', async () => {
@@ -337,11 +339,13 @@ describe('LightningTransactionDetails.vue', () => {
       await copyButton.trigger('click')
       await flushPromises()
 
-      expect(mockNotify).toHaveBeenCalledWith({
-        message: 'Failed to copy invoice',
-        color: 'negative',
-        position: 'top',
-      })
+      expect(mockNotify).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Failed to copy invoice',
+          color: 'negative',
+          position: 'top',
+        }),
+      )
     })
   })
 

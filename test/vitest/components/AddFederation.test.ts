@@ -147,11 +147,13 @@ describe('AddFederation.vue', () => {
     await wrapper.get('[data-testid="add-federation-paste-btn"]').trigger('click')
     await flushPromises()
 
-    expect(mockNotify).toHaveBeenCalledWith({
-      type: 'negative',
-      message: 'Unable to access clipboard Permission denied',
-      position: 'top',
-    })
+    expect(mockNotify).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'negative',
+        message: 'Unable to access clipboard Permission denied',
+        position: 'top',
+      }),
+    )
   })
 
   it('loads the preview and switches to the review step', async () => {

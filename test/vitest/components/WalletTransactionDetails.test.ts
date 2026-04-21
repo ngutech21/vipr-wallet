@@ -492,11 +492,13 @@ describe('WalletTransactionDetails.vue', () => {
       await copyButton.trigger('click')
       await flushPromises()
 
-      expect(mockNotify).toHaveBeenCalledWith({
-        message: 'Address copied to clipboard',
-        color: 'positive',
-        position: 'top',
-      })
+      expect(mockNotify).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Address copied to clipboard',
+          color: 'positive',
+          position: 'top',
+        }),
+      )
     })
 
     it('should handle clipboard errors gracefully', async () => {
@@ -508,11 +510,13 @@ describe('WalletTransactionDetails.vue', () => {
       await copyButton.trigger('click')
       await flushPromises()
 
-      expect(mockNotify).toHaveBeenCalledWith({
-        message: 'Failed to copy address',
-        color: 'negative',
-        position: 'top',
-      })
+      expect(mockNotify).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Failed to copy address',
+          color: 'negative',
+          position: 'top',
+        }),
+      )
     })
   })
 
