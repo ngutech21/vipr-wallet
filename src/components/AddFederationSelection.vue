@@ -1,6 +1,6 @@
 <template>
   <ModalCard
-    title="Join a federation"
+    title="Join a Federation"
     data-testid="join-federation-selection"
     @close="emit('close')"
   >

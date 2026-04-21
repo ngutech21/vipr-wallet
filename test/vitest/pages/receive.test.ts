@@ -169,7 +169,7 @@ describe('ReceivePage timer lifecycle', () => {
     await flushPromises()
 
     expect(mockLoadingShow).toHaveBeenCalledWith({
-      message: 'Paying with connected Bitcoin Wallet',
+      message: 'Paying with connected Bitcoin wallet',
     })
     expect(mockLoadingHide).toHaveBeenCalledTimes(1)
     expect(mockNotifyCreate).toHaveBeenCalledTimes(1)

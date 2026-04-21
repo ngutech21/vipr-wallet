@@ -48,11 +48,11 @@ meta:
                     Exact offline amounts depend on your current note denominations.
                   </div>
                 </template>
-                <template v-else> Select a federation before exporting offline eCash </template>
+                <template v-else> Select a federation before exporting offline ecash </template>
               </div>
 
               <q-btn
-                label="Export eCash"
+                label="Export ecash"
                 color="primary"
                 class="full-width send-ecash-action-btn"
                 :loading="isProcessing"
@@ -71,7 +71,7 @@ meta:
           <template v-else>
             <q-card flat class="task-card export-card q-mb-md">
               <q-card-section>
-                <div class="section-title">Exported eCash</div>
+                <div class="section-title">Exported ecash</div>
                 <div class="text-caption text-grey q-mt-xs">
                   Share these notes with the recipient. Anyone with the notes can redeem them.
                 </div>
@@ -177,7 +177,7 @@ const hasExactOfflineAmount = computed(() => {
 
 const amountError = computed(() => {
   if (selectedFederation.value == null) {
-    return 'Select a federation before exporting offline eCash'
+    return 'Select a federation before exporting offline ecash'
   }
 
   if (amount.value === 0) {
@@ -233,7 +233,7 @@ async function createOfflineEcash() {
 
   try {
     isProcessing.value = true
-    Loading.show({ message: 'Creating offline eCash...' })
+    Loading.show({ message: 'Creating offline ecash...' })
 
     const result = await walletStore.spendEcashOffline(amount.value)
     exportedAmount.value = amount.value
@@ -260,19 +260,19 @@ async function copyNotes() {
     await navigator.clipboard.writeText(exportedNotes.value)
     notify.notify({
       type: 'positive',
-      message: 'eCash copied to clipboard',
+      message: 'Ecash copied to clipboard',
     })
   } catch (error) {
     notify.notify({
       type: 'negative',
-      message: `Failed to copy eCash: ${getErrorMessage(error)}`,
+      message: `Failed to copy ecash: ${getErrorMessage(error)}`,
     })
   }
 }
 
 async function shareNotes() {
   await share({
-    title: `eCash for ${exportedAmount.value} sats`,
+    title: `Ecash for ${exportedAmount.value} sats`,
     text: exportedNotes.value,
   })
 }
@@ -311,10 +311,10 @@ function getOfflineEcashErrorMessage(error: unknown) {
   const message = getErrorMessage(error)
 
   if (message.includes('Could not select notes with exact amount')) {
-    return `This exact amount cannot be exported offline right now. Your balance is ${maxOfflineAmount.value.toLocaleString()} sats, but offline eCash can only use your current note denominations. Try a different amount.`
+    return `This exact amount cannot be exported offline right now. Your balance is ${maxOfflineAmount.value.toLocaleString()} sats, but offline ecash can only use your current note denominations. Try a different amount.`
   }
 
-  return `Failed to create offline eCash: ${message}`
+  return `Failed to create offline ecash: ${message}`
 }
 
 function canRepresentExactMsats(targetMsats: number, noteCounts: Record<number, number>) {

@@ -94,12 +94,12 @@ meta:
               <template v-if="selectedFederation != null">
                 Maximum spendable after fee reserve: {{ maxSendAmount.toLocaleString() }} sats
               </template>
-              <template v-else> Select a federation before sending Bitcoin onchain </template>
+              <template v-else> Select a federation before sending Bitcoin on-chain </template>
             </div>
 
             <div class="text-caption text-grey q-mb-lg">
               A {{ ONCHAIN_FEE_RESERVE_SATS.toLocaleString() }} sat fee reserve is kept for network
-              fees. Minimum onchain send: {{ MIN_ONCHAIN_SEND_SATS.toLocaleString() }}
+              fees. Minimum on-chain send: {{ MIN_ONCHAIN_SEND_SATS.toLocaleString() }}
               sats.
             </div>
 
@@ -179,7 +179,7 @@ const effectiveAmount = computed(() => {
 
 const amountError = computed(() => {
   if (selectedFederation.value == null) {
-    return 'Select a federation before sending Bitcoin onchain'
+    return 'Select a federation before sending Bitcoin on-chain'
   }
 
   if (addressError.value != null) {
@@ -271,7 +271,7 @@ async function submitOnchainPayment() {
 
   try {
     isProcessing.value = true
-    Loading.show({ message: 'Submitting onchain transfer...' })
+    Loading.show({ message: 'Submitting on-chain transfer...' })
 
     const result = await walletStore.sendOnchain(
       parsedTarget.value.data.address,

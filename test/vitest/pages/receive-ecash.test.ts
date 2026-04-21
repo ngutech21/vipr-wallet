@@ -144,7 +144,7 @@ describe('ReceiveEcashPage', () => {
     expect(mockNotify).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'negative',
-        message: 'Failed to redeem eCash: invalid notes',
+        message: 'Failed to redeem ecash: invalid notes',
       }),
     )
 

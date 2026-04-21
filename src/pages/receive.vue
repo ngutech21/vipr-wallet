@@ -116,7 +116,7 @@ meta:
         <div class="row justify-center q-mt-lg">
           <q-btn
             v-if="qrData"
-            label="Pay with Bitcoin Wallet"
+            label="Pay with Bitcoin wallet"
             color="primary"
             icon="account_balance_wallet"
             class="receive-wallet-btn"
@@ -207,7 +207,7 @@ onUnmounted(() => {
 })
 
 async function payWithBitcoinConnect() {
-  Loading.show({ message: 'Paying with connected Bitcoin Wallet' })
+  Loading.show({ message: 'Paying with connected Bitcoin wallet' })
   try {
     const provider = await requestProvider()
 

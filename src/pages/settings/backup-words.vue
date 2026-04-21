@@ -7,7 +7,7 @@ meta:
   <q-page class="dark-gradient" data-testid="backup-words-page">
     <q-toolbar class="header-section">
       <q-btn flat round icon="arrow_back" @click="goBack" data-testid="backup-words-back-btn" />
-      <q-toolbar-title class="text-center no-wrap">Recovery Words</q-toolbar-title>
+      <q-toolbar-title class="text-center no-wrap">Recovery phrase</q-toolbar-title>
       <div class="q-ml-md" style="width: 40px"></div>
     </q-toolbar>
 
@@ -52,8 +52,7 @@ meta:
               <div>
                 <div class="text-subtitle2 text-weight-bold q-mb-xs">Store This Secret Safely</div>
                 <div class="text-caption">
-                  These are your real wallet recovery words. Anyone with these words can recover
-                  your wallet.
+                  This is your real wallet recovery phrase. Anyone with it can recover your wallet.
                 </div>
               </div>
             </div>
@@ -61,7 +60,7 @@ meta:
         </q-card>
 
         <q-btn
-          label="I've Written Down My Words"
+          label="I've written down my recovery phrase"
           color="primary"
           icon="check_circle"
           class="full-width q-mb-sm"
@@ -92,7 +91,7 @@ const notify = useAppNotify()
 
 onMounted(() => {
   loadRecoveryWords().catch((error) => {
-    notify.error(`Failed to load recovery words: ${getErrorMessage(error)}`)
+    notify.error(`Failed to load recovery phrase: ${getErrorMessage(error)}`)
   })
 })
 

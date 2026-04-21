@@ -24,7 +24,7 @@ meta:
       <div class="receive-onchain-content">
         <div v-if="isGenerating" class="amount-entry-container task-card text-center q-pa-xl">
           <q-spinner color="primary" size="3em" />
-          <div class="section-title q-mt-md">Generating Bitcoin Address...</div>
+          <div class="section-title q-mt-md">Generating Bitcoin address...</div>
         </div>
 
         <template v-else>
@@ -324,7 +324,7 @@ async function copyToClipboard() {
 async function shareAddress() {
   logger.ui.debug('Sharing Bitcoin address')
   await share({
-    title: 'Bitcoin Address',
+    title: 'Bitcoin address',
     text: bitcoinAddress.value,
   })
 }

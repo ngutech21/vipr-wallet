@@ -178,7 +178,7 @@ describe('SendEcashPage.vue', () => {
       'cashuAoffline123',
     )
     expect(wrapper.find('[data-testid="send-ecash-notes-input"]').exists()).toBe(false)
-    expect(mockLoadingShow).toHaveBeenCalledWith({ message: 'Creating offline eCash...' })
+    expect(mockLoadingShow).toHaveBeenCalledWith({ message: 'Creating offline ecash...' })
     expect(mockLoadingHide).toHaveBeenCalledTimes(1)
   })
 
@@ -196,7 +196,7 @@ describe('SendEcashPage.vue', () => {
     expect(mockNotify).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'positive',
-        message: 'eCash copied to clipboard',
+        message: 'Ecash copied to clipboard',
       }),
     )
   })
@@ -212,7 +212,7 @@ describe('SendEcashPage.vue', () => {
     await wrapper.get('[data-testid="send-ecash-share-btn"]').trigger('click')
 
     expect(mockShare).toHaveBeenCalledWith({
-      title: 'eCash for 25 sats',
+      title: 'Ecash for 25 sats',
       text: 'cashuAoffline123',
     })
   })

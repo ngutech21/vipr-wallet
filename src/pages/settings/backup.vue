@@ -23,7 +23,7 @@ meta:
 
         <div class="text-body1 q-mb-lg">
           <p>
-            You're about to see your wallet's 12 recovery words. These words are the
+            You're about to see your wallet's 12-word recovery phrase. This phrase is the
             <strong>only way</strong> to recover your wallet if you lose access to this device.
           </p>
         </div>
@@ -37,7 +37,7 @@ meta:
                 <ul class="q-pl-md q-mb-none">
                   <li>Write down the words with pen and paper</li>
                   <li>Store them in a safe, secure location</li>
-                  <li>Never share your recovery words with anyone</li>
+                  <li>Never share your recovery phrase with anyone</li>
                   <li>Never store them digitally (screenshots, cloud, etc.)</li>
                   <li>Anyone with these words can access your funds</li>
                 </ul>
@@ -47,11 +47,11 @@ meta:
         </q-card>
 
         <div class="text-caption text-grey-6 text-center q-mb-lg">
-          You will now see your real wallet recovery words.
+          You will now see your wallet recovery phrase.
         </div>
 
         <q-btn
-          label="Show Recovery Words"
+          label="Show recovery phrase"
           color="primary"
           icon="visibility"
           class="full-width q-mb-sm"

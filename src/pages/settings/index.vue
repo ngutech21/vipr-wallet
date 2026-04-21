@@ -5,7 +5,7 @@
         <q-expansion-item
           class="settings-section settings-section--primary"
           icon="account_balance_wallet"
-          label="Bitcoin Wallet"
+          label="Bitcoin wallet"
           caption="Connect wallet"
           header-class="settings-header"
           expand-icon-class="text-primary"
@@ -329,17 +329,17 @@
             </q-item-section>
             <q-item-section data-testid="settings-personal-backup-section">
               <q-item-label>Backup</q-item-label>
-              <q-item-label caption>Save recovery words</q-item-label>
+              <q-item-label caption>Save recovery phrase</q-item-label>
             </q-item-section>
           </template>
           <q-card>
             <q-card-section class="settings-panel settings-panel--secondary">
               <div class="settings-copy-block q-mb-md">
-                Create a backup of your wallet using recovery words. Write them down and store them
-                safely to recover your wallet if you lose access to this device.
+                Create a backup of your wallet using your recovery phrase. Write it down and store
+                it safely to recover your wallet if you lose access to this device.
               </div>
               <q-btn
-                label="Create Backup"
+                label="Create backup"
                 color="primary"
                 icon="backup"
                 :to="{ name: '/settings/backup' }"

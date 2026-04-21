@@ -56,8 +56,8 @@ describe('SendEcashSelection.vue', () => {
     wrapper = createWrapper()
 
     expect(wrapper.text()).toContain('Send via Lightning')
-    expect(wrapper.text()).toContain('Send Onchain')
-    expect(wrapper.text()).toContain('Send Offline eCash')
+    expect(wrapper.text()).toContain('Send On-chain')
+    expect(wrapper.text()).toContain('Send offline ecash')
   })
 
   it('navigates to the online send page and closes', async () => {

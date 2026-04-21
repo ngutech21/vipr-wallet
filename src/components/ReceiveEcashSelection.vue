@@ -1,5 +1,5 @@
 <template>
-  <ModalCard title="Receive eCash" @close="emit('close')">
+  <ModalCard title="Receive ecash" @close="emit('close')">
     <div class="selection-sheet q-pa-md">
       <div class="selection-sheet__intro text-body2 text-grey-5">
         Choose how you want to receive funds into your current federation.
@@ -7,8 +7,8 @@
 
       <div class="selection-sheet__options">
         <BottomSheetOptionCard
-          title="Receive via Onchain"
-          description="Generate a Bitcoin address to receive funds via an onchain transaction"
+          title="Receive via On-chain"
+          description="Generate a Bitcoin address to receive funds via an on-chain transaction."
           icon="currency_bitcoin"
           icon-color="orange"
           data-testid="receive-onchain-card"
@@ -17,7 +17,7 @@
 
         <BottomSheetOptionCard
           title="Receive via Lightning"
-          description="Generate a Lightning invoice to receive eCash directly from the Lightning network"
+          description="Generate a Lightning invoice to receive ecash directly from the Lightning network."
           icon="flash_on"
           icon-color="warning"
           data-testid="receive-lightning-card"
@@ -25,8 +25,8 @@
         />
 
         <BottomSheetOptionCard
-          title="Receive Offline eCash"
-          description="Generate a QR code to receive eCash from another wallet without using the internet"
+          title="Receive offline ecash"
+          description="Generate a QR code to receive ecash from another wallet without using the internet."
           icon="swap_horiz"
           icon-color="primary"
           data-testid="receive-offline-card"

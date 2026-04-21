@@ -1,6 +1,7 @@
 <template>
   <div class="text-body2 q-mb-md">
-    Write down these 12 words in order. They are the only way to recover your wallet.
+    Write down these 12 words in order. They are your recovery phrase and the only way to recover
+    your wallet.
   </div>
 
   <div class="words-grid q-mb-md">
@@ -25,7 +26,7 @@
     </div>
     <div class="col-12 col-sm-6">
       <q-btn
-        label="I've Backed Up My Words"
+        label="I've backed up my recovery phrase"
         color="primary"
         icon="check_circle"
         class="full-width"

@@ -170,7 +170,7 @@ meta:
           >
             <div class="wizard-copy wizard-copy--compact">
               <div class="wizard-kicker">Backup</div>
-              <h2 class="wizard-title">Save your recovery words</h2>
+              <h2 class="wizard-title">Save your recovery phrase</h2>
               <p class="wizard-body">
                 These 12 words are the only way to restore this wallet on another device.
               </p>
@@ -192,7 +192,7 @@ meta:
               <div class="wizard-kicker">Restore</div>
               <h2 class="wizard-title">Restore your wallet</h2>
               <p class="wizard-body">
-                Enter your 12 recovery words to restore this wallet on this device.
+                Enter your 12-word recovery phrase to restore this wallet on this device.
               </p>
             </div>
 

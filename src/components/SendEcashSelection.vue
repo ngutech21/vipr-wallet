@@ -16,8 +16,8 @@
         />
 
         <BottomSheetOptionCard
-          title="Send Onchain"
-          description="Withdraw Bitcoin to an onchain address or Bitcoin QR code."
+          title="Send On-chain"
+          description="Withdraw Bitcoin to an on-chain address or Bitcoin QR code."
           icon="currency_bitcoin"
           icon-color="orange"
           data-testid="send-onchain-card"
@@ -25,7 +25,7 @@
         />
 
         <BottomSheetOptionCard
-          title="Send Offline eCash"
+          title="Send offline ecash"
           description="Export ecash notes to share without a live internet connection."
           icon="swap_horiz"
           icon-color="primary"

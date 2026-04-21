@@ -50,9 +50,9 @@ describe('ReceiveEcashSelection.vue', () => {
   it('renders the available receive actions', () => {
     wrapper = createWrapper()
 
-    expect(wrapper.text()).toContain('Receive via Onchain')
+    expect(wrapper.text()).toContain('Receive via On-chain')
     expect(wrapper.text()).toContain('Receive via Lightning')
-    expect(wrapper.text()).toContain('Receive Offline eCash')
+    expect(wrapper.text()).toContain('Receive offline ecash')
   })
 
   it('renders helper copy for the action chooser', () => {

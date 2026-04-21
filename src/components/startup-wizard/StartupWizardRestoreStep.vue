@@ -1,6 +1,6 @@
 <template>
   <div class="text-body2 q-mb-md">
-    Enter your 12 recovery words in order to restore your wallet.
+    Enter your 12-word recovery phrase in order to restore your wallet.
   </div>
 
   <div class="restore-grid q-mb-md">
@@ -34,7 +34,7 @@
     </div>
     <div class="col-12 col-sm-6">
       <q-btn
-        label="Restore Wallet"
+        label="Restore wallet"
         color="primary"
         class="full-width"
         :loading="isRestoring"

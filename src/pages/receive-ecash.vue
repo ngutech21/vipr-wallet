@@ -24,7 +24,7 @@ meta:
       <div class="receive-ecash-content">
         <q-card flat class="task-card receive-ecash-card q-mb-md">
           <q-card-section>
-            <div class="section-title q-mb-md">Paste eCash</div>
+            <div class="section-title q-mb-md">Paste ecash</div>
             <q-input
               v-model="ecashToken"
               filled
@@ -32,7 +32,7 @@ meta:
               dense
               dark
               type="textarea"
-              placeholder="Paste eCash token here"
+              placeholder="Paste ecash token here"
               class="custom-input"
               data-testid="receive-ecash-token-input"
             >
@@ -51,7 +51,7 @@ meta:
         </q-card>
 
         <q-btn
-          label="Receive eCash"
+          label="Receive ecash"
           color="primary"
           class="full-width receive-ecash-action-btn"
           :loading="isProcessing"
@@ -116,7 +116,7 @@ async function redeemEcash() {
 
   try {
     isProcessing.value = true
-    Loading.show({ message: 'Redeeming eCash...' })
+    Loading.show({ message: 'Redeeming ecash...' })
 
     const amountMsats = (await walletStore.redeemEcash(ecashToken.value.trim())) ?? 0
     if (amountMsats === 0) {
@@ -130,7 +130,7 @@ async function redeemEcash() {
   } catch (error) {
     notify.notify({
       type: 'negative',
-      message: `Failed to redeem eCash: ${getErrorMessage(error)}`,
+      message: `Failed to redeem ecash: ${getErrorMessage(error)}`,
     })
   } finally {
     isProcessing.value = false
