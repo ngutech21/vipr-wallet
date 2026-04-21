@@ -1,17 +1,44 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
+/* eslint-disable @typescript-eslint/unbound-method */
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest'
 import { defineComponent } from 'vue'
-import { Quasar, Notify } from 'quasar'
+import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
+import { Loading, Notify, Quasar } from 'quasar'
 import { createTestingPinia, type TestingPinia } from '@pinia/testing'
 import AddFederation from 'src/components/AddFederation.vue'
+import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import type { Federation } from 'src/types/federation'
 
 describe('AddFederation.vue', () => {
   let wrapper: VueWrapper | undefined
   let pinia: TestingPinia
+
   const mockNotify = vi.fn()
-  Notify.create = mockNotify
+
+  const federation: Federation = {
+    title: 'Trusted Federation',
+    inviteCode: 'fed11trusted',
+    federationId: 'trusted-fed-id',
+    modules: [
+      {
+        kind: 'mint',
+        config: 'mint-config',
+        version: { major: 0, minor: 1 },
+      },
+    ],
+    guardians: [
+      {
+        peerId: 0,
+        name: 'Guardian One',
+        url: 'wss://guardian.example',
+      },
+    ],
+    metadata: {
+      default_currency: 'USD',
+      preview_message: 'Known federation preview message',
+    },
+    network: 'mainnet',
+  }
 
   function setClipboardMock(readText: () => Promise<string>) {
     Object.defineProperty(navigator, 'clipboard', {
@@ -30,8 +57,31 @@ describe('AddFederation.vue', () => {
             name: 'ModalCard',
             props: {
               title: { type: String, required: false, default: '' },
+              showBack: { type: Boolean, required: false, default: false },
+              showClose: { type: Boolean, required: false, default: true },
             },
-            template: '<div><h2>{{ title }}</h2><slot /></div>',
+            emits: ['close', 'back'],
+            template: `
+              <div class="modal-card">
+                <div data-testid="modal-title">{{ title }}</div>
+                <button
+                  v-if="showBack"
+                  data-testid="modal-back-btn"
+                  @click="$emit('back')"
+                >
+                  back
+                </button>
+                <button
+                  v-if="showClose"
+                  data-testid="modal-close-btn"
+                  @click="$emit('close')"
+                >
+                  close
+                </button>
+                <slot />
+                <slot name="footer" />
+              </div>
+            `,
           }),
         },
       },
@@ -41,6 +91,11 @@ describe('AddFederation.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.clear()
+
+    Notify.create = mockNotify
+    vi.spyOn(Loading, 'show').mockImplementation(() => () => undefined)
+    vi.spyOn(Loading, 'hide').mockImplementation(() => undefined)
+
     pinia = createTestingPinia({
       initialState: {
         federation: {
@@ -57,31 +112,41 @@ describe('AddFederation.vue', () => {
     wrapper?.unmount()
   })
 
-  it('pastes invite code from clipboard on success', async () => {
-    const readText = vi.fn().mockResolvedValue('fed11abc')
+  it('starts on the invite step', () => {
+    wrapper = createWrapper()
+
+    expect(wrapper.text()).toContain('Enter or scan an invite code')
+    expect(wrapper.find('[data-testid="join-federation-invite-step"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="add-federation-preview-btn"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="modal-back-btn"]').exists()).toBe(false)
+  })
+
+  it('pastes the invite code from the clipboard and uses it for preview', async () => {
+    const readText = vi.fn().mockResolvedValue('fed11clipboard')
+    const walletStore = useWalletStore()
+    const previewFederationMock = walletStore.previewFederation as Mock
+    previewFederationMock.mockResolvedValue(federation)
     setClipboardMock(readText)
 
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).pasteFromClipboard()
+
+    await wrapper.get('[data-testid="add-federation-paste-btn"]').trigger('click')
+    await wrapper.get('[data-testid="add-federation-preview-btn"]').trigger('click')
     await flushPromises()
 
     expect(readText).toHaveBeenCalledTimes(1)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((wrapper.vm as any).inviteCode).toBe('fed11abc')
-    expect(mockNotify).not.toHaveBeenCalled()
+    expect(previewFederationMock).toHaveBeenCalledWith('fed11clipboard')
+    expect(wrapper.find('[data-testid="join-federation-preview-step"]').exists()).toBe(true)
   })
 
-  it('shows notification when clipboard access fails', async () => {
+  it('shows a notification when clipboard access fails', async () => {
     const readText = vi.fn().mockRejectedValue(new Error('Permission denied'))
     setClipboardMock(readText)
 
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).pasteFromClipboard()
+    await wrapper.get('[data-testid="add-federation-paste-btn"]').trigger('click')
     await flushPromises()
 
-    expect(readText).toHaveBeenCalledTimes(1)
     expect(mockNotify).toHaveBeenCalledWith({
       type: 'negative',
       message: 'Unable to access clipboard Permission denied',
@@ -89,15 +154,44 @@ describe('AddFederation.vue', () => {
     })
   })
 
-  it('opens directly in preview step when prefetched federation is provided', async () => {
+  it('loads the preview and switches to the review step', async () => {
     const walletStore = useWalletStore()
-    const federation: Federation = {
-      title: 'Cached Federation',
-      inviteCode: 'fed11cached',
-      federationId: 'cached-fed-id',
-      modules: [],
-      metadata: {},
-    }
+    const previewFederationMock = walletStore.previewFederation as Mock
+    previewFederationMock.mockResolvedValue(federation)
+
+    wrapper = createWrapper()
+    await wrapper
+      .findComponent({ name: 'JoinFederationInviteStep' })
+      .vm.$emit('update:inviteCode', federation.inviteCode)
+    await wrapper.get('[data-testid="add-federation-preview-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(previewFederationMock).toHaveBeenCalledWith(federation.inviteCode)
+    expect(wrapper.find('[data-testid="join-federation-preview-step"]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Review this federation before you join')
+    expect(wrapper.find('[data-testid="modal-back-btn"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="add-federation-submit-btn"]').exists()).toBe(true)
+  })
+
+  it('returns to the invite step when back is pressed from the review step', async () => {
+    const walletStore = useWalletStore()
+    ;(walletStore.previewFederation as Mock).mockResolvedValue(federation)
+
+    wrapper = createWrapper()
+    await wrapper
+      .findComponent({ name: 'JoinFederationInviteStep' })
+      .vm.$emit('update:inviteCode', federation.inviteCode)
+    await wrapper.get('[data-testid="add-federation-preview-btn"]').trigger('click')
+    await flushPromises()
+    await wrapper.get('[data-testid="modal-back-btn"]').trigger('click')
+
+    expect(wrapper.find('[data-testid="join-federation-invite-step"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="join-federation-preview-step"]').exists()).toBe(false)
+  })
+
+  it('opens directly in the review step when prefetched federation data is provided', async () => {
+    const walletStore = useWalletStore()
+    const previewFederationMock = walletStore.previewFederation as Mock
 
     wrapper = createWrapper({
       initialInviteCode: federation.inviteCode,
@@ -106,16 +200,63 @@ describe('AddFederation.vue', () => {
     })
     await flushPromises()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((wrapper.vm as any).step).toBe('preview')
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((wrapper.vm as any).previewFederation).toEqual(federation)
-    expect(
-      (
-        walletStore as unknown as {
-          previewFederation: { mock: { calls: unknown[] } }
-        }
-      ).previewFederation.mock.calls,
-    ).toHaveLength(0)
+    expect(wrapper.find('[data-testid="join-federation-preview-step"]').exists()).toBe(true)
+    expect(previewFederationMock).not.toHaveBeenCalled()
+  })
+
+  it('joins the federation and closes when review is confirmed', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    const previewFederationMock = walletStore.previewFederation as Mock
+    const addFederationMock = federationStore.addFederation as Mock
+    const selectFederationMock = federationStore.selectFederation as Mock
+
+    previewFederationMock.mockResolvedValue(federation)
+    selectFederationMock.mockResolvedValue(undefined)
+
+    wrapper = createWrapper()
+    await wrapper
+      .findComponent({ name: 'JoinFederationInviteStep' })
+      .vm.$emit('update:inviteCode', federation.inviteCode)
+    await wrapper.get('[data-testid="add-federation-preview-btn"]').trigger('click')
+    await flushPromises()
+    await wrapper.get('[data-testid="add-federation-submit-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(addFederationMock).toHaveBeenCalledWith(federation)
+    expect(selectFederationMock).toHaveBeenCalledWith(federation)
+    expect(wrapper.emitted('close')).toHaveLength(1)
+  })
+
+  it('rolls back the add when selecting the federation fails', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    const previewFederationMock = walletStore.previewFederation as Mock
+    const addFederationMock = federationStore.addFederation as Mock
+    const selectFederationMock = federationStore.selectFederation as Mock
+    const deleteFederationMock = federationStore.deleteFederation as Mock
+
+    previewFederationMock.mockResolvedValue(federation)
+    selectFederationMock.mockRejectedValue(new Error('Selection failed'))
+
+    wrapper = createWrapper()
+    await wrapper
+      .findComponent({ name: 'JoinFederationInviteStep' })
+      .vm.$emit('update:inviteCode', federation.inviteCode)
+    await wrapper.get('[data-testid="add-federation-preview-btn"]').trigger('click')
+    await flushPromises()
+    await wrapper.get('[data-testid="add-federation-submit-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(addFederationMock).toHaveBeenCalledWith(federation)
+    expect(deleteFederationMock).toHaveBeenCalledWith(federation.federationId)
+    expect(wrapper.emitted('close')).toBeFalsy()
+  })
+
+  it('forwards the modal close event', async () => {
+    wrapper = createWrapper()
+    await wrapper.get('[data-testid="modal-close-btn"]').trigger('click')
+
+    expect(wrapper.emitted('close')).toHaveLength(1)
   })
 })

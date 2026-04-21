@@ -1,17 +1,26 @@
 <template>
-  <q-form class="q-pa-md" @submit.prevent="emit('submit')">
+  <div class="invite-step q-pa-md" data-testid="join-federation-invite-step">
+    <div class="invite-step__intro q-mb-lg">
+      <div class="text-h6 text-weight-medium">Enter or scan an invite code</div>
+      <div class="text-body2 text-grey-5 q-mt-sm">
+        Only join federations you already trust. You can paste an invite code or scan a QR code to
+        review the federation before joining.
+      </div>
+    </div>
+
     <q-input
       filled
       :model-value="inviteCode"
       @update:model-value="emit('update:inviteCode', $event)"
-      label="Enter Fedimint Invitecode"
+      label="Fedimint Invite Code"
+      hint="Paste a code from a trusted source or scan a federation QR."
       :rules="[(val) => !!val || 'Invitecode is required']"
       type="textarea"
       autogrow
       data-testid="invite-code-input"
     />
 
-    <div class="row justify-between full-width q-mt-none">
+    <div class="row justify-between full-width q-mt-md">
       <q-btn
         flat
         label="Scan QR"
@@ -31,31 +40,16 @@
         @click="emit('paste')"
       />
     </div>
-
-    <div class="q-mt-xl">
-      <q-btn
-        type="submit"
-        label="Preview Federation"
-        color="primary"
-        class="full-width"
-        data-testid="add-federation-preview-btn"
-        :disable="isSubmitting"
-        :loading="isSubmitting"
-        :data-busy="isSubmitting ? 'true' : 'false'"
-      />
-    </div>
-  </q-form>
+  </div>
 </template>
 
 <script setup lang="ts">
 defineProps<{
   inviteCode: string
-  isSubmitting: boolean
 }>()
 
 const emit = defineEmits<{
   paste: []
-  submit: []
   'update:inviteCode': [value: string | number | null]
 }>()
 </script>

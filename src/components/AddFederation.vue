@@ -1,22 +1,49 @@
 <template>
-  <ModalCard :title="dialogTitle" data-testid="add-federation-form">
+  <ModalCard
+    :title="dialogTitle"
+    :show-back="step === 'preview'"
+    data-testid="add-federation-form"
+    @back="goBackToInviteStep"
+    @close="onClose"
+  >
     <JoinFederationInviteStep
       v-if="step === 'invite'"
       :invite-code="inviteCode"
-      :is-submitting="isSubmitting"
       @update:invite-code="updateInviteCode"
       @paste="pasteFromClipboard"
-      @submit="loadPreview"
     />
 
     <JoinFederationPreviewStep
       v-else-if="previewFederation != null"
       :federation="previewFederation"
       :import-amount-sats="importAmountSats ?? null"
-      :is-submitting="isSubmitting"
-      @back="goBackToInviteStep"
-      @join="addFederation"
     />
+
+    <template #footer>
+      <q-btn
+        v-if="step === 'invite'"
+        label="Preview Federation"
+        color="primary"
+        class="full-width"
+        data-testid="add-federation-preview-btn"
+        :disable="isSubmitting || inviteCode.trim() === ''"
+        :loading="isSubmitting"
+        :data-busy="isSubmitting ? 'true' : 'false'"
+        @click="loadPreview"
+      />
+
+      <q-btn
+        v-else-if="previewFederation != null"
+        label="Join Federation"
+        color="primary"
+        class="full-width"
+        data-testid="add-federation-submit-btn"
+        :disable="isSubmitting"
+        :loading="isSubmitting"
+        :data-busy="isSubmitting ? 'true' : 'false'"
+        @click="addFederation"
+      />
+    </template>
   </ModalCard>
 </template>
 
@@ -54,7 +81,7 @@ const previewFederation = ref<Federation | null>(null)
 const step = ref<'invite' | 'preview'>('invite')
 
 const dialogTitle = computed(() => {
-  return step.value === 'preview' ? 'Preview Federation' : 'Join Federation'
+  return step.value === 'preview' ? 'Review Federation' : 'Join Federation'
 })
 
 watch(
