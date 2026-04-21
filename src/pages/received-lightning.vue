@@ -13,23 +13,34 @@ meta:
         round
         color="white"
         icon="close"
-        class="absolute-top-right q-ma-md"
+        class="success-close-btn"
         :to="{ name: '/' }"
         data-testid="received-lightning-close-btn"
       />
 
-      <div class="text-center text-white" data-testid="received-lightning-success-state">
-        <q-icon name="check_circle" size="4em" />
-        <div class="text-h4 q-mt-md" data-testid="received-lightning-title">Payment Received!</div>
-        <div class="text-h3 q-mt-lg" data-testid="received-lightning-amount">
+      <div class="success-shell" data-testid="received-lightning-success-state">
+        <div class="success-icon">
+          <q-icon name="check_circle" size="3.5em" color="positive" />
+        </div>
+
+        <div class="success-title" data-testid="received-lightning-title">Payment received</div>
+        <div class="success-amount text-h3 q-mt-md" data-testid="received-lightning-amount">
           {{ formatNumber(amount) }} sats
         </div>
+        <div class="success-subtitle q-mt-sm">The funds are now available in your wallet.</div>
+
+        <q-card flat class="success-card q-mt-xl">
+          <q-card-section class="summary-row">
+            <span class="summary-label">Amount</span>
+            <span class="summary-value">{{ formatNumber(amount) }} sats</span>
+          </q-card-section>
+        </q-card>
+
         <q-btn
-          flat
-          color="white"
-          class="q-mt-xl"
+          color="primary"
+          class="success-action-btn q-mt-xl"
           :to="{ name: '/' }"
-          label="Back to Home"
+          label="Back to home"
           data-testid="back-home-button"
         />
       </div>
@@ -112,11 +123,10 @@ onUnmounted(() => {
 
 <style scoped>
 .page-container {
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
   position: relative;
-  background: linear-gradient(145deg, var(--q-primary) 0%, #8000ff 100%);
+  background:
+    radial-gradient(circle at top left, rgba(128, 0, 255, 0.22), transparent 36%),
+    linear-gradient(180deg, #171717 0%, #121212 100%);
   min-height: 100vh;
   overflow: hidden;
 }
@@ -134,15 +144,69 @@ onUnmounted(() => {
 .content-container {
   position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
   z-index: 2;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px 16px;
 }
 
-/* Make text more visible */
-.text-white {
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+.success-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.success-shell {
+  width: 100%;
+  max-width: 560px;
+  text-align: center;
+  color: white;
+}
+
+.success-icon {
+  margin-bottom: 12px;
+}
+
+.success-title {
+  font-size: 1.9rem;
+  font-weight: 700;
+}
+
+.success-subtitle {
+  color: #b3b3b3;
+}
+
+.success-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  color: white;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.summary-label {
+  color: #9e9e9e;
+}
+
+.summary-value {
+  font-weight: 600;
+}
+
+.success-action-btn {
+  width: 100%;
+  min-height: 54px;
+  border-radius: 18px;
 }
 </style>

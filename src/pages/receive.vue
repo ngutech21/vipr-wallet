@@ -75,22 +75,26 @@ meta:
             </q-card-section>
             <q-separator />
             <q-card-section>
-              <div class="row items-center q-gutter-sm">
+              <div class="invoice-row">
                 <q-input
                   v-model="qrData"
                   readonly
-                  class="col receive-input"
+                  filled
+                  dense
+                  class="col invoice-input receive-input"
                   data-testid="receive-invoice-input"
                 />
                 <q-btn
                   icon="content_copy"
                   flat
+                  round
                   @click="copyToClipboard"
                   data-testid="receive-copy-invoice-btn"
                 />
                 <q-btn
                   icon="share"
                   flat
+                  round
                   @click="shareQrcode"
                   v-if="isSupported"
                   data-testid="receive-share-invoice-btn"
@@ -362,9 +366,28 @@ async function goBack() {
   height: 100%;
 }
 
+.invoice-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.invoice-input {
+  min-width: 0;
+}
+
 .receive-input :deep(.q-field__control) {
   background-color: rgba(255, 255, 255, 0.05);
   border-radius: 16px;
+}
+
+.receive-input :deep(.q-field__native),
+.receive-input :deep(.q-field__input) {
+  color: white;
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  text-overflow: ellipsis;
 }
 
 .receive-action-btn,
