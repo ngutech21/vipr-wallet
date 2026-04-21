@@ -7,6 +7,10 @@ export const useFederationStore = defineStore('federation', {
   state: () => ({
     federations: useLocalStorage<Federation[]>('vipr.federations', []),
     selectedFederationId: useLocalStorage<string | null>('vipr.federationid.selected', null),
+    pendingRecoveryFederationIds: useLocalStorage<string[]>(
+      'vipr.federations.recovery.pending',
+      [],
+    ),
   }),
 
   getters: {
@@ -15,9 +19,30 @@ export const useFederationStore = defineStore('federation', {
     },
   },
   actions: {
-    addFederation(newFedi: Federation) {
-      this.federations.push(newFedi)
+    addFederation(newFedi: Federation, options: { recover?: boolean } = {}) {
+      if (!this.federations.some((f) => f.federationId === newFedi.federationId)) {
+        this.federations.push(newFedi)
+      }
+      if (options.recover === true) {
+        this.markFederationForRecovery(newFedi.federationId)
+      }
       this.ensureValidSelection()
+    },
+
+    markFederationForRecovery(federationId: string) {
+      if (federationId !== '' && !this.pendingRecoveryFederationIds.includes(federationId)) {
+        this.pendingRecoveryFederationIds = [...this.pendingRecoveryFederationIds, federationId]
+      }
+    },
+
+    clearFederationRecovery(federationId: string) {
+      this.pendingRecoveryFederationIds = this.pendingRecoveryFederationIds.filter(
+        (id) => id !== federationId,
+      )
+    },
+
+    shouldRecoverFederation(federationId: string): boolean {
+      return this.pendingRecoveryFederationIds.includes(federationId)
     },
 
     ensureValidSelection(): Federation | undefined {
@@ -36,6 +61,7 @@ export const useFederationStore = defineStore('federation', {
 
     deleteFederation(federationId: string) {
       this.federations = this.federations.filter((f) => f.federationId !== federationId)
+      this.clearFederationRecovery(federationId)
       this.ensureValidSelection()
     },
 

@@ -63,7 +63,7 @@
       </div>
       <div class="col">
         <q-btn
-          label="Join Federation"
+          :label="submitLabel ?? 'Join Federation'"
           color="primary"
           class="full-width"
           data-testid="add-federation-submit-btn"
@@ -86,6 +86,7 @@ defineProps<{
   federation: Federation
   isSubmitting: boolean
   importAmountSats?: number | null
+  submitLabel?: string
 }>()
 
 const { formatNumber } = useFormatters()

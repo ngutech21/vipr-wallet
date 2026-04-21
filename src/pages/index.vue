@@ -73,6 +73,14 @@
           {{ federationStore.selectedFederation?.title }}
         </q-chip>
       </div>
+
+      <div
+        v-if="walletStore.recoveryInProgress"
+        class="text-caption text-center q-mt-sm text-orange-3"
+        data-testid="home-recovery-banner"
+      >
+        Wallet recovery is running. Balance and transaction history will update when it finishes.
+      </div>
     </div>
 
     <TransactionsList mode="home" />

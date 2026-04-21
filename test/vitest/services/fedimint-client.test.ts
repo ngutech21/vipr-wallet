@@ -8,13 +8,17 @@ type MockWalletLike = {
 
 type MnemonicResponse = Error | string[] | null | { unexpected: true } | { mnemonic: string[] }
 type GeneratedMnemonicResponse = Error | string[]
+type TransportSend = (type: string, payload?: Record<string, unknown>) => Promise<boolean>
 type CoreMockState = {
   getMnemonicValue: MnemonicResponse
   joinFederationErrorOnce: Error | null
+  rawJoinErrorOnce: Error | null
   openWalletSuccessOnce: boolean
   directorInstances: unknown[]
   generateMnemonicValue: GeneratedMnemonicResponse
   setMnemonicSpy: ReturnType<typeof vi.fn<() => Promise<boolean>>>
+  clientSendMock: ReturnType<typeof vi.fn<TransportSend>>
+  transportSendMock: ReturnType<typeof vi.fn<TransportSend>>
 }
 
 const UUID_V5_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -22,6 +26,7 @@ const UUID_V5_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}
 const coreMockState: CoreMockState = vi.hoisted(() => ({
   getMnemonicValue: new Error('No wallet mnemonic set. Please set or generate a mnemonic first.'),
   joinFederationErrorOnce: null,
+  rawJoinErrorOnce: null,
   openWalletSuccessOnce: false,
   directorInstances: [],
   generateMnemonicValue: [
@@ -39,6 +44,8 @@ const coreMockState: CoreMockState = vi.hoisted(() => ({
     'accident',
   ],
   setMnemonicSpy: vi.fn(() => Promise.resolve(true)),
+  clientSendMock: vi.fn<TransportSend>(() => Promise.resolve(true)),
+  transportSendMock: vi.fn<TransportSend>(() => Promise.resolve(true)),
 }))
 
 vi.mock('@fedimint/transport-web', () => ({
@@ -48,13 +55,21 @@ vi.mock('@fedimint/transport-web', () => ({
 vi.mock('@fedimint/core', () => {
   class MockFedimintWallet {
     private joined = false
+    private readonly _client: unknown
+    private _isOpen = false
+    private readonly _resolveOpen = vi.fn(() => {
+      this._isOpen = true
+    })
 
-    constructor(_client: unknown, _clientName = 'default-client') {}
+    constructor(client: unknown, _clientName = 'default-client') {
+      this._client = client
+    }
 
     readonly openMock = vi.fn((_clientName?: string) => {
       if (coreMockState.openWalletSuccessOnce) {
         coreMockState.openWalletSuccessOnce = false
         this.joined = true
+        this._isOpen = true
       }
       return Promise.resolve(this.joined)
     })
@@ -65,6 +80,7 @@ vi.mock('@fedimint/core', () => {
         return Promise.reject(error)
       }
       this.joined = true
+      this._isOpen = true
       return Promise.resolve(true)
     })
 
@@ -79,7 +95,7 @@ vi.mock('@fedimint/core', () => {
     cleanup = vi.fn(() => Promise.resolve())
 
     isOpen() {
-      return this.joined
+      return this._isOpen || this.joined
     }
 
     federation = {
@@ -88,10 +104,18 @@ vi.mock('@fedimint/core', () => {
   }
 
   class MockWalletDirector {
-    protected _client = {}
+    protected _client = {
+      sendSingleMessage: vi.fn<TransportSend>((type: string, payload?: Record<string, unknown>) =>
+        coreMockState.clientSendMock(type, payload),
+      ),
+    }
 
     constructor() {
       coreMockState.directorInstances.push(this)
+      this._client.sendSingleMessage = vi.fn<TransportSend>(
+        (type: string, payload?: Record<string, unknown>) =>
+          coreMockState.clientSendMock(type, payload),
+      )
     }
 
     initialize = vi.fn(() => Promise.resolve())
@@ -135,6 +159,20 @@ vi.mock('@fedimint/core', () => {
     setMnemonic = coreMockState.setMnemonicSpy
   }
 
+  coreMockState.clientSendMock.mockImplementation(
+    (type: string, payload?: Record<string, unknown>) => {
+      if (type === 'join_federation' && payload?.force_recover === true) {
+        if (coreMockState.rawJoinErrorOnce != null) {
+          const error = coreMockState.rawJoinErrorOnce
+          coreMockState.rawJoinErrorOnce = null
+          return Promise.reject(error)
+        }
+      }
+
+      return coreMockState.transportSendMock(type, payload)
+    },
+  )
+
   return {
     FedimintWallet: MockFedimintWallet,
     WalletDirector: MockWalletDirector,
@@ -151,6 +189,7 @@ describe('fedimint client adapter', () => {
       'No wallet mnemonic set. Please set or generate a mnemonic first.',
     )
     coreMockState.joinFederationErrorOnce = null
+    coreMockState.rawJoinErrorOnce = null
     coreMockState.openWalletSuccessOnce = false
     coreMockState.directorInstances = []
     coreMockState.generateMnemonicValue = [
@@ -168,6 +207,23 @@ describe('fedimint client adapter', () => {
       'accident',
     ]
     coreMockState.setMnemonicSpy.mockResolvedValue(true)
+    coreMockState.clientSendMock.mockReset()
+    coreMockState.clientSendMock.mockImplementation(
+      (type: string, payload?: Record<string, unknown>) => {
+        if (type === 'join_federation' && payload?.force_recover === true) {
+          if (coreMockState.rawJoinErrorOnce != null) {
+            const error = coreMockState.rawJoinErrorOnce
+            coreMockState.rawJoinErrorOnce = null
+            return Promise.reject(error)
+          }
+        }
+
+        return coreMockState.transportSendMock(type, payload)
+      },
+    )
+    coreMockState.transportSendMock.mockReset()
+    coreMockState.transportSendMock.mockResolvedValue(true)
+    localStorage.clear()
   })
 
   it('joins federation first for unknown wallets', async () => {
@@ -185,6 +241,28 @@ describe('fedimint client adapter', () => {
     expect(mockedWallet.joinMock.mock.calls[0]?.[1]).not.toBe('wallet-fed-1')
     expect(mockedWallet.openMock).not.toHaveBeenCalled()
     expect(mockedWallet.isOpen()).toBe(true)
+    expect(coreMockState.transportSendMock).not.toHaveBeenCalled()
+  })
+
+  it('forces recovery join when explicitly requested', async () => {
+    const wallet = (await fedimintClient.ensureWalletOpen({
+      walletName: 'wallet-fed-1',
+      federationId: 'fed-1',
+      inviteCode: 'invite-1',
+      forceRecover: true,
+    })) as unknown as MockWalletLike
+
+    expect(coreMockState.transportSendMock).toHaveBeenCalledWith(
+      'join_federation',
+      expect.objectContaining({
+        invite_code: 'invite-1',
+        client_name: expect.stringMatching(UUID_V5_PATTERN),
+        force_recover: true,
+      }),
+    )
+    expect(wallet.joinMock).not.toHaveBeenCalled()
+    expect(wallet.openMock).not.toHaveBeenCalled()
+    expect(wallet.isOpen()).toBe(true)
   })
 
   it('opens known wallets on subsequent calls', async () => {
@@ -220,6 +298,28 @@ describe('fedimint client adapter', () => {
     })) as unknown as MockWalletLike
 
     expect(wallet.joinMock).toHaveBeenCalledTimes(1)
+    expect(wallet.openMock).toHaveBeenCalledTimes(1)
+    expect(wallet.isOpen()).toBe(true)
+  })
+
+  it('falls back to open when recovery join reports existing client', async () => {
+    coreMockState.rawJoinErrorOnce = new Error('No modification allowed')
+    coreMockState.openWalletSuccessOnce = true
+
+    const wallet = (await fedimintClient.ensureWalletOpen({
+      walletName: 'wallet-fed-1',
+      federationId: 'fed-1',
+      inviteCode: 'invite-1',
+      forceRecover: true,
+    })) as unknown as MockWalletLike
+
+    expect(coreMockState.clientSendMock).toHaveBeenCalledWith(
+      'join_federation',
+      expect.objectContaining({
+        invite_code: 'invite-1',
+        force_recover: true,
+      }),
+    )
     expect(wallet.openMock).toHaveBeenCalledTimes(1)
     expect(wallet.isOpen()).toBe(true)
   })

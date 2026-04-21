@@ -13,6 +13,7 @@
       v-else-if="previewFederation != null"
       :federation="previewFederation"
       :import-amount-sats="importAmountSats ?? null"
+      :submit-label="submitLabel"
       :is-submitting="isSubmitting"
       @back="goBackToInviteStep"
       @join="addFederation"
@@ -46,6 +47,7 @@ const props = defineProps<{
   initialPreviewFederation?: Federation | null
   autoPreview?: boolean
   importAmountSats?: number | null
+  mode?: 'join' | 'restore'
 }>()
 
 const inviteCode = ref(props.initialInviteCode ?? '')
@@ -54,7 +56,15 @@ const previewFederation = ref<Federation | null>(null)
 const step = ref<'invite' | 'preview'>('invite')
 
 const dialogTitle = computed(() => {
-  return step.value === 'preview' ? 'Preview Federation' : 'Join Federation'
+  if (step.value === 'preview') {
+    return 'Preview Federation'
+  }
+
+  return props.mode === 'restore' ? 'Restore Federation' : 'Join Federation'
+})
+
+const submitLabel = computed(() => {
+  return props.mode === 'restore' ? 'Restore Federation' : 'Join Federation'
 })
 
 watch(
@@ -149,11 +159,14 @@ async function addFederation() {
     return
   }
 
-  Loading.show({ message: 'Joining Federation' })
+  Loading.show({
+    message: props.mode === 'restore' ? 'Restoring Federation' : 'Joining Federation',
+  })
   isSubmitting.value = true
 
   try {
-    federationStore.addFederation(federation)
+    const shouldRecover = props.mode === 'restore'
+    federationStore.addFederation(federation, { recover: shouldRecover })
     try {
       await federationStore.selectFederation(federation)
     } catch (error) {
@@ -162,7 +175,7 @@ async function addFederation() {
     }
   } catch (error) {
     notify.notify({
-      message: `Failed to join federation: ${getErrorMessage(error)}`,
+      message: `Failed to ${props.mode === 'restore' ? 'restore' : 'join'} federation: ${getErrorMessage(error)}`,
       color: 'negative',
       icon: 'error',
       timeout: 5000,

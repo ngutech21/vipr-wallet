@@ -16,6 +16,12 @@ const federationState = vi.hoisted(() => ({
   selectedFederationId: 'fed-1',
 }))
 const federationStore = reactive(federationState)
+const walletState = vi.hoisted(() => ({
+  recoveryInProgress: false,
+  transactionsRefreshVersion: 0,
+  getTransactionsPage: mockGetTransactionsPage,
+}))
+const walletStore = reactive(walletState)
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({
@@ -24,9 +30,7 @@ vi.mock('vue-router', () => ({
 }))
 
 vi.mock('src/stores/wallet', () => ({
-  useWalletStore: () => ({
-    getTransactionsPage: mockGetTransactionsPage,
-  }),
+  useWalletStore: () => walletStore,
 }))
 
 vi.mock('src/stores/federation', () => ({
@@ -165,6 +169,8 @@ describe('TransactionsList.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     federationStore.selectedFederationId = 'fed-1'
+    walletStore.recoveryInProgress = false
+    walletStore.transactionsRefreshVersion = 0
     mockRouterPush.mockResolvedValue(undefined)
   })
 
@@ -314,6 +320,34 @@ describe('TransactionsList.vue', () => {
     expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(2, 20)
     expect(wrapper.text()).toContain('wallet-op-fed-2')
     expect(wrapper.text()).not.toContain('ln-op-fed-1')
+  })
+
+  it('reloads transactions after wallet recovery refreshes the view', async () => {
+    mockGetTransactionsPage
+      .mockResolvedValueOnce(createPageResult([]))
+      .mockResolvedValueOnce(createPageResult([createLightningTransaction()]))
+
+    wrapper = createWrapper('home')
+    await flushPromises()
+
+    walletStore.transactionsRefreshVersion = 1
+    await flushPromises()
+
+    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(1, 5)
+    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(2, 5)
+    expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(1)
+  })
+
+  it('shows recovery empty state text while wallet recovery is running', async () => {
+    walletStore.recoveryInProgress = true
+    mockGetTransactionsPage.mockResolvedValue(createPageResult([]))
+
+    wrapper = createWrapper('home')
+    await flushPromises()
+
+    expect(wrapper.get('[data-testid="transactions-empty-state"]').text()).toContain(
+      'Recovering wallet history...',
+    )
   })
 
   it('opens transaction details when a row is clicked', async () => {

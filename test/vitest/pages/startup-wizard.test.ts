@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import StartupWizardPage from 'src/pages/startup-wizard.vue'
+import type { Federation } from 'src/types/federation'
 
 type OnboardingStoreMock = {
   flow: 'create' | 'restore' | null
-  step: 'install' | 'choice' | 'backup' | 'restore'
+  step: 'install' | 'choice' | 'backup' | 'restore' | 'restore-federation'
   status: 'in_progress' | 'complete'
   normalizeForWalletState: ReturnType<typeof vi.fn>
   start: ReturnType<typeof vi.fn>
@@ -36,6 +37,7 @@ const walletStoreMock = vi.hoisted(() => ({
   loadMnemonic: vi.fn<() => Promise<boolean>>(),
   createMnemonic: vi.fn<() => Promise<void>>(),
   restoreMnemonic: vi.fn<() => Promise<void>>(),
+  previewFederation: vi.fn<() => Promise<Federation | undefined>>(),
   markMnemonicBackupConfirmed: vi.fn(),
   openWallet: vi.fn<() => Promise<void>>(),
 }))
@@ -51,6 +53,14 @@ const onboardingStoreMock: OnboardingStoreMock = vi.hoisted(() => ({
   complete: vi.fn(),
 }))
 
+const federationStoreMock = vi.hoisted(() => ({
+  federations: [] as Federation[],
+  addFederation: vi.fn((federation: Federation) => {
+    federationStoreMock.federations.push(federation)
+  }),
+  selectFederation: vi.fn<() => Promise<void>>(() => Promise.resolve()),
+}))
+
 vi.mock('vue-router', () => ({
   useRouter: () => ({
     replace: routerReplaceMock,
@@ -63,6 +73,10 @@ vi.mock('src/stores/wallet', () => ({
 
 vi.mock('src/stores/onboarding', () => ({
   useOnboardingStore: () => onboardingStoreMock,
+}))
+
+vi.mock('src/stores/federation', () => ({
+  useFederationStore: () => federationStoreMock,
 }))
 
 vi.mock('quasar', async (importOriginal) => {
@@ -97,6 +111,20 @@ const QInputStub = {
   emits: ['update:modelValue'],
   template:
     '<input v-bind="$attrs" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+}
+
+const JoinInviteStepStub = {
+  props: ['inviteCode'],
+  emits: ['update:inviteCode', 'paste', 'submit'],
+  template:
+    '<div><input data-testid="invite-code-input" :value="inviteCode" @input="$emit(\'update:inviteCode\', $event.target.value)" /><button data-testid="add-federation-preview-btn" @click="$emit(\'submit\')">Preview Federation</button></div>',
+}
+
+const JoinPreviewStepStub = {
+  props: ['federation', 'submitLabel'],
+  emits: ['back', 'join'],
+  template:
+    '<div><button data-testid="startup-wizard-restore-federation-preview-back-btn" @click="$emit(\'back\')">Back</button><button data-testid="add-federation-submit-btn" @click="$emit(\'join\')">{{ submitLabel }}</button></div>',
 }
 
 const QIconStub = {
@@ -148,6 +176,8 @@ function createWrapper() {
         'q-btn': QBtnStub,
         'q-radio': QRadioStub,
         'q-input': QInputStub,
+        JoinFederationInviteStep: JoinInviteStepStub,
+        JoinFederationPreviewStep: JoinPreviewStepStub,
         'q-icon': QIconStub,
       },
     },
@@ -168,7 +198,17 @@ describe('StartupWizardPage', () => {
       return Promise.resolve()
     })
     walletStoreMock.restoreMnemonic.mockResolvedValue()
+    walletStoreMock.previewFederation.mockResolvedValue({
+      title: 'Preview Federation',
+      inviteCode: 'fed11restore',
+      federationId: 'fed-restore',
+      modules: [],
+      metadata: {},
+    })
     walletStoreMock.openWallet.mockResolvedValue()
+    federationStoreMock.federations = []
+    federationStoreMock.addFederation.mockClear()
+    federationStoreMock.selectFederation.mockResolvedValue()
 
     onboardingStoreMock.flow = null
     onboardingStoreMock.step = 'choice'
@@ -179,7 +219,7 @@ describe('StartupWizardPage', () => {
       onboardingStoreMock.step = flow === 'create' ? 'backup' : 'restore'
     })
     onboardingStoreMock.goToStep.mockImplementation(
-      (step: 'install' | 'choice' | 'backup' | 'restore') => {
+      (step: 'install' | 'choice' | 'backup' | 'restore' | 'restore-federation') => {
         onboardingStoreMock.step = step
       },
     )
@@ -268,7 +308,7 @@ describe('StartupWizardPage', () => {
     )
   })
 
-  it('restore flow submits normalized 12-word mnemonic and routes home', async () => {
+  it('restore flow submits normalized 12-word mnemonic and moves to federation restore step', async () => {
     const wrapper = createWrapper()
     await flushPromises()
 
@@ -317,7 +357,97 @@ describe('StartupWizardPage', () => {
       'kilo',
       'lima',
     ])
+    expect(onboardingStoreMock.goToStep).toHaveBeenCalledWith('restore-federation')
+    expect(routerReplaceMock).not.toHaveBeenCalled()
+  })
+
+  it('restore flow can be skipped after mnemonic restore', async () => {
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.find('[data-testid="startup-wizard-restore-radio"]').trigger('change')
+    await wrapper.find('[data-testid="startup-wizard-choice-next-btn"]').trigger('click')
+
+    const words = [
+      'alpha',
+      'bravo',
+      'charlie',
+      'delta',
+      'echo',
+      'foxtrot',
+      'golf',
+      'hotel',
+      'india',
+      'juliet',
+      'kilo',
+      'lima',
+    ]
+
+    await Promise.all(
+      words.map(async (word, index) => {
+        const input = wrapper.find(`[data-testid="startup-wizard-restore-word-${index + 1}"]`)
+        await input.setValue(word)
+      }),
+    )
+
+    await wrapper.find('[data-testid="startup-wizard-restore-submit-btn"]').trigger('click')
+    await flushPromises()
+    await wrapper
+      .find('[data-testid="startup-wizard-restore-federation-skip-btn"]')
+      .trigger('click')
+    await flushPromises()
+
     expect(routerReplaceMock).toHaveBeenCalledWith('/')
+  })
+
+  it('restore flow can restore exactly one federation and then routes home', async () => {
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.find('[data-testid="startup-wizard-restore-radio"]').trigger('change')
+    await wrapper.find('[data-testid="startup-wizard-choice-next-btn"]').trigger('click')
+
+    const words = [
+      'alpha',
+      'bravo',
+      'charlie',
+      'delta',
+      'echo',
+      'foxtrot',
+      'golf',
+      'hotel',
+      'india',
+      'juliet',
+      'kilo',
+      'lima',
+    ]
+
+    await Promise.all(
+      words.map(async (word, index) => {
+        const input = wrapper.find(`[data-testid="startup-wizard-restore-word-${index + 1}"]`)
+        await input.setValue(word)
+      }),
+    )
+
+    await wrapper.find('[data-testid="startup-wizard-restore-submit-btn"]').trigger('click')
+    await flushPromises()
+
+    await wrapper.find('[data-testid="invite-code-input"]').setValue('fed11restore')
+    await wrapper.find('[data-testid="add-federation-preview-btn"]').trigger('click')
+    await flushPromises()
+    await wrapper.find('[data-testid="add-federation-submit-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(walletStoreMock.previewFederation).toHaveBeenCalledWith('fed11restore')
+    expect(federationStoreMock.addFederation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        federationId: 'fed-restore',
+      }),
+      { recover: true },
+    )
+    expect(federationStoreMock.selectFederation).toHaveBeenCalledTimes(1)
+    expect(routerReplaceMock).toHaveBeenCalledWith('/')
+    expect(walletStoreMock.openWallet).not.toHaveBeenCalled()
   })
 
   it('resumes restore step after remount when persisted progress says restore', async () => {
@@ -330,6 +460,21 @@ describe('StartupWizardPage', () => {
     await flushPromises()
 
     expect(onboardingStoreMock.goToStep).toHaveBeenCalledWith('restore')
+    wrapper.unmount()
+  })
+
+  it('resumes restore federation step after remount when persisted progress says restore-federation', async () => {
+    onboardingStoreMock.flow = 'restore'
+    onboardingStoreMock.step = 'restore-federation'
+    onboardingStoreMock.status = 'in_progress'
+    walletStoreMock.hasMnemonic = true
+    walletStoreMock.needsMnemonicBackup = false
+    walletStoreMock.loadMnemonic.mockResolvedValue(true)
+
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    expect(onboardingStoreMock.goToStep).toHaveBeenCalledWith('restore-federation')
     wrapper.unmount()
   })
 })

@@ -26,6 +26,10 @@ meta:
             You're about to see your wallet's 12 recovery words. These words are the
             <strong>only way</strong> to recover your wallet if you lose access to this device.
           </p>
+          <p class="text-warning">
+            They do not include your federation invite codes. Keep those separately so you can
+            reconnect the same federations on a new browser or device.
+          </p>
         </div>
 
         <q-card flat bordered class="warning-card q-mb-lg">

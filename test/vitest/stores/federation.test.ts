@@ -110,4 +110,26 @@ describe('federation store', () => {
     expect(walletStoreMock.openWallet).toHaveBeenCalledTimes(1)
     expect(federationStore.selectedFederationId).toBe(federation.federationId)
   })
+
+  it('tracks explicit federation recoveries separately from normal joins', () => {
+    const federationStore = useFederationStore()
+    const joinFederation = createFederation({ federationId: 'fed-join' })
+    const restoreFederation = createFederation({ federationId: 'fed-restore' })
+
+    federationStore.addFederation(joinFederation)
+    federationStore.addFederation(restoreFederation, { recover: true })
+
+    expect(federationStore.shouldRecoverFederation(joinFederation.federationId)).toBe(false)
+    expect(federationStore.shouldRecoverFederation(restoreFederation.federationId)).toBe(true)
+  })
+
+  it('clears pending federation recovery when the federation is deleted', () => {
+    const federationStore = useFederationStore()
+    const federation = createFederation()
+
+    federationStore.addFederation(federation, { recover: true })
+    federationStore.deleteFederation(federation.federationId)
+
+    expect(federationStore.shouldRecoverFederation(federation.federationId)).toBe(false)
+  })
 })

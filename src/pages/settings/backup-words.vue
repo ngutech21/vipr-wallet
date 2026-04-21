@@ -55,6 +55,10 @@ meta:
                   These are your real wallet recovery words. Anyone with these words can recover
                   your wallet.
                 </div>
+                <div class="text-caption q-mt-xs">
+                  Keep your federation invite codes too. You will need to re-add federations on a
+                  new browser or device.
+                </div>
               </div>
             </div>
           </q-card-section>

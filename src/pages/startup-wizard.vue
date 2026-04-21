@@ -77,6 +77,65 @@ meta:
                 @submit="submitRestore"
               />
             </q-step>
+
+            <q-step
+              name="restore-federation"
+              title="Restore Federation"
+              icon="account_balance"
+              :done="false"
+              :header-nav="false"
+            >
+              <div class="text-body2 q-mb-md">
+                Optionally restore one federation now. You can skip this and add more later from the
+                app.
+              </div>
+              <div class="text-caption text-warning q-mb-md">
+                Only federations restored in this step will use the recovery flow. Normal joins stay
+                normal joins.
+              </div>
+
+              <JoinFederationInviteStep
+                v-if="restoreFederationPreview == null"
+                :invite-code="restoreFederationInviteCode"
+                :is-submitting="isRestoringFederation"
+                @update:invite-code="updateRestoreFederationInviteCode"
+                @paste="pasteRestoreFederationFromClipboard"
+                @submit="loadRestoreFederationPreview"
+              />
+
+              <JoinFederationPreviewStep
+                v-else
+                :federation="restoreFederationPreview"
+                :is-submitting="isRestoringFederation"
+                submit-label="Restore Federation"
+                @back="goBackToRestoreFederationInvite"
+                @join="submitFederationRestore"
+              />
+
+              <div v-if="restoreFederationPreview == null" class="row q-col-gutter-sm q-mt-md">
+                <div class="col-12 col-sm-6">
+                  <q-btn
+                    label="Back"
+                    flat
+                    color="grey-7"
+                    class="full-width"
+                    :disable="isRestoringFederation"
+                    @click="backFromRestoreFederationToRestoreWords"
+                    data-testid="startup-wizard-restore-federation-back-btn"
+                  />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <q-btn
+                    label="Skip for Now"
+                    color="primary"
+                    class="full-width"
+                    :disable="isRestoringFederation"
+                    @click="skipRestoreFederation"
+                    data-testid="startup-wizard-restore-federation-skip-btn"
+                  />
+                </div>
+              </div>
+            </q-step>
           </q-stepper>
         </q-card-section>
       </q-card>
@@ -94,6 +153,8 @@ import StartupWizardBackupStep from 'src/components/startup-wizard/StartupWizard
 import StartupWizardChoiceStep from 'src/components/startup-wizard/StartupWizardChoiceStep.vue'
 import StartupWizardInstallStep from 'src/components/startup-wizard/StartupWizardInstallStep.vue'
 import StartupWizardRestoreStep from 'src/components/startup-wizard/StartupWizardRestoreStep.vue'
+import JoinFederationInviteStep from 'src/components/JoinFederationInviteStep.vue'
+import JoinFederationPreviewStep from 'src/components/JoinFederationPreviewStep.vue'
 import { useInstallHint } from 'src/composables/useInstallHint'
 import { useStartupWizard } from 'src/composables/useStartupWizard'
 import { useAppNotify } from 'src/composables/useAppNotify'
@@ -115,16 +176,26 @@ const {
   isCreating,
   isCreateLocked,
   isRestoring,
+  isRestoringFederation,
   mnemonicWords,
   restoreWords,
+  restoreFederationInviteCode,
+  restoreFederationPreview,
   selectedFlow,
   backFromBackupToChoice,
   backFromRestoreToChoice,
+  backFromRestoreFederationToRestoreWords,
   confirmBackupAndFinish,
   continueFromInstall,
   goFromChoiceNext,
+  goBackToRestoreFederationInvite,
   initializeWizard,
+  loadRestoreFederationPreview,
+  pasteRestoreFederationFromClipboard,
+  skipRestoreFederation,
+  submitFederationRestore,
   submitRestore,
+  updateRestoreFederationInviteCode,
 } = useStartupWizard({ showInstallStep })
 
 onMounted(() => {

@@ -12,6 +12,7 @@ type EnsureWalletOpenArgs = {
   walletName: string
   federationId: string
   inviteCode: string
+  forceRecover?: boolean
 }
 
 type EnsureMnemonicResult = {
@@ -71,6 +72,7 @@ class FedimintClientAdapter {
     walletName,
     federationId,
     inviteCode,
+    forceRecover = false,
   }: EnsureWalletOpenArgs): Promise<FedimintWallet> {
     await this.init()
 
@@ -97,9 +99,14 @@ class FedimintClientAdapter {
     const isKnownWallet = this.knownWalletNames.has(walletName)
     const ready = isKnownWallet
       ? (await this.tryOpenWallet(wallet, walletName, sdkClientName)) ||
-        (await this.tryJoinFederation(wallet, inviteCode, walletName, sdkClientName))
-      : (await this.tryJoinFederation(wallet, inviteCode, walletName, sdkClientName)) ||
-        (await this.tryOpenWallet(wallet, walletName, sdkClientName))
+        (await this.tryJoinFederation(wallet, inviteCode, walletName, sdkClientName, forceRecover))
+      : (await this.tryJoinFederation(
+          wallet,
+          inviteCode,
+          walletName,
+          sdkClientName,
+          forceRecover,
+        )) || (await this.tryOpenWallet(wallet, walletName, sdkClientName))
 
     if (!ready) {
       throw new Error(`Unable to open or join wallet '${walletName}'`)
@@ -281,9 +288,12 @@ class FedimintClientAdapter {
     inviteCode: string,
     walletName: string,
     sdkClientName: string,
+    forceRecover: boolean,
   ): Promise<boolean> {
     try {
-      const result = await wallet.joinFederation(inviteCode, sdkClientName)
+      const result = forceRecover
+        ? await joinFederationWithRecovery(wallet, inviteCode, sdkClientName)
+        : await wallet.joinFederation(inviteCode, sdkClientName)
       if (typeof result === 'boolean') {
         return result || wallet.isOpen()
       }
@@ -300,6 +310,7 @@ class FedimintClientAdapter {
       logger.warn('Fedimint joinFederation failed', {
         walletName,
         sdkClientName,
+        forceRecover,
         reason: getErrorMessage(error),
       })
       throw error instanceof Error ? error : new Error(String(error))
@@ -405,6 +416,57 @@ function applyClientNameToWallet(wallet: FedimintWallet, clientName: string): vo
     if (service != null && typeof service === 'object') {
       ;(service as Record<string, unknown>).clientName = clientName
     }
+  }
+}
+
+async function joinFederationWithRecovery(
+  wallet: FedimintWallet,
+  inviteCode: string,
+  clientName: string,
+): Promise<boolean> {
+  const transportClient = getWalletTransportClient(wallet)
+  if (transportClient == null) {
+    throw new Error('Fedimint transport client does not support recovery joins')
+  }
+
+  await transportClient.sendSingleMessage('join_federation', {
+    invite_code: inviteCode,
+    client_name: clientName,
+    force_recover: true,
+  })
+  markWalletAsOpen(wallet)
+
+  return true
+}
+
+function getWalletTransportClient(wallet: FedimintWallet): {
+  sendSingleMessage: (type: string, payload?: Record<string, unknown>) => Promise<unknown>
+} | null {
+  const walletWithInternals = wallet as unknown as Record<string, unknown>
+  const client = walletWithInternals._client
+
+  if (client == null || typeof client !== 'object') {
+    return null
+  }
+
+  const sendSingleMessage = (client as Record<string, unknown>).sendSingleMessage
+  if (typeof sendSingleMessage !== 'function') {
+    return null
+  }
+
+  return {
+    sendSingleMessage: (type: string, payload?: Record<string, unknown>) =>
+      sendSingleMessage.call(client, type, payload) as Promise<unknown>,
+  }
+}
+
+function markWalletAsOpen(wallet: FedimintWallet): void {
+  const walletWithInternals = wallet as unknown as Record<string, unknown>
+  walletWithInternals._isOpen = true
+
+  const resolveOpen = walletWithInternals._resolveOpen
+  if (typeof resolveOpen === 'function') {
+    resolveOpen.call(wallet)
   }
 }
 
