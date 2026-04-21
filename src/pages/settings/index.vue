@@ -1,10 +1,6 @@
 <template>
   <q-page class="dark-gradient" data-testid="settings-page">
-    <q-toolbar class="header-section q-mb-md">
-      <q-toolbar-title class="text-center">Settings</q-toolbar-title>
-    </q-toolbar>
-
-    <div class="q-px-md q-pb-xl">
+    <div class="q-px-md q-pt-md q-pb-xl">
       <q-expansion-item
         expand-separator
         icon="account_balance_wallet"

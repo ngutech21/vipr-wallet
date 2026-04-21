@@ -104,23 +104,31 @@ describe('FederationList.vue', () => {
       expect(icon.props('name')).toBe('account_balance')
     })
 
-    it('should truncate long federation IDs', () => {
+    it('shows guardian and module summary instead of surfacing the federation ID', () => {
       const federation = createMockFederation({
         federationId: 'verylongfederationid1234567890',
+        guardians: [
+          { peerId: 0, name: 'Guardian One', url: 'wss://guardian-one.example' },
+          { peerId: 1, name: 'Guardian Two', url: 'wss://guardian-two.example' },
+        ],
+        modules: [
+          { kind: 'mint', config: 'mint-config', version: { major: 0, minor: 1 } },
+          { kind: 'wallet', config: 'wallet-config', version: { major: 0, minor: 1 } },
+        ],
       })
       wrapper = createWrapper({ federations: [federation] })
 
-      // Should show first 6 and last 6 characters with ... in between
-      expect(wrapper.text()).toContain('ID: verylo...567890')
+      expect(wrapper.text()).toContain('2 guardians • 2 modules')
+      expect(wrapper.text()).not.toContain('verylongfederationid1234567890')
     })
 
-    it('should not truncate short federation IDs', () => {
+    it('shows a fallback summary when no metadata details are available', () => {
       const federation = createMockFederation({
         federationId: 'short123',
       })
       wrapper = createWrapper({ federations: [federation] })
 
-      expect(wrapper.text()).toContain('ID: short123')
+      expect(wrapper.text()).toContain('Ready to use')
     })
   })
 
@@ -155,26 +163,6 @@ describe('FederationList.vue', () => {
       expect(card.classes()).toContain('federation-selected')
     })
 
-    it('should show selection indicator for selected federation', () => {
-      const federation = createMockFederation({ federationId: 'selected123' })
-      wrapper = createWrapper({
-        federations: [federation],
-        selectedFederationId: 'selected123',
-      })
-
-      expect(wrapper.find('.selection-indicator').exists()).toBe(true)
-    })
-
-    it('should not show selection indicator for non-selected federation', () => {
-      const federation = createMockFederation({ federationId: 'notselected' })
-      wrapper = createWrapper({
-        federations: [federation],
-        selectedFederationId: 'selected123',
-      })
-
-      expect(wrapper.find('.selection-indicator').exists()).toBe(false)
-    })
-
     it('should use primary color for selected federation chip', () => {
       const federation = createMockFederation({ federationId: 'selected123' })
       wrapper = createWrapper({
@@ -191,7 +179,7 @@ describe('FederationList.vue', () => {
       wrapper = createWrapper({ federations: [federation] })
 
       const chip = wrapper.findComponent(QChip)
-      expect(chip.props('color')).toBe('grey-7')
+      expect(chip.props('color')).toBe('grey-8')
     })
   })
 
@@ -250,6 +238,7 @@ describe('FederationList.vue', () => {
       const selectedCards = wrapper.findAll('.federation-selected')
       expect(selectedCards).toHaveLength(1)
       expect(wrapper.text()).toMatch(/Federation 2[\s\S]*Active/)
+      expect(wrapper.text()).toMatch(/Federation 1[\s\S]*Available/)
     })
 
     it('should render federations in order', () => {
@@ -299,7 +288,8 @@ describe('FederationList.vue', () => {
       wrapper = createWrapper({ federations: [federation] })
 
       expect(wrapper.text()).toContain('Minimal')
-      expect(wrapper.text()).toContain('ID: id')
+      expect(wrapper.text()).toContain('Ready to use')
+      expect(wrapper.text()).not.toContain('ID:')
     })
 
     it('should handle federation with all metadata fields', () => {
@@ -324,9 +314,8 @@ describe('FederationList.vue', () => {
       })
       wrapper = createWrapper({ federations: [federation] })
 
-      // Should not truncate
-      expect(wrapper.text()).toContain('ID: 123456789012')
-      expect(wrapper.text()).not.toContain('...')
+      expect(wrapper.text()).not.toContain('123456789012')
+      expect(wrapper.text()).toContain('Ready to use')
     })
 
     it('should handle federation ID of 13 characters (truncation starts)', () => {
@@ -335,8 +324,8 @@ describe('FederationList.vue', () => {
       })
       wrapper = createWrapper({ federations: [federation] })
 
-      // Should truncate
-      expect(wrapper.text()).toContain('ID: 123456...890123')
+      expect(wrapper.text()).not.toContain('1234567890123')
+      expect(wrapper.text()).toContain('Ready to use')
     })
   })
 })

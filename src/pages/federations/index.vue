@@ -32,11 +32,7 @@
       />
     </q-dialog>
 
-    <q-toolbar class="header-section">
-      <q-toolbar-title class="text-center">Federations</q-toolbar-title>
-    </q-toolbar>
-
-    <div class="q-pa-md">
+    <div class="page-content q-px-md q-pt-md q-pb-md">
       <FederationList />
 
       <div class="add-federation-fab">
@@ -97,6 +93,10 @@ function returnToDiscovery() {
 </script>
 
 <style scoped>
+.page-content {
+  position: relative;
+}
+
 .add-federation-fab {
   position: fixed;
   right: 24px;
