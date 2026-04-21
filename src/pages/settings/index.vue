@@ -752,11 +752,11 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 .settings-stack {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .settings-stack--secondary {
-  margin-top: 22px;
+  margin-top: 14px;
 }
 
 .full-width {
@@ -772,11 +772,11 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-panel {
-  padding: 0 22px 22px;
+  padding: 0 18px 18px;
 }
 
 .settings-panel--compact {
-  padding-top: 4px;
+  padding-top: 2px;
 }
 
 .settings-panel--secondary {
@@ -793,12 +793,12 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-copy-block {
-  padding: 14px 16px;
-  border-radius: 18px;
+  padding: 12px 14px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.05);
   color: rgba(255, 255, 255, 0.78);
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 .contacts-section {
@@ -851,13 +851,13 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .rounded-borders {
-  border-radius: 18px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .rounded-borders :deep(.q-item__section--avatar) {
-  min-width: 48px;
+  min-width: 42px;
 }
 
 .settings-list :deep(.q-item) {
@@ -869,7 +869,7 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-section :deep(.q-expansion-item__container) {
-  border-radius: 28px;
+  border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   overflow: hidden;
 }
@@ -894,8 +894,8 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-section :deep(.q-item) {
-  min-height: 88px;
-  padding: 18px 22px;
+  min-height: 74px;
+  padding: 14px 18px;
 }
 
 .settings-section :deep(.q-item__label) {
@@ -903,18 +903,20 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-section :deep(.q-item__label--caption) {
-  margin-top: 4px;
+  margin-top: 2px;
+  font-size: 0.95rem;
+  line-height: 1.25;
   color: rgba(255, 255, 255, 0.56);
 }
 
 .settings-section :deep(.q-item__section--avatar) {
-  min-width: 56px;
+  min-width: 46px;
 }
 
 .settings-section :deep(.q-expansion-item__container > .q-item .q-item__section--avatar .q-icon) {
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
   background: rgba(255, 255, 255, 0.07);
@@ -950,7 +952,7 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-section :deep(.q-expansion-item__content .q-item) {
-  padding: 10px 16px;
+  padding: 8px 12px;
 }
 
 /* Responsive adjustments */
@@ -965,12 +967,12 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   }
 
   .settings-panel {
-    padding: 0 18px 18px;
+    padding: 0 16px 16px;
   }
 
   .settings-section :deep(.q-item) {
-    min-height: 82px;
-    padding: 16px 18px;
+    min-height: 70px;
+    padding: 12px 16px;
   }
 }
 </style>
