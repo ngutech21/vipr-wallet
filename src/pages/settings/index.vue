@@ -5,7 +5,7 @@
         expand-separator
         icon="account_balance_wallet"
         label="Bitcoin Wallet"
-        caption="Lightning wallet connection settings"
+        caption="Connect wallet"
         header-class="settings-header"
         expand-icon-class="text-primary"
         data-testid="settings-bitcoin-wallet-section"
@@ -51,12 +51,12 @@
         </q-card>
       </q-expansion-item>
 
-      <!-- Nostr Settings Section -->
+      <!-- Nostr Section -->
       <q-expansion-item
         expand-separator
         icon="forum"
-        label="Nostr Settings"
-        caption="Manage your Nostr relays"
+        label="Nostr"
+        caption="Manage relays"
         header-class="settings-header"
         expand-icon-class="text-primary"
         data-testid="settings-nostr-section"
@@ -136,7 +136,7 @@
         expand-separator
         icon="perm_contact_calendar"
         label="Contacts"
-        caption="Import payable Nostr contacts for Lightning"
+        caption="Import contacts"
         header-class="settings-header"
         expand-icon-class="text-primary"
         data-testid="settings-contacts-section"
@@ -269,12 +269,12 @@
         </q-card>
       </q-expansion-item>
 
-      <!-- App Version Section -->
+      <!-- Updates Section -->
       <q-expansion-item
         expand-separator
         icon="info"
-        label="App Info & Updates"
-        caption="Version information and updates"
+        label="Updates"
+        caption="Check for updates"
         header-class="settings-header"
         expand-icon-class="text-primary"
       >
@@ -307,7 +307,7 @@
         </q-card>
       </q-expansion-item>
 
-      <!-- Personal Backup Section -->
+      <!-- Backup Section -->
       <q-expansion-item
         expand-separator
         header-class="settings-header"
@@ -318,8 +318,8 @@
             <q-icon name="shield" />
           </q-item-section>
           <q-item-section data-testid="settings-personal-backup-section">
-            <q-item-label>Personal Backup</q-item-label>
-            <q-item-label caption>Backup your wallet with recovery words</q-item-label>
+            <q-item-label>Backup</q-item-label>
+            <q-item-label caption>Save recovery words</q-item-label>
           </q-item-section>
         </template>
         <q-card>
@@ -343,8 +343,8 @@
       <q-expansion-item
         expand-separator
         icon="code"
-        label="Source Code"
-        caption="View the project on GitHub"
+        label="GitHub"
+        caption="View the project"
         header-class="settings-header"
         expand-icon-class="text-primary"
       >
@@ -367,12 +367,12 @@
         </q-card>
       </q-expansion-item>
 
-      <!-- Danger Zone -->
+      <!-- Reset Section -->
       <q-expansion-item
         expand-separator
         icon="warning"
-        label="Danger Zone"
-        caption="Delete all data and reset the app"
+        label="Reset"
+        caption="Clear local data"
         header-class="settings-header danger-header"
         expand-icon-class="text-negative"
       >
