@@ -173,25 +173,19 @@ describe('TransactionsList.vue', () => {
     wrapper = undefined
   })
 
-  it('loads the latest 5 transactions on home and shows the full history action when more exist', async () => {
+  it('loads the latest 3 transactions on home and shows the full history action when more exist', async () => {
     mockGetTransactionsPage.mockResolvedValue(
       createPageResult(
-        [
-          createLightningTransaction(),
-          createEcashTransaction(),
-          createWalletTransaction(),
-          createLightningTransaction({ operationId: 'ln-op-2' }),
-          createWalletTransaction({ operationId: 'wallet-op-2' }),
-        ],
-        { hasMore: true, nextCursor: createOperationKey('wallet-op-2') },
+        [createLightningTransaction(), createEcashTransaction(), createWalletTransaction()],
+        { hasMore: true, nextCursor: createOperationKey('wallet-op-1') },
       ),
     )
 
     wrapper = createWrapper('home')
     await flushPromises()
 
-    expect(mockGetTransactionsPage).toHaveBeenCalledWith(5)
-    expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(5)
+    expect(mockGetTransactionsPage).toHaveBeenCalledWith(3)
+    expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(3)
     expect(wrapper.get('[data-testid="transactions-show-full-history-btn"]').text()).toContain(
       'View all',
     )

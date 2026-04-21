@@ -18,23 +18,11 @@
     </q-item-section>
 
     <q-item-section>
-      <q-item-label class="transaction-title-row">
-        <span class="transaction-title">
-          {{ transaction.type === 'send' ? 'Sent Lightning' : 'Received Lightning' }}
-        </span>
-        <q-badge
-          v-if="statusLabel != null"
-          rounded
-          :color="statusColor"
-          text-color="white"
-          class="transaction-status-badge"
-        >
-          {{ statusLabel }}
-        </q-badge>
+      <q-item-label class="transaction-title">
+        {{ transaction.type === 'send' ? 'Sent Lightning' : 'Received Lightning' }}
       </q-item-label>
       <q-item-label caption class="transaction-meta">
         {{ formattedTimestamp }}
-        <template v-if="showFeeMeta"> • Fee {{ feeInSats }} sats</template>
       </q-item-label>
     </q-item-section>
 
@@ -81,30 +69,6 @@ const formattedTimestamp = computed(() => {
 const hasValidOutcome = computed(() => {
   return Boolean(props.transaction.outcome?.trim())
 })
-const statusLabel = computed(() => {
-  return props.transaction.outcome != null ? formatOutcome(props.transaction.outcome) : null
-})
-const statusColor = computed(() => {
-  if (props.transaction.outcome == null) {
-    return 'grey'
-  }
-
-  switch (props.transaction.outcome) {
-    case 'success':
-    case 'claimed':
-    case 'funded':
-      return 'positive'
-    case 'created':
-    case 'pending':
-    case 'awaiting_funds':
-    case 'canceled':
-      return 'warning'
-    case 'unexpected_error':
-      return 'negative'
-    default:
-      return 'grey'
-  }
-})
 const amountInSats = computed(() => {
   try {
     const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
@@ -113,10 +77,6 @@ const amountInSats = computed(() => {
     logger.error('Failed to decode Lightning invoice', error)
     return '0'
   }
-})
-const feeInSats = computed(() => Math.round((props.transaction.fee ?? 0) / 1000).toLocaleString())
-const showFeeMeta = computed(() => {
-  return props.transaction.type === 'send' && (props.transaction.fee ?? 0) > 0
 })
 
 onMounted(async () => {
@@ -133,11 +93,6 @@ onMounted(async () => {
     amountInFiat.value = '0.00'
   }
 })
-
-function formatOutcome(outcome: string | undefined): string {
-  if (outcome == null || outcome === '') return ''
-  return outcome.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
-}
 </script>
 
 // ...existing code...
@@ -168,23 +123,13 @@ function formatOutcome(outcome: string | undefined): string {
   background: rgba(255, 255, 255, 0.05);
 }
 
-.transaction-title-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
 .transaction-title {
+  display: block;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 600;
-}
-
-.transaction-status-badge {
-  flex-shrink: 0;
 }
 
 .transaction-meta {

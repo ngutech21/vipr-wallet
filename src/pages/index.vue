@@ -119,11 +119,11 @@
         />
         <q-btn
           no-caps
-          outline
-          label="Scan"
-          color="white"
+          unelevated
+          aria-label="Scan"
+          color="primary"
           icon="qr_code_scanner"
-          class="home-action-btn home-action-btn--secondary"
+          class="home-action-btn home-action-btn--icon"
           :to="'/scan'"
           :data-testid="'home-scan-btn'"
         />
@@ -209,6 +209,8 @@ function returnToDiscovery() {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-width: 700px;
+  margin: 0 auto;
 }
 
 .hero-card {
@@ -240,29 +242,48 @@ function returnToDiscovery() {
 }
 
 .home-actions {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 12px;
-  width: min(100%, 520px);
+  width: min(calc(100vw - 32px), 420px);
 }
 
 .home-action-btn {
-  min-height: 56px;
-  border-radius: 18px;
+  flex: 1 1 0;
+  min-height: 50px;
+  border-radius: 16px;
 }
 
-.home-action-btn--secondary {
-  border-color: rgba(255, 255, 255, 0.18);
-  color: white;
+.home-action-btn--icon {
+  flex: 0 0 56px;
+  width: 56px;
+  min-width: 56px;
+  padding: 0;
+}
+
+.home-action-btn :deep(.q-btn__content) {
+  flex-wrap: nowrap;
+  gap: 8px;
+  font-size: 1rem;
+}
+
+.home-action-btn :deep(.q-icon) {
+  font-size: 1.2rem;
+}
+
+.home-action-btn :deep(.block) {
+  white-space: nowrap;
+}
+
+.home-action-btn--icon :deep(.q-btn__content) {
+  gap: 0;
 }
 
 .home-transactions {
   padding-bottom: 96px;
-}
-
-@media (max-width: 520px) {
-  .home-actions {
-    grid-template-columns: 1fr;
-  }
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
 }
 </style>

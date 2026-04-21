@@ -1,17 +1,19 @@
 <template>
-  <div class="transactions-list q-px-md q-pb-md">
+  <div
+    :class="['transactions-list', { 'transactions-list--home': props.mode === 'home' }]"
+    class="q-px-md q-pb-md"
+  >
     <div class="transactions-card">
       <div class="transactions-header">
         <div>
           <div class="transactions-title">
             {{ props.mode === 'home' ? 'Recent activity' : 'Transaction history' }}
           </div>
-          <div v-if="transactions.length > 0" class="transactions-subtitle">
-            {{
-              props.mode === 'home'
-                ? 'Latest wallet activity'
-                : 'All transactions for this federation'
-            }}
+          <div
+            v-if="transactions.length > 0 && props.mode === 'history'"
+            class="transactions-subtitle"
+          >
+            {{ props.mode === 'history' ? 'All transactions for this federation' : '' }}
           </div>
         </div>
 
@@ -113,7 +115,7 @@ const props = withDefaults(
   },
 )
 
-const HOME_PAGE_SIZE = 5
+const HOME_PAGE_SIZE = 3
 const HISTORY_PAGE_SIZE = 20
 
 const walletStore = useWalletStore()
@@ -264,11 +266,20 @@ defineExpose({
   padding-bottom: 24px;
 }
 
+.transactions-list--home {
+  max-width: 100%;
+}
+
 .transactions-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
   padding: 16px;
+}
+
+.transactions-list--home .transactions-card {
+  max-width: 640px;
+  margin: 0 auto;
 }
 
 .transactions-header {
@@ -336,6 +347,11 @@ defineExpose({
 @media (max-width: 520px) {
   .transactions-header {
     flex-direction: column;
+  }
+
+  .transactions-list--home .transactions-header {
+    flex-direction: row;
+    align-items: center;
   }
 }
 </style>

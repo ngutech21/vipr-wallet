@@ -17,15 +17,9 @@
     </q-item-section>
 
     <q-item-section>
-      <q-item-label class="transaction-title-row">
-        <span class="transaction-title">{{ transactionTitle }}</span>
-        <q-badge rounded :color="statusColor" text-color="white" class="transaction-status-badge">
-          {{ statusLabel }}
-        </q-badge>
-      </q-item-label>
+      <q-item-label class="transaction-title">{{ transactionTitle }}</q-item-label>
       <q-item-label caption class="transaction-meta">
         {{ formattedTimestamp }}
-        <template v-if="showFeeMeta"> • Fee {{ feeInSats }} sats</template>
       </q-item-label>
     </q-item-section>
 
@@ -57,10 +51,7 @@ import type { WalletTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
 import {
   getWalletTransactionAmountSats,
-  getWalletTransactionFeeSats,
   getWalletTransactionListTitle,
-  getWalletTransactionStatusLabel,
-  getWalletTransactionStatusColor,
 } from 'src/utils/walletTransactionPresentation'
 
 interface Props {
@@ -76,8 +67,6 @@ defineEmits<{
 const lightningStore = useLightningStore()
 const amountInFiat = ref('0.00')
 const transactionTitle = computed(() => getWalletTransactionListTitle(props.transaction))
-const statusLabel = computed(() => getWalletTransactionStatusLabel(props.transaction) ?? 'Unknown')
-const statusColor = computed(() => getWalletTransactionStatusColor(statusLabel.value))
 const formattedTimestamp = computed(() => {
   return date.formatDate(props.transaction.timestamp, 'MMM D, YYYY • h:mm A')
 })
@@ -85,13 +74,6 @@ const formattedTimestamp = computed(() => {
 const amountInSats = computed(() => {
   const amountSats = getWalletTransactionAmountSats(props.transaction)
   return amountSats != null ? amountSats.toLocaleString() : null
-})
-
-const feeInSats = computed(() => {
-  return getWalletTransactionFeeSats(props.transaction).toLocaleString()
-})
-const showFeeMeta = computed(() => {
-  return props.transaction.type === 'withdraw' && getWalletTransactionFeeSats(props.transaction) > 0
 })
 
 watch(
@@ -143,23 +125,13 @@ watch(
   background: rgba(255, 255, 255, 0.05);
 }
 
-.transaction-title-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
 .transaction-title {
+  display: block;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 600;
-}
-
-.transaction-status-badge {
-  flex-shrink: 0;
 }
 
 .transaction-meta {

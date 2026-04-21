@@ -13,18 +13,7 @@
     </q-item-section>
 
     <q-item-section>
-      <q-item-label class="transaction-title-row">
-        <span class="transaction-title">{{ getTransactionLabel() }}</span>
-        <q-badge
-          v-if="statusLabel != null"
-          rounded
-          :color="statusColor"
-          text-color="white"
-          class="transaction-status-badge"
-        >
-          {{ statusLabel }}
-        </q-badge>
-      </q-item-label>
+      <q-item-label class="transaction-title">{{ getTransactionLabel() }}</q-item-label>
       <q-item-label caption class="transaction-meta">
         {{ formattedTimestamp }}
       </q-item-label>
@@ -66,32 +55,6 @@ const amountInFiat = ref<string>('0.00')
 const formattedTimestamp = computed(() => {
   return date.formatDate(props.transaction.timestamp, 'MMM D, YYYY • h:mm A')
 })
-const statusLabel = computed(() => {
-  return props.transaction.outcome != null ? formatOutcome(props.transaction.outcome) : null
-})
-const statusColor = computed(() => {
-  if (props.transaction.outcome == null) {
-    return 'grey'
-  }
-
-  switch (props.transaction.outcome) {
-    case 'Done':
-    case 'Success':
-      return 'positive'
-    case 'Created':
-    case 'Issuing':
-    case 'UserCanceledProcessing':
-      return 'warning'
-    case 'UserCanceledFailure':
-      return 'negative'
-    case 'Refunded':
-    case 'UserCanceledSuccess':
-      return 'grey'
-    default:
-      return 'grey'
-  }
-})
-
 const amountInSats = computed(() => {
   return Math.floor(props.transaction.amountMsats / 1000).toLocaleString()
 })
@@ -147,10 +110,6 @@ function getAmountClass(): string {
 function getAmountPrefix(): string {
   return props.transaction.type === 'spend_oob' ? '- ' : '+ '
 }
-
-function formatOutcome(outcome: string): string {
-  return outcome.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
-}
 </script>
 
 // ...existing code...
@@ -181,23 +140,13 @@ function formatOutcome(outcome: string): string {
   background: rgba(255, 255, 255, 0.05);
 }
 
-.transaction-title-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
 .transaction-title {
+  display: block;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 600;
-}
-
-.transaction-status-badge {
-  flex-shrink: 0;
 }
 
 .transaction-meta {
