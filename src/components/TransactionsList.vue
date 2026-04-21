@@ -7,13 +7,7 @@
       <div class="transactions-header">
         <div>
           <div class="transactions-title">
-            {{ props.mode === 'home' ? 'Recent activity' : 'Transaction history' }}
-          </div>
-          <div
-            v-if="transactions.length > 0 && props.mode === 'history'"
-            class="transactions-subtitle"
-          >
-            {{ props.mode === 'history' ? 'All transactions for this federation' : '' }}
+            {{ props.mode === 'home' ? 'Recent transactions' : 'Transaction history' }}
           </div>
         </div>
 
