@@ -1,63 +1,37 @@
 <template>
-  <ModalCard title="Receive eCash">
-    <div class="q-pa-md">
-      <div class="row q-col-gutter-md">
-        <div class="col-12">
-          <q-card
-            class="cursor-pointer"
-            v-ripple
-            @click="onReceiveOnchain"
-            data-testid="receive-onchain-card"
-          >
-            <q-card-section class="row">
-              <q-icon name="currency_bitcoin" size="48px" color="orange" class="col-2" />
-              <div class="col-10">
-                <div class="text-h6 q-mt-sm">Receive via Onchain</div>
-                <div class="text-caption text-grey-7">
-                  Generate a Bitcoin address to receive funds via an onchain transaction
-                </div>
-              </div>
-            </q-card-section>
-          </q-card>
-        </div>
+  <ModalCard title="Receive eCash" @close="emit('close')">
+    <div class="selection-sheet q-pa-md">
+      <div class="selection-sheet__intro text-body2 text-grey-5">
+        Choose how you want to receive funds into your current federation.
+      </div>
 
-        <div class="col-12">
-          <q-card
-            class="cursor-pointer"
-            v-ripple
-            @click="onReceiveLightning"
-            data-testid="receive-lightning-card"
-          >
-            <q-card-section class="row">
-              <q-icon name="flash_on" size="48px" color="warning" class="col-2" />
-              <div class="col-10">
-                <div class="text-h6 q-mt-sm">Receive via Lightning</div>
-                <div class="text-caption text-grey-7">
-                  Generate a Lightning invoice to receive eCash directly from the Lightning network
-                </div>
-              </div>
-            </q-card-section>
-          </q-card>
-        </div>
+      <div class="selection-sheet__options">
+        <BottomSheetOptionCard
+          title="Receive via Onchain"
+          description="Generate a Bitcoin address to receive funds via an onchain transaction"
+          icon="currency_bitcoin"
+          icon-color="orange"
+          data-testid="receive-onchain-card"
+          @select="onReceiveOnchain"
+        />
 
-        <div class="col-12">
-          <q-card
-            class="cursor-pointer"
-            v-ripple
-            @click="onReceiveOffline"
-            data-testid="receive-offline-card"
-          >
-            <q-card-section class="row">
-              <q-icon name="swap_horiz" size="48px" color="primary" class="col-2" />
-              <div class="col-10">
-                <div class="text-h6 q-mt-sm">Receive Offline eCash</div>
-                <div class="text-caption text-grey-7">
-                  Generate a QR code to receive eCash from another wallet without using the internet
-                </div>
-              </div>
-            </q-card-section>
-          </q-card>
-        </div>
+        <BottomSheetOptionCard
+          title="Receive via Lightning"
+          description="Generate a Lightning invoice to receive eCash directly from the Lightning network"
+          icon="flash_on"
+          icon-color="warning"
+          data-testid="receive-lightning-card"
+          @select="onReceiveLightning"
+        />
+
+        <BottomSheetOptionCard
+          title="Receive Offline eCash"
+          description="Generate a QR code to receive eCash from another wallet without using the internet"
+          icon="swap_horiz"
+          icon-color="primary"
+          data-testid="receive-offline-card"
+          @select="onReceiveOffline"
+        />
       </div>
     </div>
   </ModalCard>
@@ -66,11 +40,11 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import ModalCard from './ModalCard.vue'
+import BottomSheetOptionCard from './BottomSheetOptionCard.vue'
 
 const router = useRouter()
 const emit = defineEmits<{
   close: []
-  showOfflineReceive: []
 }>()
 
 async function onReceiveOnchain() {
@@ -90,12 +64,15 @@ async function onReceiveOffline() {
 </script>
 
 <style scoped>
-.q-card {
-  transition: all 0.2s ease-in-out;
+.selection-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.q-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+.selection-sheet__options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 </style>

@@ -20,7 +20,9 @@ describe('AddFederationSelection.vue', () => {
             props: {
               title: { type: String, required: false, default: '' },
             },
-            template: '<div><h2>{{ title }}</h2><slot /></div>',
+            emits: ['close'],
+            template:
+              '<div><button data-testid="modal-close" @click="$emit(\'close\')">close</button><h2>{{ title }}</h2><slot /></div>',
           }),
         },
       },
@@ -36,8 +38,7 @@ describe('AddFederationSelection.vue', () => {
   it('emits close and showDiscover when discover action is triggered', async () => {
     const eventLog: string[] = []
     const wrapper = createWrapper(eventLog)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onDiscover()
+    await wrapper.get('[data-testid="join-discover-federation-card"]').trigger('click')
 
     expect(wrapper.emitted('close')).toHaveLength(1)
     expect(wrapper.emitted('showDiscover')).toHaveLength(1)
@@ -47,11 +48,18 @@ describe('AddFederationSelection.vue', () => {
   it('emits close and showAdd when add action is triggered', async () => {
     const eventLog: string[] = []
     const wrapper = createWrapper(eventLog)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onAdd()
+    await wrapper.get('[data-testid="join-trusted-federation-card"]').trigger('click')
 
     expect(wrapper.emitted('close')).toHaveLength(1)
     expect(wrapper.emitted('showAdd')).toHaveLength(1)
     expect(eventLog).toEqual(['close', 'showAdd'])
+  })
+
+  it('forwards the modal close event', async () => {
+    const wrapper = createWrapper()
+
+    await wrapper.get('[data-testid="modal-close"]').trigger('click')
+
+    expect(wrapper.emitted('close')).toHaveLength(1)
   })
 })
