@@ -3,7 +3,15 @@ import { defineStore } from 'pinia'
 export type OnboardingFlow = 'create' | 'restore' | null
 export type OnboardingStatus = 'in_progress' | 'complete'
 type FutureOnboardingStep = string & { readonly __futureOnboardingStep: unique symbol }
-export type OnboardingStep = 'install' | 'choice' | 'backup' | 'restore' | FutureOnboardingStep
+export type OnboardingStep =
+  | 'install'
+  | 'welcome'
+  | 'custody'
+  | 'federation'
+  | 'backup'
+  | 'restore'
+  | 'done'
+  | FutureOnboardingStep
 
 export type OnboardingState = {
   version: 1
@@ -22,7 +30,7 @@ function createDefaultOnboardingState(): OnboardingState {
   return {
     version: ONBOARDING_STATE_VERSION,
     flow: null,
-    step: 'choice',
+    step: 'welcome',
     status: 'complete',
     updatedAt: Date.now(),
   }
@@ -47,13 +55,21 @@ function sanitizeStatus(value: unknown): OnboardingStatus {
 }
 
 function sanitizeStep(value: unknown): OnboardingStep {
-  if (value === 'install' || value === 'choice' || value === 'backup' || value === 'restore') {
+  if (
+    value === 'install' ||
+    value === 'welcome' ||
+    value === 'custody' ||
+    value === 'federation' ||
+    value === 'backup' ||
+    value === 'restore' ||
+    value === 'done'
+  ) {
     return value
   }
   if (typeof value === 'string' && value.trim() !== '') {
     return value as FutureOnboardingStep
   }
-  return 'choice'
+  return 'welcome'
 }
 
 function sanitizeUpdatedAt(value: unknown): number {
@@ -128,7 +144,7 @@ export const useOnboardingStore = defineStore('onboarding', {
     start(flow: Exclude<OnboardingFlow, null>) {
       this.flow = flow
       this.status = 'in_progress'
-      this.step = flow === 'create' ? 'backup' : 'restore'
+      this.step = flow === 'create' ? 'welcome' : 'restore'
       this.touch()
     },
 
@@ -144,7 +160,7 @@ export const useOnboardingStore = defineStore('onboarding', {
 
     complete() {
       this.flow = null
-      this.step = 'choice'
+      this.step = 'welcome'
       this.status = 'complete'
       this.touch()
     },
@@ -168,7 +184,7 @@ export const useOnboardingStore = defineStore('onboarding', {
       if (!hasMnemonic) {
         if (this.flow === 'create' && this.step === 'backup') {
           this.flow = null
-          this.step = 'choice'
+          this.step = 'welcome'
           this.status = 'in_progress'
           this.touch()
           return

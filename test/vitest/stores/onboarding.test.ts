@@ -41,7 +41,7 @@ describe('onboarding store', () => {
     const onboardingStore = useOnboardingStore()
 
     expect(onboardingStore.flow).toBeNull()
-    expect(onboardingStore.step).toBe('choice')
+    expect(onboardingStore.step).toBe('welcome')
     expect(onboardingStore.status).toBe('complete')
   })
 
@@ -60,7 +60,7 @@ describe('onboarding store', () => {
     const onboardingStore = useOnboardingStore()
 
     expect(onboardingStore.flow).toBeNull()
-    expect(onboardingStore.step).toBe('choice')
+    expect(onboardingStore.step).toBe('welcome')
     expect(onboardingStore.status).toBe('complete')
   })
 
@@ -71,7 +71,7 @@ describe('onboarding store', () => {
     const onboardingStore = useOnboardingStore()
 
     expect(onboardingStore.flow).toBeNull()
-    expect(onboardingStore.step).toBe('choice')
+    expect(onboardingStore.step).toBe('welcome')
     expect(localStorage.getItem(LEGACY_ONBOARDING_FLOW_KEY)).toBeNull()
     expect(localStorage.getItem(LEGACY_ONBOARDING_STEP_KEY)).toBeNull()
   })

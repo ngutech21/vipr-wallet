@@ -39,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import type { SelectableFlow } from 'src/composables/useStartupWizard'
+type SelectableFlow = 'create' | 'restore'
 
 defineProps<{
   canProceedFromChoice: boolean

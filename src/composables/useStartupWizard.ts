@@ -6,8 +6,14 @@ import { useOnboardingStore } from 'src/stores/onboarding'
 import { logger } from 'src/services/logger'
 import { getErrorMessage } from 'src/utils/error'
 
-export type WizardStep = 'install' | 'choice' | 'backup' | 'restore'
-export type SelectableFlow = 'create' | 'restore'
+export type WizardStep =
+  | 'install'
+  | 'welcome'
+  | 'custody'
+  | 'federation'
+  | 'backup'
+  | 'restore'
+  | 'done'
 
 export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boolean> }) {
   const router = useRouter()
@@ -15,8 +21,7 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
   const onboardingStore = useOnboardingStore()
   const notify = useAppNotify()
 
-  const currentStep = ref<WizardStep>('choice')
-  const selectedFlow = ref<SelectableFlow | null>(null)
+  const currentStep = ref<WizardStep>('welcome')
   const isCreating = ref(false)
   const isRestoring = ref(false)
   const restoreWords = ref<string[]>(Array.from({ length: 12 }, () => ''))
@@ -29,15 +34,6 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
       walletStore.hasMnemonic &&
       walletStore.needsMnemonicBackup,
   )
-  const canProceedFromChoice = computed(() => {
-    if (isCreating.value || isRestoring.value) {
-      return false
-    }
-    if (isCreateLocked.value) {
-      return true
-    }
-    return selectedFlow.value != null
-  })
 
   async function initializeWizard() {
     await walletStore.loadMnemonic()
@@ -51,12 +47,6 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
       return
     }
 
-    if (onboardingStore.flow === 'create') {
-      selectedFlow.value = 'create'
-    } else if (onboardingStore.flow === 'restore') {
-      selectedFlow.value = 'restore'
-    }
-
     if (showInstallStep.value && onboardingStore.step === 'install') {
       currentStep.value = 'install'
       onboardingStore.markInProgress()
@@ -66,7 +56,6 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
 
     if (onboardingStore.step === 'backup' && walletStore.needsMnemonicBackup) {
       currentStep.value = 'backup'
-      selectedFlow.value = 'create'
       onboardingStore.markInProgress()
       onboardingStore.goToStep('backup')
       return
@@ -74,9 +63,17 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
 
     if (!walletStore.hasMnemonic && onboardingStore.step === 'restore') {
       currentStep.value = 'restore'
-      selectedFlow.value = 'restore'
       onboardingStore.markInProgress()
       onboardingStore.goToStep('restore')
+      return
+    }
+
+    const resumedStep = getResumableCreateStep(onboardingStore.step)
+
+    if (onboardingStore.flow === 'create' && resumedStep != null) {
+      currentStep.value = resumedStep
+      onboardingStore.markInProgress()
+      onboardingStore.goToStep(resumedStep)
       return
     }
 
@@ -87,15 +84,15 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
       return
     }
 
-    currentStep.value = 'choice'
+    currentStep.value = 'welcome'
     onboardingStore.markInProgress()
-    onboardingStore.goToStep('choice')
+    onboardingStore.goToStep('welcome')
   }
 
   function continueFromInstall() {
     onboardingStore.markInProgress()
-    onboardingStore.goToStep('choice')
-    currentStep.value = 'choice'
+    onboardingStore.goToStep('welcome')
+    currentStep.value = 'welcome'
   }
 
   async function finishWizardAndEnterApp() {
@@ -110,64 +107,84 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
     await router.replace('/')
   }
 
-  async function goFromChoiceNext() {
+  function startCreateFlow() {
+    onboardingStore.start('create')
+    onboardingStore.goToStep('custody')
+    currentStep.value = 'custody'
+  }
+
+  function startRestoreFlow() {
+    onboardingStore.start('restore')
+    onboardingStore.goToStep('restore')
+    currentStep.value = 'restore'
+  }
+
+  function goToFederationStep() {
+    onboardingStore.markInProgress()
+    onboardingStore.goToStep('federation')
+    currentStep.value = 'federation'
+  }
+
+  function backToWelcome() {
+    onboardingStore.markInProgress()
+    onboardingStore.goToStep('welcome')
+    currentStep.value = 'welcome'
+  }
+
+  function backToCustody() {
+    onboardingStore.markInProgress()
+    onboardingStore.goToStep('custody')
+    currentStep.value = 'custody'
+  }
+
+  async function continueFromFederation() {
     if (isCreateLocked.value) {
-      selectedFlow.value = 'create'
       onboardingStore.markInProgress()
       onboardingStore.goToStep('backup')
       currentStep.value = 'backup'
       return
     }
 
-    if (selectedFlow.value == null) {
-      notify.warning('Please choose how to continue.')
-      return
-    }
-
-    if (selectedFlow.value === 'create') {
-      onboardingStore.start('create')
-
-      if (!(walletStore.hasMnemonic && walletStore.needsMnemonicBackup)) {
-        isCreating.value = true
-        try {
-          await walletStore.createMnemonic()
-        } catch (error) {
-          notify.error(`Failed to create wallet: ${getErrorMessage(error)}`)
-          onboardingStore.goToStep('choice')
-          return
-        } finally {
-          isCreating.value = false
-        }
+    if (!(walletStore.hasMnemonic && walletStore.needsMnemonicBackup)) {
+      isCreating.value = true
+      try {
+        await walletStore.createMnemonic()
+      } catch (error) {
+        notify.error(`Failed to create wallet: ${getErrorMessage(error)}`)
+        onboardingStore.goToStep('welcome')
+        currentStep.value = 'welcome'
+        return
+      } finally {
+        isCreating.value = false
       }
-
-      onboardingStore.goToStep('backup')
-      currentStep.value = 'backup'
-      return
     }
 
-    onboardingStore.start('restore')
-    onboardingStore.goToStep('restore')
-    currentStep.value = 'restore'
+    onboardingStore.goToStep('backup')
+    currentStep.value = 'backup'
   }
 
-  function backFromBackupToChoice() {
-    onboardingStore.markInProgress()
-    onboardingStore.goToStep('choice')
-    currentStep.value = 'choice'
-    selectedFlow.value = 'create'
+  async function skipCreateEducation() {
+    onboardingStore.start('create')
+    await continueFromFederation()
   }
 
-  function backFromRestoreToChoice() {
+  function backFromBackup() {
     onboardingStore.markInProgress()
-    onboardingStore.goToStep('choice')
-    currentStep.value = 'choice'
-    selectedFlow.value = isCreateLocked.value ? 'create' : 'restore'
+    onboardingStore.goToStep('federation')
+    currentStep.value = 'federation'
+  }
+
+  function backFromRestore() {
+    onboardingStore.markInProgress()
+    onboardingStore.goToStep('welcome')
+    currentStep.value = 'welcome'
     restoreWords.value = Array.from({ length: 12 }, () => '')
   }
 
-  async function confirmBackupAndFinish() {
+  function finishBackup() {
     walletStore.markMnemonicBackupConfirmed()
-    await finishWizardAndEnterApp()
+    onboardingStore.goToStep('done')
+    currentStep.value = 'done'
   }
 
   async function submitRestore() {
@@ -183,7 +200,8 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
     onboardingStore.goToStep('restore')
     try {
       await walletStore.restoreMnemonic(words)
-      await finishWizardAndEnterApp()
+      onboardingStore.goToStep('done')
+      currentStep.value = 'done'
     } catch (error) {
       notify.error(`Failed to restore wallet: ${getErrorMessage(error)}`)
     } finally {
@@ -192,20 +210,35 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
   }
 
   return {
-    canProceedFromChoice,
     currentStep,
+    finishBackup,
+    finishWizardAndEnterApp,
+    goToFederationStep,
     isCreating,
     isCreateLocked,
     isRestoring,
     mnemonicWords,
     restoreWords,
-    selectedFlow,
-    backFromBackupToChoice,
-    backFromRestoreToChoice,
-    confirmBackupAndFinish,
+    backFromBackup,
+    backFromRestore,
+    backToCustody,
+    backToWelcome,
+    continueFromFederation,
     continueFromInstall,
-    goFromChoiceNext,
     initializeWizard,
+    skipCreateEducation,
+    startCreateFlow,
+    startRestoreFlow,
     submitRestore,
   }
+}
+
+function getResumableCreateStep(
+  step: string,
+): Extract<WizardStep, 'welcome' | 'custody' | 'federation' | 'done'> | null {
+  if (step === 'welcome' || step === 'custody' || step === 'federation' || step === 'done') {
+    return step
+  }
+
+  return null
 }
