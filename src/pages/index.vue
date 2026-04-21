@@ -103,7 +103,7 @@
     <q-page-sticky
       v-if="federationStore.federations.length > 0"
       position="bottom"
-      :offset="[0, 28]"
+      :offset="[0, 44]"
     >
       <div class="home-actions q-px-md">
         <q-btn
@@ -247,33 +247,47 @@ function returnToDiscovery() {
   justify-content: center;
   gap: 12px;
   width: min(calc(100vw - 32px), 420px);
+  padding-bottom: 10px;
 }
 
 .home-action-btn {
   flex: 1 1 0;
-  min-height: 50px;
-  border-radius: 16px;
+  min-height: 56px;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
+  box-shadow:
+    0 10px 24px rgba(111, 0, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  color: white;
 }
 
 .home-action-btn--icon {
-  flex: 0 0 56px;
-  width: 56px;
-  min-width: 56px;
+  flex: 0 0 62px;
+  width: 62px;
+  min-width: 62px;
   padding: 0;
 }
 
 .home-action-btn :deep(.q-btn__content) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-wrap: nowrap;
-  gap: 8px;
+  gap: 10px;
   font-size: 1rem;
+  line-height: 1;
 }
 
 .home-action-btn :deep(.q-icon) {
-  font-size: 1.2rem;
+  margin: 0;
+  font-size: 1.35rem;
 }
 
 .home-action-btn :deep(.block) {
   white-space: nowrap;
+  line-height: 1;
 }
 
 .home-action-btn--icon :deep(.q-btn__content) {
@@ -285,5 +299,22 @@ function returnToDiscovery() {
   width: 100%;
   max-width: 700px;
   margin: 0 auto;
+}
+
+@media (max-width: 599px) {
+  .home-actions {
+    width: min(calc(100vw - 28px), 420px);
+    gap: 10px;
+  }
+
+  .home-action-btn {
+    min-height: 54px;
+  }
+
+  .home-action-btn--icon {
+    flex-basis: 58px;
+    width: 58px;
+    min-width: 58px;
+  }
 }
 </style>
