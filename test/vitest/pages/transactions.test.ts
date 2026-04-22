@@ -3,18 +3,18 @@ import { mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import TransactionsPage from 'src/pages/transactions.vue'
 
-const mockRouterPush = vi.hoisted(() => vi.fn())
+const mockRouterReplace = vi.hoisted(() => vi.fn())
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({
-    push: mockRouterPush,
+    replace: mockRouterReplace,
   }),
 }))
 
 describe('TransactionsPage.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockRouterPush.mockResolvedValue(undefined)
+    mockRouterReplace.mockResolvedValue(undefined)
   })
 
   it('renders the full history list mode', () => {
@@ -63,7 +63,7 @@ describe('TransactionsPage.vue', () => {
 
     await wrapper.get('[data-testid="transactions-back-btn"]').trigger('click')
 
-    expect(mockRouterPush).toHaveBeenCalledWith({ name: '/' })
+    expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/' })
   })
 
   it('uses the same navigation path for the swipe handler', async () => {
@@ -85,6 +85,6 @@ describe('TransactionsPage.vue', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (wrapper.vm as any).goBack()
 
-    expect(mockRouterPush).toHaveBeenCalledWith({ name: '/' })
+    expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/' })
   })
 })

@@ -2,14 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import TransactionDetailsPage from 'src/pages/transaction/[id].vue'
 
-const mockRouterPush = vi.hoisted(() => vi.fn())
+const mockRouterReplace = vi.hoisted(() => vi.fn())
 const mockGetTransactionByOperationId = vi.hoisted(() => vi.fn())
 const mockUseRoute = vi.hoisted(() => vi.fn())
 
 vi.mock('vue-router', () => ({
   useRoute: (...args: unknown[]) => mockUseRoute(...args),
   useRouter: () => ({
-    push: mockRouterPush,
+    replace: mockRouterReplace,
   }),
 }))
 
@@ -28,7 +28,7 @@ describe('TransactionDetailsPage', () => {
       },
     })
     mockGetTransactionByOperationId.mockResolvedValue(null)
-    mockRouterPush.mockResolvedValue(undefined)
+    mockRouterReplace.mockResolvedValue(undefined)
   })
 
   it('navigates back home from the toolbar button', async () => {
@@ -54,7 +54,7 @@ describe('TransactionDetailsPage', () => {
     await flushPromises()
     await wrapper.get('[data-testid="transaction-details-back-btn"]').trigger('click')
 
-    expect(mockRouterPush).toHaveBeenCalledWith({ name: '/' })
+    expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/' })
   })
 
   it('uses the same navigation path for the swipe handler', async () => {
@@ -81,6 +81,6 @@ describe('TransactionDetailsPage', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (wrapper.vm as any).navigateBack()
 
-    expect(mockRouterPush).toHaveBeenCalledWith({ name: '/' })
+    expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/' })
   })
 })

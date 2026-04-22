@@ -86,7 +86,7 @@ const loading = ref(true)
 const error = ref('')
 
 async function navigateBack() {
-  await router.push({ name: '/' })
+  await router.replace({ name: '/' })
 }
 
 onMounted(async () => {

@@ -32,7 +32,7 @@ import TransactionsList from 'src/components/TransactionsList.vue'
 const router = useRouter()
 
 async function goBack() {
-  await router.push({ name: '/' })
+  await router.replace({ name: '/' })
 }
 </script>
 
