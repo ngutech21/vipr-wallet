@@ -1,8 +1,3 @@
-<route lang="yaml">
-meta:
-  hideBottomNav: true
-</route>
-
 <template>
   <transition
     appear
