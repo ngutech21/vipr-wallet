@@ -40,6 +40,8 @@
           fab
           icon="add"
           color="primary"
+          unelevated
+          class="add-federation-fab__button"
           :aria-expanded="showSelection"
           @click="showSelection = true"
           data-testid="add-federation-button"
@@ -120,7 +122,21 @@ function returnToDiscovery() {
 .add-federation-fab {
   position: fixed;
   right: 24px;
-  bottom: calc(96px + env(safe-area-inset-bottom));
+  bottom: calc(120px + env(safe-area-inset-bottom));
   z-index: 1200;
+}
+
+.add-federation-fab__button {
+  background:
+    linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
+  box-shadow:
+    0 10px 24px rgba(111, 0, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  color: white;
+}
+
+.add-federation-fab__button :deep(.q-icon) {
+  font-size: 1.6rem;
 }
 </style>
