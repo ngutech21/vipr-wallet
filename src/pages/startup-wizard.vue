@@ -333,11 +333,11 @@ onBeforeUnmount(() => {
 
 .wizard-slide--welcome,
 .wizard-slide--done {
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .wizard-copy {
-  margin-top: auto;
+  margin-top: 0;
 }
 
 .wizard-copy--compact {
@@ -370,7 +370,8 @@ onBeforeUnmount(() => {
 
 .wizard-actions,
 .wizard-footer {
-  margin-top: 24px;
+  margin-top: auto;
+  padding-top: 24px;
 }
 
 .wizard-actions--stack {
@@ -400,10 +401,17 @@ onBeforeUnmount(() => {
 }
 
 .wizard-secondary-btn {
-  flex: 1;
+  flex: 0 0 auto;
+  min-width: 128px;
   color: rgba(255, 255, 255, 0.92) !important;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.04);
+}
+
+.wizard-actions--stack .wizard-primary-btn,
+.wizard-actions--stack .wizard-secondary-btn {
+  width: 100%;
+  min-width: 0;
 }
 
 .wizard-skip {
@@ -565,6 +573,11 @@ onBeforeUnmount(() => {
     min-height: 620px;
   }
 
+  .wizard-visual {
+    min-height: 244px;
+    margin-bottom: 20px;
+  }
+
   .wizard-title {
     font-size: 1.9rem;
   }
@@ -573,8 +586,17 @@ onBeforeUnmount(() => {
     font-size: 1.05rem;
   }
 
+  .wizard-actions,
   .wizard-footer {
-    flex-direction: column;
+    padding-top: 18px;
+  }
+
+  .wizard-footer {
+    align-items: stretch;
+  }
+
+  .wizard-footer .wizard-secondary-btn {
+    min-width: 112px;
   }
 
   .federation-card {
