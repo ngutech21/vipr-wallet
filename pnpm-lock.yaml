@@ -65,8 +65,8 @@ importers:
         specifier: ^5.7.3
         version: 5.7.3
       vue-router:
-        specifier: 5.0.4
-        version: 5.0.4(@vue/compiler-sfc@3.5.33)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
+        specifier: 5.0.6
+        version: 5.0.6(@vue/compiler-sfc@3.5.33)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -82,7 +82,7 @@ importers:
         version: 1.58.2
       '@quasar/app-vite':
         specifier: 2.6.0
-        version: 2.6.0(@quasar/extras@1.18.0)(@types/node@25.6.0)(eslint@10.2.1)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(quasar@2.19.3)(rolldown@1.0.0-rc.16)(rollup@2.80.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(vue-router@5.0.4(@vue/compiler-sfc@3.5.33)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))(workbox-build@7.4.0)(yaml@2.8.3)
+        version: 2.6.0(@quasar/extras@1.18.0)(@types/node@25.6.0)(eslint@10.2.1)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(quasar@2.19.3)(rolldown@1.0.0-rc.16)(rollup@2.80.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(vue-router@5.0.6(@vue/compiler-sfc@3.5.33)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))(workbox-build@7.4.0)(yaml@2.8.3)
       '@quasar/cli':
         specifier: ^4.0.0
         version: 4.0.0
@@ -5373,8 +5373,8 @@ packages:
     resolution: {integrity: sha512-iSGko42FsEvdHyizBMBs/X+HMO9Z5ONDxjW+mQdoraOR5emRNedmjC5SEJdYzGz8ZP5ME3lwB4iHy3S7MOt5Qw==}
     engines: {node: '>=18.0.0'}
 
-  vue-router@5.0.4:
-    resolution: {integrity: sha512-lCqDLCI2+fKVRl2OzXuzdSWmxXFLQRxQbmHugnRpTMyYiT+hNaycV0faqG5FBHDXoYrZ6MQcX87BvbY8mQ20Bg==}
+  vue-router@5.0.6:
+    resolution: {integrity: sha512-9+kmUTGbKMyW9Asoy98IXXYIzrTMT7JDAdpDDeEkorHvybpUvBI2wsrSM5jFOXrFydpzRFJ9vAh+80DN2PGu9w==}
     peerDependencies:
       '@pinia/colada': '>=0.21.2'
       '@vue/compiler-sfc': ^3.5.17
@@ -7021,7 +7021,7 @@ snapshots:
       - react-native-b4a
       - supports-color
 
-  '@quasar/app-vite@2.6.0(@quasar/extras@1.18.0)(@types/node@25.6.0)(eslint@10.2.1)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(quasar@2.19.3)(rolldown@1.0.0-rc.16)(rollup@2.80.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(vue-router@5.0.4(@vue/compiler-sfc@3.5.33)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))(workbox-build@7.4.0)(yaml@2.8.3)':
+  '@quasar/app-vite@2.6.0(@quasar/extras@1.18.0)(@types/node@25.6.0)(eslint@10.2.1)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(quasar@2.19.3)(rolldown@1.0.0-rc.16)(rollup@2.80.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(typescript@6.0.3)(vue-router@5.0.6(@vue/compiler-sfc@3.5.33)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))(workbox-build@7.4.0)(yaml@2.8.3)':
     dependencies:
       '@quasar/render-ssr-error': 1.0.4
       '@quasar/ssl-certificate': 2.0.0
@@ -7061,7 +7061,7 @@ snapshots:
       ts-essentials: 10.1.1(typescript@6.0.3)
       vite: 8.0.9(@types/node@25.6.0)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vue: 3.5.33(typescript@6.0.3)
-      vue-router: 5.0.4(@vue/compiler-sfc@3.5.33)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
+      vue-router: 5.0.6(@vue/compiler-sfc@3.5.33)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
       webpack-merge: 6.0.1
     optionalDependencies:
       '@quasar/extras': 1.18.0
@@ -11297,7 +11297,7 @@ snapshots:
       barcode-detector: 2.2.2
       webrtc-adapter: 8.2.3
 
-  vue-router@5.0.4(@vue/compiler-sfc@3.5.33)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3)):
+  vue-router@5.0.6(@vue/compiler-sfc@3.5.33)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3)):
     dependencies:
       '@babel/generator': 7.29.1
       '@vue-macros/common': 3.1.2(vue@3.5.33(typescript@6.0.3))
