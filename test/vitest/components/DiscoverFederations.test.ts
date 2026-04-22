@@ -52,7 +52,9 @@ describe('DiscoverFederations.vue', () => {
         plugins: [Quasar, pinia],
         stubs: {
           ModalCard: {
-            template: '<div class="modal-card"><slot /></div>',
+            emits: ['close'],
+            template:
+              '<div class="modal-card"><button data-testid="modal-close-btn" @click="$emit(\'close\')">close</button><slot /></div>',
             props: ['title'],
           },
         },
@@ -205,6 +207,14 @@ describe('DiscoverFederations.vue', () => {
 
     expect(wrapper.emitted('close')).toEqual([[]])
     expect(wrapper.emitted('showAdd')).toEqual([[{ inviteCode: candidate.inviteCode }]])
+  })
+
+  it('forwards the modal close event', async () => {
+    wrapper = createWrapper()
+
+    await wrapper.get('[data-testid="modal-close-btn"]').trigger('click')
+
+    expect(wrapper.emitted('close')).toEqual([[]])
   })
 
   it('does not open preview for federations that already exist', async () => {

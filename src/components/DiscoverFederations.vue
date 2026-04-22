@@ -1,5 +1,5 @@
 <template>
-  <ModalCard title="Discover Federations">
+  <ModalCard title="Discover Federations" @close="emit('close')">
     <div class="discover-sheet q-pa-md">
       <q-list bordered separator v-if="visibleFederations.length > 0">
         <q-item
