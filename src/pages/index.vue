@@ -58,7 +58,7 @@
       />
     </q-dialog>
 
-    <section class="home-hero q-pa-md">
+    <section v-if="federationStore.federations.length > 0" class="home-hero q-pa-md">
       <div class="hero-card">
         <div class="hero-balance" data-testid="home-balance">
           {{ Math.ceil(totalBalance).toLocaleString() }} sats
@@ -81,7 +81,7 @@
 
     <div
       v-if="federationStore.federations.length == 0"
-      class="column items-center justify-center full-height"
+      class="home-empty-state column items-center justify-center full-height"
       style="flex: 1"
     >
       <div class="text-h6">Ready to start?</div>
@@ -211,6 +211,11 @@ function returnToDiscovery() {
   gap: 16px;
   max-width: 700px;
   margin: 0 auto;
+}
+
+.home-empty-state {
+  padding: 0 24px 120px;
+  text-align: center;
 }
 
 .hero-card {
