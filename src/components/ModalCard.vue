@@ -1,45 +1,51 @@
 <template>
   <q-card class="modal-card" flat>
-    <div class="modal-card__handle" aria-hidden="true"></div>
+    <div
+      v-touch-swipe.down.mouse="onDismissSwipe"
+      class="modal-card__swipe-zone"
+      data-testid="modal-card-swipe-zone"
+    >
+      <div class="modal-card__handle" aria-hidden="true"></div>
 
-    <q-card-section class="modal-card__header">
-      <div class="modal-card__header-action">
-        <q-btn
-          v-if="showBack"
-          icon="arrow_back"
-          color="grey-4"
-          flat
-          round
-          dense
-          class="modal-card__icon-btn"
-          data-testid="modal-card-back-btn"
-          @click="emit('back')"
-        />
-      </div>
+      <q-card-section class="modal-card__header">
+        <div class="modal-card__header-action">
+          <q-btn
+            v-if="showBack"
+            icon="arrow_back"
+            color="grey-4"
+            flat
+            round
+            dense
+            class="modal-card__icon-btn"
+            data-testid="modal-card-back-btn"
+            @click="emit('back')"
+          />
+        </div>
 
-      <div class="modal-card__title text-center">
-        {{ title }}
-      </div>
+        <div class="modal-card__title text-center">
+          {{ title }}
+        </div>
 
-      <div class="modal-card__header-action modal-card__header-action--end">
-        <q-btn
-          v-if="showClose"
-          icon="close"
-          color="grey-4"
-          flat
-          round
-          dense
-          class="modal-card__icon-btn"
-          v-close-popup
-          data-testid="modal-card-close-btn"
-          @click="emit('close')"
-        />
-      </div>
-    </q-card-section>
+        <div class="modal-card__header-action modal-card__header-action--end">
+          <q-btn
+            v-if="showClose"
+            icon="close"
+            color="grey-4"
+            flat
+            round
+            dense
+            class="modal-card__icon-btn"
+            v-close-popup
+            data-testid="modal-card-close-btn"
+            @click="emit('close')"
+          />
+        </div>
+      </q-card-section>
+    </div>
 
     <q-separator class="modal-card__separator" />
 
-    <div class="modal-card__body" :class="bodyClass">
+    <div class="modal-card__body" :class="bodyClass" @touchstart.stop @mousedown.stop>
       <slot></slot>
     </div>
 
@@ -80,6 +86,10 @@ const slots = useSlots()
 const hasFooter = computed(() => slots.footer != null)
 const bodyClass = computed(() => props.bodyClass)
 const footerClass = computed(() => props.footerClass)
+
+function onDismissSwipe() {
+  emit('close')
+}
 </script>
 
 <style scoped>
@@ -104,6 +114,10 @@ const footerClass = computed(() => props.footerClass)
   margin: 12px auto 4px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.28);
+  flex: 0 0 auto;
+}
+
+.modal-card__swipe-zone {
   flex: 0 0 auto;
 }
 

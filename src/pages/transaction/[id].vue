@@ -6,6 +6,13 @@
     mode="out-in"
   >
     <q-page class="transaction-details-page">
+      <div
+        v-touch-swipe.right.mouse="navigateBack"
+        class="page-swipe-edge"
+        aria-hidden="true"
+        data-testid="transaction-details-swipe-edge"
+      ></div>
+
       <div class="transaction-details-topbar">
         <q-btn
           flat
@@ -115,13 +122,23 @@ onMounted(async () => {
 }
 
 .transaction-details-page {
+  position: relative;
   width: 100%;
   max-width: 700px;
   margin: 0 auto;
   padding-bottom: 80px;
 }
 
+.page-swipe-edge {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 28px;
+  z-index: 2;
+}
+
 .transaction-details-topbar {
+  position: relative;
+  z-index: 3;
   display: flex;
   align-items: center;
   min-height: 44px;
