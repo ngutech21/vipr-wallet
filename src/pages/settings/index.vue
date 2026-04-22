@@ -5,7 +5,7 @@
         <q-expansion-item
           class="settings-section settings-section--primary"
           icon="account_balance_wallet"
-          label="Bitcoin wallet"
+          label="Lighnting"
           caption="Connect wallet"
           header-class="settings-header"
           expand-icon-class="text-primary"
@@ -137,7 +137,7 @@
           class="settings-section settings-section--primary"
           icon="perm_contact_calendar"
           label="Contacts"
-          caption="Import contacts"
+          caption="Sync nostr contacts"
           header-class="settings-header"
           expand-icon-class="text-primary"
           data-testid="settings-contacts-section"
