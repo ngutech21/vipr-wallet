@@ -16,6 +16,8 @@ jobs:
     if: ${{ !github.event.release.prerelease }}
     runs-on: ubuntu-latest
     environment: production
+    env:
+      DO_PRODUCTION_APP_NAME: ${{ secrets.DO_PRODUCTION_APP_NAME }}
 
     steps:
       - name: Checkout release tag
@@ -46,7 +48,8 @@ jobs:
 
       - name: Read package version
         id: version
-        run: echo "version=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "version=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
 
       - name: Verify release tag matches package version
         run: |
@@ -73,8 +76,8 @@ jobs:
             docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:latest
 
       - name: Deploy to DigitalOcean
-        if: ${{ secrets.DO_PRODUCTION_APP_NAME != '' }}
+        if: ${{ env.DO_PRODUCTION_APP_NAME != '' }}
         uses: digitalocean/app_action/deploy@v2
         with:
-          app_name: ${{ secrets.DO_PRODUCTION_APP_NAME }}
+          app_name: ${{ env.DO_PRODUCTION_APP_NAME }}
           token: ${{ secrets.DO_TOKEN }}
