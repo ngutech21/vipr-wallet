@@ -728,11 +728,11 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-panel {
-  padding: 0 18px 18px;
+  padding: 14px 18px 18px;
 }
 
 .settings-panel--compact {
-  padding-top: 2px;
+  padding-top: 12px;
 }
 
 .settings-panel--secondary {
