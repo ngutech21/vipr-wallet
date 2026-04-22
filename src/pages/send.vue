@@ -135,13 +135,10 @@
 
                 <div class="row q-col-gutter-md">
                   <div class="col-12">
-                    <q-input
-                      filled
-                      v-model.number="invoiceAmount"
+                    <AmountDisplay
+                      :value="formattedInvoiceAmount"
                       label="Amount in sats"
-                      type="number"
-                      readonly
-                      class="custom-input no-spinner q-mb-md"
+                      class="q-mb-md"
                       data-testid="send-amount-input"
                     />
                   </div>
@@ -206,6 +203,7 @@ defineOptions({
 
 import { computed, ref, watch } from 'vue'
 import VerifyPayment from 'components/VerifyPayment.vue'
+import AmountDisplay from 'src/components/AmountDisplay.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useInvoiceDecoding } from 'src/composables/useInvoiceDecoding'
@@ -222,6 +220,7 @@ const router = useRouter()
 const nostrStore = useNostrStore()
 const invoiceMemo = ref('')
 const { value: invoiceAmount, keypadButtons } = useNumericInput(0)
+const formattedInvoiceAmount = computed(() => invoiceAmount.value.toLocaleString())
 
 // Use the invoice decoding composable
 const {

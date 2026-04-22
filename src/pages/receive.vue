@@ -26,19 +26,7 @@ meta:
       <div class="receive-content">
         <div class="flex flex-center full-width">
           <div v-if="!qrData" class="amount-entry-container q-pa-lg task-card">
-            <div class="entry-title text-center">Enter amount</div>
-
-            <q-input
-              filled
-              v-model.number="amount"
-              label="Amount (Sats)"
-              type="number"
-              ref="amountInput"
-              class="no-spinner q-mb-lg receive-input"
-              readonly
-              :rules="[(val) => val > 0 || 'Enter a positive amount']"
-              data-testid="amount-input"
-            />
+            <AmountDisplay :value="formattedAmount" class="q-mb-lg" data-testid="amount-input" />
 
             <NumericKeypad :buttons="keypadButtons" class="q-mb-lg" />
 
@@ -142,6 +130,7 @@ import { useShare } from '@vueuse/core'
 import { init, requestProvider } from '@getalby/bitcoin-connect'
 import { useFederationStore } from 'src/stores/federation'
 import { logger } from 'src/services/logger'
+import AmountDisplay from 'src/components/AmountDisplay.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
@@ -149,7 +138,6 @@ import { useNumericInput } from 'src/composables/useNumericInput'
 import { getErrorMessage } from 'src/utils/error'
 
 const qrData = ref('')
-const amountInput = ref<HTMLInputElement | null>(null)
 const router = useRouter()
 const lnExpiry = 60 * 20 // 20 minutes
 const countdown = ref(lnExpiry)
@@ -164,6 +152,7 @@ const { createInvoice, waitForInvoicePayment } = useLightningPayment()
 
 // Use the numeric input composable
 const { value: amount, keypadButtons } = useNumericInput(0)
+const formattedAmount = computed(() => amount.value.toLocaleString())
 
 let countdownInterval: ReturnType<typeof setInterval> | null = null
 
@@ -196,10 +185,6 @@ onMounted(() => {
   init({
     appName: 'Vipr Wallet',
   })
-
-  if (amountInput.value != null) {
-    amountInput.value.focus()
-  }
 })
 
 onUnmounted(() => {

@@ -68,15 +68,11 @@ meta:
               </q-card-section>
             </q-card>
 
-            <q-input
-              filled
-              v-model.number="amount"
-              label="Amount (Sats)"
-              type="number"
-              readonly
-              class="no-spinner custom-input q-mb-md"
-              :error="amountError != null"
-              :error-message="amountError ?? undefined"
+            <AmountDisplay
+              :value="formattedAmount"
+              label="Amount (sats)"
+              class="q-mb-md"
+              :error-message="amountError"
               data-testid="send-onchain-amount-input"
             />
 
@@ -132,6 +128,7 @@ defineOptions({
 import { computed, ref, watch } from 'vue'
 import { Loading } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
+import AmountDisplay from 'src/components/AmountDisplay.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useNumericInput } from 'src/composables/useNumericInput'
@@ -155,6 +152,7 @@ const notify = useAppNotify()
 const paymentTarget = ref('')
 const isProcessing = ref(false)
 const { value: amount, keypadButtons, setValue } = useNumericInput(0)
+const formattedAmount = computed(() => amount.value.toLocaleString())
 
 const selectedFederation = computed(() => federationStore.selectedFederation)
 const maxSendAmount = computed(() => getMaxOnchainSendAmount(walletStore.balance))

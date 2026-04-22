@@ -27,15 +27,11 @@ meta:
             <div class="amount-entry-container q-pa-lg task-card">
               <div class="section-title q-mb-md text-center">Enter amount</div>
 
-              <q-input
-                filled
-                v-model.number="amount"
-                label="Amount (Sats)"
-                type="number"
-                class="no-spinner custom-input q-mb-lg"
-                readonly
-                :error="amountError != null"
-                :error-message="amountError ?? undefined"
+              <AmountDisplay
+                :value="formattedAmount"
+                label="Amount (sats)"
+                class="q-mb-lg"
+                :error-message="amountError"
                 data-testid="send-ecash-amount-input"
               />
 
@@ -129,6 +125,7 @@ import { computed, ref, watch } from 'vue'
 import { Loading } from 'quasar'
 import { useShare } from '@vueuse/core'
 import { useRouter } from 'vue-router'
+import AmountDisplay from 'src/components/AmountDisplay.vue'
 import AnimatedEcashQr from 'src/components/AnimatedEcashQr.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
@@ -144,6 +141,7 @@ const { share, isSupported } = useShare()
 const notify = useAppNotify()
 
 const { value: amount, keypadButtons, clear } = useNumericInput(0)
+const formattedAmount = computed(() => amount.value.toLocaleString())
 const exportedNotes = ref('')
 const exportedAmount = ref(0)
 const isProcessing = ref(false)
