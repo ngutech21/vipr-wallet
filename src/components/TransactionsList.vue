@@ -291,7 +291,7 @@ defineExpose({
 }
 
 .transactions-list--home .transactions-card {
-  max-width: 640px;
+  max-width: 700px;
   margin: 0 auto;
 }
 
@@ -340,7 +340,7 @@ defineExpose({
 }
 
 .transactions-empty-home {
-  max-width: 640px;
+  max-width: 700px;
   margin: 0 auto;
   padding: 4px 8px 0;
   text-align: center;
