@@ -29,13 +29,6 @@ meta:
         </div>
         <div class="success-subtitle q-mt-sm">The funds are now available in your wallet.</div>
 
-        <q-card flat class="success-card q-mt-xl">
-          <q-card-section class="summary-row">
-            <span class="summary-label">Amount</span>
-            <span class="summary-value">{{ formatNumber(amount) }} sats</span>
-          </q-card-section>
-        </q-card>
-
         <q-btn
           color="primary"
           class="success-action-btn q-mt-xl"

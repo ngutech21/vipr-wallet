@@ -3,6 +3,7 @@ import { IconSet } from 'quasar'
 import {
   matAccountBalance,
   matAccountBalanceWallet,
+  matAccountCircle,
   matAdd,
   matAddCircle,
   matArrowBack,
@@ -57,6 +58,7 @@ import {
 const iconMap: Record<string, string> = {
   account_balance: matAccountBalance,
   account_balance_wallet: matAccountBalanceWallet,
+  account_circle: matAccountCircle,
   add: matAdd,
   add_circle: matAddCircle,
   arrow_back: matArrowBack,
