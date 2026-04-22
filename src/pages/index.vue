@@ -14,7 +14,7 @@
       />
     </q-dialog>
 
-    <q-dialog v-model="showDiscover" position="bottom">
+    <q-dialog v-model="showDiscover" position="bottom" @hide="onDiscoverHide">
       <DiscoverFederations
         v-if="showDiscover"
         :visible="showDiscover"
@@ -178,12 +178,30 @@ const showAdd = ref(false)
 const selectedInviteCode = ref<string | null>(null)
 const selectedPreviewFederation = ref<Federation | null>(null)
 const addFederationBackTarget = ref<'invite' | 'discover'>('invite')
+const pendingDiscoverySelection = ref<DiscoverySelectionPayload | null>(null)
 
 function openAddFederationPreview(payload: DiscoverySelectionPayload) {
+  pendingDiscoverySelection.value = payload
+  if (showDiscover.value) {
+    showDiscover.value = false
+    return
+  }
+  applyDiscoverySelection(payload)
+}
+
+function onDiscoverHide() {
+  if (pendingDiscoverySelection.value == null) {
+    return
+  }
+
+  applyDiscoverySelection(pendingDiscoverySelection.value)
+}
+
+function applyDiscoverySelection(payload: DiscoverySelectionPayload) {
   selectedInviteCode.value = payload.inviteCode
   selectedPreviewFederation.value = payload.prefetchedFederation ?? null
   addFederationBackTarget.value = 'discover'
-  showDiscover.value = false
+  pendingDiscoverySelection.value = null
   showAdd.value = true
 }
 
@@ -192,6 +210,7 @@ function closeAddFederation() {
   selectedInviteCode.value = null
   selectedPreviewFederation.value = null
   addFederationBackTarget.value = 'invite'
+  pendingDiscoverySelection.value = null
 }
 
 function returnToDiscovery() {
@@ -199,6 +218,7 @@ function returnToDiscovery() {
   selectedInviteCode.value = null
   selectedPreviewFederation.value = null
   addFederationBackTarget.value = 'invite'
+  pendingDiscoverySelection.value = null
   showDiscover.value = true
 }
 </script>

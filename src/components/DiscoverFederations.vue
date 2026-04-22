@@ -41,26 +41,9 @@
             >
               Recommended by {{ formatRecommendationCount(federation.recommendationCount) }}
             </q-item-label>
-            <q-item-label
-              v-if="federationMetaLine(federation)"
-              caption
-              :class="federationMetaClass(federation)"
-            >
-              {{ federationMetaLine(federation) }}
-            </q-item-label>
           </q-item-section>
           <q-item-section side>
-            <q-spinner v-if="federation.previewStatus === 'loading'" color="primary" size="18px" />
-            <q-icon
-              v-else-if="
-                federation.previewStatus === 'failed' || federation.previewStatus === 'timed_out'
-              "
-              name="warning"
-              color="warning"
-              size="18px"
-            />
             <q-btn
-              v-else
               flat
               round
               :icon="isAdded(federation) ? 'check_circle' : 'visibility'"
@@ -131,17 +114,17 @@ import { useNostrStore } from 'src/stores/nostr'
 import { useFederationStore } from 'src/stores/federation'
 import ModalCard from 'src/components/ModalCard.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
-import type { DiscoverySelectionPayload, Federation } from 'src/types/federation'
+import type { DiscoverySelectionPayload } from 'src/types/federation'
 import { getErrorMessage } from 'src/utils/error'
 import { logger } from 'src/services/logger'
 
-type DiscoveryListItem = Federation & {
-  previewReady: boolean
+type DiscoveryListItem = {
+  title: string
+  federationId: string
+  inviteCode: string
   recommendationCount: number
-  previewStatus: 'loading' | 'failed' | 'timed_out' | 'ready'
   about?: string
   pictureUrl?: string
-  prefetchedFederation?: Federation
 }
 
 const nostr = useNostrStore()
@@ -150,47 +133,23 @@ const notify = useAppNotify()
 const isDiscovering = computed(() => nostr.isDiscoveringFederations)
 const visibleFederations = computed<DiscoveryListItem[]>(() => {
   return nostr.discoveryCandidates.slice(0, nostr.previewTargetCount).map((candidate) => {
-    const prefetchedFederation = nostr.getCachedPreviewForCandidate(candidate)
     const recommendationCount = Math.max(
       candidate.recommendationCount ?? 0,
       nostr.getRecommendationCountForFederationId(candidate.federationId),
     )
-    const previewStatus =
-      prefetchedFederation != null
-        ? 'ready'
-        : (nostr.getPreviewStatusForFederationId(candidate.federationId) ?? 'loading')
 
     return {
-      title:
-        prefetchedFederation?.title ??
-        candidate.displayName ??
-        `Federation ${truncateFederationId(candidate.federationId)}`,
+      title: candidate.displayName ?? `Federation ${truncateFederationId(candidate.federationId)}`,
       federationId: candidate.federationId,
       inviteCode: candidate.inviteCode,
-      modules: prefetchedFederation?.modules ?? [],
-      guardians: prefetchedFederation?.guardians ?? [],
-      metadata: prefetchedFederation?.metadata ?? {},
-      previewReady: prefetchedFederation != null,
       recommendationCount,
-      previewStatus,
-      ...(prefetchedFederation?.metaUrl != null ? { metaUrl: prefetchedFederation.metaUrl } : {}),
-      ...(prefetchedFederation?.network != null
-        ? { network: prefetchedFederation.network }
-        : candidate.network != null
-          ? { network: candidate.network }
-          : {}),
       ...(candidate.about != null ? { about: candidate.about } : {}),
-      ...(prefetchedFederation?.metadata?.federation_icon_url != null
-        ? { pictureUrl: prefetchedFederation.metadata.federation_icon_url }
-        : candidate.pictureUrl != null
-          ? { pictureUrl: candidate.pictureUrl }
-          : {}),
-      ...(prefetchedFederation != null ? { prefetchedFederation } : {}),
+      ...(candidate.pictureUrl != null ? { pictureUrl: candidate.pictureUrl } : {}),
     }
   })
 })
 const discoveryStatusText = computed(() => {
-  const loaded = nostr.discoveredFederations.length
+  const loaded = nostr.discoveryCandidates.length
   if (isDiscovering.value) {
     return `${loaded} loaded, live updates on`
   }
@@ -225,7 +184,7 @@ watch(
 )
 
 // Add function to check if federation is already added
-function isAdded(federation: Federation): boolean {
+function isAdded(federation: Pick<DiscoveryListItem, 'federationId'>): boolean {
   return federationStore.federations.some((f) => f.federationId === federation.federationId)
 }
 
@@ -268,57 +227,12 @@ function formatRecommendationCount(count: number): string {
   return `${count} ${suffix}`
 }
 
-function formatCountLabel(count: number, noun: string): string {
-  return count === 1 ? `1 ${noun}` : `${count} ${noun}s`
-}
-
 function federationSummary(federation: DiscoveryListItem): string | null {
   if (federation.about != null && federation.about.trim() !== '') {
     return federation.about
   }
 
-  if (federation.previewReady) {
-    const summaryParts = [
-      federation.guardians != null && federation.guardians.length > 0
-        ? formatCountLabel(federation.guardians.length, 'guardian')
-        : null,
-      federation.modules.length > 0 ? formatCountLabel(federation.modules.length, 'module') : null,
-    ].filter((part): part is string => part != null && part !== '')
-
-    if (summaryParts.length > 0) {
-      return summaryParts.join(' • ')
-    }
-  }
-
   return null
-}
-
-function federationMetaLine(federation: DiscoveryListItem): string | null {
-  if (federation.previewStatus === 'loading') {
-    return 'Loading federation details...'
-  }
-
-  if (federation.previewStatus === 'failed') {
-    return 'Federation details unavailable.'
-  }
-
-  if (federation.previewStatus === 'timed_out') {
-    return 'Federation details request timed out.'
-  }
-
-  return null
-}
-
-function federationMetaClass(federation: DiscoveryListItem): string {
-  if (federation.previewStatus === 'failed' || federation.previewStatus === 'timed_out') {
-    return 'federation-meta federation-meta--warning'
-  }
-
-  if (isAdded(federation)) {
-    return 'federation-meta federation-meta--muted'
-  }
-
-  return 'federation-meta'
 }
 
 function openFederationPreview(federation: DiscoveryListItem) {
@@ -333,17 +247,7 @@ function openFederationPreview(federation: DiscoveryListItem) {
   }
 
   emit('close')
-  emit(
-    'showAdd',
-    federation.prefetchedFederation != null
-      ? {
-          inviteCode: federation.inviteCode,
-          prefetchedFederation: federation.prefetchedFederation,
-        }
-      : {
-          inviteCode: federation.inviteCode,
-        },
-  )
+  emit('showAdd', { inviteCode: federation.inviteCode })
 }
 
 function truncateFederationId(federationId: string): string {
@@ -422,22 +326,9 @@ function truncateFederationId(federationId: string): string {
   line-height: 1.35;
 }
 
-.federation-meta {
-  color: rgba(255, 255, 255, 0.56);
-  margin-top: 4px;
-}
-
 .federation-recommendation {
   color: rgba(255, 255, 255, 0.72);
   margin-top: 4px;
-}
-
-.federation-meta--muted {
-  color: rgba(255, 255, 255, 0.44);
-}
-
-.federation-meta--warning {
-  color: rgba(255, 193, 7, 0.9);
 }
 
 .loading-container {

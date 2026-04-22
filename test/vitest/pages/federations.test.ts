@@ -155,6 +155,14 @@ describe('FederationsPage.vue', () => {
             props: {
               modelValue: { type: Boolean, required: false, default: false },
             },
+            emits: ['hide', 'update:modelValue'],
+            watch: {
+              modelValue(newValue: boolean, oldValue: boolean) {
+                if (oldValue === true && newValue === false) {
+                  this.$emit('hide')
+                }
+              },
+            },
             template: '<div v-if="modelValue"><slot /></div>',
           }),
           QPage: defineComponent({

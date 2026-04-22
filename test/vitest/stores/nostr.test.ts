@@ -192,7 +192,7 @@ describe('nostr store discovery queue', () => {
     expect(nostr.previewQueue).toEqual([])
   })
 
-  it('retries a candidate when a newer federation event arrives', async () => {
+  it('retries a candidate only after the queue is manually resumed for a newer federation event', async () => {
     const nostr = useNostrStore()
     nostr.isDiscoveringFederations = true
     nostr.previewTargetCount = 1
@@ -205,7 +205,7 @@ describe('nostr store discovery queue', () => {
     nostr.enqueueCandidatesForPreview()
     await nostr.processPreviewQueue()
 
-    await nostr.handleFederationEvent(
+    nostr.handleFederationEvent(
       createFederationEvent({
         federationId: 'fed-1',
         inviteCode: 'invite-1-updated',
@@ -213,10 +213,31 @@ describe('nostr store discovery queue', () => {
       }),
     )
 
+    expect(walletStoreMock.previewFederation).toHaveBeenCalledTimes(1)
+
+    nostr.enqueueCandidatesForPreview()
+    await nostr.processPreviewQueue()
+
     expect(walletStoreMock.previewFederation).toHaveBeenCalledTimes(2)
     expect(nostr.discoveredFederations).toHaveLength(1)
     expect(nostr.discoveredFederations[0]?.federationId).toBe('fed-1')
     expect(nostr.discoveredFederations[0]?.inviteCode).toBe('invite-1-updated')
+  })
+
+  it('does not start background previews when discovery starts', async () => {
+    const nostr = useNostrStore()
+    nostr.ndk = {
+      subscribe: vi.fn().mockReturnValue({
+        on: vi.fn(),
+        stop: vi.fn(),
+      }),
+    } as unknown as NonNullable<typeof nostr.ndk>
+
+    await nostr.discoverFederations()
+
+    expect(walletStoreMock.initClients).not.toHaveBeenCalled()
+    expect(walletStoreMock.previewFederation).not.toHaveBeenCalled()
+    expect(nostr.previewQueue).toEqual([])
   })
 
   it('uses cached previews without calling previewFederation again', async () => {
@@ -242,14 +263,14 @@ describe('nostr store discovery queue', () => {
     expect(nostr.getPreviewStatusForFederationId('fed-1')).toBe('ready')
   })
 
-  it('invalidates cached previews when a newer federation event arrives', async () => {
+  it('invalidates cached previews when a newer federation event arrives', () => {
     const nostr = useNostrStore()
     nostr.isDiscoveringFederations = true
     nostr.previewTargetCount = 1
     nostr.discoveryCandidates = [{ federationId: 'fed-1', inviteCode: 'invite-1', createdAt: 30 }]
     setCachedPreview(nostr, createFederation('fed-1', 'invite-1', 'Cached Federation'), 30)
 
-    await nostr.handleFederationEvent(
+    nostr.handleFederationEvent(
       createFederationEvent({
         federationId: 'fed-1',
         inviteCode: 'invite-1-updated',
@@ -402,14 +423,14 @@ describe('nostr store discovery queue', () => {
     await expect(waitPromise).resolves.toBe(false)
   })
 
-  it('prioritizes candidates with higher recommendation counts', async () => {
+  it('prioritizes candidates with higher recommendation counts', () => {
     const nostr = useNostrStore()
     nostr.discoveryCandidates = [
       { federationId: 'fed-older', inviteCode: 'invite-1', createdAt: 10 },
       { federationId: 'fed-newer', inviteCode: 'invite-2', createdAt: 20 },
     ]
 
-    await nostr.handleRecommendationEvent(
+    nostr.handleRecommendationEvent(
       createRecommendationEvent({
         pubkey: 'pubkey-a',
         createdAt: 100,
@@ -421,25 +442,25 @@ describe('nostr store discovery queue', () => {
     expect(nostr.discoveryCandidates[0]?.federationId).toBe('fed-older')
   })
 
-  it('counts unique recommenders without double-counting the same pubkey', async () => {
+  it('counts unique recommenders without double-counting the same pubkey', () => {
     const nostr = useNostrStore()
     nostr.discoveryCandidates = [{ federationId: 'fed-1', inviteCode: 'invite-1', createdAt: 10 }]
 
-    await nostr.handleRecommendationEvent(
+    nostr.handleRecommendationEvent(
       createRecommendationEvent({
         pubkey: 'pubkey-a',
         createdAt: 100,
         federationIds: ['fed-1'],
       }),
     )
-    await nostr.handleRecommendationEvent(
+    nostr.handleRecommendationEvent(
       createRecommendationEvent({
         pubkey: 'pubkey-a',
         createdAt: 101,
         federationIds: ['fed-1'],
       }),
     )
-    await nostr.handleRecommendationEvent(
+    nostr.handleRecommendationEvent(
       createRecommendationEvent({
         pubkey: 'pubkey-b',
         createdAt: 102,
@@ -450,11 +471,11 @@ describe('nostr store discovery queue', () => {
     expect(nostr.recommendationCountsByFederation['fed-1']).toBe(2)
   })
 
-  it('ignores recommendation events when federation pointers are missing', async () => {
+  it('ignores recommendation events when federation pointers are missing', () => {
     const nostr = useNostrStore()
     nostr.discoveryCandidates = [{ federationId: 'fed-2', inviteCode: 'invite-2', createdAt: 10 }]
 
-    await nostr.handleRecommendationEvent(
+    nostr.handleRecommendationEvent(
       createRecommendationEvent({
         pubkey: 'pubkey-a',
         createdAt: 100,
@@ -466,11 +487,11 @@ describe('nostr store discovery queue', () => {
     expect(nostr.discoveryCandidates[0]?.recommendationCount ?? 0).toBe(0)
   })
 
-  it('maps recommendation pointers to federation ids', async () => {
+  it('maps recommendation pointers to federation ids', () => {
     const nostr = useNostrStore()
     nostr.discoveryCandidates = [{ federationId: 'fed-3', inviteCode: 'invite-3', createdAt: 10 }]
 
-    await nostr.handleRecommendationEvent(
+    nostr.handleRecommendationEvent(
       createRecommendationEvent({
         pubkey: 'pubkey-a',
         createdAt: 100,
@@ -498,13 +519,13 @@ describe('nostr store discovery queue', () => {
     expect(nostr.discoveryCandidates[0]?.recommendationCount).toBe(7)
   })
 
-  it('keeps higher recommendation count when federation event updates candidate metadata', async () => {
+  it('keeps higher recommendation count when federation event updates candidate metadata', () => {
     const nostr = useNostrStore()
     nostr.discoveryCandidates = [
       { federationId: 'fed-1', inviteCode: 'invite-1', createdAt: 10, recommendationCount: 5 },
     ]
 
-    await nostr.handleFederationEvent(
+    nostr.handleFederationEvent(
       createFederationEvent({
         federationId: 'fed-1',
         inviteCode: 'invite-1-updated',
@@ -577,7 +598,7 @@ describe('nostr store discovery queue', () => {
     )
   })
 
-  it('queues a newly top-ranked candidate even when enough cached previews already exist', async () => {
+  it('only queues a newly top-ranked candidate after enqueue is requested explicitly', () => {
     const nostr = useNostrStore()
     nostr.isDiscoveringFederations = true
     nostr.isJoinInProgress = true
@@ -594,35 +615,35 @@ describe('nostr store discovery queue', () => {
     nostr.enqueueCandidatesForPreview()
     expect(nostr.previewQueue).not.toContain('fed-5')
 
-    await nostr.handleRecommendationEvent(
+    nostr.handleRecommendationEvent(
       createRecommendationEvent({
         pubkey: 'pubkey-a',
         createdAt: 100,
         federationIds: ['fed-5'],
       }),
     )
-    await nostr.handleRecommendationEvent(
+    nostr.handleRecommendationEvent(
       createRecommendationEvent({
         pubkey: 'pubkey-b',
         createdAt: 101,
         federationIds: ['fed-5'],
       }),
     )
-    await nostr.handleRecommendationEvent(
+    nostr.handleRecommendationEvent(
       createRecommendationEvent({
         pubkey: 'pubkey-c',
         createdAt: 102,
         federationIds: ['fed-5'],
       }),
     )
-    await nostr.handleRecommendationEvent(
+    nostr.handleRecommendationEvent(
       createRecommendationEvent({
         pubkey: 'pubkey-d',
         createdAt: 103,
         federationIds: ['fed-5'],
       }),
     )
-    await nostr.handleRecommendationEvent(
+    nostr.handleRecommendationEvent(
       createRecommendationEvent({
         pubkey: 'pubkey-e',
         createdAt: 104,
@@ -631,6 +652,10 @@ describe('nostr store discovery queue', () => {
     )
 
     expect(nostr.discoveryCandidates[0]?.federationId).toBe('fed-5')
+    expect(nostr.previewQueue).not.toContain('fed-5')
+
+    nostr.enqueueCandidatesForPreview()
+
     expect(nostr.previewQueue).toContain('fed-5')
   })
 
