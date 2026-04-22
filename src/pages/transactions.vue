@@ -7,12 +7,9 @@
     <q-page class="transactions-page dark-gradient" data-testid="transactions-page">
       <div
         v-touch-swipe.right.mouse="goBack"
-        class="page-swipe-edge"
-        aria-hidden="true"
-        data-testid="transactions-swipe-edge"
-      ></div>
-
-      <div class="transactions-topbar">
+        class="transactions-topbar"
+        data-testid="transactions-swipe-zone"
+      >
         <q-btn flat round icon="arrow_back" @click="goBack" data-testid="transactions-back-btn" />
       </div>
 
@@ -37,20 +34,7 @@ async function goBack() {
 </script>
 
 <style scoped>
-.transactions-page {
-  position: relative;
-}
-
-.page-swipe-edge {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 28px;
-  z-index: 2;
-}
-
 .transactions-topbar {
-  position: relative;
-  z-index: 3;
   display: flex;
   align-items: center;
   min-height: 44px;
