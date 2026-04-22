@@ -131,8 +131,8 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       await page.getByTestId('receive-keypad-btn-0').click()
 
       // Verify amount is 1000
-      const amountInput = page.getByTestId('amount-input')
-      await expect(amountInput).toHaveValue('1000')
+      const amountDisplay = page.getByTestId('amount-input')
+      await expect(amountDisplay).toContainText('1000')
 
       // Click Create Invoice button
       const createInvoiceButton = page.getByTestId('receive-create-invoice-btn')
