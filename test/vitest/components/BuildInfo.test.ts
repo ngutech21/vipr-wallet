@@ -13,6 +13,7 @@ describe('BuildInfo.vue', () => {
   const createWrapper = (envOverrides: Record<string, unknown> = {}) => {
     // Override import.meta.env values
     Object.assign(import.meta.env, {
+      VITE_APP_VERSION: '0.0.1',
       VITE_COMMIT_HASH: 'abc123def',
       VITE_BUILD_TIME: '2024-01-15T10:30:00Z',
       DEV: false,
@@ -39,13 +40,21 @@ describe('BuildInfo.vue', () => {
   })
 
   describe('Rendering Build Information', () => {
+    it('should render release version from environment variable', () => {
+      wrapper = createWrapper({
+        VITE_APP_VERSION: '1.2.3',
+      })
+
+      expect(wrapper.text()).toContain('Release Version: 1.2.3')
+    })
+
     it('should render commit hash from environment variable', () => {
       wrapper = createWrapper({
         VITE_COMMIT_HASH: 'commit-hash-123',
         VITE_BUILD_TIME: '2024-01-15T10:30:00Z',
       })
 
-      expect(wrapper.text()).toContain('Build: commit-hash-123')
+      expect(wrapper.text()).toContain('Commit SHA: commit-hash-123')
     })
 
     it('should render build time from environment variable', () => {
@@ -64,7 +73,8 @@ describe('BuildInfo.vue', () => {
       })
 
       const text = wrapper.text()
-      expect(text).toContain('Build: xyz789')
+      expect(text).toContain('Release Version: 0.0.1')
+      expect(text).toContain('Commit SHA: xyz789')
       expect(text).toContain('2024-03-10T08:00:00Z')
     })
 
@@ -128,7 +138,8 @@ describe('BuildInfo.vue', () => {
       })
 
       const text = wrapper.text()
-      expect(text).toContain('Build: abc123')
+      expect(text).toContain('Release Version: 0.0.1')
+      expect(text).toContain('Commit SHA: abc123')
       expect(text).toContain('2024-01-15')
       expect(text).not.toContain('Debug:')
     })
@@ -137,45 +148,51 @@ describe('BuildInfo.vue', () => {
       wrapper = createWrapper({ DEV: false })
 
       const divs = wrapper.findAll('div')
-      // Should only have the main container div, no debug div
-      expect(divs.length).toBe(1)
+      // Should have the main container plus the metadata rows, but no debug div
+      expect(divs.length).toBe(4)
     })
   })
 
   describe('Missing Environment Variables', () => {
     it('should handle missing VITE_COMMIT_HASH gracefully', () => {
       wrapper = createWrapper({
+        VITE_APP_VERSION: undefined,
         VITE_COMMIT_HASH: undefined,
         VITE_BUILD_TIME: '2024-01-01',
       })
 
-      expect(wrapper.text()).toContain('Build:')
+      expect(wrapper.text()).toContain('Release Version:')
+      expect(wrapper.text()).toContain('Commit SHA:')
       expect(wrapper.text()).toContain('undefined')
     })
 
     it('should handle missing VITE_BUILD_TIME gracefully', () => {
       wrapper = createWrapper({
+        VITE_APP_VERSION: '0.0.1',
         VITE_COMMIT_HASH: 'abc123',
         VITE_BUILD_TIME: undefined,
       })
 
-      expect(wrapper.text()).toContain('Build: abc123')
+      expect(wrapper.text()).toContain('Commit SHA: abc123')
       expect(wrapper.text()).toContain('undefined')
     })
 
     it('should handle missing both environment variables', () => {
       wrapper = createWrapper({
+        VITE_APP_VERSION: undefined,
         VITE_COMMIT_HASH: undefined,
         VITE_BUILD_TIME: undefined,
       })
 
       const text = wrapper.text()
-      expect(text).toContain('Build:')
+      expect(text).toContain('Release Version:')
+      expect(text).toContain('Commit SHA:')
       expect(text).toContain('undefined')
     })
 
     it('should render component even with empty env vars', () => {
       wrapper = createWrapper({
+        VITE_APP_VERSION: '',
         VITE_COMMIT_HASH: '',
         VITE_BUILD_TIME: '',
       })
@@ -188,6 +205,7 @@ describe('BuildInfo.vue', () => {
   describe('Environment Debug Computed Property', () => {
     it('should format environment as JSON with proper indentation', () => {
       wrapper = createWrapper({
+        VITE_APP_VERSION: '0.0.1',
         DEV: true,
         VITE_COMMIT_HASH: 'test',
         VITE_BUILD_TIME: 'test-time',
@@ -204,6 +222,7 @@ describe('BuildInfo.vue', () => {
     it('should handle very long commit hashes', () => {
       const longHash = 'a'.repeat(100)
       wrapper = createWrapper({
+        VITE_APP_VERSION: '0.0.1',
         VITE_COMMIT_HASH: longHash,
         VITE_BUILD_TIME: '2024-01-01',
       })
@@ -213,6 +232,7 @@ describe('BuildInfo.vue', () => {
 
     it('should handle special characters in build time', () => {
       wrapper = createWrapper({
+        VITE_APP_VERSION: '0.0.1',
         VITE_COMMIT_HASH: 'abc123',
         VITE_BUILD_TIME: '2024-01-15T10:30:00.000Z',
       })
@@ -222,11 +242,13 @@ describe('BuildInfo.vue', () => {
 
     it('should handle numeric environment variables', () => {
       wrapper = createWrapper({
+        VITE_APP_VERSION: 123,
         VITE_COMMIT_HASH: 123456,
         VITE_BUILD_TIME: 789,
       })
 
-      expect(wrapper.text()).toContain('Build: 123456')
+      expect(wrapper.text()).toContain('Release Version: 123')
+      expect(wrapper.text()).toContain('Commit SHA: 123456')
       expect(wrapper.text()).toContain('789')
     })
   })

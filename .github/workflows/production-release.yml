@@ -1,56 +1,31 @@
-name: Build docker image and push to DockerHub & DigitalOcean Dev
+name: Release docker image and deploy to Production
 
 on:
-  push:
-    branches:
-      - master
-  workflow_dispatch: {}
+  release:
+    types:
+      - published
 
 permissions: read-all
 
 concurrency:
-  group: deploy-development
+  group: deploy-production
   cancel-in-progress: false
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      deploy: ${{ steps.filter.outputs.deploy }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Detect deploy-relevant changes
-        id: filter
-        uses: dorny/paths-filter@v4
-        with:
-          filters: |
-            deploy:
-              - 'src/**'
-              - 'src-pwa/**'
-              - 'public/**'
-              - 'Dockerfile'
-              - 'docker/**'
-              - '.dockerignore'
-              - 'package.json'
-              - 'pnpm-lock.yaml'
-              - 'quasar.config.ts'
-              - 'tsconfig*.json'
-              - 'vite.config.*'
-
   build-and-push:
-    needs: changes
-    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.deploy == 'true'
+    if: ${{ !github.event.release.prerelease }}
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
-      - name: Checkout code
+      - name: Checkout release tag
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -73,6 +48,13 @@ jobs:
         id: version
         run: echo "version=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
 
+      - name: Verify release tag matches package version
+        run: |
+          if [ "v${{ steps.version.outputs.version }}" != "${{ github.event.release.tag_name }}" ]; then
+            echo "Release tag does not match package.json version"
+            exit 1
+          fi
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
         with:
@@ -87,11 +69,12 @@ jobs:
             BUILDTIME=${{ steps.date.outputs.date }}
             APP_VERSION=${{ steps.version.outputs.version }}
           tags: |
-            docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:${{ steps.sha.outputs.sha }}-alpine
-            docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:dev-latest
+            docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:${{ github.event.release.tag_name }}
+            docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:latest
 
       - name: Deploy to DigitalOcean
+        if: ${{ secrets.DO_PRODUCTION_APP_NAME != '' }}
         uses: digitalocean/app_action/deploy@v2
         with:
-          app_name: vipr-wallet
+          app_name: ${{ secrets.DO_PRODUCTION_APP_NAME }}
           token: ${{ secrets.DO_TOKEN }}
