@@ -5,10 +5,6 @@ ARG COMMITHASH=development
 ARG BUILDTIME
 ARG APP_VERSION
 
-ENV COMMITHASH=${COMMITHASH}
-ENV BUILDTIME=${BUILDTIME}
-ENV APP_VERSION=${APP_VERSION}
-
 RUN corepack enable \
     && corepack prepare pnpm@10 --activate \
     && apt-get update \
@@ -19,6 +15,9 @@ WORKDIR /app
 COPY . .
 
 RUN pnpm install --frozen-lockfile --strict-peer-dependencies
+ENV COMMITHASH=${COMMITHASH}
+ENV BUILDTIME=${BUILDTIME}
+ENV APP_VERSION=${APP_VERSION}
 RUN pnpm build
 
 
