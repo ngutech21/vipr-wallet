@@ -297,12 +297,10 @@ async function copyNotes() {
     max-width: none;
     min-width: 0;
     text-align: right;
-    white-space: nowrap;
-    word-break: normal;
-    overflow-x: auto;
-    overflow-y: hidden;
+    white-space: normal;
+    word-break: break-all;
+    overflow-wrap: anywhere;
     font-family: monospace;
-    scrollbar-width: thin;
   }
 }
 
