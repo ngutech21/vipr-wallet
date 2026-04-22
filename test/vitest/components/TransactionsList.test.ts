@@ -164,6 +164,8 @@ describe('TransactionsList.vue', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockGetTransactionsPage.mockReset()
+    mockRouterPush.mockReset()
     federationStore.selectedFederationId = 'fed-1'
     mockRouterPush.mockResolvedValue(undefined)
   })
@@ -184,7 +186,7 @@ describe('TransactionsList.vue', () => {
     wrapper = createWrapper('home')
     await flushPromises()
 
-    expect(mockGetTransactionsPage).toHaveBeenCalledWith(3)
+    expect(mockGetTransactionsPage).toHaveBeenCalledWith(3, undefined, { visibleOnly: true })
     expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(3)
     expect(wrapper.get('[data-testid="transactions-show-full-history-btn"]').text()).toContain(
       'View all',
@@ -205,13 +207,14 @@ describe('TransactionsList.vue', () => {
     expect(wrapper.find('[data-testid="transactions-show-full-history-btn"]').exists()).toBe(false)
   })
 
-  it('keeps the empty state on home when no transactions exist', async () => {
+  it('shows a lightweight empty state on home when no transactions exist', async () => {
     mockGetTransactionsPage.mockResolvedValue(createPageResult([]))
 
     wrapper = createWrapper('home')
     await flushPromises()
 
-    expect(wrapper.get('[data-testid="transactions-empty-state"]').text()).toContain(
+    expect(wrapper.find('[data-testid="transactions-card"]').exists()).toBe(false)
+    expect(wrapper.get('[data-testid="transactions-empty-home"]').text()).toContain(
       'No transactions yet',
     )
     expect(wrapper.find('[data-testid="transactions-show-full-history-btn"]').exists()).toBe(false)
@@ -253,14 +256,23 @@ describe('TransactionsList.vue', () => {
     wrapper = createWrapper('history')
     await flushPromises()
 
-    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(1, 20)
+    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(1, 20, undefined, {
+      visibleOnly: true,
+    })
     expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(2)
     expect(wrapper.get('[data-testid="transactions-show-more-btn"]').text()).toContain('Show more')
 
     await wrapper.get('[data-testid="transactions-show-more-btn"]').trigger('click')
     await flushPromises()
 
-    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(2, 20, createOperationKey('mint-op-1'))
+    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(
+      2,
+      20,
+      createOperationKey('mint-op-1'),
+      {
+        visibleOnly: true,
+      },
+    )
     expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(3)
     expect(wrapper.find('[data-testid="transactions-show-more-btn"]').exists()).toBe(false)
   })
@@ -305,7 +317,9 @@ describe('TransactionsList.vue', () => {
     federationStore.selectedFederationId = 'fed-2'
     await flushPromises()
 
-    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(2, 20)
+    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(2, 20, undefined, {
+      visibleOnly: true,
+    })
     expect(wrapper.text()).toContain('wallet-op-fed-2')
     expect(wrapper.text()).not.toContain('ln-op-fed-1')
   })

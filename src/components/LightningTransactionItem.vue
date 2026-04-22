@@ -1,6 +1,5 @@
 <template>
   <q-item
-    v-if="hasValidOutcome"
     clickable
     v-ripple
     class="transaction-item"
@@ -66,9 +65,6 @@ const formattedTimestamp = computed(() => {
   return date.formatDate(props.transaction.timestamp, 'MMM D, YYYY • h:mm A')
 })
 
-const hasValidOutcome = computed(() => {
-  return Boolean(props.transaction.outcome?.trim())
-})
 const amountInSats = computed(() => {
   try {
     const invoice = lightningStore.decodeInvoice(props.transaction.invoice)

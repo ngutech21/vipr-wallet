@@ -62,6 +62,10 @@ export type TransactionsPageResult = {
   hasMore: boolean
 }
 
+export type TransactionsPageOptions = {
+  visibleOnly?: boolean
+}
+
 type TransactionsBatchEntry = {
   transaction: Transactions
   operationKey: OperationKey | null
@@ -428,6 +432,7 @@ export const useWalletStore = defineStore('wallet', {
     async getTransactionsPage(
       pageSize = 10,
       lastSeen?: OperationKey,
+      options: TransactionsPageOptions = {},
     ): Promise<TransactionsPageResult> {
       if (this.wallet == null) {
         return {
@@ -449,6 +454,7 @@ export const useWalletStore = defineStore('wallet', {
         const collected: TransactionsBatchEntry[] = []
         const visibleLimit = pageSize + 1
         let cursor = lastSeen
+        const visibleOnly = options.visibleOnly === true
 
         while (collected.length < visibleLimit) {
           const remaining = visibleLimit - collected.length
@@ -456,7 +462,11 @@ export const useWalletStore = defineStore('wallet', {
           // eslint-disable-next-line no-await-in-loop
           const batch = await fetchTransactionsBatch(this.wallet, remaining, cursor)
 
-          collected.push(...batch.entries)
+          collected.push(
+            ...(visibleOnly
+              ? batch.entries.filter((entry) => isVisibleTransactionInList(entry.transaction))
+              : batch.entries),
+          )
 
           if (batch.nextCursor == null || !batch.hasMore) {
             const visibleEntries = collected.slice(0, pageSize)
@@ -747,6 +757,10 @@ function normalizeWalletTransaction(
     amountMsats: normalizedAmountMsats,
     fee: feeEstimateMsats ?? transaction.fee,
   }
+}
+
+function isVisibleTransactionInList(transaction: Transactions): boolean {
+  return transaction.kind === 'ln' || transaction.kind === 'mint' || transaction.kind === 'wallet'
 }
 
 function estimateWalletFeeMsats(variant: WalletVariant | undefined): number | undefined {

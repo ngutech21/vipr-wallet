@@ -3,7 +3,7 @@
     :class="['transactions-list', { 'transactions-list--home': props.mode === 'home' }]"
     class="q-px-md q-pb-md"
   >
-    <div class="transactions-card">
+    <div v-if="showTransactionsCard" class="transactions-card" data-testid="transactions-card">
       <div class="transactions-header">
         <div>
           <div class="transactions-title">
@@ -80,6 +80,15 @@
         </q-btn>
       </div>
     </div>
+
+    <div
+      v-else-if="showHomeEmptyState"
+      class="transactions-empty-home"
+      data-testid="transactions-empty-home"
+    >
+      <div class="transactions-empty-home__title">No transactions yet</div>
+      <div class="transactions-empty-home__body">Your latest activity will show up here.</div>
+    </div>
   </div>
 </template>
 
@@ -124,6 +133,12 @@ const emptyTransactionsTestId = 'transactions-empty-state'
 let activeLoadRequestId = 0
 
 const pageSize = computed(() => (props.mode === 'history' ? HISTORY_PAGE_SIZE : HOME_PAGE_SIZE))
+const showHomeEmptyState = computed(() => {
+  return props.mode === 'home' && !isInitialLoading.value && transactions.value.length === 0
+})
+const showTransactionsCard = computed(() => {
+  return props.mode === 'history' || transactions.value.length > 0 || isInitialLoading.value
+})
 const showFullHistoryAction = computed(() => {
   return props.mode === 'home' && hasMore.value
 })
@@ -148,7 +163,9 @@ async function loadInitialTransactions() {
     isInitialLoading.value = true
     isLoadingMore.value = false
 
-    const page = await walletStore.getTransactionsPage(pageSize.value)
+    const page = await walletStore.getTransactionsPage(pageSize.value, undefined, {
+      visibleOnly: true,
+    })
     if (requestId !== activeLoadRequestId) {
       return
     }
@@ -183,7 +200,9 @@ async function loadMoreTransactions() {
   try {
     isLoadingMore.value = true
 
-    const page = await walletStore.getTransactionsPage(pageSize.value, nextCursor.value)
+    const page = await walletStore.getTransactionsPage(pageSize.value, nextCursor.value, {
+      visibleOnly: true,
+    })
     if (requestId !== activeLoadRequestId) {
       return
     }
@@ -315,6 +334,24 @@ defineExpose({
 }
 
 .transactions-empty-state__body {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.9rem;
+}
+
+.transactions-empty-home {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 4px 8px 0;
+  text-align: center;
+}
+
+.transactions-empty-home__title {
+  color: white;
+  font-weight: 600;
+}
+
+.transactions-empty-home__body {
   margin-top: 6px;
   color: rgba(255, 255, 255, 0.52);
   font-size: 0.9rem;
