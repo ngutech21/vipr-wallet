@@ -9,108 +9,111 @@ meta:
     enter-active-class="animated slideInLeft"
     leave-active-class="animated slideOutLeft"
   >
-    <q-page class="column dark-gradient" data-testid="send-onchain-page">
-      <q-toolbar class="header-section">
-        <q-btn flat round icon="arrow_back" @click="goBack" data-testid="send-onchain-back-btn" />
-        <q-toolbar-title class="text-center no-wrap">Send Onchain</q-toolbar-title>
-        <div class="q-ml-md" style="width: 40px"></div>
-      </q-toolbar>
+    <q-page class="column dark-gradient send-onchain-page" data-testid="send-onchain-page">
+      <div class="send-onchain-topbar">
+        <q-btn
+          flat
+          round
+          icon="arrow_back"
+          @click="goBack"
+          class="send-onchain-topbar__back"
+          data-testid="send-onchain-back-btn"
+        />
+      </div>
 
-      <div class="flex flex-center full-width">
-        <div class="amount-entry-container q-pa-lg glass-effect">
-          <div class="text-h6 q-mb-md text-center">Bitcoin destination</div>
+      <div class="send-onchain-content">
+        <div class="flex flex-center full-width">
+          <div class="amount-entry-container q-pa-lg task-card">
+            <div class="section-title q-mb-md text-center">Bitcoin destination</div>
 
-          <q-input
-            v-model="paymentTarget"
-            filled
-            autogrow
-            dense
-            dark
-            type="textarea"
-            label="Bitcoin address or bitcoin: URI"
-            class="custom-input q-mb-md"
-            :error="addressError != null"
-            :error-message="addressError ?? undefined"
-            data-testid="send-onchain-target-input"
-          >
-            <template #after>
-              <q-btn
-                round
-                dense
-                flat
-                icon="qr_code_scanner"
-                @click="openScanner"
-                data-testid="send-onchain-open-scanner-btn"
-              />
-            </template>
-          </q-input>
+            <q-input
+              v-model="paymentTarget"
+              filled
+              autogrow
+              dense
+              dark
+              type="textarea"
+              label="Bitcoin address or bitcoin: URI"
+              class="custom-input q-mb-md"
+              :error="addressError != null"
+              :error-message="addressError ?? undefined"
+              data-testid="send-onchain-target-input"
+            >
+              <template #after>
+                <q-btn
+                  round
+                  dense
+                  flat
+                  icon="qr_code_scanner"
+                  @click="openScanner"
+                  data-testid="send-onchain-open-scanner-btn"
+                />
+              </template>
+            </q-input>
 
-          <q-card
-            v-if="bitcoinUriDetails.length > 0"
-            flat
-            bordered
-            class="glass-effect q-mb-md"
-            data-testid="send-onchain-uri-details"
-          >
-            <q-card-section class="q-py-sm">
-              <div
-                v-for="detail in bitcoinUriDetails"
-                :key="detail"
-                class="text-caption text-grey-5 q-mb-xs"
-              >
-                {{ detail }}
-              </div>
-            </q-card-section>
-          </q-card>
+            <q-card
+              v-if="bitcoinUriDetails.length > 0"
+              flat
+              class="task-card task-card--secondary q-mb-md"
+              data-testid="send-onchain-uri-details"
+            >
+              <q-card-section class="q-py-sm">
+                <div
+                  v-for="detail in bitcoinUriDetails"
+                  :key="detail"
+                  class="text-caption text-grey-5 q-mb-xs"
+                >
+                  {{ detail }}
+                </div>
+              </q-card-section>
+            </q-card>
 
-          <q-input
-            filled
-            v-model.number="amount"
-            label="Amount (Sats)"
-            type="number"
-            readonly
-            class="no-spinner q-mb-md"
-            :error="amountError != null"
-            :error-message="amountError ?? undefined"
-            data-testid="send-onchain-amount-input"
-          />
+            <AmountDisplay
+              :value="formattedAmount"
+              label="Amount (sats)"
+              class="q-mb-md"
+              :error-message="amountError"
+              data-testid="send-onchain-amount-input"
+            />
 
-          <NumericKeypad class="q-mb-md" :buttons="keypadButtons" />
+            <NumericKeypad class="q-mb-md" :buttons="keypadButtons" />
 
-          <div
-            v-if="uriAmountHint"
-            class="text-caption text-grey q-mb-md"
-            data-testid="send-onchain-uri-amount-hint"
-          >
-            {{ uriAmountHint }}
+            <div
+              v-if="uriAmountHint"
+              class="text-caption text-grey q-mb-md"
+              data-testid="send-onchain-uri-amount-hint"
+            >
+              {{ uriAmountHint }}
+            </div>
+
+            <div class="text-caption text-grey q-mb-lg" data-testid="send-onchain-max-amount">
+              <template v-if="selectedFederation != null">
+                Maximum spendable after fee reserve: {{ maxSendAmount.toLocaleString() }} sats
+              </template>
+              <template v-else> Select a federation before sending Bitcoin on-chain </template>
+            </div>
+
+            <div class="text-caption text-grey q-mb-lg">
+              A {{ ONCHAIN_FEE_RESERVE_SATS.toLocaleString() }} sat fee reserve is kept for network
+              fees. Minimum on-chain send: {{ MIN_ONCHAIN_SEND_SATS.toLocaleString() }}
+              sats.
+            </div>
+
+            <q-btn
+              label="Send Bitcoin"
+              color="primary"
+              class="full-width send-onchain-action-btn"
+              :loading="isProcessing"
+              :disable="!canSendOnchain"
+              @click="submitOnchainPayment"
+              data-testid="send-onchain-submit-btn"
+              :data-busy="isProcessing ? 'true' : 'false'"
+            >
+              <template #loading>
+                <q-spinner-dots color="white" />
+              </template>
+            </q-btn>
           </div>
-
-          <div class="text-caption text-grey q-mb-lg" data-testid="send-onchain-max-amount">
-            <template v-if="selectedFederation != null">
-              Maximum spendable after fee reserve: {{ maxSendAmount.toLocaleString() }} sats
-            </template>
-            <template v-else> Select a federation before sending Bitcoin onchain </template>
-          </div>
-
-          <div class="text-caption text-grey q-mb-lg">
-            A {{ ONCHAIN_FEE_RESERVE_SATS.toLocaleString() }} sat fee reserve is kept for network
-            fees. Minimum onchain send: {{ MIN_ONCHAIN_SEND_SATS.toLocaleString() }} sats.
-          </div>
-
-          <q-btn
-            label="Send Bitcoin"
-            color="primary"
-            class="full-width"
-            :loading="isProcessing"
-            :disable="!canSendOnchain"
-            @click="submitOnchainPayment"
-            data-testid="send-onchain-submit-btn"
-            :data-busy="isProcessing ? 'true' : 'false'"
-          >
-            <template #loading>
-              <q-spinner-dots color="white" />
-            </template>
-          </q-btn>
         </div>
       </div>
     </q-page>
@@ -125,6 +128,7 @@ defineOptions({
 import { computed, ref, watch } from 'vue'
 import { Loading } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
+import AmountDisplay from 'src/components/AmountDisplay.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useNumericInput } from 'src/composables/useNumericInput'
@@ -148,6 +152,7 @@ const notify = useAppNotify()
 const paymentTarget = ref('')
 const isProcessing = ref(false)
 const { value: amount, keypadButtons, setValue } = useNumericInput(0)
+const formattedAmount = computed(() => amount.value.toLocaleString())
 
 const selectedFederation = computed(() => federationStore.selectedFederation)
 const maxSendAmount = computed(() => getMaxOnchainSendAmount(walletStore.balance))
@@ -172,7 +177,7 @@ const effectiveAmount = computed(() => {
 
 const amountError = computed(() => {
   if (selectedFederation.value == null) {
-    return 'Select a federation before sending Bitcoin onchain'
+    return 'Select a federation before sending Bitcoin on-chain'
   }
 
   if (addressError.value != null) {
@@ -264,7 +269,7 @@ async function submitOnchainPayment() {
 
   try {
     isProcessing.value = true
-    Loading.show({ message: 'Submitting onchain transfer...' })
+    Loading.show({ message: 'Submitting on-chain transfer...' })
 
     const result = await walletStore.sendOnchain(
       parsedTarget.value.data.address,
@@ -317,6 +322,68 @@ function safeParseBitcoinInput(input: string): {
   }
 }
 </script>
+
+<style scoped>
+.send-onchain-page {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.send-onchain-topbar {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 12px 16px 4px;
+}
+
+.send-onchain-topbar__back {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.send-onchain-content {
+  width: 100%;
+  padding: 0 16px 24px;
+}
+
+.amount-entry-container {
+  width: 100%;
+  max-width: 560px;
+}
+
+.task-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+}
+
+.task-card--secondary {
+  border-radius: 18px;
+}
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.custom-input :deep(.q-field__control) {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+}
+
+.custom-input :deep(.q-field__native),
+.custom-input :deep(.q-field__prefix),
+.custom-input :deep(.q-field__suffix),
+.custom-input :deep(.q-field__input) {
+  color: white;
+}
+
+.send-onchain-action-btn {
+  min-height: 54px;
+  border-radius: 18px;
+}
+</style>
 
 <style scoped>
 .amount-entry-container {

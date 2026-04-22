@@ -116,7 +116,9 @@ function getMempoolNetworkPath(network?: string | null): string {
 
 <style scoped>
 .utxo-card {
-  background-color: #202020;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
 }
 
 .utxo-link {

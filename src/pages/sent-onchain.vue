@@ -5,83 +5,84 @@ meta:
 
 <template>
   <q-page class="page-container" data-testid="sent-onchain-page">
-    <div class="content-container q-pa-md">
+    <div class="content-container">
       <q-btn
         flat
         round
         color="white"
         icon="close"
-        class="absolute-top-right q-ma-md"
+        class="success-close-btn"
         @click="goHome"
         data-testid="sent-onchain-close-btn"
       />
 
-      <div class="success-icon-container">
-        <q-icon :name="statusIcon" size="4em" :color="statusColor" />
-      </div>
-      <div class="text-h4 text-weight-bold q-mt-lg gradient-text" data-testid="sent-onchain-title">
-        {{ statusTitle }}
-      </div>
-
-      <q-card class="payment-card q-mt-lg q-pa-md">
-        <div class="row justify-between items-center q-py-sm">
-          <div class="text-subtitle1 text-weight-medium">Status</div>
-          <q-badge :color="statusColor" class="q-pa-sm" data-testid="sent-onchain-status-text">
-            {{ statusText }}
-          </q-badge>
+      <div class="success-shell">
+        <div class="success-icon">
+          <q-icon :name="statusIcon" size="3.5em" :color="statusColor" />
+        </div>
+        <div class="success-title" data-testid="sent-onchain-title">{{ statusTitle }}</div>
+        <div class="success-amount q-mt-md" data-testid="sent-onchain-amount-text">
+          {{ formatNumber(displayAmount) }} sats
+        </div>
+        <div v-if="statusMessage" class="success-subtitle q-mt-sm">
+          {{ statusMessage }}
         </div>
 
-        <q-separator class="q-my-sm opacity-4" />
+        <q-card flat class="success-card q-mt-xl">
+          <q-card-section class="summary-row">
+            <span class="summary-label">Status</span>
+            <q-badge
+              :color="statusColor"
+              text-color="black"
+              class="status-badge"
+              data-testid="sent-onchain-status-text"
+            >
+              {{ statusText }}
+            </q-badge>
+          </q-card-section>
 
-        <div class="row justify-between items-center q-py-sm">
-          <div class="text-subtitle1 text-weight-medium">Amount</div>
-          <div class="text-h6 text-weight-bold" data-testid="sent-onchain-amount-text">
-            {{ formatNumber(displayAmount) }} <span class="text-caption">sats</span>
-          </div>
-        </div>
+          <q-separator dark inset />
 
-        <q-separator class="q-my-sm opacity-4" />
+          <q-card-section class="summary-row">
+            <span class="summary-label">Amount</span>
+            <span class="summary-value">{{ formatNumber(displayAmount) }} sats</span>
+          </q-card-section>
 
-        <div class="row justify-between items-start q-py-sm">
-          <div class="text-subtitle1 text-weight-medium">Destination</div>
-          <div class="text-caption text-right address-text" data-testid="sent-onchain-address-text">
-            {{ displayAddress }}
-          </div>
-        </div>
+          <q-separator dark inset />
 
-        <template v-if="feeInSats > 0">
-          <q-separator class="q-my-sm opacity-4" />
+          <q-card-section class="summary-row summary-row--top">
+            <span class="summary-label">Destination</span>
+            <span class="summary-value summary-address" data-testid="sent-onchain-address-text">
+              {{ displayAddress }}
+            </span>
+          </q-card-section>
 
-          <div class="row justify-between items-center q-py-sm">
-            <div class="text-subtitle1 text-weight-medium">Recorded Fee</div>
-            <div class="text-subtitle1 text-weight-bold" data-testid="sent-onchain-fee-text">
-              {{ formatNumber(feeInSats) }} <span class="text-caption">sats</span>
-            </div>
-          </div>
-        </template>
-      </q-card>
+          <template v-if="feeInSats > 0">
+            <q-separator dark inset />
 
-      <div v-if="statusMessage" class="text-caption text-white q-mt-md">
-        {{ statusMessage }}
-      </div>
+            <q-card-section class="summary-row">
+              <span class="summary-label">Recorded fee</span>
+              <span class="summary-value" data-testid="sent-onchain-fee-text">
+                {{ formatNumber(feeInSats) }} sats
+              </span>
+            </q-card-section>
+          </template>
+        </q-card>
 
-      <div class="row q-col-gutter-sm q-mt-xl">
-        <div class="col">
+        <div class="success-actions q-mt-xl">
           <q-btn
-            flat
-            color="white"
-            class="full-width"
-            label="Back to Home"
+            color="primary"
+            class="success-action-btn"
+            label="Back to home"
             @click="goHome"
             data-testid="sent-onchain-back-home-btn"
           />
-        </div>
-        <div v-if="transaction != null" class="col">
           <q-btn
+            v-if="transaction != null"
+            flat
             color="white"
-            text-color="primary"
-            class="full-width"
-            label="View Details"
+            class="success-secondary-btn q-mt-sm"
+            label="View details"
             @click="viewTransaction"
             data-testid="sent-onchain-view-details-btn"
           />
@@ -319,7 +320,9 @@ function isTerminalOutcome(outcome: WalletTransaction['outcome'] | undefined): b
 <style scoped>
 .page-container {
   position: relative;
-  background: linear-gradient(145deg, #0f172a 0%, #1d4ed8 100%);
+  background:
+    radial-gradient(circle at top left, rgba(29, 78, 216, 0.28), transparent 38%),
+    linear-gradient(180deg, #171717 0%, #121212 100%);
   min-height: 100vh;
   overflow: hidden;
 }
@@ -327,23 +330,94 @@ function isTerminalOutcome(outcome: WalletTransaction['outcome'] | undefined): b
 .content-container {
   position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-}
-
-.payment-card {
   width: 100%;
-  max-width: 520px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px 16px;
 }
 
-.address-text {
+.success-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.success-shell {
+  width: 100%;
+  max-width: 560px;
+  text-align: center;
+  color: white;
+}
+
+.success-icon {
+  margin-bottom: 12px;
+}
+
+.success-title {
+  font-size: 1.9rem;
+  font-weight: 700;
+}
+
+.success-amount {
+  font-size: 2.75rem;
+  font-weight: 700;
+}
+
+.success-subtitle {
+  color: #b3b3b3;
+}
+
+.success-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  color: white;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.summary-row--top {
+  align-items: flex-start;
+}
+
+.summary-label {
+  color: #9e9e9e;
+}
+
+.summary-value {
+  font-weight: 600;
+}
+
+.summary-address {
   max-width: 260px;
-  word-break: break-all;
+  word-break: break-word;
+  text-align: right;
+}
+
+.status-badge {
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.success-actions {
+  width: 100%;
+}
+
+.success-action-btn,
+.success-secondary-btn {
+  width: 100%;
+  min-height: 54px;
+  border-radius: 18px;
 }
 </style>

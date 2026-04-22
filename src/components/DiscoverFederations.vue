@@ -1,6 +1,6 @@
 <template>
   <ModalCard title="Discover Federations">
-    <div class="q-pa-md">
+    <div class="discover-sheet q-pa-md">
       <q-list bordered separator v-if="visibleFederations.length > 0">
         <q-item
           v-for="federation in visibleFederations"
@@ -19,78 +19,44 @@
             </q-avatar>
           </template>
           <q-item-section>
-            <q-item-label>{{ federation.title }}</q-item-label>
-            <q-item-label caption class="federation-id">
-              {{ federation.federationId }}
+            <q-item-label class="federation-title row items-center no-wrap">
+              <span class="federation-title__text">{{ federation.title }}</span>
+              <q-badge
+                v-if="isAdded(federation)"
+                outline
+                color="grey-6"
+                text-color="grey-4"
+                class="q-ml-sm"
+              >
+                Added
+              </q-badge>
             </q-item-label>
-            <q-item-label v-if="federation.about" caption class="federation-about-caption">
-              {{ federation.about }}
+            <q-item-label v-if="federationSummary(federation)" caption class="federation-summary">
+              {{ federationSummary(federation) }}
             </q-item-label>
             <q-item-label
               v-if="federation.recommendationCount > 0"
               caption
-              class="federation-recommendation-caption"
+              class="federation-recommendation"
             >
               Recommended by {{ formatRecommendationCount(federation.recommendationCount) }}
             </q-item-label>
-            <q-item-label
-              v-if="federation.previewStatus === 'loading'"
-              caption
-              class="federation-loading-caption"
-            >
-              Loading federation details...
-            </q-item-label>
-            <q-item-label
-              v-else-if="federation.previewStatus === 'failed'"
-              caption
-              class="federation-error-caption"
-            >
-              Federation details unavailable.
-            </q-item-label>
-            <q-item-label
-              v-else-if="federation.previewStatus === 'timed_out'"
-              caption
-              class="federation-error-caption"
-            >
-              Federation details request timed out.
-            </q-item-label>
           </q-item-section>
           <q-item-section side>
-            <q-spinner v-if="federation.previewStatus === 'loading'" color="primary" size="18px" />
-            <q-icon
-              v-else-if="
-                federation.previewStatus === 'failed' || federation.previewStatus === 'timed_out'
-              "
-              name="warning"
-              color="warning"
-              size="18px"
-            />
             <q-btn
-              v-else
               flat
               round
-              :icon="isAdded(federation) ? 'check_circle' : 'add'"
+              :icon="isAdded(federation) ? 'check_circle' : 'visibility'"
               :color="isAdded(federation) ? 'positive' : 'primary'"
               :disable="isAdded(federation)"
+              :aria-label="isAdded(federation) ? 'Federation already added' : 'Preview federation'"
+              :title="isAdded(federation) ? 'Federation already added' : 'Preview federation'"
               :data-testid="`discover-federation-action-${federation.federationId}`"
               @click.stop="openFederationPreview(federation)"
             />
           </q-item-section>
         </q-item>
       </q-list>
-
-      <div class="text-center q-mt-md" v-if="canLoadMore">
-        <q-btn
-          unelevated
-          color="primary"
-          text-color="white"
-          no-caps
-          label="Load more"
-          icon="expand_more"
-          @click="loadMoreFederations"
-          data-testid="discover-federations-load-more-btn"
-        />
-      </div>
 
       <div
         v-if="!isDiscovering && visibleFederations.length === 0"
@@ -109,20 +75,34 @@
         </div>
       </div>
 
-      <div class="discovery-status row items-center justify-between q-mt-md">
-        <div class="row items-center text-caption text-grey-7">
+      <div class="discovery-footer q-mt-md">
+        <div class="discovery-status row items-center text-caption text-grey-7">
           <q-spinner v-if="isDiscovering" color="primary" size="16px" class="q-mr-sm" />
           <span>{{ discoveryStatusText }}</span>
         </div>
-        <q-btn
-          flat
-          dense
-          no-caps
-          color="primary"
-          :label="isDiscovering ? 'Stop' : 'Start'"
-          @click="toggleDiscovery"
-          data-testid="discover-federations-toggle-btn"
-        />
+
+        <div class="discovery-actions">
+          <q-btn
+            v-if="canLoadMore"
+            flat
+            dense
+            no-caps
+            color="grey-4"
+            label="Load more"
+            icon="expand_more"
+            @click="loadMoreFederations"
+            data-testid="discover-federations-load-more-btn"
+          />
+          <q-btn
+            flat
+            dense
+            no-caps
+            color="primary"
+            :label="isDiscovering ? 'Stop' : 'Start'"
+            @click="toggleDiscovery"
+            data-testid="discover-federations-toggle-btn"
+          />
+        </div>
       </div>
     </div>
   </ModalCard>
@@ -134,17 +114,17 @@ import { useNostrStore } from 'src/stores/nostr'
 import { useFederationStore } from 'src/stores/federation'
 import ModalCard from 'src/components/ModalCard.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
-import type { DiscoverySelectionPayload, Federation } from 'src/types/federation'
+import type { DiscoverySelectionPayload } from 'src/types/federation'
 import { getErrorMessage } from 'src/utils/error'
 import { logger } from 'src/services/logger'
 
-type DiscoveryListItem = Federation & {
-  previewReady: boolean
+type DiscoveryListItem = {
+  title: string
+  federationId: string
+  inviteCode: string
   recommendationCount: number
-  previewStatus: 'loading' | 'failed' | 'timed_out' | 'ready'
   about?: string
   pictureUrl?: string
-  prefetchedFederation?: Federation
 }
 
 const nostr = useNostrStore()
@@ -153,47 +133,23 @@ const notify = useAppNotify()
 const isDiscovering = computed(() => nostr.isDiscoveringFederations)
 const visibleFederations = computed<DiscoveryListItem[]>(() => {
   return nostr.discoveryCandidates.slice(0, nostr.previewTargetCount).map((candidate) => {
-    const prefetchedFederation = nostr.getCachedPreviewForCandidate(candidate)
     const recommendationCount = Math.max(
       candidate.recommendationCount ?? 0,
       nostr.getRecommendationCountForFederationId(candidate.federationId),
     )
-    const previewStatus =
-      prefetchedFederation != null
-        ? 'ready'
-        : (nostr.getPreviewStatusForFederationId(candidate.federationId) ?? 'loading')
 
     return {
-      title:
-        prefetchedFederation?.title ??
-        candidate.displayName ??
-        `Federation ${truncateFederationId(candidate.federationId)}`,
+      title: candidate.displayName ?? `Federation ${truncateFederationId(candidate.federationId)}`,
       federationId: candidate.federationId,
       inviteCode: candidate.inviteCode,
-      modules: prefetchedFederation?.modules ?? [],
-      guardians: prefetchedFederation?.guardians ?? [],
-      metadata: prefetchedFederation?.metadata ?? {},
-      previewReady: prefetchedFederation != null,
       recommendationCount,
-      previewStatus,
-      ...(prefetchedFederation?.metaUrl != null ? { metaUrl: prefetchedFederation.metaUrl } : {}),
-      ...(prefetchedFederation?.network != null
-        ? { network: prefetchedFederation.network }
-        : candidate.network != null
-          ? { network: candidate.network }
-          : {}),
       ...(candidate.about != null ? { about: candidate.about } : {}),
-      ...(prefetchedFederation?.metadata?.federation_icon_url != null
-        ? { pictureUrl: prefetchedFederation.metadata.federation_icon_url }
-        : candidate.pictureUrl != null
-          ? { pictureUrl: candidate.pictureUrl }
-          : {}),
-      ...(prefetchedFederation != null ? { prefetchedFederation } : {}),
+      ...(candidate.pictureUrl != null ? { pictureUrl: candidate.pictureUrl } : {}),
     }
   })
 })
 const discoveryStatusText = computed(() => {
-  const loaded = nostr.discoveredFederations.length
+  const loaded = nostr.discoveryCandidates.length
   if (isDiscovering.value) {
     return `${loaded} loaded, live updates on`
   }
@@ -228,7 +184,7 @@ watch(
 )
 
 // Add function to check if federation is already added
-function isAdded(federation: Federation): boolean {
+function isAdded(federation: Pick<DiscoveryListItem, 'federationId'>): boolean {
   return federationStore.federations.some((f) => f.federationId === federation.federationId)
 }
 
@@ -271,6 +227,14 @@ function formatRecommendationCount(count: number): string {
   return `${count} ${suffix}`
 }
 
+function federationSummary(federation: DiscoveryListItem): string | null {
+  if (federation.about != null && federation.about.trim() !== '') {
+    return federation.about
+  }
+
+  return null
+}
+
 function openFederationPreview(federation: DiscoveryListItem) {
   if (federationStore.federations.some((f) => f.federationId === federation.federationId)) {
     notify.notify({
@@ -283,17 +247,7 @@ function openFederationPreview(federation: DiscoveryListItem) {
   }
 
   emit('close')
-  emit(
-    'showAdd',
-    federation.prefetchedFederation != null
-      ? {
-          inviteCode: federation.inviteCode,
-          prefetchedFederation: federation.prefetchedFederation,
-        }
-      : {
-          inviteCode: federation.inviteCode,
-        },
-  )
+  emit('showAdd', { inviteCode: federation.inviteCode })
 }
 
 function truncateFederationId(federationId: string): string {
@@ -305,19 +259,14 @@ function truncateFederationId(federationId: string): string {
 </script>
 
 <style scoped>
-/* .federation-id {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.discover-sheet {
+  display: flex;
+  flex-direction: column;
 }
-.logo {
-  width: 40px;
-  height: 40px;
-} */
 
 .q-list {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px !important;
+  border-radius: 16px !important;
   border: none !important;
 }
 
@@ -356,32 +305,32 @@ function truncateFederationId(federationId: string): string {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Improve text styling */
-.federation-id {
-  white-space: nowrap;
+.federation-title {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 0;
+}
+
+.federation-title__text {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.8rem;
+  white-space: nowrap;
+  font-weight: 600;
 }
 
-.federation-loading-caption {
-  color: rgba(255, 255, 255, 0.45);
+.federation-summary {
+  color: rgba(255, 255, 255, 0.68);
+  margin-top: 2px;
+  line-height: 1.35;
 }
 
-.federation-about-caption {
-  color: rgba(255, 255, 255, 0.6);
+.federation-recommendation {
+  color: rgba(255, 255, 255, 0.72);
+  margin-top: 4px;
 }
 
-.federation-recommendation-caption {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.federation-error-caption {
-  color: rgba(255, 193, 7, 0.9);
-}
-
-/* Enhance the loading state */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -390,8 +339,22 @@ function truncateFederationId(federationId: string): string {
   padding: 32px 16px;
 }
 
-.discovery-status {
+.discovery-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.discovery-status {
+  min-height: 16px;
+}
+
+.discovery-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 </style>

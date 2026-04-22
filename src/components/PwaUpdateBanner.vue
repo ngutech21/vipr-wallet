@@ -29,12 +29,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Notify } from 'quasar'
 import { useRoute } from 'vue-router'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { usePwaUpdateStore } from 'src/stores/pwa-update'
 
 const route = useRoute()
 const pwaUpdateStore = usePwaUpdateStore()
+const notify = useAppNotify()
 
 const isApplying = computed(() => pwaUpdateStore.state === 'applying')
 const showBanner = computed(
@@ -48,38 +49,22 @@ async function applyUpdate() {
   const result = await pwaUpdateStore.applyUpdate(route.name)
 
   if (result === 'error') {
-    Notify.create({
-      color: 'negative',
-      position: 'top',
-      message: 'Update failed. Tap "Update now" again.',
-    })
+    notify.error('Update failed. Tap "Update now" again.')
     return
   }
 
   if (result === 'checking') {
-    Notify.create({
-      color: 'info',
-      position: 'top',
-      message: 'Update is still downloading. Please try again shortly.',
-    })
+    notify.info('Update is still downloading. Please try again shortly.')
     return
   }
 
   if (result === 'no-update') {
-    Notify.create({
-      color: 'info',
-      position: 'top',
-      message: 'No update is ready right now.',
-    })
+    notify.info('No update is ready right now.')
     return
   }
 
   if (result === 'blocked-route') {
-    Notify.create({
-      color: 'warning',
-      position: 'top',
-      message: 'Update can only be applied on Home or Settings.',
-    })
+    notify.warning('Update can only be applied on Home or Settings.')
   }
 }
 </script>

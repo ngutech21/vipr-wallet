@@ -1,54 +1,40 @@
 <template>
-  <ModalCard title="Join a federation" data-testid="join-federation-selection">
-    <div class="q-pa-md">
-      <div class="row q-col-gutter-md">
-        <div class="col-12">
-          <q-card
-            class="cursor-pointer"
-            v-ripple
-            @click="onDiscover"
-            data-testid="join-discover-federation-card"
-          >
-            <q-card-section class="row">
-              <q-icon name="search" size="48px" color="primary" class="col-2" />
-              <div class="col-10">
-                <div class="text-h6 q-mt-sm">Discover federations</div>
-                <div class="text-caption text-grey-7">
-                  View federations recommended by Nostr users at bitcoinmints.com
-                </div>
-              </div>
-            </q-card-section>
-          </q-card>
-        </div>
+  <ModalCard
+    title="Join a Federation"
+    data-testid="join-federation-selection"
+    @close="emit('close')"
+  >
+    <div class="selection-sheet q-pa-md">
+      <div class="selection-sheet__intro text-body2 text-grey-5">
+        Add a federation you already trust or browse community recommendations first.
+      </div>
 
-        <div class="col-12">
-          <q-card
-            class="cursor-pointer"
-            v-ripple
-            @click="onAdd"
-            data-testid="join-trusted-federation-card"
-          >
-            <q-card-section class="row">
-              <q-icon name="add_circle" size="48px" color="primary" class="col-2" />
-              <div class="col-10">
-                <div class="text-h6 q-mt-sm">Join a trusted federation</div>
-                <div class="text-caption text-grey-7">
-                  Already know the federation you want to join? Scan the QR code or enter the
-                  invitecode
-                </div>
-              </div>
-            </q-card-section>
-          </q-card>
-        </div>
+      <div class="selection-sheet__options">
+        <BottomSheetOptionCard
+          title="Discover federations"
+          description="Browse federations recommended by Nostr users at bitcoinmints.com."
+          icon="search"
+          icon-color="primary"
+          data-testid="join-discover-federation-card"
+          @select="onDiscover"
+        />
+
+        <BottomSheetOptionCard
+          title="Join a trusted federation"
+          description="Scan a QR code or paste an invite code for a federation you already know."
+          icon="add_circle"
+          icon-color="primary"
+          data-testid="join-trusted-federation-card"
+          @select="onAdd"
+        />
       </div>
     </div>
-
-    <!-- Dialogs -->
   </ModalCard>
 </template>
 
 <script setup lang="ts">
 import ModalCard from './ModalCard.vue'
+import BottomSheetOptionCard from './BottomSheetOptionCard.vue'
 
 const emit = defineEmits<{
   close: []
@@ -68,12 +54,15 @@ function onAdd() {
 </script>
 
 <style scoped>
-.q-card {
-  transition: all 0.2s ease-in-out;
+.selection-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.q-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+.selection-sheet__options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 </style>

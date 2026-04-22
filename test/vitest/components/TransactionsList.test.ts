@@ -164,6 +164,8 @@ describe('TransactionsList.vue', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockGetTransactionsPage.mockReset()
+    mockRouterPush.mockReset()
     federationStore.selectedFederationId = 'fed-1'
     mockRouterPush.mockResolvedValue(undefined)
   })
@@ -173,27 +175,21 @@ describe('TransactionsList.vue', () => {
     wrapper = undefined
   })
 
-  it('loads the latest 5 transactions on home and shows the full history action when more exist', async () => {
+  it('loads the latest 3 transactions on home and shows the full history action when more exist', async () => {
     mockGetTransactionsPage.mockResolvedValue(
       createPageResult(
-        [
-          createLightningTransaction(),
-          createEcashTransaction(),
-          createWalletTransaction(),
-          createLightningTransaction({ operationId: 'ln-op-2' }),
-          createWalletTransaction({ operationId: 'wallet-op-2' }),
-        ],
-        { hasMore: true, nextCursor: createOperationKey('wallet-op-2') },
+        [createLightningTransaction(), createEcashTransaction(), createWalletTransaction()],
+        { hasMore: true, nextCursor: createOperationKey('wallet-op-1') },
       ),
     )
 
     wrapper = createWrapper('home')
     await flushPromises()
 
-    expect(mockGetTransactionsPage).toHaveBeenCalledWith(5)
-    expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(5)
+    expect(mockGetTransactionsPage).toHaveBeenCalledWith(3, undefined, { visibleOnly: true })
+    expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(3)
     expect(wrapper.get('[data-testid="transactions-show-full-history-btn"]').text()).toContain(
-      'Show full history',
+      'View all',
     )
   })
 
@@ -211,13 +207,14 @@ describe('TransactionsList.vue', () => {
     expect(wrapper.find('[data-testid="transactions-show-full-history-btn"]').exists()).toBe(false)
   })
 
-  it('keeps the empty state on home when no transactions exist', async () => {
+  it('shows a lightweight empty state on home when no transactions exist', async () => {
     mockGetTransactionsPage.mockResolvedValue(createPageResult([]))
 
     wrapper = createWrapper('home')
     await flushPromises()
 
-    expect(wrapper.get('[data-testid="transactions-empty-state"]').text()).toContain(
+    expect(wrapper.find('[data-testid="transactions-card"]').exists()).toBe(false)
+    expect(wrapper.get('[data-testid="transactions-empty-home"]').text()).toContain(
       'No transactions yet',
     )
     expect(wrapper.find('[data-testid="transactions-show-full-history-btn"]').exists()).toBe(false)
@@ -259,14 +256,23 @@ describe('TransactionsList.vue', () => {
     wrapper = createWrapper('history')
     await flushPromises()
 
-    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(1, 20)
+    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(1, 20, undefined, {
+      visibleOnly: true,
+    })
     expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(2)
     expect(wrapper.get('[data-testid="transactions-show-more-btn"]').text()).toContain('Show more')
 
     await wrapper.get('[data-testid="transactions-show-more-btn"]').trigger('click')
     await flushPromises()
 
-    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(2, 20, createOperationKey('mint-op-1'))
+    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(
+      2,
+      20,
+      createOperationKey('mint-op-1'),
+      {
+        visibleOnly: true,
+      },
+    )
     expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(3)
     expect(wrapper.find('[data-testid="transactions-show-more-btn"]').exists()).toBe(false)
   })
@@ -311,7 +317,9 @@ describe('TransactionsList.vue', () => {
     federationStore.selectedFederationId = 'fed-2'
     await flushPromises()
 
-    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(2, 20)
+    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(2, 20, undefined, {
+      visibleOnly: true,
+    })
     expect(wrapper.text()).toContain('wallet-op-fed-2')
     expect(wrapper.text()).not.toContain('ln-op-fed-1')
   })

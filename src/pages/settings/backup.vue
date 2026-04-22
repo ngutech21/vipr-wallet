@@ -4,70 +4,67 @@ meta:
 </route>
 
 <template>
-  <q-page class="dark-gradient" data-testid="backup-intro-page">
-    <q-toolbar class="header-section">
-      <q-btn flat round icon="arrow_back" @click="goBack" data-testid="backup-intro-back-btn" />
-      <q-toolbar-title class="text-center no-wrap">Personal Backup</q-toolbar-title>
-      <div class="q-ml-md" style="width: 40px"></div>
-    </q-toolbar>
+  <q-page class="backup-page dark-gradient" data-testid="backup-intro-page">
+    <div class="backup-topbar">
+      <q-btn
+        flat
+        round
+        color="white"
+        icon="arrow_back"
+        class="backup-topbar__back"
+        @click="goBack"
+        data-testid="backup-intro-back-btn"
+      />
+    </div>
 
-    <div class="q-pa-lg">
-      <div class="backup-intro-container glass-effect q-pa-lg">
-        <div class="flex flex-center q-mb-lg">
-          <q-icon name="shield" size="4em" color="primary" />
-        </div>
-
-        <div class="text-h5 text-center q-mb-md" data-testid="backup-intro-title">
-          Backup Your Wallet
-        </div>
-
-        <div class="text-body1 q-mb-lg">
-          <p>
-            You're about to see your wallet's 12 recovery words. These words are the
-            <strong>only way</strong> to recover your wallet if you lose access to this device.
-          </p>
-        </div>
-
-        <q-card flat bordered class="warning-card q-mb-lg">
-          <q-card-section class="bg-warning text-dark">
-            <div class="flex items-start">
-              <q-icon name="warning" size="md" class="q-mr-sm" />
-              <div>
-                <div class="text-subtitle1 text-weight-bold q-mb-xs">Important Instructions</div>
-                <ul class="q-pl-md q-mb-none">
-                  <li>Write down the words with pen and paper</li>
-                  <li>Store them in a safe, secure location</li>
-                  <li>Never share your recovery words with anyone</li>
-                  <li>Never store them digitally (screenshots, cloud, etc.)</li>
-                  <li>Anyone with these words can access your funds</li>
-                </ul>
-              </div>
+    <div class="backup-page__content q-px-md q-pb-xl">
+      <div class="backup-intro-container">
+        <div class="backup-intro-hero">
+          <div class="backup-intro-hero__icon">
+            <q-icon name="shield" size="38px" color="white" />
+          </div>
+          <div>
+            <div class="backup-intro-hero__eyebrow">Backup</div>
+            <div class="backup-intro-hero__title" data-testid="backup-intro-title">
+              Save your recovery phrase
             </div>
-          </q-card-section>
-        </q-card>
-
-        <div class="text-caption text-grey-6 text-center q-mb-lg">
-          You will now see your real wallet recovery words.
+            <div class="backup-intro-hero__copy">
+              Your recovery phrase is the only way to restore this wallet if you lose access to this
+              device.
+            </div>
+          </div>
         </div>
 
-        <q-btn
-          label="Show Recovery Words"
-          color="primary"
-          icon="visibility"
-          class="full-width q-mb-sm"
-          size="lg"
-          @click="showRecoveryWords"
-          data-testid="backup-intro-show-words-btn"
-        />
+        <div class="backup-warning-card q-mt-md">
+          <div class="backup-warning-card__title">Before you continue</div>
+          <ul class="backup-warning-list q-mb-none">
+            <li>Write the phrase down with pen and paper.</li>
+            <li>Store it somewhere safe and private.</li>
+            <li>Never share it with anyone.</li>
+            <li>Do not save it in screenshots, notes or cloud storage.</li>
+          </ul>
+        </div>
 
-        <q-btn
-          label="Cancel"
-          flat
-          color="grey-6"
-          class="full-width"
-          @click="goBack"
-          data-testid="backup-intro-cancel-btn"
-        />
+        <div class="backup-actions q-mt-lg">
+          <q-btn
+            label="Show recovery phrase"
+            color="primary"
+            icon="visibility"
+            class="full-width q-mb-sm"
+            size="lg"
+            @click="showRecoveryWords"
+            data-testid="backup-intro-show-words-btn"
+          />
+
+          <q-btn
+            label="Cancel"
+            flat
+            color="grey-6"
+            class="full-width"
+            @click="goBack"
+            data-testid="backup-intro-cancel-btn"
+          />
+        </div>
       </div>
     </div>
   </q-page>
@@ -92,19 +89,126 @@ async function goBack() {
 </script>
 
 <style scoped>
-.backup-intro-container {
-  max-width: 600px;
+.backup-page {
+  width: 100%;
+  max-width: 760px;
   margin: 0 auto;
-  border-radius: 16px;
 }
 
-.warning-card {
-  border-radius: 8px;
-  border-color: var(--q-warning);
-  border-width: 2px;
+.backup-topbar {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 12px 16px 8px;
+}
+
+.backup-topbar__back {
+  margin-left: -4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.backup-page__content {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.backup-intro-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 32px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)),
+    rgba(18, 18, 18, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.backup-intro-hero {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.backup-intro-hero__icon {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.backup-intro-hero__eyebrow {
+  margin-bottom: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.backup-intro-hero__title {
+  margin-bottom: 10px;
+  color: white;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.backup-intro-hero__copy {
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.5;
+}
+
+.backup-warning-card {
+  padding: 16px 18px;
+  border-radius: 24px;
+  background: rgba(255, 184, 77, 0.12);
+  border: 1px solid rgba(255, 184, 77, 0.2);
+  color: rgba(255, 240, 220, 0.95);
+}
+
+.backup-warning-card__title {
+  margin-bottom: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.backup-warning-list {
+  padding-left: 18px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.backup-warning-list li + li {
+  margin-top: 6px;
 }
 
 .full-width {
   width: 100%;
+}
+
+@media (max-width: 599px) {
+  .backup-intro-container {
+    padding: 18px;
+    border-radius: 28px;
+  }
+
+  .backup-intro-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .backup-intro-hero__icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+  }
+
+  .backup-intro-hero__title {
+    font-size: 1.7rem;
+  }
 }
 </style>

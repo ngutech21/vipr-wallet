@@ -14,7 +14,7 @@
       />
     </q-dialog>
 
-    <q-dialog v-model="showDiscover" position="bottom">
+    <q-dialog v-model="showDiscover" position="bottom" @hide="onDiscoverHide">
       <DiscoverFederations
         v-if="showDiscover"
         :visible="showDiscover"
@@ -26,7 +26,9 @@
     <q-dialog v-model="showAdd" position="bottom">
       <AddFederation
         v-if="showAdd"
+        :back-target="addFederationBackTarget"
         @close="closeAddFederation"
+        @back="returnToDiscovery"
         :initial-invite-code="selectedInviteCode"
         :initial-preview-federation="selectedPreviewFederation"
         :auto-preview="selectedInviteCode != null"
@@ -56,34 +58,34 @@
       />
     </q-dialog>
 
-    <div class="text-white q-pa-md dark-bg" style="width: 100%">
-      <div class="text-h4 text-center" data-testid="home-balance">
-        {{ Math.ceil(totalBalance).toLocaleString() }} sats
-      </div>
+    <section v-if="federationStore.federations.length > 0" class="home-hero q-pa-md">
+      <div class="hero-card">
+        <div class="hero-balance" data-testid="home-balance">
+          {{ Math.ceil(totalBalance).toLocaleString() }} sats
+        </div>
 
-      <div class="text-center" v-if="federationStore.selectedFederation">
-        <q-chip
-          class="q-mt-sm"
-          color="white"
-          text-color="primary"
-          outline
-          data-testid="home-selected-federation-chip"
-        >
-          <q-icon name="account_balance" class="q-mr-sm" />
-          {{ federationStore.selectedFederation?.title }}
-        </q-chip>
+        <div v-if="federationStore.selectedFederation" class="hero-federation">
+          <q-chip
+            class="hero-federation__chip"
+            color="white"
+            text-color="primary"
+            outline
+            data-testid="home-selected-federation-chip"
+          >
+            <q-icon name="account_balance" class="q-mr-sm" />
+            {{ federationStore.selectedFederation.title }}
+          </q-chip>
+        </div>
       </div>
-    </div>
-
-    <TransactionsList mode="home" />
+    </section>
 
     <div
       v-if="federationStore.federations.length == 0"
-      class="column items-center justify-center full-height"
+      class="home-empty-state column items-center justify-center full-height"
       style="flex: 1"
     >
       <div class="text-h6">Ready to start?</div>
-      <div class="text-subtitle7">Join a Federation to get up and running</div>
+      <div class="text-subtitle7">Join a federation to get up and running</div>
       <q-btn
         label="Join a federation"
         color="primary"
@@ -94,37 +96,47 @@
       />
     </div>
 
-    <!-- Added fixed bottom buttons using q-page-sticky -->
+    <div v-if="federationStore.federations.length > 0" class="home-transactions">
+      <TransactionsList mode="home" />
+    </div>
+
     <q-page-sticky
-      position="bottom"
-      :offset="[0, 50]"
       v-if="federationStore.federations.length > 0"
+      position="bottom"
+      :offset="[0, 44]"
     >
-      <div class="q-pa-md">
-        <div class="row items-center justify-evenly q-gutter-md">
-          <q-btn
-            label="Send"
-            icon="arrow_upward"
-            color="primary"
-            @click="showSendEcashSelection = true"
-            :disable="totalBalance <= 0"
-            :data-testid="'home-send-btn'"
-          />
-          <q-btn
-            label=""
-            color="primary"
-            icon="qr_code_scanner"
-            :to="'/scan'"
-            :data-testid="'home-scan-btn'"
-          />
-          <q-btn
-            label="Receive"
-            icon="arrow_downward"
-            color="primary"
-            @click="showReceiveEcashSelection = true"
-            :data-testid="'home-receive-btn'"
-          />
-        </div>
+      <div class="home-actions q-px-md">
+        <q-btn
+          no-caps
+          unelevated
+          label="Send"
+          icon="arrow_upward"
+          color="primary"
+          class="home-action-btn"
+          @click="showSendEcashSelection = true"
+          :disable="totalBalance <= 0"
+          :data-testid="'home-send-btn'"
+        />
+        <q-btn
+          no-caps
+          unelevated
+          aria-label="Scan"
+          color="primary"
+          icon="qr_code_scanner"
+          class="home-action-btn home-action-btn--icon"
+          :to="'/scan'"
+          :data-testid="'home-scan-btn'"
+        />
+        <q-btn
+          no-caps
+          unelevated
+          label="Receive"
+          icon="arrow_downward"
+          color="primary"
+          class="home-action-btn"
+          @click="showReceiveEcashSelection = true"
+          :data-testid="'home-receive-btn'"
+        />
       </div>
     </q-page-sticky>
   </q-page>
@@ -165,11 +177,31 @@ const showDiscover = ref(false)
 const showAdd = ref(false)
 const selectedInviteCode = ref<string | null>(null)
 const selectedPreviewFederation = ref<Federation | null>(null)
+const addFederationBackTarget = ref<'invite' | 'discover'>('invite')
+const pendingDiscoverySelection = ref<DiscoverySelectionPayload | null>(null)
 
 function openAddFederationPreview(payload: DiscoverySelectionPayload) {
+  pendingDiscoverySelection.value = payload
+  if (showDiscover.value) {
+    showDiscover.value = false
+    return
+  }
+  applyDiscoverySelection(payload)
+}
+
+function onDiscoverHide() {
+  if (pendingDiscoverySelection.value == null) {
+    return
+  }
+
+  applyDiscoverySelection(pendingDiscoverySelection.value)
+}
+
+function applyDiscoverySelection(payload: DiscoverySelectionPayload) {
   selectedInviteCode.value = payload.inviteCode
   selectedPreviewFederation.value = payload.prefetchedFederation ?? null
-  showDiscover.value = false
+  addFederationBackTarget.value = 'discover'
+  pendingDiscoverySelection.value = null
   showAdd.value = true
 }
 
@@ -177,20 +209,137 @@ function closeAddFederation() {
   showAdd.value = false
   selectedInviteCode.value = null
   selectedPreviewFederation.value = null
+  addFederationBackTarget.value = 'invite'
+  pendingDiscoverySelection.value = null
+}
+
+function returnToDiscovery() {
+  showAdd.value = false
+  selectedInviteCode.value = null
+  selectedPreviewFederation.value = null
+  addFederationBackTarget.value = 'invite'
+  pendingDiscoverySelection.value = null
+  showDiscover.value = true
 }
 </script>
 
 <style scoped>
-/* Target the q-btn that has the .small-label class */
-.q-btn.small-label .q-btn__content .q-btn__label {
-  font-size: 0.75rem !important;
+.home-hero {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.home-empty-state {
+  padding: 0 24px 120px;
   text-align: center;
 }
-.word-wrap {
-  word-wrap: break-word;
-  white-space: normal;
+
+.hero-card {
+  background:
+    radial-gradient(circle at top left, rgba(156, 39, 255, 0.18), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 18px 20px 16px;
+  text-align: center;
 }
-.dark-bg {
-  background-color: #202020;
+
+.hero-balance {
+  font-size: clamp(2rem, 6vw, 2.75rem);
+  line-height: 1.05;
+  font-weight: 700;
+  color: white;
+}
+
+.hero-federation {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-federation__chip {
+  max-width: 100%;
+}
+
+.home-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: min(calc(100vw - 32px), 420px);
+  padding-bottom: 10px;
+}
+
+.home-action-btn {
+  flex: 1 1 0;
+  min-height: 56px;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
+  box-shadow:
+    0 10px 24px rgba(111, 0, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  color: white;
+}
+
+.home-action-btn--icon {
+  flex: 0 0 62px;
+  width: 62px;
+  min-width: 62px;
+  padding: 0;
+}
+
+.home-action-btn :deep(.q-btn__content) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.home-action-btn :deep(.q-icon) {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.home-action-btn :deep(.block) {
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.home-action-btn--icon :deep(.q-btn__content) {
+  gap: 0;
+}
+
+.home-transactions {
+  padding-bottom: 96px;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+@media (max-width: 599px) {
+  .home-actions {
+    width: min(calc(100vw - 28px), 420px);
+    gap: 10px;
+  }
+
+  .home-action-btn {
+    min-height: 54px;
+  }
+
+  .home-action-btn--icon {
+    flex-basis: 58px;
+    width: 58px;
+    min-width: 58px;
+  }
 }
 </style>

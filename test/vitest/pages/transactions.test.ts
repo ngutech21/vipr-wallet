@@ -32,12 +32,6 @@ describe('TransactionsPage.vue', () => {
           'q-page': {
             template: '<div><slot /></div>',
           },
-          'q-toolbar': {
-            template: '<div><slot /></div>',
-          },
-          'q-toolbar-title': {
-            template: '<div><slot /></div>',
-          },
           'q-btn': {
             template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
           },
@@ -58,12 +52,6 @@ describe('TransactionsPage.vue', () => {
           transition: false,
           TransactionsList: true,
           'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-toolbar': {
-            template: '<div><slot /></div>',
-          },
-          'q-toolbar-title': {
             template: '<div><slot /></div>',
           },
           'q-btn': {

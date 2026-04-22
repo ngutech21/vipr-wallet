@@ -4,6 +4,7 @@ import SendEcashPage from 'src/pages/send-ecash.vue'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockSpendEcashOffline = vi.hoisted(() => vi.fn())
+const mockGetOfflineEcashNoteCounts = vi.hoisted(() => vi.fn())
 const mockShare = vi.hoisted(() => vi.fn())
 const mockNotify = vi.hoisted(() => vi.fn())
 const mockLoadingShow = vi.hoisted(() => vi.fn())
@@ -24,6 +25,7 @@ const federationStoreState = vi.hoisted(() => ({
 const walletStoreState = vi.hoisted(() => ({
   balance: 100,
   spendEcashOffline: mockSpendEcashOffline,
+  getOfflineEcashNoteCounts: mockGetOfflineEcashNoteCounts,
 }))
 
 vi.mock('vue-router', () => ({
@@ -129,6 +131,9 @@ describe('SendEcashPage.vue', () => {
       notes: 'cashuAoffline123',
       operationId: 'op-1',
     })
+    mockGetOfflineEcashNoteCounts.mockResolvedValue({
+      8: 20_000,
+    })
     mockShare.mockResolvedValue(undefined)
     walletStoreState.balance = 100
     federationStoreState.selectedFederation = {
@@ -161,6 +166,7 @@ describe('SendEcashPage.vue', () => {
 
   it('creates offline ecash and switches to the export step', async () => {
     wrapper = createWrapper()
+    await flushPromises()
 
     await wrapper.get('[data-testid="receive-keypad-btn-2"]').trigger('click')
     await wrapper.get('[data-testid="receive-keypad-btn-5"]').trigger('click')
@@ -172,12 +178,13 @@ describe('SendEcashPage.vue', () => {
       'cashuAoffline123',
     )
     expect(wrapper.find('[data-testid="send-ecash-notes-input"]').exists()).toBe(false)
-    expect(mockLoadingShow).toHaveBeenCalledWith({ message: 'Creating offline eCash...' })
+    expect(mockLoadingShow).toHaveBeenCalledWith({ message: 'Creating offline ecash...' })
     expect(mockLoadingHide).toHaveBeenCalledTimes(1)
   })
 
   it('copies exported notes to the clipboard', async () => {
     wrapper = createWrapper()
+    await flushPromises()
 
     await wrapper.get('[data-testid="receive-keypad-btn-2"]').trigger('click')
     await wrapper.get('[data-testid="receive-keypad-btn-5"]').trigger('click')
@@ -189,13 +196,14 @@ describe('SendEcashPage.vue', () => {
     expect(mockNotify).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'positive',
-        message: 'eCash copied to clipboard',
+        message: 'Ecash copied to clipboard',
       }),
     )
   })
 
   it('shares exported notes from the export step', async () => {
     wrapper = createWrapper()
+    await flushPromises()
 
     await wrapper.get('[data-testid="receive-keypad-btn-2"]').trigger('click')
     await wrapper.get('[data-testid="receive-keypad-btn-5"]').trigger('click')
@@ -204,13 +212,14 @@ describe('SendEcashPage.vue', () => {
     await wrapper.get('[data-testid="send-ecash-share-btn"]').trigger('click')
 
     expect(mockShare).toHaveBeenCalledWith({
-      title: 'eCash for 25 sats',
+      title: 'Ecash for 25 sats',
       text: 'cashuAoffline123',
     })
   })
 
   it('returns to the home page from the export step', async () => {
     wrapper = createWrapper()
+    await flushPromises()
 
     await wrapper.get('[data-testid="receive-keypad-btn-2"]').trigger('click')
     await wrapper.get('[data-testid="receive-keypad-btn-5"]').trigger('click')
@@ -219,5 +228,18 @@ describe('SendEcashPage.vue', () => {
     await wrapper.get('[data-testid="send-ecash-go-home-btn"]').trigger('click')
 
     expect(mockRouterPush).toHaveBeenCalledWith({ name: '/' })
+  })
+
+  it('disables export for amounts that cannot be represented by current notes', async () => {
+    mockGetOfflineEcashNoteCounts.mockResolvedValue({
+      8192: 1,
+    })
+    wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.get('[data-testid="receive-keypad-btn-8"]').trigger('click')
+
+    expect(wrapper.get('[data-testid="send-ecash-create-btn"]').attributes('disabled')).toBe('')
+    expect(mockSpendEcashOffline).not.toHaveBeenCalled()
   })
 })

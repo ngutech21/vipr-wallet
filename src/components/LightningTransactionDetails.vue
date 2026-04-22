@@ -1,102 +1,99 @@
 <template>
   <div class="transaction-content q-pa-md">
-    <!-- Amount section -->
-    <div class="amount-section text-center q-py-lg">
-      <div
-        class="text-h4 text-weight-bold"
-        :class="transaction.type === 'send' ? 'text-negative' : 'text-positive'"
-      >
-        {{ transaction.type === 'receive' ? '+' : '-' }}{{ amountInSats }}
-      </div>
-      <div class="text-caption text-grey">≈ ${{ amountInFiat }} USD</div>
-    </div>
-
-    <!-- Transaction type and status badge -->
-    <div class="row items-center justify-between q-mb-lg">
-      <div class="transaction-type">
-        <q-icon
-          :name="transaction.type === 'send' ? 'arrow_upward' : 'arrow_downward'"
-          :color="transaction.type === 'send' ? 'negative' : 'positive'"
-          size="2rem"
-          class="q-mr-sm"
-        />
-        <span class="text-subtitle1">
-          {{ transaction.type === 'send' ? 'Sent Lightning' : 'Received Lightning' }}
-        </span>
+    <section class="transaction-card transaction-card--summary">
+      <div class="amount-section text-center">
+        <div
+          class="amount-value text-h4"
+          :class="transaction.type === 'send' ? 'text-negative' : 'text-positive'"
+        >
+          {{ transaction.type === 'receive' ? '+' : '-' }}{{ amountInSats }}
+        </div>
+        <div class="amount-fiat">≈ ${{ amountInFiat }} USD</div>
       </div>
 
-      <q-badge
-        :color="getStatusColor(transaction.outcome)"
-        class="status-badge q-pa-sm text-caption"
-        v-if="transaction.outcome"
-      >
-        {{ formatOutcome(transaction.outcome) }}
-      </q-badge>
-    </div>
+      <div class="summary-row">
+        <div class="transaction-type">
+          <q-icon
+            :name="transaction.type === 'send' ? 'arrow_upward' : 'arrow_downward'"
+            :color="transaction.type === 'send' ? 'negative' : 'positive'"
+            size="2rem"
+          />
+          <div class="summary-meta">
+            <span class="summary-title">
+              {{ transaction.type === 'send' ? 'Sent Lightning' : 'Received Lightning' }}
+            </span>
 
-    <!-- Time and date -->
-    <q-separator class="q-my-md" />
-
-    <div class="detail-row">
-      <div class="label">Created on</div>
-      <div class="value">{{ formatDate(transaction.timestamp) }}</div>
-    </div>
-
-    <!-- Federation -->
-    <q-separator class="q-my-md" />
-    <div class="detail-row">
-      <div class="label">Federation</div>
-      <div class="value">{{ federationTitle }}</div>
-    </div>
-
-    <!-- Gateway -->
-    <q-separator class="q-my-md" />
-    <div class="detail-row">
-      <div class="label">Gateway</div>
-      <div class="value">{{ transaction.gateway }}</div>
-    </div>
-
-    <!-- Fee for sent transactions -->
-    <q-separator class="q-my-md" v-if="transaction.type === 'send' && transaction.fee" />
-    <div v-if="transaction.type === 'send' && transaction.fee" class="detail-row">
-      <div class="label">Fee</div>
-      <div class="value">{{ Math.round(transaction.fee / 1000) }} sats</div>
-    </div>
-
-    <!-- Transaction ID -->
-    <q-separator class="q-my-md" />
-    <div class="detail-row">
-      <div class="label">Transaction ID</div>
-      <div class="value text-caption">{{ transaction.txId }}</div>
-    </div>
-
-    <!-- Payment Hash -->
-    <q-separator class="q-my-md" v-if="transaction.preimage" />
-    <div v-if="transaction.preimage" class="detail-row">
-      <div class="label">Preimage</div>
-      <div class="value text-caption">{{ transaction.preimage }}</div>
-    </div>
-
-    <!-- Lightning invoice section -->
-    <q-separator class="q-my-md" />
-    <div class="detail-row">
-      <div class="label">Lightning Invoice</div>
-      <q-btn
-        flat
-        dense
-        round
-        icon="content_copy"
-        @click="copyInvoice"
-        class="copy-button"
-        data-testid="lightning-transaction-details-copy-invoice-btn"
-      />
-    </div>
-
-    <div class="invoice-section q-mt-sm">
-      <div class="invoice-container">
-        <div class="invoice-text text-caption">{{ transaction.invoice }}</div>
+            <q-badge
+              :color="getStatusColor(transaction.outcome)"
+              class="status-badge q-pa-sm text-caption"
+              v-if="transaction.outcome"
+            >
+              {{ formatOutcome(transaction.outcome) }}
+            </q-badge>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
+
+    <section class="transaction-card">
+      <div class="detail-stack">
+        <div class="detail-row">
+          <div class="label">Created on</div>
+          <div class="value">{{ formatDate(transaction.timestamp) }}</div>
+        </div>
+        <div class="detail-row detail-row--separated">
+          <div class="label">Federation</div>
+          <div class="value">{{ federationTitle }}</div>
+        </div>
+        <div class="detail-row detail-row--separated">
+          <div class="label">Gateway</div>
+          <div class="value">{{ transaction.gateway }}</div>
+        </div>
+        <div
+          v-if="transaction.type === 'send' && transaction.fee"
+          class="detail-row detail-row--separated"
+        >
+          <div class="label">Fee</div>
+          <div class="value">{{ Math.round(transaction.fee / 1000) }} sats</div>
+        </div>
+        <div class="detail-row detail-row--separated">
+          <div class="label">Transaction ID</div>
+          <div class="value text-caption">{{ transaction.txId }}</div>
+        </div>
+      </div>
+    </section>
+
+    <section v-if="transaction.preimage" class="transaction-card">
+      <div class="detail-stack">
+        <div class="detail-row">
+          <div class="label">Preimage</div>
+          <div class="value text-caption">{{ transaction.preimage }}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="transaction-card">
+      <div class="detail-row detail-row--header">
+        <div class="detail-row__heading">
+          <div class="label">Lightning Invoice</div>
+          <q-btn
+            flat
+            dense
+            round
+            icon="content_copy"
+            @click="copyInvoice"
+            class="copy-button"
+            data-testid="lightning-transaction-details-copy-invoice-btn"
+          />
+        </div>
+      </div>
+
+      <div class="invoice-section q-mt-sm">
+        <div class="invoice-container">
+          <div class="invoice-text text-caption">{{ transaction.invoice }}</div>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -182,46 +179,128 @@ async function copyInvoice() {
 
 <style lang="scss" scoped>
 .transaction-content {
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto;
+}
+
+.transaction-card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 14px 18px 18px;
+  margin-bottom: 16px;
+}
+
+.transaction-card--summary {
+  background:
+    radial-gradient(circle at top left, rgba(156, 39, 255, 0.14), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
 }
 
 .transaction-type {
   display: flex;
   align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.summary-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex-wrap: nowrap;
 }
 
 .status-badge {
-  border-radius: 12px;
-  padding: 4px 12px;
+  color: rgba(0, 0, 0, 0.82);
+  border-radius: 999px;
+  padding: 4px 10px;
   font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 .amount-section {
-  padding: 20px 0;
+  padding: 8px 0 18px;
+}
+
+.amount-value {
+  font-size: clamp(2.4rem, 6vw, 3rem);
+  line-height: 1.05;
+  font-weight: 700;
+  margin: 0;
+}
+
+.amount-fiat {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.95rem;
+}
+
+.summary-title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.detail-stack {
+  display: grid;
+  gap: 0;
 }
 
 .detail-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
   padding: 12px 0;
 
+  &--separated {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
   .label {
-    font-weight: 500;
-    color: white;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: rgba(255, 255, 255, 0.6);
   }
 
   .value {
-    max-width: 80%;
+    font-weight: 500;
+    max-width: 70%;
     word-break: break-all;
+    text-align: right;
   }
 }
 
+.detail-row--header {
+  justify-content: flex-start;
+  padding-top: 4px;
+  padding-bottom: 8px;
+}
+
+.detail-row__heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.copy-button {
+  color: rgba(255, 255, 255, 0.78);
+}
+
 .invoice-section {
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 8px;
-  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  padding: 14px 16px;
 
   .invoice-container {
     max-height: 80px;
@@ -237,7 +316,24 @@ async function copyInvoice() {
 /* Dark mode adjustments */
 .body--dark {
   .invoice-section {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+@media (max-width: 599px) {
+  .summary-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .value {
+      max-width: 100%;
+      text-align: left;
+    }
   }
 }
 </style>

@@ -7,46 +7,45 @@ meta:
   <q-page class="page-container">
     <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
 
-    <div class="content-container q-pa-md">
+    <div class="content-container">
       <q-btn
         flat
         round
         color="white"
         icon="close"
-        class="absolute-top-right q-ma-md"
+        class="success-close-btn"
         :to="{ name: '/' }"
         data-testid="sent-lightning-close-btn"
       />
 
-      <div class="success-icon-container">
-        <q-icon name="check_circle" size="4em" color="positive" />
+      <div class="success-shell">
+        <div class="success-icon">
+          <q-icon name="check_circle" size="3.5em" color="positive" />
+        </div>
+        <div class="success-title">Payment sent</div>
+        <div class="success-amount q-mt-md">{{ formatNumber(amount) }} sats</div>
+        <div class="success-subtitle q-mt-sm">Your Lightning payment was completed.</div>
+
+        <q-card flat class="success-card q-mt-xl">
+          <q-card-section class="summary-row">
+            <span class="summary-label">Amount</span>
+            <span class="summary-value">{{ formatNumber(amount) }} sats</span>
+          </q-card-section>
+          <q-separator dark inset />
+          <q-card-section class="summary-row">
+            <span class="summary-label">Network fee</span>
+            <span class="summary-value">{{ formatNumber(fee) }} mSats</span>
+          </q-card-section>
+        </q-card>
+
+        <q-btn
+          color="primary"
+          class="success-action-btn q-mt-xl"
+          :to="{ name: '/' }"
+          label="Back to home"
+          data-testid="sent-lightning-back-home-btn"
+        />
       </div>
-      <div class="text-h4 text-weight-bold q-mt-lg gradient-text">Payment Successful!</div>
-      <q-card class="payment-card q-mt-lg q-pa-md">
-        <div class="row justify-between items-center q-py-sm">
-          <div class="text-subtitle1 text-weight-medium">Amount</div>
-          <div class="text-h5 text-weight-bold">
-            {{ formatNumber(amount) }} <span class="text-caption">sats</span>
-          </div>
-        </div>
-
-        <q-separator class="q-my-sm opacity-4" />
-
-        <div class="row justify-between items-center q-py-sm">
-          <div class="text-subtitle1 text-weight-medium">Network Fee</div>
-          <div class="text-subtitle1 text-weight-bold">
-            {{ formatNumber(fee) }} <span class="text-caption">mSats</span>
-          </div>
-        </div>
-      </q-card>
-      <q-btn
-        flat
-        color="white"
-        class="q-mt-xl"
-        :to="{ name: '/' }"
-        label="Back to Home"
-        data-testid="sent-lightning-back-home-btn"
-      />
     </div>
   </q-page>
 </template>
@@ -127,11 +126,10 @@ onUnmounted(() => {
 
 <style scoped>
 .page-container {
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
   position: relative;
-  background: linear-gradient(145deg, var(--q-primary) 0%, #8000ff 100%);
+  background:
+    radial-gradient(circle at top left, rgba(128, 0, 255, 0.22), transparent 36%),
+    linear-gradient(180deg, #171717 0%, #121212 100%);
   min-height: 100vh;
   overflow: hidden;
 }
@@ -149,31 +147,74 @@ onUnmounted(() => {
 .content-container {
   position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
   z-index: 2;
-}
-
-/* Make text more visible */
-.text-white {
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.payment-card {
   width: 100%;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-.success-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 16px;
-  max-width: 400px;
+  max-width: 700px;
   margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.success-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.success-shell {
+  width: 100%;
+  max-width: 560px;
+  text-align: center;
+  color: white;
+}
+
+.success-icon {
+  margin-bottom: 12px;
+}
+
+.success-title {
+  font-size: 1.9rem;
+  font-weight: 700;
+}
+
+.success-amount {
+  font-size: 2.75rem;
+  font-weight: 700;
+}
+
+.success-subtitle {
+  color: #b3b3b3;
+}
+
+.success-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  color: white;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.summary-label {
+  color: #9e9e9e;
+}
+
+.summary-value {
+  font-weight: 600;
+}
+
+.success-action-btn {
+  width: 100%;
+  min-height: 54px;
+  border-radius: 18px;
 }
 </style>

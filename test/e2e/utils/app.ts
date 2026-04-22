@@ -38,10 +38,12 @@ export async function navigateViaFooterTab(
 
 export async function continuePastStartupWizardIfNeeded(page: Page): Promise<void> {
   const startupWizardPage = page.getByTestId('startup-wizard-page')
-  const createRadio = page.getByTestId('startup-wizard-create-radio')
+  const createButton = page.getByTestId('startup-wizard-create-btn')
+  const doneButton = page.getByTestId('startup-wizard-done-btn')
   const shouldContinueWizard =
     (await startupWizardPage.isVisible().catch(() => false)) ||
-    (await createRadio.isVisible().catch(() => false))
+    (await createButton.isVisible().catch(() => false)) ||
+    (await doneButton.isVisible().catch(() => false))
 
   if (shouldContinueWizard) {
     const installContinueButton = page.getByTestId('startup-wizard-install-next-btn')
@@ -53,23 +55,32 @@ export async function continuePastStartupWizardIfNeeded(page: Page): Promise<voi
       await installContinueButton.click()
     }
 
-    await expect(createRadio).toBeVisible({ timeout: 15_000 })
-    await createRadio.click()
-    await page.getByTestId('startup-wizard-choice-next-btn').click()
+    const canStartCreateFlow = await createButton.isVisible().catch(() => false)
 
-    const confirmWizardBackupButton = page.getByTestId('startup-wizard-backup-confirm-btn')
-    await expect(confirmWizardBackupButton).toBeVisible({ timeout: 20_000 })
-    await confirmWizardBackupButton.click()
+    if (canStartCreateFlow) {
+      await createButton.click()
 
-    await expect
-      .poll(
-        () =>
-          page.evaluate((key) => window.localStorage.getItem(key), MNEMONIC_BACKUP_CONFIRMED_KEY),
-        {
-          timeout: 20_000,
-        },
-      )
-      .toBe('1')
+      const skipButton = page.getByTestId('startup-wizard-skip-btn')
+      await expect(skipButton).toBeVisible({ timeout: 15_000 })
+      await skipButton.click()
+
+      const confirmWizardBackupButton = page.getByTestId('startup-wizard-backup-confirm-btn')
+      await expect(confirmWizardBackupButton).toBeVisible({ timeout: 20_000 })
+      await confirmWizardBackupButton.click()
+
+      await expect
+        .poll(
+          () =>
+            page.evaluate((key) => window.localStorage.getItem(key), MNEMONIC_BACKUP_CONFIRMED_KEY),
+          {
+            timeout: 20_000,
+          },
+        )
+        .toBe('1')
+    }
+
+    await expect(doneButton).toBeVisible({ timeout: 20_000 })
+    await doneButton.click()
 
     await waitForHomePageReady(page)
     return

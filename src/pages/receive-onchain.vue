@@ -9,87 +9,86 @@ meta:
     enter-active-class="animated slideInLeft"
     leave-active-class="animated slideOutLeft"
   >
-    <q-page class="dark-gradient" data-testid="receive-onchain-page">
-      <q-toolbar class="header-section">
+    <q-page class="column dark-gradient receive-onchain-page" data-testid="receive-onchain-page">
+      <div class="receive-onchain-topbar">
         <q-btn
           flat
           round
           icon="arrow_back"
           @click="goBack"
+          class="receive-onchain-topbar__back"
           data-testid="receive-onchain-back-btn"
         />
-        <q-toolbar-title class="text-center no-wrap">Receive Onchain</q-toolbar-title>
-        <div class="q-ml-md" style="width: 40px"></div>
-      </q-toolbar>
-
-      <div v-if="isGenerating" class="flex flex-center full-width q-mt-xl">
-        <q-spinner color="primary" size="3em" />
-        <div class="q-mt-md text-h6">Generating Bitcoin Address...</div>
       </div>
 
-      <div v-else class="column items-center justify-center">
-        <q-card v-if="bitcoinAddress" class="qr-card">
-          <q-card-section class="qr-container">
-            <qrcode-vue
-              :value="bitcoinAddress"
-              level="M"
-              render-as="svg"
-              :size="0"
-              class="responsive-qr"
-            />
-          </q-card-section>
-          <q-separator />
-          <q-card-section>
-            <div class="text-caption text-grey-7 q-mb-sm">Bitcoin Address</div>
-            <div class="row items-center q-gutter-sm">
-              <q-input
-                v-model="bitcoinAddress"
-                readonly
-                class="col"
-                dense
-                data-testid="receive-onchain-address-input"
-              />
-              <q-btn
-                icon="content_copy"
-                flat
-                @click="copyToClipboard"
-                data-testid="receive-onchain-copy-btn"
-              />
-              <q-btn
-                v-if="isSupported"
-                icon="share"
-                flat
-                @click="shareAddress"
-                data-testid="receive-onchain-share-btn"
-              />
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
+      <div class="receive-onchain-content">
+        <div v-if="isGenerating" class="amount-entry-container task-card text-center q-pa-xl">
+          <q-spinner color="primary" size="3em" />
+          <div class="section-title q-mt-md">Generating Bitcoin address...</div>
+        </div>
 
-      <div v-if="bitcoinAddress" class="column items-center justify-center q-mt-md q-px-md">
-        <q-card flat class="glass-effect full-width" style="max-width: 512px">
-          <q-card-section>
-            <div class="text-center">
-              <div class="text-h6 q-mb-sm" data-testid="receive-onchain-status-text">
+        <template v-else>
+          <q-card v-if="bitcoinAddress" flat class="task-card qr-card q-mb-md">
+            <q-card-section class="qr-container">
+              <qrcode-vue
+                :value="bitcoinAddress"
+                level="M"
+                render-as="svg"
+                :size="0"
+                class="responsive-qr"
+              />
+            </q-card-section>
+            <q-separator dark />
+            <q-card-section>
+              <div class="section-title q-mb-sm">Bitcoin address</div>
+              <div class="row items-center q-gutter-sm no-wrap">
+                <q-input
+                  v-model="bitcoinAddress"
+                  readonly
+                  filled
+                  dense
+                  class="col custom-input"
+                  data-testid="receive-onchain-address-input"
+                />
+                <q-btn
+                  icon="content_copy"
+                  flat
+                  round
+                  @click="copyToClipboard"
+                  data-testid="receive-onchain-copy-btn"
+                />
+                <q-btn
+                  v-if="isSupported"
+                  icon="share"
+                  flat
+                  round
+                  @click="shareAddress"
+                  data-testid="receive-onchain-share-btn"
+                />
+              </div>
+            </q-card-section>
+          </q-card>
+
+          <q-card v-if="bitcoinAddress" flat class="task-card status-card q-mb-md">
+            <q-card-section class="text-center">
+              <div class="section-title q-mb-sm" data-testid="receive-onchain-status-text">
                 {{ depositStatusText }}
                 <q-spinner v-if="isWaitingForDeposit" size="20px" class="q-ml-sm" />
               </div>
               <div
                 v-if="confirmationInfo"
-                class="text-caption text-grey-7"
+                class="text-caption text-grey"
                 data-testid="receive-onchain-confirmation-info"
               >
                 {{ confirmationInfo }}
               </div>
-            </div>
-          </q-card-section>
-        </q-card>
-
-        <div class="q-mt-md text-caption text-grey-7 text-center">
-          Send any amount of Bitcoin to this address.<br />
-          Funds will be credited after confirmations.
-        </div>
+              <div class="text-caption text-grey q-mt-sm">
+                Send any amount of Bitcoin to this address. Funds will be credited after
+                confirmations.
+              </div>
+            </q-card-section>
+          </q-card>
+        </template>
       </div>
     </q-page>
   </transition>
@@ -325,7 +324,7 @@ async function copyToClipboard() {
 async function shareAddress() {
   logger.ui.debug('Sharing Bitcoin address')
   await share({
-    title: 'Bitcoin Address',
+    title: 'Bitcoin address',
     text: bitcoinAddress.value,
   })
 }
@@ -337,10 +336,36 @@ async function goBack() {
 </script>
 
 <style scoped>
+.receive-onchain-page {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.receive-onchain-topbar {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 12px 16px 4px;
+}
+
+.receive-onchain-topbar__back {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.receive-onchain-content {
+  width: 100%;
+  padding: 0 16px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.amount-entry-container,
 .qr-card {
   width: 100%;
-  max-width: 512px;
-  margin-bottom: 0;
+  max-width: 560px;
 }
 
 .qr-container {
@@ -356,9 +381,35 @@ async function goBack() {
   height: 100%;
 }
 
-.glass-effect {
-  background-color: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
+.task-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+}
+
+.status-card {
+  width: 100%;
+  max-width: 560px;
+}
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.custom-input :deep(.q-field__control) {
+  background-color: rgba(255, 255, 255, 0.05);
   border-radius: 16px;
+}
+
+.custom-input :deep(.q-field__native),
+.custom-input :deep(.q-field__prefix),
+.custom-input :deep(.q-field__suffix),
+.custom-input :deep(.q-field__input) {
+  color: white;
+}
+
+.text-grey {
+  color: #9e9e9e;
 }
 </style>

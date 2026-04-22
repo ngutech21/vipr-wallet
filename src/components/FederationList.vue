@@ -3,17 +3,14 @@
     <q-card
       v-for="fedi in federations"
       :key="fedi.federationId"
-      :class="['federation-card q-mb-md', isSelected(fedi) ? 'federation-selected' : '']"
+      :class="['federation-card', isSelected(fedi) ? 'federation-selected' : '']"
       flat
-      bordered
       @click="selectFederation(fedi)"
       :data-testid="`federation-list-item-${fedi.federationId}`"
     >
-      <div v-if="isSelected(fedi)" class="selection-indicator"></div>
-
       <q-item>
         <q-item-section avatar>
-          <q-avatar size="42px" v-if="fedi?.metadata?.federation_icon_url">
+          <q-avatar size="44px" v-if="fedi?.metadata?.federation_icon_url">
             <q-img
               :src="fedi?.metadata?.federation_icon_url"
               loading="eager"
@@ -22,19 +19,18 @@
             />
           </q-avatar>
           <template v-else>
-            <q-avatar color="grey-3" text-color="grey-7" class="logo q-mr-md">
+            <q-avatar color="grey-3" text-color="grey-7" class="logo q-mr-md" size="44px">
               <q-icon name="account_balance" />
             </q-avatar>
           </template>
         </q-item-section>
 
-        <!-- Federation details -->
         <q-item-section>
-          <q-item-label class="text-weight-medium">{{ fedi.title }}</q-item-label>
-          <q-item-label caption>
+          <q-item-label class="federation-title-row">
+            <span class="federation-title">{{ fedi.title }}</span>
             <q-chip
               size="sm"
-              :color="isSelected(fedi) ? 'primary' : 'grey-7'"
+              :color="isSelected(fedi) ? 'primary' : 'grey-8'"
               text-color="white"
               dense
               class="status-chip"
@@ -42,24 +38,22 @@
             >
               {{ isSelected(fedi) ? 'Active' : 'Available' }}
             </q-chip>
-            <span class="federation-id q-ml-sm">ID: {{ truncateId(fedi.federationId) }}</span>
+          </q-item-label>
+          <q-item-label caption class="federation-summary">
+            {{ federationSummary(fedi) }}
           </q-item-label>
         </q-item-section>
 
-        <!-- Action buttons -->
         <q-item-section side>
-          <div class="row items-center">
-            <q-btn
-              flat
-              round
-              icon="arrow_forward"
-              :color="isSelected(fedi) ? 'primary' : 'grey'"
-              size="sm"
-              class="q-mr-sm"
-              :to="{ name: '/federation/[id]', params: { id: String(fedi.federationId) } }"
-              :data-testid="`federation-list-details-btn-${fedi.federationId}`"
-            />
-          </div>
+          <q-btn
+            flat
+            round
+            icon="chevron_right"
+            :color="isSelected(fedi) ? 'primary' : 'grey-5'"
+            size="sm"
+            :to="{ name: '/federation/[id]', params: { id: String(fedi.federationId) } }"
+            :data-testid="`federation-list-details-btn-${fedi.federationId}`"
+          />
         </q-item-section>
       </q-item>
     </q-card>
@@ -87,9 +81,23 @@ function isSelected(fedi: Federation): boolean {
   return fedi.federationId === selectedFederation.value?.federationId
 }
 
-function truncateId(id: string): string {
-  if (id.length <= 12) return id
-  return `${id.substring(0, 6)}...${id.substring(id.length - 6)}`
+function federationSummary(fedi: Federation): string {
+  const summaryParts = [
+    fedi.guardians != null && fedi.guardians.length > 0
+      ? formatCountLabel(fedi.guardians.length, 'guardian')
+      : null,
+    fedi.modules.length > 0 ? formatCountLabel(fedi.modules.length, 'module') : null,
+  ].filter((part): part is string => part != null)
+
+  if (summaryParts.length > 0) {
+    return summaryParts.join(' • ')
+  }
+
+  return 'Ready to use'
+}
+
+function formatCountLabel(count: number, noun: string): string {
+  return count === 1 ? `1 ${noun}` : `${count} ${noun}s`
 }
 </script>
 
@@ -97,44 +105,52 @@ function truncateId(id: string): string {
 .federation-list {
   display: flex;
   flex-direction: column;
+  gap: 12px;
 }
 
 .federation-card {
-  position: relative;
   transition: all 0.2s ease;
-  border-radius: 12px;
+  border-radius: 20px;
   overflow: hidden;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   &.federation-selected {
-    background: rgba(var(--q-primary-rgb), 0.1);
+    background: rgba(var(--q-primary-rgb), 0.08);
     border-color: var(--q-primary);
   }
 }
 
-.selection-indicator {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: var(--q-primary);
-  border-radius: 4px 0 0 4px;
+.federation-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.federation-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.federation-summary {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 0.9rem;
 }
 
 .status-chip {
-  height: 18px;
-  font-size: 10px;
-}
-
-.federation-id {
-  opacity: 0.6;
-  font-size: 11px;
+  height: 22px;
+  font-size: 0.7rem;
+  letter-spacing: 0.01em;
+  flex-shrink: 0;
 }
 </style>

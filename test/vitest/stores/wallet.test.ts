@@ -31,7 +31,7 @@ import {
   useWalletStore,
 } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
-import type { TxOutputSummary } from '@fedimint/core'
+import type { Transactions, TxOutputSummary } from '@fedimint/core'
 
 function createFederation(overrides: Partial<Federation> = {}): Federation {
   return {
@@ -71,6 +71,14 @@ function createWalletMock(balanceMsats: number) {
       sendOnchain: vi.fn(),
     },
   }
+}
+
+function createHiddenTransaction(operationId: string): Transactions {
+  return {
+    kind: 'unknown',
+    operationId,
+    timestamp: 1,
+  } as unknown as Transactions
 }
 
 describe('wallet store', () => {
@@ -806,6 +814,62 @@ describe('wallet store', () => {
     ])
     expect(page.nextCursor).toEqual(secondPageCursor)
     expect(page.hasMore).toBe(true)
+  })
+
+  it('getTransactionsPage with visibleOnly skips non-renderable transactions when paging', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+    const hiddenCursor = {
+      operation_id: 'hidden-op-1',
+      creation_time: {
+        secs_since_epoch: 1_234_567_890,
+        nanos_since_epoch: 0,
+      },
+    }
+    const firstPageTailCursor = {
+      operation_id: 'hidden-tail-op-1',
+      creation_time: {
+        secs_since_epoch: 1_234_567_891,
+        nanos_since_epoch: 0,
+      },
+    }
+    const visibleCursor = {
+      operation_id: 'wallet-op-2',
+      creation_time: {
+        secs_since_epoch: 1_234_567_892,
+        nanos_since_epoch: 0,
+      },
+    }
+
+    wallet.federation.listTransactions
+      .mockResolvedValueOnce([createHiddenTransaction('hidden-op-1')])
+      .mockResolvedValueOnce([
+        {
+          kind: 'wallet',
+          operationId: 'wallet-op-2',
+          type: 'deposit',
+          onchainAddress: 'bc1qvisible',
+          amountMsats: 2_000,
+          fee: 0,
+          timestamp: 2,
+        },
+      ])
+
+    wallet.federation.listOperations
+      .mockResolvedValueOnce([
+        [hiddenCursor, { meta: {} }],
+        [firstPageTailCursor, { meta: {} }],
+      ])
+      .mockResolvedValueOnce([[visibleCursor, { meta: {} }]])
+
+    walletStore.wallet = wallet as never
+
+    const page = await walletStore.getTransactionsPage(1, undefined, { visibleOnly: true })
+
+    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(1, 2, undefined)
+    expect(wallet.federation.listTransactions).toHaveBeenNthCalledWith(2, 2, firstPageTailCursor)
+    expect(page.transactions.map((transaction) => transaction.operationId)).toEqual(['wallet-op-2'])
+    expect(page.hasMore).toBe(false)
   })
 
   it('getTransactionsPage clears the cursor when the backend is exhausted', async () => {

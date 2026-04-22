@@ -1,30 +1,26 @@
 <template>
   <div class="payment-verification">
-    <q-card flat class="glass-effect q-mb-lg">
-      <q-card-section>
-        <div class="row q-mb-sm">
-          <div class="col-4 text-weight-medium text-white-8">Amount</div>
-          <div class="col text-white text-weight-bold">{{ decodedInvoice.amount }} sats</div>
-        </div>
+    <div class="payment-details-card q-mb-lg">
+      <div class="payment-details-row">
+        <div class="payment-details-label">Amount</div>
+        <div class="payment-details-value">{{ decodedInvoice.amount }} sats</div>
+      </div>
 
-        <div class="row q-mb-sm">
-          <div class="col-4 text-weight-medium text-white-8">Description</div>
-          <div class="col text-white text-weight-bold">{{ decodedInvoice.description }}</div>
-        </div>
+      <div class="payment-details-row">
+        <div class="payment-details-label">Description</div>
+        <div class="payment-details-value">{{ decodedInvoice.description }}</div>
+      </div>
 
-        <div class="row q-mb-sm">
-          <div class="col-4 text-weight-medium text-white-8">Payment Hash</div>
-          <div class="col text-white text-weight-bold text-wrap">
-            {{ decodedInvoice.paymentHash }}
-          </div>
-        </div>
+      <div class="payment-details-row">
+        <div class="payment-details-label">Payment hash</div>
+        <div class="payment-details-value text-wrap">{{ decodedInvoice.paymentHash }}</div>
+      </div>
 
-        <div class="row q-mb-sm">
-          <div class="col-4 text-weight-medium text-white-8">Expires</div>
-          <div class="col text-white text-weight-bold">{{ formatExpiry }}</div>
-        </div>
-      </q-card-section>
-    </q-card>
+      <div class="payment-details-row payment-details-row--last">
+        <div class="payment-details-label">Expires</div>
+        <div class="payment-details-value">{{ formatExpiry }}</div>
+      </div>
+    </div>
 
     <div class="q-mt-md payment-slider-container">
       <q-slide-item
@@ -94,8 +90,41 @@ function onSlideAction({
   padding-bottom: 20px;
 }
 
-.text-white-8 {
-  color: rgba(255, 255, 255, 0.8);
+.payment-details-card {
+  padding: 16px 18px;
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.025)),
+    rgba(18, 18, 18, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.payment-details-row {
+  display: grid;
+  grid-template-columns: minmax(92px, 120px) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.payment-details-row:first-child {
+  padding-top: 0;
+}
+
+.payment-details-row--last {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.payment-details-label {
+  color: rgba(255, 255, 255, 0.62);
+  font-weight: 600;
+}
+
+.payment-details-value {
+  color: white;
+  font-weight: 600;
 }
 
 /* Payment Slider Styling */
@@ -164,5 +193,12 @@ function onSlideAction({
 /* Animation for successful slide */
 .q-slide-item__content {
   transition: transform 0.3s;
+}
+
+@media (max-width: 599px) {
+  .payment-details-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
 }
 </style>

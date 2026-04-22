@@ -4,7 +4,7 @@ import StartupWizardPage from 'src/pages/startup-wizard.vue'
 
 type OnboardingStoreMock = {
   flow: 'create' | 'restore' | null
-  step: 'install' | 'choice' | 'backup' | 'restore'
+  step: 'install' | 'welcome' | 'custody' | 'federation' | 'backup' | 'restore' | 'done'
   status: 'in_progress' | 'complete'
   normalizeForWalletState: ReturnType<typeof vi.fn>
   start: ReturnType<typeof vi.fn>
@@ -42,7 +42,7 @@ const walletStoreMock = vi.hoisted(() => ({
 
 const onboardingStoreMock: OnboardingStoreMock = vi.hoisted(() => ({
   flow: null,
-  step: 'choice',
+  step: 'welcome',
   status: 'complete',
   normalizeForWalletState: vi.fn(),
   start: vi.fn(),
@@ -79,17 +79,10 @@ const SlotStub = {
 }
 
 const QBtnStub = {
-  props: ['label', 'disable', 'loading'],
+  props: ['label', 'disable', 'loading', 'to'],
   emits: ['click'],
   template:
-    '<button v-bind="$attrs" :disabled="disable || loading" @click="$emit(\'click\')">{{ label }}</button>',
-}
-
-const QRadioStub = {
-  props: ['modelValue', 'val', 'disable'],
-  emits: ['update:modelValue'],
-  template:
-    '<input v-bind="$attrs" type="radio" :disabled="disable" :checked="modelValue === val" @change="$emit(\'update:modelValue\', val)" />',
+    '<button v-bind="$attrs" :disabled="disable || loading" @click="$emit(\'click\')">{{ label }}<slot /></button>',
 }
 
 const QInputStub = {
@@ -143,12 +136,10 @@ function createWrapper() {
         'q-page': SlotStub,
         'q-card': SlotStub,
         'q-card-section': SlotStub,
-        'q-stepper': SlotStub,
-        'q-step': SlotStub,
         'q-btn': QBtnStub,
-        'q-radio': QRadioStub,
         'q-input': QInputStub,
         'q-icon': QIconStub,
+        'q-separator': true,
       },
     },
   })
@@ -171,24 +162,22 @@ describe('StartupWizardPage', () => {
     walletStoreMock.openWallet.mockResolvedValue()
 
     onboardingStoreMock.flow = null
-    onboardingStoreMock.step = 'choice'
+    onboardingStoreMock.step = 'welcome'
     onboardingStoreMock.status = 'complete'
     onboardingStoreMock.start.mockImplementation((flow: 'create' | 'restore') => {
       onboardingStoreMock.flow = flow
       onboardingStoreMock.status = 'in_progress'
-      onboardingStoreMock.step = flow === 'create' ? 'backup' : 'restore'
+      onboardingStoreMock.step = flow === 'create' ? 'welcome' : 'restore'
     })
-    onboardingStoreMock.goToStep.mockImplementation(
-      (step: 'install' | 'choice' | 'backup' | 'restore') => {
-        onboardingStoreMock.step = step
-      },
-    )
+    onboardingStoreMock.goToStep.mockImplementation((step: OnboardingStoreMock['step']) => {
+      onboardingStoreMock.step = step
+    })
     onboardingStoreMock.markInProgress.mockImplementation(() => {
       onboardingStoreMock.status = 'in_progress'
     })
     onboardingStoreMock.complete.mockImplementation(() => {
       onboardingStoreMock.flow = null
-      onboardingStoreMock.step = 'choice'
+      onboardingStoreMock.step = 'welcome'
       onboardingStoreMock.status = 'complete'
     })
   })
@@ -207,57 +196,43 @@ describe('StartupWizardPage', () => {
     expect(onboardingStoreMock.goToStep).toHaveBeenCalledWith('install')
   })
 
-  it('shows generic install guidance on desktop browsers', async () => {
-    const wrapper = createWrapper()
-    await flushPromises()
-
-    expect(wrapper.find('[data-testid="startup-wizard-install-panel"]').exists()).toBe(true)
-    expect(wrapper.text()).toContain('Install on your phone before setup')
-    expect(wrapper.text()).toContain('On iPhone, open Vipr in Safari')
-    expect(onboardingStoreMock.goToStep).toHaveBeenCalledWith('install')
-  })
-
-  it('hides install guidance when already running in standalone mode', async () => {
-    setUserAgent(
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
-    )
+  it('starts the create path and shows the custody screen', async () => {
     setStandaloneState({ matches: true, standalone: true })
 
     const wrapper = createWrapper()
     await flushPromises()
 
-    expect(wrapper.find('[data-testid="startup-wizard-install-panel"]').exists()).toBe(false)
+    await wrapper.find('[data-testid="startup-wizard-create-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('[data-testid="startup-wizard-custody-step"]').exists()).toBe(true)
+    expect(onboardingStoreMock.start).toHaveBeenCalledWith('create')
+    expect(onboardingStoreMock.goToStep).toHaveBeenCalledWith('custody')
   })
 
-  it('create flow does not recreate mnemonic after going back to choice', async () => {
+  it('skip creates the wallet once and moves straight to backup', async () => {
+    setStandaloneState({ matches: true, standalone: true })
+
     const wrapper = createWrapper()
     await flushPromises()
 
-    await wrapper.find('[data-testid="startup-wizard-install-next-btn"]').trigger('click')
+    await wrapper.find('[data-testid="startup-wizard-create-btn"]').trigger('click')
+    await flushPromises()
+    await wrapper.find('[data-testid="startup-wizard-skip-btn"]').trigger('click')
     await flushPromises()
 
-    await wrapper.find('[data-testid="startup-wizard-create-radio"]').trigger('change')
-    await wrapper.find('[data-testid="startup-wizard-choice-next-btn"]').trigger('click')
-    await flushPromises()
     expect(walletStoreMock.createMnemonic).toHaveBeenCalledTimes(1)
-
-    await wrapper.find('[data-testid="startup-wizard-backup-back-btn"]').trigger('click')
-    await flushPromises()
-
-    await wrapper.find('[data-testid="startup-wizard-choice-next-btn"]').trigger('click')
-    await flushPromises()
-    expect(walletStoreMock.createMnemonic).toHaveBeenCalledTimes(1)
+    expect(wrapper.find('[data-testid="startup-wizard-backup-step"]').exists()).toBe(true)
   })
 
   it('restore flow enforces all 12 words before submit', async () => {
+    setStandaloneState({ matches: true, standalone: true })
+
     const wrapper = createWrapper()
     await flushPromises()
 
-    await wrapper.find('[data-testid="startup-wizard-install-next-btn"]').trigger('click')
+    await wrapper.find('[data-testid="startup-wizard-restore-btn"]').trigger('click')
     await flushPromises()
-
-    await wrapper.find('[data-testid="startup-wizard-restore-radio"]').trigger('change')
-    await wrapper.find('[data-testid="startup-wizard-choice-next-btn"]').trigger('click')
     await wrapper.find('[data-testid="startup-wizard-restore-submit-btn"]').trigger('click')
 
     expect(walletStoreMock.restoreMnemonic).not.toHaveBeenCalled()
@@ -268,15 +243,14 @@ describe('StartupWizardPage', () => {
     )
   })
 
-  it('restore flow submits normalized 12-word mnemonic and routes home', async () => {
+  it('restore flow submits normalized words and shows the done step', async () => {
+    setStandaloneState({ matches: true, standalone: true })
+
     const wrapper = createWrapper()
     await flushPromises()
 
-    await wrapper.find('[data-testid="startup-wizard-install-next-btn"]').trigger('click')
+    await wrapper.find('[data-testid="startup-wizard-restore-btn"]').trigger('click')
     await flushPromises()
-
-    await wrapper.find('[data-testid="startup-wizard-restore-radio"]').trigger('change')
-    await wrapper.find('[data-testid="startup-wizard-choice-next-btn"]').trigger('click')
 
     const words = [
       ' Alpha ',
@@ -317,19 +291,21 @@ describe('StartupWizardPage', () => {
       'kilo',
       'lima',
     ])
-    expect(routerReplaceMock).toHaveBeenCalledWith('/')
+    expect(wrapper.find('[data-testid="startup-wizard-done-step"]').exists()).toBe(true)
   })
 
-  it('resumes restore step after remount when persisted progress says restore', async () => {
-    onboardingStoreMock.flow = 'restore'
-    onboardingStoreMock.step = 'restore'
+  it('done step enters the app', async () => {
+    setStandaloneState({ matches: true, standalone: true })
+    onboardingStoreMock.flow = 'create'
+    onboardingStoreMock.step = 'done'
     onboardingStoreMock.status = 'in_progress'
-    walletStoreMock.loadMnemonic.mockResolvedValue(false)
 
     const wrapper = createWrapper()
     await flushPromises()
 
-    expect(onboardingStoreMock.goToStep).toHaveBeenCalledWith('restore')
-    wrapper.unmount()
+    await wrapper.find('[data-testid="startup-wizard-done-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(routerReplaceMock).toHaveBeenCalledWith('/')
   })
 })

@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md" data-testid="join-federation-preview-step">
+  <div class="preview-step q-pa-md" data-testid="join-federation-preview-step">
     <q-card flat class="preview-card q-mb-md">
       <q-card-section class="row items-center no-wrap">
         <q-avatar v-if="federation.metadata?.federation_icon_url" size="64px" class="q-mr-md">
@@ -11,98 +11,149 @@
 
         <div class="col">
           <div class="text-h6">{{ federation.title }}</div>
-          <div class="text-caption text-grey-5 preview-id">
-            {{ federation.federationId }}
+          <div class="text-body2 text-grey-5 q-mt-sm">
+            Review this federation before you join. Your ecash will be held by a federation you
+            trust.
           </div>
-          <div
-            v-if="federation.metadata?.default_currency"
-            class="text-caption text-grey-6 q-mt-xs"
-          >
-            {{ federation.metadata.default_currency }}
-          </div>
-        </div>
-      </q-card-section>
-    </q-card>
 
-    <q-card v-if="federation.modules.length > 0" flat class="preview-card q-mb-md">
-      <q-card-section>
-        <div class="text-subtitle1 q-mb-sm">Modules</div>
-        <div class="row q-gutter-sm">
-          <q-chip
-            v-for="module in federation.modules"
-            :key="module.kind"
-            color="positive"
-            text-color="black"
-            size="sm"
-          >
-            {{ module.kind }}
-          </q-chip>
+          <div class="row q-gutter-sm q-mt-md">
+            <q-chip v-if="defaultCurrency" color="primary" text-color="white" size="sm">
+              {{ defaultCurrency }}
+            </q-chip>
+            <q-chip v-if="networkLabel" color="grey-8" text-color="white" size="sm">
+              {{ networkLabel }}
+            </q-chip>
+            <q-chip color="grey-8" text-color="white" size="sm">
+              {{ guardianCount }} Guardians
+            </q-chip>
+            <q-chip v-if="moduleCount > 0" color="grey-8" text-color="white" size="sm">
+              {{ moduleCount }} Modules
+            </q-chip>
+          </div>
+
+          <div v-if="previewMessage" class="preview-note q-mt-md">
+            {{ previewMessage }}
+          </div>
+
+          <div v-if="welcomeMessage" class="preview-note q-mt-sm">
+            {{ welcomeMessage }}
+          </div>
         </div>
       </q-card-section>
     </q-card>
 
     <q-card v-if="importAmountSats != null" flat class="preview-card q-mb-md">
       <q-card-section>
-        <div class="text-subtitle1">Import Amount</div>
+        <div class="text-subtitle1 text-weight-medium">Import amount</div>
         <div class="text-h5 q-mt-sm">{{ formatNumber(importAmountSats) }} sats</div>
       </q-card-section>
     </q-card>
 
-    <FederationGuardians :guardians="federation.guardians ?? []" class="q-mb-lg" />
+    <q-card v-if="moduleKinds.length > 0" flat class="preview-card q-mb-md">
+      <q-card-section>
+        <div class="text-subtitle1 text-weight-medium">Supported modules</div>
+        <div class="row q-gutter-sm q-mt-sm">
+          <q-chip
+            v-for="moduleKind in moduleKinds"
+            :key="moduleKind"
+            color="positive"
+            text-color="black"
+            size="sm"
+          >
+            {{ moduleKind }}
+          </q-chip>
+        </div>
+      </q-card-section>
+    </q-card>
 
-    <div class="row q-col-gutter-sm">
-      <div class="col">
-        <q-btn
-          flat
-          label="Back"
-          color="primary"
-          class="full-width"
-          :disable="isSubmitting"
-          @click="emit('back')"
-        />
+    <q-expansion-item
+      class="detail-accordion q-mb-md"
+      expand-separator
+      icon="groups"
+      label="Guardians"
+      header-class="text-white"
+      data-testid="guardian-details-accordion"
+    >
+      <div class="detail-accordion__body q-pa-md">
+        <FederationGuardians :guardians="federation.guardians ?? []" :show-header="false" />
       </div>
-      <div class="col">
-        <q-btn
-          label="Join Federation"
-          color="primary"
-          class="full-width"
-          data-testid="add-federation-submit-btn"
-          :disable="isSubmitting"
-          :loading="isSubmitting"
-          :data-busy="isSubmitting ? 'true' : 'false'"
-          @click="emit('join')"
-        />
+    </q-expansion-item>
+
+    <q-expansion-item
+      class="detail-accordion"
+      expand-separator
+      icon="info"
+      label="Federation details"
+      header-class="text-white"
+    >
+      <div class="technical-details__body q-pa-md">
+        <div class="text-caption text-grey-5">Federation ID</div>
+        <div class="preview-id q-mt-xs">{{ federation.federationId }}</div>
+
+        <template v-if="federation.inviteCode !== ''">
+          <div class="text-caption text-grey-5 q-mt-md">Invite code</div>
+          <div class="preview-id q-mt-xs">{{ federation.inviteCode }}</div>
+        </template>
       </div>
-    </div>
+    </q-expansion-item>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useFormatters } from 'src/utils/formatter'
 import FederationGuardians from 'src/components/FederationGuardians.vue'
 import type { Federation } from 'src/types/federation'
 
-defineProps<{
+const props = defineProps<{
   federation: Federation
-  isSubmitting: boolean
   importAmountSats?: number | null
 }>()
 
 const { formatNumber } = useFormatters()
 
-const emit = defineEmits<{
-  back: []
-  join: []
-}>()
+const guardianCount = computed(() => props.federation.guardians?.length ?? 0)
+const moduleCount = computed(() => props.federation.modules.length)
+const moduleKinds = computed(() => props.federation.modules.map((module) => module.kind))
+const defaultCurrency = computed(() => props.federation.metadata?.default_currency ?? null)
+const networkLabel = computed(() => props.federation.network ?? null)
+const previewMessage = computed(() => props.federation.metadata?.preview_message ?? null)
+const welcomeMessage = computed(() => props.federation.metadata?.welcome_message ?? null)
 </script>
 
 <style scoped>
+.preview-step {
+  display: flex;
+  flex-direction: column;
+}
+
 .preview-card {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
 }
 
 .preview-id {
   word-break: break-all;
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+
+.preview-note {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.detail-accordion {
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.detail-accordion__body {
+  background: rgba(0, 0, 0, 0.1);
 }
 </style>

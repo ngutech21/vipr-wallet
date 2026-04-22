@@ -7,16 +7,15 @@
     :data-testid="`ecash-transaction-item-${transaction.operationId}`"
   >
     <q-item-section avatar>
-      <q-icon :name="getTransactionIcon()" :color="getTransactionColor()" size="md" />
+      <div class="transaction-icon-shell">
+        <q-icon :name="getTransactionIcon()" :color="getTransactionColor()" size="md" />
+      </div>
     </q-item-section>
 
     <q-item-section>
-      <q-item-label>{{ getTransactionLabel() }}</q-item-label>
-      <q-item-label caption>{{
-        date.formatDate(transaction.timestamp, 'MMMM D, YYYY - h:mm A')
-      }}</q-item-label>
-      <q-item-label caption v-if="transaction.outcome" class="text-orange">
-        Status: {{ formatOutcome(transaction.outcome) }}
+      <q-item-label class="transaction-title">{{ getTransactionLabel() }}</q-item-label>
+      <q-item-label caption class="transaction-meta">
+        {{ formattedTimestamp }}
       </q-item-label>
     </q-item-section>
 
@@ -25,7 +24,7 @@
         {{ getAmountPrefix() }}
         {{ amountInSats }} sats
       </div>
-      <div class="text-caption text-grey">≈ ${{ amountInFiat }} {{ 'usd' }}</div>
+      <div class="transaction-fiat">≈ ${{ amountInFiat }} usd</div>
     </q-item-section>
 
     <q-item-section side>
@@ -53,7 +52,9 @@ defineEmits<{
 
 const lightningStore = useLightningStore()
 const amountInFiat = ref<string>('0.00')
-
+const formattedTimestamp = computed(() => {
+  return date.formatDate(props.transaction.timestamp, 'MMM D, YYYY • h:mm A')
+})
 const amountInSats = computed(() => {
   return Math.floor(props.transaction.amountMsats / 1000).toLocaleString()
 })
@@ -109,21 +110,16 @@ function getAmountClass(): string {
 function getAmountPrefix(): string {
   return props.transaction.type === 'spend_oob' ? '- ' : '+ '
 }
-
-function formatOutcome(outcome: string): string {
-  return outcome.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
-}
 </script>
 
 // ...existing code...
 
 <style scoped>
 .transaction-item {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-  margin-bottom: 4px;
-  padding-left: 0px;
-  padding-right: 0px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  margin-bottom: 2px;
+  padding: 10px 0;
   transition: background-color 0.2s;
 
   &:hover {
@@ -135,8 +131,39 @@ function formatOutcome(outcome: string): string {
   }
 }
 
+.transaction-icon-shell {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.transaction-title {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.transaction-meta {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.54);
+}
+
 .transaction-amount {
-  font-weight: 500;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.transaction-fiat {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.48);
   text-align: right;
 }
 </style>

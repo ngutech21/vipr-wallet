@@ -1,402 +1,410 @@
 <template>
   <q-page class="dark-gradient" data-testid="settings-page">
-    <q-toolbar class="header-section q-mb-md">
-      <q-toolbar-title class="text-center">Settings</q-toolbar-title>
-    </q-toolbar>
-
-    <div class="q-px-md q-pb-xl">
-      <q-expansion-item
-        expand-separator
-        icon="account_balance_wallet"
-        label="Bitcoin Wallet"
-        caption="Lightning wallet connection settings"
-        header-class="settings-header"
-        expand-icon-class="text-primary"
-        data-testid="settings-bitcoin-wallet-section"
-      >
-        <q-card>
-          <q-card-section>
-            <div class="row items-center q-mb-md">
-              <div class="col-12 col-sm-8">
-                <div class="connection-status">
-                  <q-icon
-                    :name="connectedProvider ? 'check_circle' : 'radio_button_unchecked'"
-                    :class="connectedProvider ? 'text-positive' : 'text-grey-6'"
-                    size="md"
-                    class="q-mr-sm"
-                  />
-                  <div>
-                    <div class="text-subtitle1 q-mb-xs">
-                      {{ connectedProvider ? 'Connected' : 'Not Connected' }}
-                    </div>
-                    <div class="text-caption text-grey-8" v-if="connectedProvider">
-                      {{ connectedProvider }}
-                    </div>
-                    <div class="text-caption text-grey-8" v-else>
-                      Connect to send and receive payments via Lightning
+    <div class="settings-page q-px-md q-pt-md q-pb-xl">
+      <div class="settings-stack settings-stack--primary">
+        <q-expansion-item
+          class="settings-section settings-section--primary"
+          icon="account_balance_wallet"
+          label="Lightning"
+          caption="Connect wallet"
+          header-class="settings-header"
+          expand-icon-class="text-primary"
+          data-testid="settings-bitcoin-wallet-section"
+        >
+          <q-card>
+            <q-card-section class="settings-panel settings-panel--compact">
+              <div class="row items-center q-col-gutter-md">
+                <div class="col-12 col-sm-8">
+                  <div class="connection-status">
+                    <q-icon
+                      :name="connectedProvider ? 'check_circle' : 'radio_button_unchecked'"
+                      :class="connectedProvider ? 'text-positive' : 'text-grey-6'"
+                      size="md"
+                      class="q-mr-sm"
+                    />
+                    <div>
+                      <div class="text-subtitle1 q-mb-xs">
+                        {{ connectedProvider ? 'Connected' : 'Not Connected' }}
+                      </div>
+                      <div class="text-caption text-grey-8" v-if="connectedProvider">
+                        {{ connectedProvider }}
+                      </div>
+                      <div class="text-caption text-grey-8" v-else>
+                        Connect to send and receive payments via Lightning
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div class="col-12 col-sm-4 flex justify-end q-mt-sm q-mt-sm-none">
-                <q-btn
-                  :label="connectedProvider ? 'Change' : 'Connect'"
-                  :icon="connectedProvider ? 'swap_horiz' : 'bolt'"
-                  :color="connectedProvider ? 'secondary' : 'primary'"
-                  @click="configureBitcoinConnect"
-                  :flat="!!connectedProvider"
-                  :outline="!!connectedProvider"
-                  data-testid="settings-bitcoin-connect-btn"
-                />
-              </div>
-            </div>
-          </q-card-section>
-        </q-card>
-      </q-expansion-item>
-
-      <!-- Nostr Settings Section -->
-      <q-expansion-item
-        expand-separator
-        icon="forum"
-        label="Nostr Settings"
-        caption="Manage your Nostr relays"
-        header-class="settings-header"
-        expand-icon-class="text-primary"
-        data-testid="settings-nostr-section"
-      >
-        <q-card>
-          <q-card-section>
-            <!-- Relays List -->
-            <div class="text-subtitle2 q-mb-sm">Relays</div>
-            <q-list bordered separator class="rounded-borders q-mb-md">
-              <q-item v-for="(relay, index) in relays" :key="index">
-                <q-item-section>
-                  <q-item-label>{{ relay }}</q-item-label>
-                </q-item-section>
-                <q-item-section side>
+                <div class="col-12 col-sm-4 flex justify-end q-mt-sm q-mt-sm-none">
                   <q-btn
-                    flat
-                    round
-                    dense
-                    icon="delete"
-                    color="negative"
-                    size="sm"
-                    @click="removeRelay(relay)"
-                    :data-testid="`settings-remove-relay-btn-${index}`"
+                    :label="connectedProvider ? 'Change' : 'Connect'"
+                    :icon="connectedProvider ? 'swap_horiz' : 'bolt'"
+                    :color="connectedProvider ? 'secondary' : 'primary'"
+                    @click="configureBitcoinConnect"
+                    :flat="!!connectedProvider"
+                    :outline="!!connectedProvider"
+                    data-testid="settings-bitcoin-connect-btn"
                   />
-                </q-item-section>
-              </q-item>
-
-              <!-- Empty state -->
-              <q-item v-if="relays.length === 0">
-                <q-item-section>
-                  <q-item-label caption>No relays configured</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
-
-            <!-- Add new relay -->
-            <div class="row q-col-gutter-md items-center">
-              <div class="col-8">
-                <q-input
-                  v-model="newRelay"
-                  label="Add relay URL"
-                  outlined
-                  dense
-                  placeholder="Must start with wss://"
-                  class="relay-input"
-                  data-testid="settings-new-relay-input"
-                />
-              </div>
-              <div class="col-4">
-                <q-btn
-                  label="Add"
-                  icon="add"
-                  color="primary"
-                  class="full-width"
-                  :disable="!isValidRelayUrl"
-                  @click="addNewRelay"
-                  data-testid="settings-add-relay-btn"
-                />
-              </div>
-            </div>
-
-            <div class="q-mt-md">
-              <q-btn
-                label="Reset to Defaults"
-                outline
-                color="secondary"
-                icon="settings_backup_restore"
-                @click="resetRelays"
-                data-testid="settings-reset-relays-btn"
-              />
-            </div>
-          </q-card-section>
-        </q-card>
-      </q-expansion-item>
-
-      <q-expansion-item
-        expand-separator
-        icon="perm_contact_calendar"
-        label="Contacts"
-        caption="Import payable Nostr contacts for Lightning"
-        header-class="settings-header"
-        expand-icon-class="text-primary"
-        data-testid="settings-contacts-section"
-      >
-        <q-card>
-          <q-card-section>
-            <div class="contacts-section">
-              <div class="text-subtitle2 q-mb-sm">Sync Contacts</div>
-              <q-btn-toggle
-                v-model="contactSourceType"
-                unelevated
-                toggle-color="primary"
-                :options="contactSourceOptions"
-                class="q-mb-md full-width contacts-source-toggle"
-                data-testid="settings-contact-source-toggle"
-              />
-
-              <q-input
-                v-model="contactSourceValue"
-                outlined
-                :label="contactSourceLabel"
-                :placeholder="contactSourcePlaceholder"
-                class="relay-input"
-                data-testid="settings-contact-source-input"
-              />
-
-              <div class="text-caption text-grey-8 q-mt-xs">
-                {{ contactSourceHint }}
-              </div>
-
-              <div class="contacts-actions q-mt-md">
-                <q-btn
-                  label="Sync contacts"
-                  color="primary"
-                  class="full-width"
-                  :loading="isSyncingContacts"
-                  :disable="isSyncingContacts"
-                  @click="syncContacts"
-                  data-testid="settings-sync-contacts-btn"
-                />
-                <q-btn
-                  label="Clear contacts"
-                  outline
-                  color="secondary"
-                  class="full-width q-mt-sm"
-                  :disable="isSyncingContacts"
-                  @click="clearContacts"
-                  data-testid="settings-clear-contacts-btn"
-                />
-              </div>
-
-              <div
-                v-if="contactSyncError"
-                class="text-negative text-caption q-mt-sm"
-                data-testid="settings-contact-sync-error"
-              >
-                {{ contactSyncError }}
-              </div>
-
-              <div class="contacts-summary q-mt-md">
-                <div class="text-caption text-grey-8" data-testid="settings-contact-count">
-                  {{ syncedContacts.length }} imported contacts
-                </div>
-                <div
-                  v-if="lastSyncedLabel"
-                  class="text-caption text-grey-8 q-mt-xs"
-                  data-testid="settings-contact-last-synced"
-                >
-                  {{ lastSyncedLabel }}
                 </div>
               </div>
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
 
-              <q-list
-                bordered
-                separator
-                class="rounded-borders q-mt-md"
-                data-testid="settings-contact-list"
-              >
-                <q-item v-if="syncedContacts.length === 0">
-                  <q-item-section avatar>
-                    <div class="empty-contact-avatar" aria-hidden="true"></div>
-                  </q-item-section>
+        <!-- Nostr Section -->
+        <q-expansion-item
+          class="settings-section settings-section--primary"
+          icon="forum"
+          label="Nostr"
+          caption="Manage relays"
+          header-class="settings-header"
+          expand-icon-class="text-primary"
+          data-testid="settings-nostr-section"
+        >
+          <q-card>
+            <q-card-section class="settings-panel">
+              <!-- Relays List -->
+              <div class="text-subtitle2 q-mb-sm">Relays</div>
+              <q-list bordered separator class="rounded-borders settings-list q-mb-md">
+                <q-item v-for="(relay, index) in relays" :key="index">
                   <q-item-section>
-                    <q-item-label>No contacts imported yet</q-item-label>
-                    <q-item-label caption>
-                      Sync a NIP-05 or npub to import payable Nostr contacts.
-                    </q-item-label>
+                    <q-item-label>{{ relay }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section side>
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      icon="delete"
+                      color="negative"
+                      size="sm"
+                      @click="removeRelay(relay)"
+                      :data-testid="`settings-remove-relay-btn-${index}`"
+                    />
                   </q-item-section>
                 </q-item>
 
-                <q-item
-                  v-for="contact in visibleContacts"
-                  :key="contact.pubkey"
-                  :data-testid="`settings-contact-item-${contact.pubkey}`"
-                >
-                  <q-item-section avatar>
-                    <q-avatar v-if="contact.picture">
-                      <img :src="contact.picture" :alt="getContactDisplayName(contact)" />
-                    </q-avatar>
-                    <q-icon v-else name="account_circle" size="md" color="grey-5" />
-                  </q-item-section>
+                <!-- Empty state -->
+                <q-item v-if="relays.length === 0">
                   <q-item-section>
-                    <q-item-label>{{ getContactDisplayName(contact) }}</q-item-label>
-                    <q-item-label caption>{{ getContactSubtitle(contact) }}</q-item-label>
-                  </q-item-section>
-                  <q-item-section side>
-                    <q-chip dense outline :label="contact.lud16 ? 'Lightning Address' : 'LNURL'" />
+                    <q-item-label caption>No relays configured</q-item-label>
                   </q-item-section>
                 </q-item>
               </q-list>
 
-              <div
-                v-if="syncedContacts.length > 0"
-                class="row items-center justify-between q-mt-sm q-gutter-sm"
-              >
-                <div class="text-caption text-grey-8" data-testid="settings-contact-visible-count">
-                  Showing {{ visibleContacts.length }} of {{ syncedContacts.length }} contacts
+              <!-- Add new relay -->
+              <div class="row q-col-gutter-md items-center">
+                <div class="col-12 col-sm-8">
+                  <q-input
+                    v-model="newRelay"
+                    label="Add relay URL"
+                    outlined
+                    dense
+                    placeholder="Must start with wss://"
+                    class="relay-input"
+                    data-testid="settings-new-relay-input"
+                  />
                 </div>
+                <div class="col-12 col-sm-4">
+                  <q-btn
+                    label="Add"
+                    icon="add"
+                    color="primary"
+                    class="full-width"
+                    :disable="!isValidRelayUrl"
+                    @click="addNewRelay"
+                    data-testid="settings-add-relay-btn"
+                  />
+                </div>
+              </div>
+
+              <div class="q-mt-md">
                 <q-btn
-                  v-if="hasMoreContacts"
-                  label="Show more"
-                  flat
-                  color="primary"
-                  @click="showMoreContacts"
-                  data-testid="settings-show-more-contacts-btn"
+                  label="Reset to Defaults"
+                  outline
+                  color="secondary"
+                  icon="settings_backup_restore"
+                  @click="resetRelays"
+                  data-testid="settings-reset-relays-btn"
                 />
               </div>
-            </div>
-          </q-card-section>
-        </q-card>
-      </q-expansion-item>
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
 
-      <!-- App Version Section -->
-      <q-expansion-item
-        expand-separator
-        icon="info"
-        label="App Info & Updates"
-        caption="Version information and updates"
-        header-class="settings-header"
-        expand-icon-class="text-primary"
-      >
-        <q-card>
-          <q-card-section class="column">
-            <!-- Version information -->
-            <div class="q-mb-md">
-              <div class="text-subtitle1">App Version: {{ version }}</div>
-              <div class="text-subtitle1">Quasar Version: {{ quasarVersion }}</div>
-              <BuildInfo />
-            </div>
+        <q-expansion-item
+          class="settings-section settings-section--primary"
+          icon="perm_contact_calendar"
+          label="Contacts"
+          caption="Sync nostr contacts"
+          header-class="settings-header"
+          expand-icon-class="text-primary"
+          data-testid="settings-contacts-section"
+        >
+          <q-card>
+            <q-card-section class="settings-panel">
+              <div class="contacts-section">
+                <div class="text-subtitle2 q-mb-sm">Sync Contacts</div>
+                <q-btn-toggle
+                  v-model="contactSourceType"
+                  unelevated
+                  toggle-color="primary"
+                  :options="contactSourceOptions"
+                  class="q-mb-md full-width contacts-source-toggle"
+                  data-testid="settings-contact-source-toggle"
+                />
 
-            <!-- Update button below version info -->
-            <div>
-              <q-btn
-                :label="updateButtonLabel"
-                :icon="updateButtonIcon"
-                color="primary"
-                @click="handleUpdateAction"
-                class="q-mt-sm full-width"
-                data-testid="settings-check-updates-btn"
-                :loading="isUpdateActionRunning"
-                :disable="isUpdateActionRunning"
-              />
-              <div v-if="showApplyRestrictionHint" class="text-warning text-caption q-mt-sm">
-                Update is ready. Open Home or Settings to apply safely.
+                <q-input
+                  v-model="contactSourceValue"
+                  outlined
+                  :label="contactSourceLabel"
+                  :placeholder="contactSourcePlaceholder"
+                  class="relay-input"
+                  data-testid="settings-contact-source-input"
+                />
+
+                <div class="text-caption text-grey-8 q-mt-xs">
+                  {{ contactSourceHint }}
+                </div>
+
+                <div class="contacts-actions q-mt-md">
+                  <q-btn
+                    label="Sync contacts"
+                    color="primary"
+                    class="full-width"
+                    :loading="isSyncingContacts"
+                    :disable="isSyncingContacts"
+                    @click="syncContacts"
+                    data-testid="settings-sync-contacts-btn"
+                  />
+                  <q-btn
+                    label="Clear contacts"
+                    outline
+                    color="secondary"
+                    class="full-width q-mt-sm"
+                    :disable="isSyncingContacts"
+                    @click="clearContacts"
+                    data-testid="settings-clear-contacts-btn"
+                  />
+                </div>
+
+                <div
+                  v-if="contactSyncError"
+                  class="text-negative text-caption q-mt-sm"
+                  data-testid="settings-contact-sync-error"
+                >
+                  {{ contactSyncError }}
+                </div>
+
+                <div class="contacts-summary q-mt-md">
+                  <div class="text-caption text-grey-8" data-testid="settings-contact-count">
+                    {{ syncedContacts.length }} imported contacts
+                  </div>
+                  <div
+                    v-if="lastSyncedLabel"
+                    class="text-caption text-grey-8 q-mt-xs"
+                    data-testid="settings-contact-last-synced"
+                  >
+                    {{ lastSyncedLabel }}
+                  </div>
+                </div>
+
+                <q-list
+                  bordered
+                  separator
+                  class="rounded-borders settings-list q-mt-md"
+                  data-testid="settings-contact-list"
+                >
+                  <q-item v-if="syncedContacts.length === 0">
+                    <q-item-section avatar>
+                      <div class="empty-contact-avatar" aria-hidden="true"></div>
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>No contacts imported yet</q-item-label>
+                      <q-item-label caption>
+                        Sync a NIP-05 or npub to import payable Nostr contacts.
+                      </q-item-label>
+                    </q-item-section>
+                  </q-item>
+
+                  <q-item
+                    v-for="contact in visibleContacts"
+                    :key="contact.pubkey"
+                    :data-testid="`settings-contact-item-${contact.pubkey}`"
+                  >
+                    <q-item-section avatar>
+                      <q-avatar v-if="contact.picture">
+                        <img :src="contact.picture" :alt="getContactDisplayName(contact)" />
+                      </q-avatar>
+                      <q-icon v-else name="account_circle" size="md" color="grey-5" />
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>{{ getContactDisplayName(contact) }}</q-item-label>
+                      <q-item-label caption>{{ getContactSubtitle(contact) }}</q-item-label>
+                    </q-item-section>
+                    <q-item-section side>
+                      <q-chip
+                        dense
+                        outline
+                        :label="contact.lud16 ? 'Lightning Address' : 'LNURL'"
+                      />
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+
+                <div
+                  v-if="syncedContacts.length > 0"
+                  class="row items-center justify-between q-mt-sm q-gutter-sm"
+                >
+                  <div
+                    class="text-caption text-grey-8"
+                    data-testid="settings-contact-visible-count"
+                  >
+                    Showing {{ visibleContacts.length }} of {{ syncedContacts.length }} contacts
+                  </div>
+                  <q-btn
+                    v-if="hasMoreContacts"
+                    label="Show more"
+                    flat
+                    color="primary"
+                    @click="showMoreContacts"
+                    data-testid="settings-show-more-contacts-btn"
+                  />
+                </div>
               </div>
-            </div>
-          </q-card-section>
-        </q-card>
-      </q-expansion-item>
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
+      </div>
 
-      <!-- Personal Backup Section -->
-      <q-expansion-item
-        expand-separator
-        header-class="settings-header"
-        expand-icon-class="text-primary"
-      >
-        <template #header>
-          <q-item-section avatar>
-            <q-icon name="shield" />
-          </q-item-section>
-          <q-item-section data-testid="settings-personal-backup-section">
-            <q-item-label>Personal Backup</q-item-label>
-            <q-item-label caption>Backup your wallet with recovery words</q-item-label>
-          </q-item-section>
-        </template>
-        <q-card>
-          <q-card-section>
-            <div class="text-subtitle1 q-mb-md">
-              Create a backup of your wallet using recovery words. Write them down and store them
-              safely to recover your wallet if you lose access to this device.
-            </div>
-            <q-btn
-              label="Create Backup"
-              color="primary"
-              icon="backup"
-              :to="{ name: '/settings/backup' }"
-              class="full-width"
-              data-testid="settings-create-backup-btn"
-            />
-          </q-card-section>
-        </q-card>
-      </q-expansion-item>
+      <div class="settings-stack settings-stack--secondary">
+        <!-- Updates Section -->
+        <q-expansion-item
+          class="settings-section settings-section--secondary"
+          icon="info"
+          label="Updates"
+          caption="Check for updates"
+          header-class="settings-header"
+          expand-icon-class="text-primary"
+        >
+          <q-card>
+            <q-card-section class="settings-panel settings-panel--secondary">
+              <!-- Version information -->
+              <div class="settings-copy-block q-mb-md">
+                <div class="text-subtitle1">App Version: {{ version }}</div>
+                <div class="text-subtitle1">Quasar Version: {{ quasarVersion }}</div>
+                <BuildInfo />
+              </div>
 
-      <q-expansion-item
-        expand-separator
-        icon="code"
-        label="Source Code"
-        caption="View the project on GitHub"
-        header-class="settings-header"
-        expand-icon-class="text-primary"
-      >
-        <q-card>
-          <q-card-section>
-            <div class="text-subtitle2 q-mb-sm">
-              Built with ❤️ as free and open source software - check it out on GitHub
-            </div>
-            <q-btn
-              label="Open GitHub Repository"
-              icon="open_in_new"
-              color="primary"
-              :href="'https://github.com/ngutech21/vipr-wallet'"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="full-width"
-              data-testid="settings-open-github-btn"
-            />
-          </q-card-section>
-        </q-card>
-      </q-expansion-item>
+              <!-- Update button below version info -->
+              <div>
+                <q-btn
+                  :label="updateButtonLabel"
+                  :icon="updateButtonIcon"
+                  color="primary"
+                  @click="handleUpdateAction"
+                  class="q-mt-sm full-width"
+                  data-testid="settings-check-updates-btn"
+                  :loading="isUpdateActionRunning"
+                  :disable="isUpdateActionRunning"
+                />
+                <div v-if="showApplyRestrictionHint" class="text-warning text-caption q-mt-sm">
+                  Update is ready. Open Home or Settings to apply safely.
+                </div>
+              </div>
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
 
-      <!-- Danger Zone -->
-      <q-expansion-item
-        expand-separator
-        icon="warning"
-        label="Danger Zone"
-        caption="Delete all data and reset the app"
-        header-class="settings-header danger-header"
-        expand-icon-class="text-negative"
-      >
-        <q-card>
-          <q-card-section>
-            <div class="text-subtitle1 q-mb-md">
-              Deleting all data will remove your wallet connections, federations and all settings.
-              This cannot be undone.
-            </div>
-            <q-btn
-              label="Delete ALL Data"
-              color="negative"
-              icon="delete"
-              @click="deleteData"
-              class="full-width"
-              data-testid="settings-delete-data-btn"
-            />
-          </q-card-section>
-        </q-card>
-      </q-expansion-item>
+        <!-- Backup Section -->
+        <q-expansion-item
+          class="settings-section settings-section--secondary"
+          header-class="settings-header"
+          expand-icon-class="text-primary"
+        >
+          <template #header>
+            <q-item-section avatar>
+              <q-icon name="shield" />
+            </q-item-section>
+            <q-item-section data-testid="settings-personal-backup-section">
+              <q-item-label>Backup</q-item-label>
+              <q-item-label caption>Save recovery phrase</q-item-label>
+            </q-item-section>
+          </template>
+          <q-card>
+            <q-card-section class="settings-panel settings-panel--secondary">
+              <div class="settings-copy-block q-mb-md">
+                Create a backup of your wallet using your recovery phrase. Write it down and store
+                it safely to recover your wallet if you lose access to this device.
+              </div>
+              <q-btn
+                label="Create backup"
+                color="primary"
+                icon="backup"
+                :to="{ name: '/settings/backup' }"
+                class="full-width"
+                data-testid="settings-create-backup-btn"
+              />
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
+
+        <q-expansion-item
+          class="settings-section settings-section--secondary"
+          icon="code"
+          label="GitHub"
+          caption="View the project"
+          header-class="settings-header"
+          expand-icon-class="text-primary"
+        >
+          <q-card>
+            <q-card-section class="settings-panel settings-panel--secondary">
+              <div class="settings-copy-block q-mb-sm">
+                Built with ❤️ as free and open source software. You can review the project on
+                GitHub.
+              </div>
+              <q-btn
+                label="Open GitHub Repository"
+                icon="open_in_new"
+                color="primary"
+                :href="'https://github.com/ngutech21/vipr-wallet'"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="full-width"
+                data-testid="settings-open-github-btn"
+              />
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
+
+        <!-- Reset Section -->
+        <q-expansion-item
+          class="settings-section settings-section--danger"
+          icon="warning"
+          label="Reset"
+          caption="Clear local data"
+          header-class="settings-header danger-header"
+          expand-icon-class="text-negative"
+        >
+          <q-card>
+            <q-card-section class="settings-panel settings-panel--danger">
+              <div class="settings-copy-block q-mb-md">
+                Deleting all data will remove your wallet connections, federations and all settings.
+                This cannot be undone.
+              </div>
+              <q-btn
+                label="Delete ALL Data"
+                color="negative"
+                icon="delete"
+                @click="deleteData"
+                class="full-width"
+                data-testid="settings-delete-data-btn"
+              />
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
+      </div>
     </div>
   </q-page>
 </template>
@@ -409,7 +417,7 @@ defineOptions({
 import { version } from '../../../package.json'
 import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'
-import { Dialog, Notify } from 'quasar'
+import { Dialog } from 'quasar'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useNostrStore } from 'src/stores/nostr'
 import { useWalletStore } from 'src/stores/wallet'
@@ -542,102 +550,58 @@ async function checkForUpdates() {
   const result = await pwaUpdateStore.checkForUpdatesManual()
 
   if (result === 'update-ready') {
-    Notify.create({
-      message: 'Update ready',
-      color: 'positive',
-      position: 'top',
-    })
+    notify.success('Update ready')
     return
   }
 
   if (result === 'up-to-date') {
-    Notify.create({
-      message: 'No updates available',
-      color: 'info',
-      position: 'top',
-    })
+    notify.info('No updates available')
     return
   }
 
   if (result === 'checking') {
-    Notify.create({
-      message: 'Update is downloading in the background',
-      color: 'info',
-      position: 'top',
-    })
+    notify.info('Update is downloading in the background')
     return
   }
 
   if (result === 'not-supported') {
-    Notify.create({
-      message: 'Service Worker not supported',
-      color: 'negative',
-      position: 'top',
-    })
+    notify.error('Service Worker not supported')
     return
   }
 
   if (result === 'not-registered') {
-    Notify.create({
-      message: 'Service Worker not registered',
-      color: 'warning',
-      position: 'top',
-    })
+    notify.warning('Service Worker not registered')
     return
   }
 
-  Notify.create({
-    message: pwaUpdateStore.lastError ?? 'Error checking for updates',
-    color: 'negative',
-    position: 'top',
-  })
+  notify.error(pwaUpdateStore.lastError ?? 'Error checking for updates')
 }
 
 async function applyUpdate() {
   const result = await pwaUpdateStore.applyUpdate(route.name)
 
   if (result === 'blocked-route') {
-    Notify.create({
-      message: 'Update is ready. Open Home or Settings to apply safely.',
-      color: 'warning',
-      position: 'top',
-    })
+    notify.warning('Update is ready. Open Home or Settings to apply safely.')
     return
   }
 
   if (result === 'no-update') {
-    Notify.create({
-      message: 'No update is ready yet',
-      color: 'info',
-      position: 'top',
-    })
+    notify.info('No update is ready yet')
     return
   }
 
   if (result === 'checking') {
-    Notify.create({
-      message: 'Update is downloading in the background',
-      color: 'info',
-      position: 'top',
-    })
+    notify.info('Update is downloading in the background')
     return
   }
 
   if (result === 'not-supported') {
-    Notify.create({
-      message: 'Service Worker not supported',
-      color: 'negative',
-      position: 'top',
-    })
+    notify.error('Service Worker not supported')
     return
   }
 
   if (result === 'error') {
-    Notify.create({
-      message: pwaUpdateStore.lastError ?? 'Error applying update',
-      color: 'negative',
-      position: 'top',
-    })
+    notify.error(pwaUpdateStore.lastError ?? 'Error applying update')
   }
 }
 
@@ -736,21 +700,61 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 </script>
 
 <style scoped>
+.settings-page {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.settings-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-stack--secondary {
+  margin-top: 14px;
+}
+
 .full-width {
   width: 100%;
 }
 
 .settings-header {
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .danger-header {
   color: var(--q-negative);
 }
 
+.settings-panel {
+  padding: 14px 18px 18px;
+}
+
+.settings-panel--compact {
+  padding-top: 12px;
+}
+
+.settings-panel--secondary {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.settings-panel--danger {
+  color: rgba(255, 255, 255, 0.82);
+}
+
 .connection-status {
   display: flex;
   align-items: center;
+}
+
+.settings-copy-block {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.45;
 }
 
 .contacts-section {
@@ -803,34 +807,108 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .rounded-borders {
-  border-radius: 8px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .rounded-borders :deep(.q-item__section--avatar) {
-  min-width: 48px;
+  min-width: 42px;
 }
 
-:deep(.q-expansion-item) {
-  margin-bottom: 12px;
+.settings-list :deep(.q-item) {
+  background: transparent;
+}
+
+.settings-section {
+  overflow: hidden;
+}
+
+.settings-section :deep(.q-expansion-item__container) {
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.settings-section--primary :deep(.q-expansion-item__container) {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04)),
+    rgba(18, 18, 18, 0.92);
+}
+
+.settings-section--secondary :deep(.q-expansion-item__container) {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.025)),
+    rgba(18, 18, 18, 0.88);
+}
+
+.settings-section--danger :deep(.q-expansion-item__container) {
+  background:
+    linear-gradient(180deg, rgba(255, 99, 99, 0.08), rgba(255, 255, 255, 0.03)),
+    rgba(18, 18, 18, 0.9);
+  border-color: rgba(255, 99, 99, 0.18);
+}
+
+.settings-section :deep(.q-item) {
+  min-height: 74px;
+  padding: 14px 18px;
+}
+
+.settings-section :deep(.q-item__label) {
+  color: white;
+}
+
+.settings-section :deep(.q-item__label--caption) {
+  margin-top: 2px;
+  font-size: 0.95rem;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, 0.56);
+}
+
+.settings-section :deep(.q-item__section--avatar) {
+  min-width: 46px;
+}
+
+.settings-section :deep(.q-expansion-item__container > .q-item .q-item__section--avatar .q-icon) {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.07);
+  color: white;
+}
+
+.settings-section--secondary
+  :deep(.q-expansion-item__container > .q-item .q-item__section--avatar .q-icon) {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
 }
 
-:deep(.q-expansion-item__content) {
-  background: rgba(255, 255, 255, 0.03);
+.settings-section--danger
+  :deep(.q-expansion-item__container > .q-item .q-item__section--avatar .q-icon) {
+  background: rgba(255, 99, 99, 0.12);
 }
 
-:deep(.q-card) {
+.settings-section :deep(.q-expansion-item__toggle-icon) {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.settings-section :deep(.q-expansion-item__content) {
+  background: transparent;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.settings-section :deep(.q-card) {
   background: transparent;
   box-shadow: none;
 }
 
-:deep(.q-item__section--side) .q-btn {
+.settings-section :deep(.q-item__section--side) .q-btn {
   margin-right: -8px;
 }
 
-:deep(.q-expansion-item__content .q-item) {
-  padding: 10px 16px;
+.settings-section :deep(.q-expansion-item__content .q-item) {
+  padding: 8px 12px;
 }
 
 /* Responsive adjustments */
@@ -842,6 +920,15 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 
   .contacts-section {
     max-width: none;
+  }
+
+  .settings-panel {
+    padding: 0 16px 16px;
+  }
+
+  .settings-section :deep(.q-item) {
+    min-height: 70px;
+    padding: 12px 16px;
   }
 }
 </style>

@@ -5,28 +5,23 @@
     leave-active-class="animated slideOutLeft fast"
     mode="out-in"
   >
-    <q-page>
-      <q-toolbar class="header-section">
+    <q-page class="federation-details-page">
+      <div class="federation-details-topbar">
         <q-btn
           flat
           round
           icon="arrow_back"
           :to="{ name: '/federations/' }"
+          class="federation-details-topbar__back"
           data-testid="federation-details-back-btn"
         />
-        <q-toolbar-title class="text-center no-wrap">Federation Details</q-toolbar-title>
-        <div class="q-ml-md" style="width: 40px"></div>
-      </q-toolbar>
-      <div class="q-px-md">
-        <!-- Federation Header Card -->
-        <q-card flat class="q-mb-md">
-          <q-card-section class="row items-center">
-            <div class="col-auto">
-              <q-avatar
-                size="72px"
-                class="q-mr-md"
-                v-if="federation?.metadata?.federation_icon_url"
-              >
+      </div>
+
+      <div class="federation-details-content q-px-md">
+        <q-card flat class="federation-card federation-card--summary q-mb-md">
+          <q-card-section class="summary-layout">
+            <div class="summary-logo">
+              <q-avatar size="78px" v-if="federation?.metadata?.federation_icon_url">
                 <q-img
                   :src="federation?.metadata?.federation_icon_url"
                   loading="eager"
@@ -35,14 +30,15 @@
                 />
               </q-avatar>
               <template v-else>
-                <q-avatar color="grey-3" text-color="grey-7" class="logo q-mr-md">
+                <q-avatar color="grey-3" text-color="grey-7" class="logo">
                   <q-icon name="account_balance" />
                 </q-avatar>
               </template>
             </div>
-            <div class="col">
-              <div class="row items-center q-gutter-xs no-wrap">
-                <div class="text-h6 ellipsis">{{ federation?.title }}</div>
+
+            <div class="summary-body">
+              <div class="summary-title-row">
+                <div class="summary-title ellipsis">{{ federation?.title }}</div>
                 <q-btn
                   v-if="observerUrl"
                   flat
@@ -54,15 +50,18 @@
                   :href="observerUrl"
                   target="_blank"
                   rel="noopener noreferrer"
+                  class="summary-link"
                   data-testid="federation-details-observer-link"
                 >
                   <q-tooltip>Open in Fedimint Observer</q-tooltip>
                 </q-btn>
               </div>
-              <div class="text-subtitle2 text-grey">
+
+              <div class="summary-currency text-grey">
                 {{ federation?.metadata?.default_currency }}
               </div>
-              <div class="q-mt-sm row items-center">
+
+              <div class="summary-modules">
                 <q-chip
                   v-for="module in federation?.modules"
                   :key="module.kind"
@@ -78,13 +77,9 @@
           </q-card-section>
         </q-card>
 
-        <div class="text-subtitle1 q-mb-xs" v-if="inviteCode">Invite</div>
-        <q-card flat class="q-mb-md" v-if="inviteCode">
+        <div class="section-title q-mb-xs" v-if="inviteCode">Invite</div>
+        <q-card flat class="federation-card q-mb-md" v-if="inviteCode">
           <q-card-section>
-            <div class="text-caption text-grey-6 q-mb-md">
-              Share this invite link to let others join this federation.
-            </div>
-
             <div class="invite-qr-container q-mb-md">
               <qrcode-vue
                 :value="inviteCode"
@@ -95,18 +90,15 @@
               />
             </div>
 
-            <div class="row items-center q-gutter-sm no-wrap">
-              <q-input
-                :model-value="inviteCode"
-                readonly
-                dense
-                class="col"
-                data-testid="federation-details-invite-input"
-              />
+            <div class="invite-code-row" data-testid="federation-details-invite-input">
+              <div class="invite-code text-mono">{{ inviteCode }}</div>
               <q-btn
                 icon="content_copy"
                 flat
+                round
+                dense
                 @click="copyInviteCode"
+                class="invite-copy-button"
                 data-testid="federation-details-copy-invite-btn"
               />
             </div>
@@ -115,8 +107,8 @@
 
         <FederationGuardians :guardians="federation?.guardians ?? []" class="q-mb-md" />
 
-        <div class="text-subtitle1 q-mb-xs" v-if="hasMetadata">Details</div>
-        <q-card flat class="q-mb-md" v-if="hasMetadata">
+        <div class="section-title q-mb-xs" v-if="hasMetadata">Federation details</div>
+        <q-card flat class="federation-card q-mb-md" v-if="hasMetadata">
           <q-card-section>
             <q-list>
               <q-item v-if="federation?.metadata?.max_balance_msats">
@@ -165,8 +157,8 @@
         </q-card>
 
         <!-- Vetted Gateways Card -->
-        <div class="text-subtitle1 q-mb-xs" v-if="hasVettedGateways">Gateways</div>
-        <q-card flat class="q-mb-md" v-if="hasVettedGateways">
+        <div class="section-title q-mb-xs" v-if="hasVettedGateways">Gateways</div>
+        <q-card flat class="federation-card q-mb-md" v-if="hasVettedGateways">
           <q-card-section>
             <q-list>
               <q-item v-for="(gateway, index) in vettedGateways" :key="gateway" class="q-py-sm">
@@ -187,8 +179,8 @@
           </q-card-section>
         </q-card>
 
-        <div class="text-subtitle1 q-mb-xs" v-if="hasMessages">Messages</div>
-        <q-card flat class="q-mb-md" v-if="hasMessages">
+        <div class="section-title q-mb-xs" v-if="hasMessages">Messages</div>
+        <q-card flat class="federation-card q-mb-md" v-if="hasMessages">
           <q-card-section>
             <q-list>
               <template v-if="federation?.metadata?.preview_message">
@@ -222,7 +214,7 @@
           </q-card-section>
         </q-card>
 
-        <q-card flat class="q-mb-md" v-if="federation?.metadata?.tos_url">
+        <q-card flat class="federation-card q-mb-md" v-if="federation?.metadata?.tos_url">
           <q-card-section>
             <q-list>
               <q-item
@@ -257,7 +249,7 @@
 
         <!-- Actions Card -->
 
-        <q-card flat>
+        <q-card flat class="federation-card">
           <q-card-section>
             <div class="q-pa-md">
               <q-btn
@@ -463,17 +455,97 @@ async function leaveFederation() {
 }
 </script>
 <style scoped>
-.q-card {
-  background-color: #202020;
+.federation-details-page {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
 }
+
+.federation-details-topbar {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 12px 16px 4px;
+}
+
+.federation-details-topbar__back {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.federation-details-content {
+  padding-bottom: 24px;
+}
+
+.federation-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+}
+
+.federation-card--summary {
+  background:
+    radial-gradient(circle at top left, rgba(156, 39, 255, 0.14), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+}
+
 .q-card-section {
   padding: 16px;
 }
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.summary-layout {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.summary-logo {
+  flex: 0 0 auto;
+}
+
+.summary-body {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.summary-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+.summary-link {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.summary-currency {
+  margin-top: 6px;
+  font-size: 1rem;
+}
+
+.summary-modules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
 .text-mono {
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.85em;
   word-break: break-all;
 }
+
 .invite-qr-container {
   width: 100%;
   max-width: 320px;
@@ -486,8 +558,39 @@ async function leaveFederation() {
   background-color: #ffffff;
   border-radius: 12px;
 }
+
 .invite-qr {
   width: 100%;
   height: 100%;
+}
+
+.invite-code-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  padding: 14px 16px;
+}
+
+.invite-code {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.invite-copy-button {
+  flex: 0 0 auto;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+@media (max-width: 599px) {
+  .summary-layout {
+    align-items: flex-start;
+  }
+
+  .summary-title {
+    font-size: 1.3rem;
+  }
 }
 </style>

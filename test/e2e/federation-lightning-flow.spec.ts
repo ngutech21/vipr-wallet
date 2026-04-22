@@ -131,8 +131,8 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
       await page.getByTestId('receive-keypad-btn-0').click()
 
       // Verify amount is 1000
-      const amountInput = page.getByTestId('amount-input')
-      await expect(amountInput).toHaveValue('1000')
+      const amountDisplay = page.getByTestId('amount-input')
+      await expect(amountDisplay).toContainText('Amount (sats)1,000')
 
       // Click Create Invoice button
       const createInvoiceButton = page.getByTestId('receive-create-invoice-btn')
@@ -162,7 +162,7 @@ test.describe('Federation Join and Lightning Payment Flow', () => {
         timeout: 60_000,
       })
       await expect(page.getByTestId('back-home-button')).toBeVisible({ timeout: 60_000 })
-      await expect(page.getByTestId('received-lightning-title')).toHaveText('Payment Received!')
+      await expect(page.getByTestId('received-lightning-title')).toHaveText('Payment received')
       await expect(page.getByTestId('received-lightning-amount')).toHaveText('1,000 sats')
     })
 

@@ -305,19 +305,10 @@ export const useNostrStore = defineStore('nostr', {
 
     setJoinInProgress(isInProgress: boolean) {
       this.isJoinInProgress = isInProgress
-      if (!isInProgress) {
-        this.processPreviewQueue().catch((error) => {
-          logger.error('Failed to process preview queue after join', error)
-        })
-      }
     },
 
     setPreviewTargetCount(count: number) {
       this.previewTargetCount = Math.max(DISCOVERY_PAGE_SIZE, count)
-      this.enqueueCandidatesForPreview()
-      this.processPreviewQueue().catch((error) => {
-        logger.error('Failed to process preview queue after target update', error)
-      })
     },
 
     increasePreviewTarget(count = DISCOVERY_PAGE_SIZE) {
@@ -405,16 +396,13 @@ export const useNostrStore = defineStore('nostr', {
         ;(mintInfoFilter as NDKFilter & { since?: number }).since = this.lastDiscoveryCreatedAt + 1
       }
 
-      this.enqueueCandidatesForPreview()
-      this.processPreviewQueue().catch((error) => {
-        logger.error('Failed to process preview queue while discovering federations', error)
-      })
-
       if (this.ndk != null) {
         this.federationSubscription = this.ndk.subscribe(mintInfoFilter, { closeOnEose: false })
 
         this.federationSubscription?.on('event', (event) => {
-          this.handleFederationEvent(event).catch((error) => {
+          try {
+            this.handleFederationEvent(event)
+          } catch (error) {
             if (isExpectedDiscoveryError(error)) {
               logger.nostr.warn('Skipping federation event due to expected discovery error', {
                 eventId: event.id,
@@ -423,7 +411,7 @@ export const useNostrStore = defineStore('nostr', {
               return
             }
             logger.error('Failed to process federation event', error)
-          })
+          }
         })
 
         this.recommendationSubscription = this.ndk.subscribe(recommendationFilter, {
@@ -431,16 +419,18 @@ export const useNostrStore = defineStore('nostr', {
         })
 
         this.recommendationSubscription?.on('event', (event) => {
-          this.handleRecommendationEvent(event).catch((error) => {
+          try {
+            this.handleRecommendationEvent(event)
+          } catch (error) {
             logger.error('Failed to process federation recommendation', error)
-          })
+          }
         })
       } else {
         this.isDiscoveringFederations = false
       }
     },
 
-    async handleFederationEvent(event: NDKEvent) {
+    handleFederationEvent(event: NDKEvent) {
       if (event.kind !== Nip87Kinds.FediInfo) return
 
       const candidate = extractFederationCandidate(event)
@@ -486,12 +476,9 @@ export const useNostrStore = defineStore('nostr', {
       if (this.discoveryCandidates.length > MAX_DISCOVERY_CACHE_SIZE) {
         this.discoveryCandidates = this.discoveryCandidates.slice(0, MAX_DISCOVERY_CACHE_SIZE)
       }
-
-      this.enqueueCandidatesForPreview()
-      await this.processPreviewQueue()
     },
 
-    async handleRecommendationEvent(event: NDKEvent) {
+    handleRecommendationEvent(event: NDKEvent) {
       if (event.kind !== Nip87Kinds.Recommendation) return
       if (event.pubkey == null || event.pubkey === '') return
 
@@ -527,8 +514,6 @@ export const useNostrStore = defineStore('nostr', {
 
       this.applyRecommendationCountsToCandidates()
       this.sortDiscoveryCandidates()
-      this.enqueueCandidatesForPreview()
-      await this.processPreviewQueue()
     },
 
     applyRecommendationCountsToCandidates() {
@@ -545,15 +530,6 @@ export const useNostrStore = defineStore('nostr', {
 
     sortDiscoveryCandidates() {
       this.discoveryCandidates.sort((a, b) => {
-        const aStatus = this.previewStatusByFederation[a.federationId]
-        const bStatus = this.previewStatusByFederation[b.federationId]
-        const aStatusPenalty = aStatus === 'failed' || aStatus === 'timed_out' ? 1 : 0
-        const bStatusPenalty = bStatus === 'failed' || bStatus === 'timed_out' ? 1 : 0
-        const statusPenaltyDiff = aStatusPenalty - bStatusPenalty
-        if (statusPenaltyDiff !== 0) {
-          return statusPenaltyDiff
-        }
-
         const recommendationDiff = (b.recommendationCount ?? 0) - (a.recommendationCount ?? 0)
         if (recommendationDiff !== 0) {
           return recommendationDiff

@@ -9,22 +9,22 @@ meta:
     enter-active-class="animated slideInLeft"
     leave-active-class="animated slideOutLeft"
   >
-    <q-page class="column dark-gradient">
-      <q-toolbar class="header-section">
+    <q-page class="column dark-gradient receive-ecash-page">
+      <div class="receive-ecash-topbar">
         <q-btn
           flat
           round
           icon="arrow_back"
           :to="{ name: '/' }"
+          class="receive-ecash-topbar__back"
           data-testid="receive-ecash-back-btn"
         />
-        <q-toolbar-title class="text-center no-wrap">Receive Offline</q-toolbar-title>
-        <div class="q-ml-md" style="width: 40px"></div>
-      </q-toolbar>
+      </div>
 
-      <div class="q-px-md q-pt-md">
-        <q-card flat class="glass-effect q-mb-md">
+      <div class="receive-ecash-content">
+        <q-card flat class="task-card receive-ecash-card q-mb-md">
           <q-card-section>
+            <div class="section-title q-mb-md">Paste ecash</div>
             <q-input
               v-model="ecashToken"
               filled
@@ -32,7 +32,7 @@ meta:
               dense
               dark
               type="textarea"
-              placeholder="Paste eCash token here"
+              placeholder="Paste ecash token here"
               class="custom-input"
               data-testid="receive-ecash-token-input"
             >
@@ -50,23 +50,20 @@ meta:
           </q-card-section>
         </q-card>
 
-        <div class="q-mt-lg">
-          <q-btn
-            label="Receive eCash"
-            color="primary"
-            class="full-width q-py-sm"
-            size="lg"
-            :loading="isProcessing"
-            :disable="!ecashToken.trim() || isProcessing"
-            @click="redeemEcash"
-            data-testid="receive-ecash-submit-btn"
-            :data-busy="isProcessing ? 'true' : 'false'"
-          >
-            <template #loading>
-              <q-spinner-dots color="white" />
-            </template>
-          </q-btn>
-        </div>
+        <q-btn
+          label="Receive ecash"
+          color="primary"
+          class="full-width receive-ecash-action-btn"
+          :loading="isProcessing"
+          :disable="!ecashToken.trim() || isProcessing"
+          @click="redeemEcash"
+          data-testid="receive-ecash-submit-btn"
+          :data-busy="isProcessing ? 'true' : 'false'"
+        >
+          <template #loading>
+            <q-spinner-dots color="white" />
+          </template>
+        </q-btn>
       </div>
     </q-page>
   </transition>
@@ -119,7 +116,7 @@ async function redeemEcash() {
 
   try {
     isProcessing.value = true
-    Loading.show({ message: 'Redeeming eCash...' })
+    Loading.show({ message: 'Redeeming ecash...' })
 
     const amountMsats = (await walletStore.redeemEcash(ecashToken.value.trim())) ?? 0
     if (amountMsats === 0) {
@@ -133,7 +130,7 @@ async function redeemEcash() {
   } catch (error) {
     notify.notify({
       type: 'negative',
-      message: `Failed to redeem eCash: ${getErrorMessage(error)}`,
+      message: `Failed to redeem ecash: ${getErrorMessage(error)}`,
     })
   } finally {
     isProcessing.value = false
@@ -148,8 +145,51 @@ function getQueryString(value: LocationQueryValue | LocationQueryValue[] | undef
 </script>
 
 <style scoped>
+.receive-ecash-page {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.receive-ecash-topbar {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 12px 16px 4px;
+}
+
+.receive-ecash-topbar__back {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.receive-ecash-content {
+  width: 100%;
+  padding: 0 16px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.receive-ecash-card {
+  width: 100%;
+  max-width: 560px;
+}
+
+.task-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+}
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
 .custom-input :deep(.q-field__control) {
   background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
 }
 
 .custom-input :deep(.q-field__native),
@@ -163,9 +203,10 @@ function getQueryString(value: LocationQueryValue | LocationQueryValue[] | undef
   color: #9e9e9e;
 }
 
-.glass-effect {
-  background-color: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+.receive-ecash-action-btn {
+  width: 100%;
+  max-width: 560px;
+  min-height: 54px;
+  border-radius: 18px;
 }
 </style>

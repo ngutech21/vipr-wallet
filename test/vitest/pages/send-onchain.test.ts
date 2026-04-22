@@ -173,7 +173,7 @@ describe('SendOnchainPage', () => {
       },
     })
     expect(mockLoadingShow).toHaveBeenCalledWith({
-      message: 'Submitting onchain transfer...',
+      message: 'Submitting on-chain transfer...',
     })
     expect(mockLoadingHide).toHaveBeenCalledTimes(1)
     wrapper.unmount()

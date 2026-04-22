@@ -87,53 +87,59 @@ describe('WalletTransactionItem.vue', () => {
     expect(wrapper.text()).toContain('≈ $20.00 usd')
   })
 
-  it('shows a friendly waiting label for pending onchain deposits', async () => {
+  it('keeps pending onchain deposits neutral in the list', async () => {
     const { outcome: _removed, ...transactionWithoutOutcome } = createMockTransaction({
       amountMsats: 0,
     })
     wrapper = mountComponent(transactionWithoutOutcome)
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Waiting for Bitcoin')
-    expect(wrapper.text()).not.toContain('Deposited')
+    expect(wrapper.text()).toContain('Received Bitcoin')
+    expect(wrapper.text()).not.toContain('Waiting for Bitcoin')
   })
 
-  it('shows a friendly confirmed label for completed onchain deposits', async () => {
+  it('shows the generic deposit title for completed onchain deposits', async () => {
     wrapper = mountComponent(createMockTransaction({ outcome: 'Confirmed' }))
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Bitcoin received')
-    expect(wrapper.text()).not.toContain('Deposited')
+    expect(wrapper.text()).toContain('Received Bitcoin')
+    expect(wrapper.text()).not.toContain('Bitcoin received')
   })
 
-  it('shows a processing status for pending onchain sends in the list', async () => {
+  it('shows the generic send title for pending onchain sends in the list', async () => {
     const { outcome: _removed, ...transactionWithoutOutcome } = createMockTransaction({
       type: 'withdraw',
     })
     wrapper = mountComponent(transactionWithoutOutcome)
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Status: Processing')
+    expect(wrapper.text()).toContain('Sent Bitcoin')
+    expect(wrapper.text()).not.toContain('Processing')
+    expect(wrapper.text()).not.toContain('Status:')
     expect(wrapper.text()).not.toContain('bc1qxy2k')
   })
 
-  it('shows a broadcast status for completed onchain sends in the list', async () => {
+  it('shows the generic send title for completed onchain sends in the list', async () => {
     wrapper = mountComponent(createMockTransaction({ type: 'withdraw', outcome: 'Confirmed' }))
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Status: Broadcast')
+    expect(wrapper.text()).toContain('Sent Bitcoin')
+    expect(wrapper.text()).not.toContain('Broadcast')
+    expect(wrapper.text()).not.toContain('Status:')
     expect(wrapper.text()).not.toContain('bc1qxy2k')
   })
 
-  it('shows a failed status for failed onchain sends in the list', async () => {
+  it('shows the generic send title for failed onchain sends in the list', async () => {
     wrapper = mountComponent(createMockTransaction({ type: 'withdraw', outcome: 'Failed' }))
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Status: Failed')
+    expect(wrapper.text()).toContain('Sent Bitcoin')
+    expect(wrapper.text()).not.toContain('Failed')
+    expect(wrapper.text()).not.toContain('Status:')
     expect(wrapper.text()).not.toContain('bc1qxy2k')
   })
 
-  it('shows the withdraw fee without adding an extra total line', async () => {
+  it('does not show the withdraw fee in the list row', async () => {
     wrapper = mountComponent(
       createMockTransaction({ type: 'withdraw', amountMsats: 2_000_000, fee: 471_000 }),
     )
@@ -142,7 +148,7 @@ describe('WalletTransactionItem.vue', () => {
     const normalizedText = wrapper.text().replace(/\s+/g, ' ').trim()
 
     expect(normalizedText).toContain('- 2,000 sats')
-    expect(normalizedText).toContain('Fee: 471 sats')
+    expect(normalizedText).not.toContain('Fee 471 sats')
     expect(normalizedText).not.toContain('Total:')
   })
 
@@ -153,7 +159,7 @@ describe('WalletTransactionItem.vue', () => {
     await flushPromises()
 
     expect(wrapper.text()).toContain('Unknown')
-    expect(wrapper.text()).toContain('Fee: 471 sats')
+    expect(wrapper.text()).not.toContain('Fee 471 sats')
     expect(wrapper.text()).not.toContain('Total:')
   })
 })

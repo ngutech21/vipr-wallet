@@ -1,8 +1,3 @@
-<route lang="yaml">
-meta:
-  hideBottomNav: true
-</route>
-
 <template>
   <transition
     appear
@@ -10,11 +5,9 @@ meta:
     leave-active-class="animated slideOutLeft"
   >
     <q-page class="transactions-page dark-gradient" data-testid="transactions-page">
-      <q-toolbar class="header-section">
+      <div class="transactions-topbar">
         <q-btn flat round icon="arrow_back" @click="goBack" data-testid="transactions-back-btn" />
-        <q-toolbar-title class="text-center no-wrap">Transaction History</q-toolbar-title>
-        <div class="q-ml-md" style="width: 40px"></div>
-      </q-toolbar>
+      </div>
 
       <TransactionsList mode="history" />
     </q-page>
@@ -35,3 +28,15 @@ async function goBack() {
   await router.push({ name: '/' })
 }
 </script>
+
+<style scoped>
+.transactions-topbar {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 12px 16px 4px;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+}
+</style>
