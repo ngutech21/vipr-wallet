@@ -6,7 +6,7 @@
   >
     <div class="selection-sheet q-pa-md">
       <div class="selection-sheet__intro text-body2 text-grey-5">
-        Add a federation you already trust or browse community recommendations first.
+        Join a federation you already trust or browse community recommendations first.
       </div>
 
       <div class="selection-sheet__options">

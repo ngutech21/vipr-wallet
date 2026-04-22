@@ -1,5 +1,6 @@
 <template>
-  <q-layout view="hHh lpR fFf" class="dark-gradient">
+  <q-layout view="hHh lpR fFf" class="app-layout">
+    <div class="app-top-shell ios-safe-area-top" aria-hidden="true" />
     <q-page-container>
       <PwaUpdateBanner />
       <!-- <q-page class="dark-gradient"> -->
@@ -141,7 +142,17 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
   padding-right: env(safe-area-inset-right);
 }
 
-:deep(.q-layout),
+.ios-safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.app-top-shell {
+  background: #1a1a1a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  min-height: 14px;
+}
+
+.app-layout,
 :deep(.q-page-container) {
   background: #141414;
 }

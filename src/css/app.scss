@@ -51,7 +51,7 @@ html[data-e2e='1'] *::after {
 }
 
 .dark-gradient {
-  background: linear-gradient(135deg, $dark, color.adjust($dark, $lightness: 4%));
+  background: #141414;
 }
 
 .text-h4,
