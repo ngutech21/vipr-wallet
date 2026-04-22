@@ -103,7 +103,7 @@
     <q-page-sticky
       v-if="federationStore.federations.length > 0"
       position="bottom"
-      :offset="[0, 44]"
+      :offset="[0, 52]"
     >
       <div class="home-actions q-px-md">
         <q-btn
@@ -272,7 +272,7 @@ function returnToDiscovery() {
   justify-content: center;
   gap: 12px;
   width: min(calc(100vw - 32px), 420px);
-  padding-bottom: 10px;
+  padding-bottom: 14px;
 }
 
 .home-action-btn {

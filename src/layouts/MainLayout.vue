@@ -11,9 +11,7 @@
       <q-tabs
         no-caps
         indicator-color="transparent"
-        active-color="primary"
         inactive-color="white"
-        :model-value="currentTab"
         align="justify"
         class="footer-tabs"
       >
@@ -21,7 +19,10 @@
           name="home"
           icon="home"
           label="Home"
-          :to="{ name: '/' }"
+          to="/"
+          active-class="footer-route-active"
+          exact-active-class="footer-route-active"
+          exact
           :ripple="false"
           data-testid="nav-home"
         />
@@ -29,7 +30,9 @@
           name="federations"
           icon="account_balance"
           label="Federations"
-          :to="{ name: '/federations/' }"
+          to="/federations/"
+          active-class="footer-route-active"
+          exact-active-class="footer-route-active"
           :ripple="false"
           data-testid="nav-federations"
         />
@@ -37,7 +40,9 @@
           name="settings"
           icon="settings"
           label="Settings"
-          :to="{ name: '/settings/' }"
+          to="/settings/"
+          active-class="footer-route-active"
+          exact-active-class="footer-route-active"
           :ripple="false"
           data-testid="nav-settings"
         />
@@ -54,18 +59,6 @@ import PwaUpdateBanner from 'src/components/PwaUpdateBanner.vue'
 
 const route = useRoute()
 
-const currentTab = computed(() => {
-  switch (route.name) {
-    case '/':
-      return 'home'
-    case '/federations/':
-      return 'federations'
-    case '/settings/':
-      return 'settings'
-    default:
-      return null
-  }
-})
 const showFooter = computed(() => route.meta?.hideBottomNav !== true)
 </script>
 
@@ -79,14 +72,14 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
 }
 
 :deep(.footer-tabs) {
-  padding-top: 8px;
+  padding-top: 2px;
 }
 
 :deep(.footer-tabs .q-tab) {
-  min-height: 66px;
+  min-height: 50px;
   border-radius: 18px;
   margin: 0 6px;
-  padding: 8px 10px 10px;
+  padding: 4px 10px 4px;
   transition:
     color 160ms ease,
     transform 160ms ease;
@@ -131,28 +124,34 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
   opacity: 1;
 }
 
+:deep(.footer-route-active .q-tab__icon),
 :deep(.q-tab--active .q-tab__icon) {
   transform: translateY(-1px);
 }
 
 .footer-container {
-  padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+  padding-bottom: 4px;
+  padding-bottom: max(4px, calc(env(safe-area-inset-bottom) - 22px));
   height: auto;
-  min-height: 64px;
-  margin-bottom: constant(safe-area-inset-bottom); /* iOS 11.0 */
-  margin-bottom: env(safe-area-inset-bottom); /* iOS 11.2+ */
+  min-height: 0;
 }
 
 .ios-safe-area {
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
 
+:deep(.q-layout),
+:deep(.q-page-container) {
+  background: #141414;
+}
+
+:deep(.footer-container .footer-route-active),
 :deep(.footer-container .q-tab--active) {
   color: #a970ff !important;
 }
 
+:deep(.footer-container .footer-route-active .q-tab__icon),
 :deep(.footer-container .q-tab--active .q-tab__icon) {
   filter: drop-shadow(0 0 10px rgba(169, 112, 255, 0.24));
 }
@@ -160,12 +159,12 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
 @media (max-width: 599px) {
   :deep(.footer-tabs .q-tab) {
     margin: 0 4px;
-    min-height: 62px;
-    padding-inline: 8px;
+    min-height: 46px;
+    padding: 3px 8px 3px;
   }
 
   :deep(.footer-tabs .q-tab__icon) {
-    font-size: 1.35rem;
+    font-size: 1.3rem;
   }
 }
 </style>

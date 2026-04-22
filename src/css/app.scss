@@ -2,6 +2,18 @@
 
 @use 'sass:color';
 
+html,
+body,
+#q-app {
+  background: #141414;
+  color-scheme: dark;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 // E2E mode: remove motion to reduce test flakiness in CI.
 html[data-e2e='1'],
 html[data-e2e='1'] body {
