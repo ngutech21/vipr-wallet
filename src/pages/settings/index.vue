@@ -5,7 +5,7 @@
         <q-expansion-item
           class="settings-section settings-section--primary"
           icon="account_balance_wallet"
-          label="Lighnting"
+          label="Lightning"
           caption="Connect wallet"
           header-class="settings-header"
           expand-icon-class="text-primary"
