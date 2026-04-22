@@ -13,7 +13,7 @@ test.describe('Backup Flow', () => {
     await continuePastStartupWizardIfNeeded(page)
     await waitForHomePageReady(page)
 
-    await navigateViaFooterTab(page, 'nav-settings', 'settings-page', /#\/settings$/)
+    await navigateViaFooterTab(page, 'nav-settings', 'settings-page', /#\/settings\/?$/)
 
     await page.getByTestId('settings-personal-backup-section').click()
 
@@ -44,7 +44,7 @@ test.describe('Backup Flow', () => {
     await expect(confirmBackupButton).toBeVisible()
     await confirmBackupButton.click()
 
-    await expect(page).toHaveURL(/#\/settings$/)
+    await expect(page).toHaveURL(/#\/settings\/?$/)
     await expect(page.getByTestId('settings-page')).toBeVisible()
   })
 })

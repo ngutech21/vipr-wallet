@@ -107,6 +107,7 @@ Located in `src/stores/`:
 - HTTPS development server support via environment variables
 - Firefox as default development browser
 - Router import hint: import runtime APIs/composables from `vue-router` (e.g. `useRoute`, `useRouter`, `createRouter`) and keep generated route types/routes from `vue-router/auto-routes` only.
+- When wiring app navigation, prefer named routes such as `:to="{ name: '/federations/' }"` over string paths like `to="/federations/"` so route references stay type-safe and refactor-friendly.
 - Always register every Quasar icon name you add or change in templates in `src/boot/icon-map.ts`; otherwise the icon may render as raw text instead of a mapped symbol.
 
 ### Key Implementation Patterns

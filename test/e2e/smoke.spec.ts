@@ -22,7 +22,7 @@ test.describe('Smoke Tests', () => {
     await expect(page.getByTestId('nav-settings')).toBeVisible()
 
     // Click on the settings tab
-    await navigateViaFooterTab(page, 'nav-settings', 'settings-page', /#\/settings$/)
+    await navigateViaFooterTab(page, 'nav-settings', 'settings-page', /#\/settings\/?$/)
 
     // Verify settings page content is loaded
     await expect(page.getByTestId('settings-bitcoin-wallet-section')).toBeVisible()
@@ -37,7 +37,7 @@ test.describe('Smoke Tests', () => {
     await waitForHomePageReady(page)
 
     // Navigate to settings first
-    await navigateViaFooterTab(page, 'nav-settings', 'settings-page', /#\/settings$/)
+    await navigateViaFooterTab(page, 'nav-settings', 'settings-page', /#\/settings\/?$/)
 
     // Click home tab
     await navigateViaFooterTab(page, 'nav-home', 'home-page', /#\/$/)
