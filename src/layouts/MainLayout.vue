@@ -99,6 +99,11 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
 :deep(.footer-tabs .q-tab__icon) {
   font-size: 1.45rem;
   opacity: 0.9;
+  transition:
+    color 160ms ease,
+    opacity 160ms ease,
+    transform 160ms ease,
+    filter 160ms ease;
 }
 
 :deep(.q-tab__label) {
@@ -106,6 +111,24 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
   font-weight: 500;
   line-height: 1;
   margin-top: 2px;
+  transition:
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+:deep(.footer-tabs .q-tab .q-focus-helper) {
+  opacity: 0 !important;
+  background: transparent !important;
+}
+
+:deep(.footer-tabs .q-tab:hover) {
+  background: transparent !important;
+}
+
+:deep(.footer-tabs .q-tab:hover .q-tab__icon),
+:deep(.footer-tabs .q-tab:hover .q-tab__label) {
+  color: rgba(255, 255, 255, 0.92);
+  opacity: 1;
 }
 
 :deep(.q-tab--active .q-tab__icon) {
