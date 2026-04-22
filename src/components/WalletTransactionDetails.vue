@@ -188,7 +188,7 @@ async function copyAddress() {
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
-  padding: 18px;
+  padding: 14px 18px 18px;
   margin-bottom: 16px;
 }
 
@@ -208,12 +208,13 @@ async function copyAddress() {
 .summary-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .status-badge {
+  flex-shrink: 0;
   color: rgba(0, 0, 0, 0.82);
   border-radius: 999px;
   padding: 4px 10px;
@@ -260,7 +261,7 @@ async function copyAddress() {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  padding: 14px 0;
+  padding: 12px 0;
 
   &--separated {
     border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -283,7 +284,8 @@ async function copyAddress() {
 
 .detail-row--header {
   justify-content: flex-start;
-  padding-bottom: 10px;
+  padding-top: 4px;
+  padding-bottom: 8px;
 }
 
 .detail-row__heading {

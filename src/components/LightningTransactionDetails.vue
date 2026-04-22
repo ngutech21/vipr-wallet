@@ -56,16 +56,16 @@
           <div class="label">Fee</div>
           <div class="value">{{ Math.round(transaction.fee / 1000) }} sats</div>
         </div>
-      </div>
-    </section>
-
-    <section class="transaction-card">
-      <div class="detail-stack">
-        <div class="detail-row">
+        <div class="detail-row detail-row--separated">
           <div class="label">Transaction ID</div>
           <div class="value text-caption">{{ transaction.txId }}</div>
         </div>
-        <div v-if="transaction.preimage" class="detail-row detail-row--separated">
+      </div>
+    </section>
+
+    <section v-if="transaction.preimage" class="transaction-card">
+      <div class="detail-stack">
+        <div class="detail-row">
           <div class="label">Preimage</div>
           <div class="value text-caption">{{ transaction.preimage }}</div>
         </div>
@@ -187,7 +187,7 @@ async function copyInvoice() {
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
-  padding: 18px;
+  padding: 14px 18px 18px;
   margin-bottom: 16px;
 }
 
@@ -207,7 +207,7 @@ async function copyInvoice() {
 .summary-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   min-width: 0;
   flex-wrap: nowrap;
 }
@@ -259,7 +259,7 @@ async function copyInvoice() {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  padding: 14px 0;
+  padding: 12px 0;
 
   &--separated {
     border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -282,7 +282,8 @@ async function copyInvoice() {
 
 .detail-row--header {
   justify-content: flex-start;
-  padding-bottom: 10px;
+  padding-top: 4px;
+  padding-bottom: 8px;
 }
 
 .detail-row__heading {
