@@ -1,0 +1,16 @@
+name: ${DO_PRODUCTION_APP_NAME}
+region: ${DO_PRODUCTION_REGION}
+
+services:
+  - name: web
+    http_port: 80
+    instance_count: 1
+    instance_size_slug: ${DO_PRODUCTION_INSTANCE_SIZE}
+    image:
+      registry_type: DOCKER_HUB
+      registry: ${DOCKER_NAME}
+      repository: vipr-wallet
+      registry_credentials: ${DOCKER_HUB_CREDENTIALS}
+      digest: ${VIPR_DIGEST}
+    routes:
+      - path: /
