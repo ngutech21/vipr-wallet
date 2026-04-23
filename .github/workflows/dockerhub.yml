@@ -42,10 +42,11 @@ jobs:
 
   build-and-push:
     needs: changes
-    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.deploy == 'true'
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.deploy ==
+      'true'
     runs-on: ubuntu-latest
     env:
-      DO_DEV_APP_NAME: ${{ secrets.DO_DEV_APP_NAME || 'vipr-wallet' }}
+      DO_DEV_APP_NAME: ${{ secrets.DO_DEV_APP_NAME }}
       DO_DEV_DOMAIN: ${{ vars.DO_DEV_DOMAIN || 'dev.vipr.cash' }}
       DO_DEV_DOMAIN_ZONE: ${{ vars.DO_DEV_DOMAIN_ZONE || 'vipr.cash' }}
       DO_DEV_REGION: ${{ vars.DO_DEV_REGION || 'fra' }}
@@ -60,7 +61,7 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
