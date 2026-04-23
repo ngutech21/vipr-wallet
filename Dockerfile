@@ -1,10 +1,6 @@
 # Stage 1: Build the Quasar PWA
 FROM node:24-slim AS builder
 
-ARG COMMITHASH=development
-ARG BUILDTIME
-ARG APP_VERSION
-
 RUN corepack enable \
     && corepack prepare pnpm@10 --activate \
     && apt-get update \
@@ -12,9 +8,14 @@ RUN corepack enable \
 
 WORKDIR /app
 
-COPY . .
+COPY package.json pnpm-lock.yaml quasar.config.ts postcss.config.js tsconfig.json index.html ./
+COPY src-pwa/tsconfig.json ./src-pwa/tsconfig.json
 
 RUN pnpm install --frozen-lockfile --strict-peer-dependencies
+COPY . .
+ARG COMMITHASH=development
+ARG BUILDTIME
+ARG APP_VERSION
 ENV COMMITHASH=${COMMITHASH}
 ENV BUILDTIME=${BUILDTIME}
 ENV APP_VERSION=${APP_VERSION}
