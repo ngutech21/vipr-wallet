@@ -19,7 +19,6 @@ jobs:
     env:
       DO_PRODUCTION_APP_NAME: ${{ secrets.DO_PRODUCTION_APP_NAME }}
       DO_PRODUCTION_REGION: ${{ vars.DO_PRODUCTION_REGION || 'fra' }}
-      DO_PRODUCTION_INSTANCE_COUNT: ${{ vars.DO_PRODUCTION_INSTANCE_COUNT || '1' }}
       DO_PRODUCTION_INSTANCE_SIZE: ${{ vars.DO_PRODUCTION_INSTANCE_SIZE || 'apps-s-1vcpu-1gb' }}
       DOCKER_HUB_CREDENTIALS: ${{ secrets.DOCKER_NAME }}:${{ secrets.DOCKER_PAT }}
 
