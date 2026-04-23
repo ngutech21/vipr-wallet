@@ -8,19 +8,18 @@ RUN corepack enable \
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml quasar.config.ts postcss.config.js tsconfig.json index.html ./
-COPY src-pwa/tsconfig.json ./src-pwa/tsconfig.json
+COPY . .
 
 RUN pnpm install --frozen-lockfile --strict-peer-dependencies
-COPY . .
-ARG COMMITHASH=development
+RUN pnpm build
+
+
+ARG COMMITHASH
 ARG BUILDTIME
 ARG APP_VERSION
 ENV COMMITHASH=${COMMITHASH}
 ENV BUILDTIME=${BUILDTIME}
 ENV APP_VERSION=${APP_VERSION}
-RUN pnpm build
-
 
 # Stage 2: Serve the app using Nginx
 FROM alpine:3.23
@@ -32,10 +31,10 @@ COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 
 # Create a non-root user and group
 RUN addgroup -S app && adduser -S -D -H -G app -s /sbin/nologin app
-    
+
 # Copy the built files from builder stage
 COPY --from=builder /app/dist/pwa /usr/share/nginx/html
-  
+
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
