@@ -46,11 +46,9 @@ jobs:
           username: ${{ secrets.DOCKER_NAME }}
           password: ${{ secrets.DOCKER_PAT }}
 
-      - name: Get image SHAs
+      - name: Get image SHA
         id: sha
-        run: |
-          echo "short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
-          echo "full=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Read package version
         id: version
@@ -77,7 +75,7 @@ jobs:
       - name: Resolve Docker image digest
         id: release-image
         run: |
-          image="docker.io/${{ env.DOCKER_NAME }}/vipr-wallet:${{ steps.sha.outputs.short }}-alpine"
+          image="docker.io/${{ env.DOCKER_NAME }}/vipr-wallet:${{ steps.sha.outputs.sha }}-alpine"
           digest="$(docker buildx imagetools inspect "$image" | awk '/Digest:/ { print $2; exit }')"
           if [ -z "$digest" ]; then
             echo "Unable to resolve digest for $image"
@@ -105,6 +103,6 @@ jobs:
           GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
         run: |
           gh release create "${{ steps.version.outputs.tag }}" \
-            --target "${{ steps.sha.outputs.full }}" \
+            --target "${{ steps.sha.outputs.sha }}" \
             --title "${{ steps.version.outputs.tag }}" \
             --generate-notes

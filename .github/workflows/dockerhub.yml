@@ -75,9 +75,9 @@ jobs:
         id: date
         run: echo "date=$(date -u '+%F-%T')" >> "$GITHUB_OUTPUT"
 
-      - name: Get short SHA
+      - name: Get full SHA
         id: sha
-        run: echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Read package version
         id: version
