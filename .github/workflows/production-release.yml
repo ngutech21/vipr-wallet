@@ -1,36 +1,40 @@
 name: Release docker image and deploy to Production
 
 on:
-  release:
-    types:
-      - published
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: Commit SHA or ref to promote
+        required: true
+        type: string
 
-permissions: read-all
+permissions:
+  contents: write
 
 concurrency:
   group: deploy-production
   cancel-in-progress: false
 
 jobs:
-  build-and-push:
-    if: ${{ !github.event.release.prerelease }}
+  deploy-production:
     runs-on: ubuntu-latest
     environment: production
     env:
       DO_PRODUCTION_APP_NAME: ${{ secrets.DO_PRODUCTION_APP_NAME }}
+      DO_PRODUCTION_DOMAIN: ${{ vars.DO_PRODUCTION_DOMAIN || 'app.vipr.cash' }}
+      DO_PRODUCTION_DOMAIN_ZONE: ${{ vars.DO_PRODUCTION_DOMAIN_ZONE || 'vipr.cash' }}
+      DO_PRODUCTION_MAINTENANCE_ENABLED: ${{ vars.DO_PRODUCTION_MAINTENANCE_ENABLED || 'false' }}
       DO_PRODUCTION_REGION: ${{ vars.DO_PRODUCTION_REGION || 'fra' }}
-      DO_PRODUCTION_INSTANCE_SIZE: ${{ vars.DO_PRODUCTION_INSTANCE_SIZE || 'apps-s-1vcpu-1gb' }}
+      DO_PRODUCTION_INSTANCE_SIZE: ${{ vars.DO_PRODUCTION_INSTANCE_SIZE || 'apps-s-1vcpu-0.5gb' }}
+      DO_PRODUCTION_SERVICE_NAME: ${{ vars.DO_PRODUCTION_SERVICE_NAME || 'ngutech-21-vipr-wallet' }}
       DOCKER_NAME: ${{ secrets.DOCKER_NAME }}
       DOCKER_HUB_CREDENTIALS: ${{ secrets.DOCKER_NAME }}:${{ secrets.DOCKER_PAT }}
 
     steps:
-      - name: Checkout release tag
+      - name: Checkout target ref
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.release.tag_name }}
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
+          ref: ${{ inputs.target_ref }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -42,49 +46,65 @@ jobs:
           username: ${{ secrets.DOCKER_NAME }}
           password: ${{ secrets.DOCKER_PAT }}
 
-      - name: Get current date
-        id: date
-        run: echo "date=$(date -u '+%F-%T')" >> "$GITHUB_OUTPUT"
-
-      - name: Get short SHA
+      - name: Get image SHAs
         id: sha
-        run: echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "full=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Read package version
         id: version
         run: |
           echo "version=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
+          echo "tag=v$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
 
-      - name: Verify release tag matches package version
+      - name: Verify production app is configured
         run: |
-          if [ "v${{ steps.version.outputs.version }}" != "${{ github.event.release.tag_name }}" ]; then
-            echo "Release tag does not match package.json version"
+          if [ -z "${{ env.DO_PRODUCTION_APP_NAME }}" ]; then
+            echo "DO_PRODUCTION_APP_NAME must be configured for production releases"
             exit 1
           fi
 
-      - name: Build and push Docker image
-        id: build-image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          platforms: linux/amd64,linux/arm64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            COMMITHASH=${{ steps.sha.outputs.sha }}
-            BUILDTIME=${{ steps.date.outputs.date }}
-            APP_VERSION=${{ steps.version.outputs.version }}
-          tags: |
-            docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:${{ github.event.release.tag_name }}
-            docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:latest
+      - name: Verify release does not already exist
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          if gh release view "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "GitHub release ${{ steps.version.outputs.tag }} already exists"
+            exit 1
+          fi
+
+      - name: Resolve Docker image digest
+        id: release-image
+        run: |
+          image="docker.io/${{ env.DOCKER_NAME }}/vipr-wallet:${{ steps.sha.outputs.short }}-alpine"
+          digest="$(docker buildx imagetools inspect "$image" | awk '/Digest:/ { print $2; exit }')"
+          if [ -z "$digest" ]; then
+            echo "Unable to resolve digest for $image"
+            exit 1
+          fi
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
 
       - name: Deploy to DigitalOcean
-        if: ${{ env.DO_PRODUCTION_APP_NAME != '' }}
         uses: digitalocean/app_action/deploy@v2
         env:
-          VIPR_DIGEST: ${{ steps.build-image.outputs.digest }}
+          VIPR_DIGEST: ${{ steps.release-image.outputs.digest }}
         with:
           token: ${{ secrets.DO_TOKEN }}
           app_spec_location: .do/app.production.yaml
+
+      - name: Tag Docker release image
+        run: |
+          docker buildx imagetools create \
+            --tag "docker.io/${{ env.DOCKER_NAME }}/vipr-wallet:${{ steps.version.outputs.tag }}" \
+            --tag "docker.io/${{ env.DOCKER_NAME }}/vipr-wallet:latest" \
+            "docker.io/${{ env.DOCKER_NAME }}/vipr-wallet@${{ steps.release-image.outputs.digest }}"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --target "${{ steps.sha.outputs.full }}" \
+            --title "${{ steps.version.outputs.tag }}" \
+            --generate-notes

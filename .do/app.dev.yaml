@@ -2,24 +2,20 @@ alerts:
   - rule: DEPLOYMENT_FAILED
   - rule: DOMAIN_FAILED
 domains:
-  - domain: ${DO_PRODUCTION_DOMAIN}
+  - domain: ${DO_DEV_DOMAIN}
     type: PRIMARY
-    zone: ${DO_PRODUCTION_DOMAIN_ZONE}
+    zone: ${DO_DEV_DOMAIN_ZONE}
 features:
   - buildpack-stack=ubuntu-22
 ingress:
   rules:
     - component:
-        name: ${DO_PRODUCTION_SERVICE_NAME}
+        name: ${DO_DEV_SERVICE_NAME}
       match:
-        authority:
-          exact: ''
         path:
           prefix: /
-maintenance:
-  enabled: ${DO_PRODUCTION_MAINTENANCE_ENABLED}
-name: ${DO_PRODUCTION_APP_NAME}
-region: ${DO_PRODUCTION_REGION}
+name: ${DO_DEV_APP_NAME}
+region: ${DO_DEV_REGION}
 services:
   - http_port: 80
     image:
@@ -29,5 +25,5 @@ services:
       registry_type: DOCKER_HUB
       repository: vipr-wallet
     instance_count: 1
-    instance_size_slug: ${DO_PRODUCTION_INSTANCE_SIZE}
-    name: ${DO_PRODUCTION_SERVICE_NAME}
+    instance_size_slug: ${DO_DEV_INSTANCE_SIZE}
+    name: ${DO_DEV_SERVICE_NAME}
