@@ -12,8 +12,6 @@ ingress:
     - component:
         name: ${DO_PRODUCTION_SERVICE_NAME}
       match:
-        authority:
-          exact: ''
         path:
           prefix: /
 maintenance:
