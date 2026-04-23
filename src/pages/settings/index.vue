@@ -292,7 +292,6 @@
             <q-card-section class="settings-panel settings-panel--secondary">
               <!-- Version information -->
               <div class="settings-copy-block q-mb-md">
-                <div class="text-subtitle1">App Version: {{ version }}</div>
                 <div class="text-subtitle1">Quasar Version: {{ quasarVersion }}</div>
                 <BuildInfo />
               </div>
@@ -414,7 +413,6 @@ defineOptions({
   name: 'SettingsPage',
 })
 
-import { version } from '../../../package.json'
 import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'
 import { Dialog } from 'quasar'

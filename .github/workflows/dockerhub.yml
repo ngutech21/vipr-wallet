@@ -1,4 +1,4 @@
-name: Build docker image and push to DockerHub & DigitalOcean
+name: Build docker image and push to DockerHub & DigitalOcean Dev
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 permissions: read-all
 
 concurrency:
-  group: deploy-beta
+  group: deploy-development
   cancel-in-progress: false
 
 jobs:
@@ -30,6 +30,7 @@ jobs:
               - 'src/**'
               - 'src-pwa/**'
               - 'public/**'
+              - '.do/app.dev.yaml'
               - 'Dockerfile'
               - 'docker/**'
               - '.dockerignore'
@@ -41,8 +42,18 @@ jobs:
 
   build-and-push:
     needs: changes
-    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.deploy == 'true'
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.deploy ==
+      'true'
     runs-on: ubuntu-latest
+    env:
+      DO_DEV_APP_NAME: ${{ secrets.DO_DEV_APP_NAME }}
+      DO_DEV_DOMAIN: ${{ vars.DO_DEV_DOMAIN || 'dev.vipr.cash' }}
+      DO_DEV_DOMAIN_ZONE: ${{ vars.DO_DEV_DOMAIN_ZONE || 'vipr.cash' }}
+      DO_DEV_REGION: ${{ vars.DO_DEV_REGION || 'fra' }}
+      DO_DEV_INSTANCE_SIZE: ${{ vars.DO_DEV_INSTANCE_SIZE || 'apps-s-1vcpu-0.5gb' }}
+      DO_DEV_SERVICE_NAME: ${{ vars.DO_DEV_SERVICE_NAME || 'ngutech-21-vipr-wallet' }}
+      DOCKER_NAME: ${{ secrets.DOCKER_NAME }}
+      DOCKER_HUB_CREDENTIALS: ${{ secrets.DOCKER_NAME }}:${{ secrets.DOCKER_PAT }}
 
     steps:
       - name: Checkout code
@@ -50,7 +61,7 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -65,11 +76,17 @@ jobs:
         id: date
         run: echo "date=$(date -u '+%F-%T')" >> "$GITHUB_OUTPUT"
 
-      - name: Get short SHA
+      - name: Get full SHA
         id: sha
-        run: echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Read package version
+        id: version
+        run: |
+          echo "version=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
 
       - name: Build and push Docker image
+        id: build-image
         uses: docker/build-push-action@v7
         with:
           context: .
@@ -81,10 +98,15 @@ jobs:
           build-args: |
             COMMITHASH=${{ steps.sha.outputs.sha }}
             BUILDTIME=${{ steps.date.outputs.date }}
-          tags: docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:${{ steps.sha.outputs.sha }}-alpine, docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:latest
+            APP_VERSION=${{ steps.version.outputs.version }}
+          tags: |
+            docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:${{ steps.sha.outputs.sha }}-alpine
+            docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:dev-latest
 
       - name: Deploy to DigitalOcean
+        env:
+          VIPR_DIGEST: ${{ steps.build-image.outputs.digest }}
         uses: digitalocean/app_action/deploy@v2
         with:
-          app_name: vipr-wallet
           token: ${{ secrets.DO_TOKEN }}
+          app_spec_location: .do/app.dev.yaml

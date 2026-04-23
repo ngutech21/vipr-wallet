@@ -14,12 +14,12 @@ RUN pnpm install --frozen-lockfile --strict-peer-dependencies
 RUN pnpm build
 
 
-# Copy all remaining files
 ARG COMMITHASH
 ARG BUILDTIME
+ARG APP_VERSION
 ENV COMMITHASH=${COMMITHASH}
 ENV BUILDTIME=${BUILDTIME}
-
+ENV APP_VERSION=${APP_VERSION}
 
 # Stage 2: Serve the app using Nginx
 FROM alpine:3.23
@@ -31,10 +31,10 @@ COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 
 # Create a non-root user and group
 RUN addgroup -S app && adduser -S -D -H -G app -s /sbin/nologin app
-    
+
 # Copy the built files from builder stage
 COPY --from=builder /app/dist/pwa /usr/share/nginx/html
-  
+
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]

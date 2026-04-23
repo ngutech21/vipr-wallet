@@ -16,6 +16,9 @@ export default defineConfig((ctx) => {
 
   const buildTimeStamp = new Date().toISOString()
   const envVars = {
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(
+      process.env.APP_VERSION || process.env.npm_package_version || '0.0.0',
+    ),
     'import.meta.env.VITE_COMMIT_HASH': JSON.stringify(process.env.COMMITHASH || 'development'),
     'import.meta.env.VITE_BUILD_TIME': JSON.stringify(process.env.BUILDTIME || buildTimeStamp),
   }
