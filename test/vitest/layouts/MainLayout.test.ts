@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
-import { reactive, nextTick, defineComponent } from 'vue'
+import { reactive, nextTick } from 'vue'
 import { Quasar, QFooter } from 'quasar'
 import MainLayout from 'src/layouts/MainLayout.vue'
 
@@ -35,25 +35,21 @@ describe('MainLayout.vue', () => {
         stubs: {
           AddFederation: true,
           PwaUpdateBanner: true,
-          QTabs: defineComponent({
-            name: 'QTabs',
+          QTabs: {
             props: {
               modelValue: { type: String, required: false, default: null },
             },
             template:
               '<div data-testid="footer-tabs" :data-model-value="modelValue"><slot /></div>',
-          }),
-          QTab: defineComponent({
-            name: 'QTab',
+          },
+          QTab: {
             props: {
               name: { type: String, required: false, default: '' },
-              label: { type: String, required: false, default: '' },
-              icon: { type: String, required: false, default: '' },
             },
             emits: ['click'],
             template:
               '<button type="button" class="q-tab-stub" :data-name="name" @click="$emit(\'click\')"><slot /></button>',
-          }),
+          },
         },
       },
     })
