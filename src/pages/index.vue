@@ -292,6 +292,7 @@ function returnToDiscovery() {
 
 .home-action-btn {
   flex: 0 1 148px;
+  min-width: 0;
   min-height: 52px;
   border-radius: 18px;
   background:
@@ -377,9 +378,9 @@ function returnToDiscovery() {
   }
 
   .home-action-btn--icon {
-    flex-basis: 58px;
-    width: 58px;
-    min-width: 58px;
+    flex: 0 0 56px;
+    width: 56px;
+    min-width: 56px;
   }
 }
 </style>
