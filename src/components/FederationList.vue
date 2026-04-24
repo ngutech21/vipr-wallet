@@ -132,6 +132,19 @@ function formatCountLabel(count: number, noun: string): string {
   }
 }
 
+.federation-item {
+  min-height: 76px;
+  align-items: center;
+}
+
+.federation-avatar-section {
+  box-sizing: border-box;
+  flex: 0 0 66px;
+  width: 66px;
+  min-width: 66px;
+  padding-right: 16px;
+}
+
 .federation-title-row {
   display: flex;
   align-items: center;
