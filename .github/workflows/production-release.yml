@@ -112,3 +112,24 @@ jobs:
             --target "${{ steps.sha.outputs.sha }}" \
             --title "${{ steps.version.outputs.tag }}" \
             --generate-notes
+
+      - name: Mark release PR as tagged
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          RELEASE_SHA: ${{ steps.sha.outputs.sha }}
+        run: |
+          pr_number="$(
+            gh api \
+              -H "Accept: application/vnd.github+json" \
+              "/repos/${GITHUB_REPOSITORY}/commits/${RELEASE_SHA}/pulls" \
+              --jq '.[] | select(.merged_at != null and (.title | startswith("chore(master): release "))) | .number' |
+              head -n 1
+          )"
+
+          if [ -z "$pr_number" ]; then
+            echo "No merged release PR found for ${RELEASE_SHA}"
+            exit 0
+          fi
+
+          gh issue edit "$pr_number" --remove-label "autorelease: pending" || true
+          gh issue edit "$pr_number" --add-label "autorelease: tagged"
