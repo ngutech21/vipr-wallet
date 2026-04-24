@@ -302,29 +302,61 @@ html[data-e2e='1'] *::after {
   color: rgba(255, 255, 255, 0.54) !important;
 }
 
-.federation-empty-state {
-  min-height: calc(100dvh - 220px);
+.vipr-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--vipr-space-0) var(--vipr-space-6) 120px;
   text-align: center;
 }
 
-.federation-empty-state__title {
+.vipr-empty-state--page {
+  min-height: calc(100dvh - 220px);
+  padding: var(--vipr-space-0) var(--vipr-space-6) 120px;
+}
+
+.vipr-empty-state--inline {
+  min-height: 132px;
+}
+
+.vipr-empty-state--compact {
+  max-width: var(--vipr-width-mobile);
+  margin: 0 auto;
+  padding: var(--vipr-space-1) var(--vipr-space-2) var(--vipr-space-0);
+}
+
+.vipr-empty-state__title {
   color: var(--vipr-text-primary);
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
 }
 
-.federation-empty-state__copy {
+.vipr-empty-state--page .vipr-empty-state__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.vipr-empty-state__body {
   max-width: 320px;
   margin-top: 6px;
+  color: var(--vipr-text-subtle);
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.vipr-empty-state--page .vipr-empty-state__body {
   color: rgba(255, 255, 255, 0.86);
   font-size: 1rem;
-  line-height: 1.35;
+}
+
+.vipr-empty-state--hero .vipr-empty-state__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.vipr-empty-state--hero .vipr-empty-state__body {
+  color: var(--vipr-text-secondary);
+  font-size: 1rem;
 }
 
 .federation-details-page .federation-card,

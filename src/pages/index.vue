@@ -81,16 +81,16 @@
 
     <div
       v-if="federationStore.federations.length == 0"
-      class="home-empty-state column items-center justify-center full-height"
+      class="home-empty-state vipr-empty-state vipr-empty-state--hero full-height"
       style="flex: 1"
     >
-      <div class="text-h6">Ready to start?</div>
-      <div class="text-subtitle7">Join a federation to get up and running</div>
+      <div class="vipr-empty-state__title">Ready to start?</div>
+      <div class="vipr-empty-state__body">Join a federation to get up and running</div>
       <q-btn
         no-caps
         unelevated
         label="Join a federation"
-        class="home-empty-state__action q-mt-md"
+        class="home-empty-state__action vipr-btn vipr-btn--primary-soft vipr-btn--md q-mt-md"
         icon="add"
         @click="showSelection = true"
         :data-testid="'home-join-federation-btn'"
@@ -237,20 +237,10 @@ function returnToDiscovery() {
 
 .home-empty-state {
   padding: 0 24px 120px;
-  text-align: center;
 }
 
 .home-empty-state__action {
-  min-height: 48px;
   min-width: min(100%, 230px);
-  border-radius: 16px;
-  background:
-    linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
-  box-shadow:
-    0 6px 13px rgba(111, 0, 255, 0.13),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  color: white;
 }
 
 .hero-card {

@@ -60,9 +60,9 @@
       </q-item>
     </q-card>
   </div>
-  <div v-else class="federation-empty-state" data-testid="federation-empty-state">
-    <div class="federation-empty-state__title">No federations yet</div>
-    <div class="federation-empty-state__copy">Federation details will appear here after setup.</div>
+  <div v-else class="vipr-empty-state vipr-empty-state--page" data-testid="federation-empty-state">
+    <div class="vipr-empty-state__title">No federations yet</div>
+    <div class="vipr-empty-state__body">Federation details will appear here after setup.</div>
   </div>
 </template>
 

@@ -49,12 +49,12 @@
 
         <q-item
           v-if="!isInitialLoading && transactions.length === 0"
-          class="transactions-empty-state text-center"
+          class="vipr-empty-state vipr-empty-state--inline"
           :data-testid="emptyTransactionsTestId"
         >
           <q-item-section>
-            <div class="transactions-empty-state__title">No transactions yet</div>
-            <div class="transactions-empty-state__body">
+            <div class="vipr-empty-state__title">No transactions yet</div>
+            <div class="vipr-empty-state__body">
               {{
                 props.mode === 'home'
                   ? 'Your latest activity will show up here.'
@@ -86,11 +86,11 @@
 
     <div
       v-else-if="showHomeEmptyState"
-      class="transactions-empty-home"
+      class="vipr-empty-state vipr-empty-state--compact"
       data-testid="transactions-empty-home"
     >
-      <div class="transactions-empty-home__title">No transactions yet</div>
-      <div class="transactions-empty-home__body">Your latest activity will show up here.</div>
+      <div class="vipr-empty-state__title">No transactions yet</div>
+      <div class="vipr-empty-state__body">Your latest activity will show up here.</div>
     </div>
   </div>
 </template>
@@ -338,42 +338,6 @@ defineExpose({
   list-style-type: none;
   padding: 0;
   margin: 0;
-}
-
-.transactions-empty-state {
-  min-height: 132px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.transactions-empty-state__title {
-  color: white;
-  font-weight: 600;
-}
-
-.transactions-empty-state__body {
-  margin-top: 6px;
-  color: rgba(255, 255, 255, 0.52);
-  font-size: 0.9rem;
-}
-
-.transactions-empty-home {
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 4px 8px 0;
-  text-align: center;
-}
-
-.transactions-empty-home__title {
-  color: white;
-  font-weight: 600;
-}
-
-.transactions-empty-home__body {
-  margin-top: 6px;
-  color: rgba(255, 255, 255, 0.52);
-  font-size: 0.9rem;
 }
 
 .transactions-footer {
