@@ -2,23 +2,24 @@
   <q-banner
     v-if="showBanner"
     rounded
-    class="pwa-update-banner bg-primary text-white q-mx-md q-mt-md"
+    class="pwa-update-banner text-white q-mx-md q-mt-md"
     data-testid="pwa-update-banner"
   >
-    <div class="row items-center justify-between no-wrap q-col-gutter-sm">
-      <div class="col">
-        <div class="text-subtitle2 text-weight-medium">Update available</div>
-        <div class="text-caption" data-testid="pwa-update-banner-status">
+    <div class="pwa-update-banner__content">
+      <div class="pwa-update-banner__copy">
+        <div class="pwa-update-banner__title">Update available</div>
+        <div class="pwa-update-banner__status" data-testid="pwa-update-banner-status">
           {{ statusText }}
         </div>
       </div>
-      <div class="col-auto">
+      <div class="pwa-update-banner__action">
         <q-btn
-          color="white"
-          text-color="primary"
+          no-caps
+          unelevated
           label="Update now"
           :loading="isApplying"
           :disable="isApplying"
+          class="pwa-update-banner__button"
           @click="applyUpdate"
           data-testid="pwa-update-apply-btn"
         />
@@ -71,6 +72,68 @@ async function applyUpdate() {
 
 <style scoped>
 .pwa-update-banner {
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  background:
+    radial-gradient(circle at top left, rgba(156, 39, 255, 0.14), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.pwa-update-banner__content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pwa-update-banner__copy {
+  min-width: 0;
+}
+
+.pwa-update-banner__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.pwa-update-banner__status {
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.pwa-update-banner__action {
+  flex: 0 0 auto;
+}
+
+.pwa-update-banner__button {
+  min-height: 38px;
+  border-radius: 13px;
+  padding: 0 16px;
+  background:
+    linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
+  box-shadow:
+    0 5px 12px rgba(111, 0, 255, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  color: white;
+  font-weight: 600;
+}
+
+@media (max-width: 599px) {
+  .pwa-update-banner__content {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .pwa-update-banner__button {
+    width: 100%;
+  }
 }
 </style>
