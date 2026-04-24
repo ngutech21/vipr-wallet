@@ -730,7 +730,7 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-stack--secondary {
-  margin-top: 14px;
+  margin-top: 10px;
 }
 
 .full-width {

@@ -18,6 +18,7 @@
       <q-btn
         label="Back"
         flat
+        no-caps
         color="grey-7"
         class="full-width"
         data-testid="startup-wizard-backup-back-btn"
@@ -26,10 +27,11 @@
     </div>
     <div class="col-12 col-sm-6">
       <q-btn
-        label="I've backed up my recovery phrase"
+        label="Recovery phrase saved"
         color="primary"
         icon="check_circle"
-        class="full-width"
+        no-caps
+        class="full-width backup-confirm-btn"
         :disable="mnemonicWords.length !== 12"
         data-testid="startup-wizard-backup-confirm-btn"
         @click="$emit('confirm')"
@@ -62,6 +64,17 @@ defineEmits<{
 
 .full-width {
   width: 100%;
+}
+
+.backup-confirm-btn :deep(.q-btn__content) {
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.backup-confirm-btn :deep(.block) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (max-width: 599px) {
