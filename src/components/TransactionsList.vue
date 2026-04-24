@@ -264,7 +264,13 @@ async function openFullHistory() {
 }
 
 async function viewTransactionDetails(id: string) {
-  await router.push({ name: '/transaction/[id]', params: { id } })
+  await router.push({
+    name: '/transaction/[id]',
+    params: { id },
+    query: {
+      backTo: props.mode === 'history' ? 'transactions' : 'home',
+    },
+  })
 }
 
 defineExpose({
@@ -419,6 +425,24 @@ defineExpose({
 
 .transactions-header-action {
   flex-shrink: 0;
+  border-radius: 14px;
+  padding: 6px 8px 6px 10px;
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.transactions-header-action:hover {
+  background-color: rgba(255, 255, 255, 0.028);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+}
+
+.transactions-header-action:active {
+  background-color: rgba(255, 255, 255, 0.042);
+}
+
+.transactions-header-action :deep(.q-focus-helper) {
+  display: none;
 }
 
 @media (max-width: 520px) {

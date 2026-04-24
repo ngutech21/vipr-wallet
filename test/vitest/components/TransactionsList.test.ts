@@ -344,6 +344,9 @@ describe('TransactionsList.vue', () => {
       params: {
         id: 'wallet-op-detail',
       },
+      query: {
+        backTo: 'transactions',
+      },
     })
   })
 })

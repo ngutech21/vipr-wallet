@@ -26,6 +26,7 @@ describe('TransactionDetailsPage', () => {
       params: {
         id: 'tx-1',
       },
+      query: {},
     })
     mockGetTransactionByOperationId.mockResolvedValue(null)
     mockRouterReplace.mockResolvedValue(undefined)
@@ -82,5 +83,40 @@ describe('TransactionDetailsPage', () => {
     await (wrapper.vm as any).navigateBack()
 
     expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/' })
+  })
+
+  it('navigates back to transaction history when opened from the history page', async () => {
+    mockUseRoute.mockReturnValue({
+      params: {
+        id: 'tx-1',
+      },
+      query: {
+        backTo: 'transactions',
+      },
+    })
+
+    const wrapper = mount(TransactionDetailsPage, {
+      global: {
+        stubs: {
+          transition: false,
+          LightningTransactionDetails: true,
+          EcashTransactionDetails: true,
+          WalletTransactionDetails: true,
+          'q-page': {
+            template: '<div><slot /></div>',
+          },
+          'q-btn': {
+            template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
+          },
+          'q-spinner': true,
+          'q-icon': true,
+        },
+      },
+    })
+
+    await flushPromises()
+    await wrapper.get('[data-testid="transaction-details-back-btn"]').trigger('click')
+
+    expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/transactions' })
   })
 })

@@ -88,7 +88,9 @@ const loading = ref(true)
 const error = ref('')
 
 async function navigateBack() {
-  await router.replace({ name: '/' })
+  await router.replace(
+    route.query.backTo === 'transactions' ? { name: '/transactions' } : { name: '/' },
+  )
 }
 
 onMounted(async () => {
