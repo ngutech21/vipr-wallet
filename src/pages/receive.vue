@@ -67,9 +67,14 @@ meta:
             <q-separator class="qr-separator" />
             <q-card-section class="invoice-section">
               <div class="invoice-row">
-                <div class="invoice-label" :title="qrData" data-testid="receive-invoice-input">
-                  <span class="invoice-label__text">{{ qrData }}</span>
-                </div>
+                <input
+                  class="invoice-label"
+                  :title="qrData"
+                  :value="qrData"
+                  readonly
+                  data-testid="receive-invoice-input"
+                  aria-label="Lightning invoice"
+                />
                 <q-btn
                   icon="content_copy"
                   flat
@@ -401,12 +406,8 @@ async function goBack() {
   color: white;
   font-size: 0.95rem;
   line-height: 1;
-}
-
-.invoice-label__text {
-  display: block;
-  min-width: 0;
-  max-width: 100%;
+  font: inherit;
+  outline: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

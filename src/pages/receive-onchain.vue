@@ -44,13 +44,14 @@ meta:
               <q-separator class="qr-separator" />
               <q-card-section class="address-section">
                 <div class="address-row">
-                  <div
+                  <input
                     class="address-label"
                     :title="bitcoinAddress"
+                    :value="bitcoinAddress"
+                    readonly
                     data-testid="receive-onchain-address-input"
-                  >
-                    <span class="address-label__text">{{ bitcoinAddress }}</span>
-                  </div>
+                    aria-label="Bitcoin address"
+                  />
                   <q-btn
                     icon="content_copy"
                     flat
@@ -450,12 +451,8 @@ async function goBack() {
   color: white;
   font-size: 0.95rem;
   line-height: 1;
-}
-
-.address-label__text {
-  display: block;
-  min-width: 0;
-  max-width: 100%;
+  font: inherit;
+  outline: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
