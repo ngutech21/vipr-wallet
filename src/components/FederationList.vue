@@ -48,9 +48,11 @@
           <q-btn
             flat
             round
+            dense
             icon="chevron_right"
-            :color="isSelected(fedi) ? 'primary' : 'grey-5'"
-            size="sm"
+            color="grey-6"
+            size="md"
+            class="federation-details-button"
             :to="{ name: '/federation/[id]', params: { id: String(fedi.federationId) } }"
             :data-testid="`federation-list-details-btn-${fedi.federationId}`"
           />
@@ -156,6 +158,10 @@ function formatCountLabel(count: number, noun: string): string {
   font-size: 0.7rem;
   letter-spacing: 0.01em;
   flex-shrink: 0;
+}
+
+.federation-details-button {
+  color: rgba(255, 255, 255, 0.54) !important;
 }
 
 .federation-empty-state {
