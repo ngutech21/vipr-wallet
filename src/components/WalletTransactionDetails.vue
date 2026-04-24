@@ -196,9 +196,12 @@ async function copyAddress() {
 }
 
 .transaction-card--details {
-  background: rgba(255, 255, 255, 0.012);
-  border-color: rgba(255, 255, 255, 0.045);
-  padding: 6px 18px 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.006)),
+    rgba(255, 255, 255, 0.004);
+  border-color: rgba(255, 255, 255, 0.028);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
+  padding: 4px 18px 12px;
 }
 
 .transaction-type {
@@ -267,7 +270,7 @@ async function copyAddress() {
   padding: 12px 0;
 
   &--separated {
-    border-top: 1px solid rgba(255, 255, 255, 0.055);
+    border-top: 1px solid rgba(255, 255, 255, 0.032);
   }
 
   .label {
@@ -301,10 +304,11 @@ async function copyAddress() {
 }
 
 .address-section {
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 16px;
-  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.018);
+  border: 0;
+  border-radius: 14px;
+  padding: 11px 12px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.018);
 
   .address-container {
     max-height: 80px;
@@ -313,14 +317,8 @@ async function copyAddress() {
     .address-text {
       word-break: break-all;
       font-family: monospace;
+      color: rgba(255, 255, 255, 0.78);
     }
-  }
-}
-
-/* Dark mode adjustments */
-.body--dark {
-  .address-section {
-    background-color: rgba(255, 255, 255, 0.08);
   }
 }
 

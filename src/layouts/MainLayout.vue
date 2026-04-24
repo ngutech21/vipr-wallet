@@ -81,14 +81,15 @@ async function goToTab(name: RouteRecordName): Promise<void> {
 <style scoped>
 :deep(.footer-container) {
   background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 18px),
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.018)),
     rgba(15, 16, 22, 0.96);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255, 255, 255, 0.025);
+  border-top: 1px solid rgba(255, 255, 255, 0.012);
   box-shadow:
-    0 -4px 14px rgba(0, 0, 0, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    0 -6px 18px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.008);
 }
 
 :deep(.footer-tabs) {
