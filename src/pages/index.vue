@@ -277,13 +277,13 @@ function returnToDiscovery() {
 
 .home-action-btn {
   flex: 1 1 0;
-  min-height: 56px;
+  min-height: 52px;
   border-radius: 18px;
   background:
     linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)),
     linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
   box-shadow:
-    0 10px 24px rgba(111, 0, 255, 0.28),
+    0 7px 16px rgba(111, 0, 255, 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.16);
   color: white;
 }
@@ -333,7 +333,7 @@ function returnToDiscovery() {
   }
 
   .home-action-btn {
-    min-height: 54px;
+    min-height: 50px;
   }
 
   .home-action-btn--icon {

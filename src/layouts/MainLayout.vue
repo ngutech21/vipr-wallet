@@ -65,34 +65,42 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
 
 <style scoped>
 :deep(.footer-container) {
-  background: rgba(26, 26, 26, 0.78);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border-top: 1px solid rgba(255, 255, 255, 0.02);
-  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.14);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.018)),
+    rgba(15, 16, 22, 0.96);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.025);
+  box-shadow:
+    0 -4px 14px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
 :deep(.footer-tabs) {
-  padding-top: 2px;
+  padding: 8px 12px 6px;
 }
 
 :deep(.footer-tabs .q-tab) {
-  min-height: 50px;
-  border-radius: 18px;
+  min-height: 56px;
+  border: 1px solid transparent;
+  border-radius: 15px;
   margin: 0 6px;
-  padding: 4px 10px 4px;
+  padding: 6px 10px;
+  color: rgba(255, 255, 255, 0.68);
   transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
     color 160ms ease,
     transform 160ms ease;
 }
 
 :deep(.footer-tabs .q-tab__content) {
-  gap: 4px;
+  gap: 5px;
 }
 
 :deep(.footer-tabs .q-tab__icon) {
-  font-size: 1.45rem;
-  opacity: 0.9;
+  font-size: 1.48rem;
+  opacity: 0.82;
   transition:
     color 160ms ease,
     opacity 160ms ease,
@@ -101,7 +109,7 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
 }
 
 :deep(.q-tab__label) {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 500;
   line-height: 1;
   margin-top: 2px;
@@ -116,7 +124,7 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
 }
 
 :deep(.footer-tabs .q-tab:hover) {
-  background: transparent !important;
+  background: rgba(255, 255, 255, 0.035) !important;
 }
 
 :deep(.footer-tabs .q-tab:hover .q-tab__icon),
@@ -159,23 +167,34 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
 
 :deep(.footer-container .footer-route-active),
 :deep(.footer-container .q-tab--active) {
-  color: #a970ff !important;
+  border-color: transparent;
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.68) !important;
 }
 
 :deep(.footer-container .footer-route-active .q-tab__icon),
 :deep(.footer-container .q-tab--active .q-tab__icon) {
-  filter: drop-shadow(0 0 10px rgba(169, 112, 255, 0.24));
+  color: #a970ff;
+  opacity: 1;
+  filter: none;
+}
+
+:deep(.footer-container .footer-route-active .q-tab__label),
+:deep(.footer-container .q-tab--active .q-tab__label) {
+  color: #a970ff;
+  font-weight: 600;
+  opacity: 1;
 }
 
 @media (max-width: 599px) {
   :deep(.footer-tabs .q-tab) {
     margin: 0 4px;
-    min-height: 46px;
-    padding: 3px 8px 3px;
+    min-height: 54px;
+    padding: 5px 8px;
   }
 
   :deep(.footer-tabs .q-tab__icon) {
-    font-size: 1.3rem;
+    font-size: 1.42rem;
   }
 }
 </style>
