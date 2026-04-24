@@ -53,7 +53,9 @@ meta:
         <q-btn
           label="Receive ecash"
           color="primary"
-          class="full-width receive-ecash-action-btn"
+          no-caps
+          unelevated
+          class="full-width vipr-btn vipr-btn--primary vipr-btn--lg receive-ecash-action-btn"
           :loading="isProcessing"
           :disable="!ecashToken.trim() || isProcessing"
           @click="redeemEcash"
@@ -206,7 +208,5 @@ function getQueryString(value: LocationQueryValue | LocationQueryValue[] | undef
 .receive-ecash-action-btn {
   width: 100%;
   max-width: 560px;
-  min-height: 54px;
-  border-radius: 18px;
 }
 </style>

@@ -72,7 +72,9 @@ meta:
         <div class="success-actions q-mt-xl">
           <q-btn
             color="primary"
-            class="success-action-btn"
+            no-caps
+            unelevated
+            class="success-action-btn vipr-btn vipr-btn--primary vipr-btn--lg"
             label="Back to home"
             @click="goHome"
             data-testid="sent-onchain-back-home-btn"
@@ -81,7 +83,8 @@ meta:
             v-if="transaction != null"
             flat
             color="white"
-            class="success-secondary-btn q-mt-sm"
+            no-caps
+            class="success-secondary-btn vipr-btn vipr-btn--secondary vipr-btn--lg q-mt-sm"
             label="View details"
             @click="viewTransaction"
             data-testid="sent-onchain-view-details-btn"
@@ -417,7 +420,5 @@ function isTerminalOutcome(outcome: WalletTransaction['outcome'] | undefined): b
 .success-action-btn,
 .success-secondary-btn {
   width: 100%;
-  min-height: 54px;
-  border-radius: 18px;
 }
 </style>

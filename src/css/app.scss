@@ -71,6 +71,43 @@ html[data-e2e='1'] *::after {
   }
 }
 
+// Shared app button styles. Use these for prominent CTAs instead of
+// redefining height/radius/gradient per view.
+.vipr-btn {
+  border-radius: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+
+  .q-btn__content {
+    gap: 8px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+}
+
+.vipr-btn--primary {
+  color: white !important;
+  background: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)) !important;
+  box-shadow: 0 12px 28px rgba(128, 0, 255, 0.24);
+}
+
+.vipr-btn--secondary {
+  color: rgba(255, 255, 255, 0.82) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+.vipr-btn--lg {
+  min-height: 54px;
+  border-radius: 18px;
+}
+
+.vipr-btn--md {
+  min-height: 44px;
+}
+
 // Gradient backgrounds
 .primary-gradient {
   background: linear-gradient(135deg, $primary, color.adjust($primary, $lightness: -15%));

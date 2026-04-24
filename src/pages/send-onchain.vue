@@ -102,7 +102,9 @@ meta:
             <q-btn
               label="Send Bitcoin"
               color="primary"
-              class="full-width send-onchain-action-btn"
+              no-caps
+              unelevated
+              class="full-width vipr-btn vipr-btn--primary vipr-btn--lg"
               :loading="isProcessing"
               :disable="!canSendOnchain"
               @click="submitOnchainPayment"
@@ -377,11 +379,6 @@ function safeParseBitcoinInput(input: string): {
 .custom-input :deep(.q-field__suffix),
 .custom-input :deep(.q-field__input) {
   color: white;
-}
-
-.send-onchain-action-btn {
-  min-height: 54px;
-  border-radius: 18px;
 }
 </style>
 

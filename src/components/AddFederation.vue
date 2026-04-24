@@ -24,7 +24,9 @@
         v-if="step === 'invite'"
         label="Preview Federation"
         color="primary"
-        class="full-width"
+        no-caps
+        unelevated
+        class="full-width vipr-btn vipr-btn--primary vipr-btn--lg"
         data-testid="add-federation-preview-btn"
         :disable="isSubmitting || inviteCode.trim() === ''"
         :loading="isSubmitting"
@@ -36,7 +38,9 @@
         v-else-if="previewFederation != null"
         label="Join Federation"
         color="primary"
-        class="full-width"
+        no-caps
+        unelevated
+        class="full-width vipr-btn vipr-btn--primary vipr-btn--lg"
         data-testid="add-federation-submit-btn"
         :disable="isSubmitting"
         :loading="isSubmitting"

@@ -168,7 +168,9 @@
             <q-btn
               :label="amountRequired ? 'Create Invoice' : 'Continue'"
               color="primary"
-              class="full-width q-py-sm send-action-btn"
+              no-caps
+              unelevated
+              class="full-width q-py-sm vipr-btn vipr-btn--primary vipr-btn--lg"
               size="lg"
               :loading="isProcessing"
               :disable="isProcessing"
@@ -406,10 +408,5 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 
 .contacts-hint-card {
   opacity: 0.92;
-}
-
-.send-action-btn {
-  min-height: 54px;
-  border-radius: 18px;
 }
 </style>

@@ -50,7 +50,9 @@ meta:
               <q-btn
                 label="Export ecash"
                 color="primary"
-                class="full-width send-ecash-action-btn"
+                no-caps
+                unelevated
+                class="full-width vipr-btn vipr-btn--primary vipr-btn--lg"
                 :loading="isProcessing"
                 :disable="!canCreateOfflineEcash"
                 @click="createOfflineEcash"
@@ -103,7 +105,8 @@ meta:
                   flat
                   color="primary"
                   label="Go to home"
-                  class="export-home-btn"
+                  no-caps
+                  class="vipr-btn vipr-btn--secondary vipr-btn--lg"
                   @click="goHome"
                   data-testid="send-ecash-go-home-btn"
                 />
@@ -424,12 +427,6 @@ function canRepresentExactMsats(targetMsats: number, noteCounts: Record<number, 
 
 .text-grey {
   color: #9e9e9e;
-}
-
-.send-ecash-action-btn,
-.export-home-btn {
-  min-height: 54px;
-  border-radius: 18px;
 }
 
 .export-card {

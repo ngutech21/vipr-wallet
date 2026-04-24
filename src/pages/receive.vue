@@ -33,7 +33,9 @@ meta:
             <q-btn
               label="Create Invoice"
               color="primary"
-              class="full-width receive-action-btn"
+              no-caps
+              unelevated
+              class="full-width vipr-btn vipr-btn--primary vipr-btn--lg"
               :disable="amount <= 0 || isCreatingInvoice"
               @click="onRequest"
               icon="bolt"
@@ -106,8 +108,10 @@ meta:
             v-if="qrData"
             label="Pay with Bitcoin wallet"
             color="primary"
+            no-caps
+            unelevated
             icon="account_balance_wallet"
-            class="receive-wallet-btn"
+            class="vipr-btn vipr-btn--primary vipr-btn--lg"
             @click="payWithBitcoinConnect"
             data-testid="receive-pay-with-wallet-btn"
           />
@@ -373,11 +377,5 @@ async function goBack() {
   overflow-x: auto;
   overflow-y: hidden;
   text-overflow: ellipsis;
-}
-
-.receive-action-btn,
-.receive-wallet-btn {
-  min-height: 54px;
-  border-radius: 18px;
 }
 </style>

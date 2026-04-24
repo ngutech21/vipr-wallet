@@ -40,7 +40,9 @@ meta:
 
         <q-btn
           color="primary"
-          class="success-action-btn q-mt-xl"
+          no-caps
+          unelevated
+          class="success-action-btn vipr-btn vipr-btn--primary vipr-btn--lg q-mt-xl"
           :to="{ name: '/' }"
           label="Back to home"
           data-testid="sent-lightning-back-home-btn"
@@ -214,7 +216,5 @@ onUnmounted(() => {
 
 .success-action-btn {
   width: 100%;
-  min-height: 54px;
-  border-radius: 18px;
 }
 </style>
