@@ -57,15 +57,6 @@ function guardianLabel(guardian: FederationGuardian): string {
 </script>
 
 <style scoped>
-.guardian-card {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.006)),
-    rgba(255, 255, 255, 0.004);
-  border: 1px solid rgba(255, 255, 255, 0.028);
-  border-radius: 24px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
-}
-
 .guardian-list {
   background: transparent;
 }

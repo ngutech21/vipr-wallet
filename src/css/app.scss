@@ -61,6 +61,14 @@ body,
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.022)),
     var(--vipr-color-surface-base);
   --vipr-surface-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  --vipr-surface-card-bg-subtle:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.006)),
+    rgba(255, 255, 255, 0.004);
+  --vipr-surface-card-border-subtle: rgba(255, 255, 255, 0.028);
+  --vipr-surface-card-shadow-subtle: inset 0 1px 0 rgba(255, 255, 255, 0.012);
+  --vipr-surface-card-bg-summary:
+    radial-gradient(circle at top left, rgba(156, 39, 255, 0.14), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
 }
 
 body {
@@ -217,6 +225,118 @@ html[data-e2e='1'] *::after {
 .section-title {
   font-size: 1.05rem;
   font-weight: 600;
+}
+
+.federation-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vipr-space-3);
+}
+
+.federation-list .federation-card {
+  transition: all 0.2s ease;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--vipr-color-surface-border);
+}
+
+.federation-list .federation-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.federation-list .federation-card.federation-selected {
+  background: rgba(var(--q-primary-rgb), 0.08);
+  border-color: var(--q-primary);
+}
+
+.federation-list .federation-item {
+  min-height: 76px;
+  align-items: center;
+}
+
+.federation-list .federation-avatar-section {
+  box-sizing: border-box;
+  flex: 0 0 66px;
+  width: 66px;
+  min-width: 66px;
+  padding-right: var(--vipr-space-4);
+}
+
+.federation-list .federation-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.federation-list .federation-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.federation-list .federation-summary {
+  margin-top: 6px;
+  color: var(--vipr-text-soft);
+  font-size: 0.9rem;
+}
+
+.federation-list .status-chip {
+  height: 22px;
+  font-size: 0.7rem;
+  letter-spacing: 0.01em;
+  flex-shrink: 0;
+}
+
+.federation-list .federation-details-button {
+  color: rgba(255, 255, 255, 0.54) !important;
+}
+
+.federation-empty-state {
+  min-height: calc(100dvh - 220px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--vipr-space-0) var(--vipr-space-6) 120px;
+  text-align: center;
+}
+
+.federation-empty-state__title {
+  color: var(--vipr-text-primary);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.federation-empty-state__copy {
+  max-width: 320px;
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.federation-details-page .federation-card,
+.guardian-card,
+.utxo-card {
+  background: var(--vipr-surface-card-bg-subtle);
+  border: 1px solid var(--vipr-surface-card-border-subtle);
+  border-radius: var(--vipr-radius-card);
+  box-shadow: var(--vipr-surface-card-shadow-subtle);
+}
+
+.federation-details-page .federation-card--summary {
+  background: var(--vipr-surface-card-bg-summary);
+  border-color: var(--vipr-color-surface-border);
+}
+
+.federation-details-page .section-title {
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .transaction-item {
@@ -407,17 +527,13 @@ html[data-e2e='1'] *::after {
 }
 
 .transaction-content .transaction-card--summary {
-  background:
-    radial-gradient(circle at top left, rgba(156, 39, 255, 0.14), transparent 42%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+  background: var(--vipr-surface-card-bg-summary);
 }
 
 .transaction-content .transaction-card--details {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.006)),
-    rgba(255, 255, 255, 0.004);
-  border-color: rgba(255, 255, 255, 0.028);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
+  background: var(--vipr-surface-card-bg-subtle);
+  border-color: var(--vipr-surface-card-border-subtle);
+  box-shadow: var(--vipr-surface-card-shadow-subtle);
   padding: var(--vipr-space-1) 18px var(--vipr-space-3);
 }
 
