@@ -116,7 +116,7 @@ onMounted(async () => {
   height: 40px;
   display: grid;
   place-items: center;
-  border-radius: 14px;
+  border-radius: 50%;
   background: rgba(255, 255, 255, 0.05);
 }
 
