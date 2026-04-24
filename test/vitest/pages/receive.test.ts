@@ -112,8 +112,8 @@ describe('ReceivePage timer lifecycle', () => {
     await (wrapper.vm as any).onRequest()
     await flushPromises()
 
-    expect(mockCreateInvoice).toHaveBeenCalledWith(100, 'minting ecash', 1200)
-    expect(mockWaitForInvoicePayment).toHaveBeenCalledWith('op-1', 1200000)
+    expect(mockCreateInvoice).toHaveBeenCalledWith(100, 'minting ecash', 3540)
+    expect(mockWaitForInvoicePayment).toHaveBeenCalledWith('op-1', 3540000)
     expect(mockRouterPush).toHaveBeenCalledWith({
       name: '/received-lightning',
       query: { amount: '100' },

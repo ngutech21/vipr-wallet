@@ -28,66 +28,66 @@ meta:
         </div>
 
         <template v-else>
-          <q-card v-if="bitcoinAddress" flat class="task-card qr-card q-mb-md">
-            <q-card-section class="qr-container">
-              <qrcode-vue
-                :value="bitcoinAddress"
-                level="M"
-                render-as="svg"
-                :size="0"
-                class="responsive-qr"
-              />
-            </q-card-section>
-            <q-separator dark />
-            <q-card-section>
-              <div class="section-title q-mb-sm">Bitcoin address</div>
-              <div class="row items-center q-gutter-sm no-wrap">
-                <q-input
-                  v-model="bitcoinAddress"
-                  readonly
-                  filled
-                  dense
-                  class="col custom-input"
-                  data-testid="receive-onchain-address-input"
-                />
-                <q-btn
-                  icon="content_copy"
-                  flat
-                  round
-                  @click="copyToClipboard"
-                  data-testid="receive-onchain-copy-btn"
-                />
-                <q-btn
-                  v-if="isSupported"
-                  icon="share"
-                  flat
-                  round
-                  @click="shareAddress"
-                  data-testid="receive-onchain-share-btn"
-                />
-              </div>
-            </q-card-section>
-          </q-card>
+          <div class="qr-card-shell">
+            <q-card v-if="bitcoinAddress" flat class="task-card qr-card">
+              <q-card-section class="qr-container">
+                <div class="qr-surface">
+                  <qrcode-vue
+                    :value="bitcoinAddress"
+                    level="M"
+                    render-as="svg"
+                    :size="0"
+                    class="responsive-qr"
+                  />
+                </div>
+              </q-card-section>
+              <q-separator class="qr-separator" />
+              <q-card-section class="address-section">
+                <div class="address-row">
+                  <div
+                    class="address-label"
+                    :title="bitcoinAddress"
+                    data-testid="receive-onchain-address-input"
+                  >
+                    <span class="address-label__text">{{ bitcoinAddress }}</span>
+                  </div>
+                  <q-btn
+                    icon="content_copy"
+                    flat
+                    round
+                    @click="copyToClipboard"
+                    data-testid="receive-onchain-copy-btn"
+                  />
+                  <q-btn
+                    icon="share"
+                    flat
+                    round
+                    @click="shareAddress"
+                    data-testid="receive-onchain-share-btn"
+                  />
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
 
-          <q-card v-if="bitcoinAddress" flat class="task-card status-card q-mb-md">
-            <q-card-section class="text-center">
-              <div class="section-title q-mb-sm" data-testid="receive-onchain-status-text">
-                {{ depositStatusText }}
-                <q-spinner v-if="isWaitingForDeposit" size="20px" class="q-ml-sm" />
-              </div>
+          <div v-if="bitcoinAddress" class="receive-onchain-status">
+            <div class="status-title" data-testid="receive-onchain-status-text">
+              {{ depositStatusText }}
+            </div>
+            <div class="status-copy">
               <div
                 v-if="confirmationInfo"
-                class="text-caption text-grey"
+                class="confirmation-info"
                 data-testid="receive-onchain-confirmation-info"
               >
                 {{ confirmationInfo }}
               </div>
-              <div class="text-caption text-grey q-mt-sm">
+              <div class="status-helper">
                 Send any amount of Bitcoin to this address. Funds will be credited after
                 confirmations.
               </div>
-            </q-card-section>
-          </q-card>
+            </div>
+          </div>
         </template>
       </div>
     </q-page>
@@ -323,6 +323,12 @@ async function copyToClipboard() {
 
 async function shareAddress() {
   logger.ui.debug('Sharing Bitcoin address')
+  if (!isSupported.value) {
+    await navigator.clipboard.writeText(bitcoinAddress.value)
+    notify.info('Address copied. Share is not available in this browser.')
+    return
+  }
+
   await share({
     title: 'Bitcoin address',
     text: bitcoinAddress.value,
@@ -355,6 +361,7 @@ async function goBack() {
 }
 
 .receive-onchain-content {
+  box-sizing: border-box;
   width: 100%;
   padding: 0 16px 24px;
   display: flex;
@@ -362,34 +369,113 @@ async function goBack() {
   align-items: center;
 }
 
-.amount-entry-container,
-.qr-card {
+.amount-entry-container {
   width: 100%;
   max-width: 560px;
 }
 
+.qr-card-shell {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  justify-content: center;
+}
+
+.qr-card {
+  width: 100%;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
 .qr-container {
+  box-sizing: border-box;
+  width: 100%;
   aspect-ratio: 1;
-  padding: 16px;
+  padding: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.qr-surface {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
 .responsive-qr {
+  display: block;
   width: 100%;
   height: 100%;
 }
 
 .task-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.022)),
+    rgba(15, 16, 22, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.075);
   border-radius: 24px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
-.status-card {
+.qr-separator {
+  background: rgba(255, 255, 255, 0.075);
+}
+
+.address-section {
+  padding: 12px 16px 14px;
+}
+
+.address-row {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.address-label {
+  min-width: 0;
+  flex: 1;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background-color: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 14px;
+  color: white;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.address-label__text {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.address-row :deep(.q-btn) {
+  flex: 0 0 auto;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.receive-onchain-status {
   width: 100%;
-  max-width: 560px;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  color: white;
+  text-align: center;
 }
 
 .section-title {
@@ -397,19 +483,64 @@ async function goBack() {
   font-weight: 600;
 }
 
-.custom-input :deep(.q-field__control) {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
+.status-title {
+  font-size: 1.05rem;
+  font-weight: 700;
 }
 
-.custom-input :deep(.q-field__native),
-.custom-input :deep(.q-field__prefix),
-.custom-input :deep(.q-field__suffix),
-.custom-input :deep(.q-field__input) {
-  color: white;
+.status-copy {
+  max-width: 480px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.92rem;
+  line-height: 1.45;
 }
 
-.text-grey {
-  color: #9e9e9e;
+.confirmation-info {
+  margin-bottom: 6px;
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.status-helper {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+@media (max-width: 520px) {
+  .receive-onchain-content {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .qr-container {
+    padding: 6px;
+  }
+
+  .qr-surface {
+    padding: 3px;
+    border-radius: 14px;
+  }
+
+  .address-section {
+    padding: 10px 10px 12px;
+  }
+
+  .address-row {
+    gap: 4px;
+  }
+
+  .address-label {
+    min-height: 40px;
+    padding: 0 12px;
+    font-size: 0.86rem;
+  }
+
+  .address-row :deep(.q-btn) {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+  }
+
+  .status-copy {
+    font-size: 0.88rem;
+  }
 }
 </style>
