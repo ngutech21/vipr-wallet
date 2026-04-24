@@ -23,6 +23,23 @@ body.body--dark {
   background: #141414;
 }
 
+.footer-container .q-tab,
+.footer-container .q-tab:hover,
+.footer-container .q-tab:focus,
+.footer-container .q-tab__content {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.footer-container .q-focus-helper,
+.footer-container .q-focus-helper::before,
+.footer-container .q-focus-helper::after,
+.footer-container .q-ripple {
+  display: none !important;
+  opacity: 0 !important;
+  background: transparent !important;
+}
+
 // E2E mode: remove motion to reduce test flakiness in CI.
 html[data-e2e='1'],
 html[data-e2e='1'] body {

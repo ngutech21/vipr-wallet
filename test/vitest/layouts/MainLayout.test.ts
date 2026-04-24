@@ -1,13 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
-import { computed, reactive, nextTick, defineComponent } from 'vue'
+import { reactive, nextTick, defineComponent } from 'vue'
 import { Quasar, QFooter } from 'quasar'
 import MainLayout from 'src/layouts/MainLayout.vue'
 
 const mockUseRoute = vi.hoisted(() => vi.fn())
+const mockRouterPush = vi.hoisted(() => vi.fn())
 
 vi.mock('vue-router', () => ({
   useRoute: () => mockUseRoute(),
+  useRouter: () => ({
+    push: mockRouterPush,
+  }),
 }))
 
 describe('MainLayout.vue', () => {
@@ -31,50 +35,24 @@ describe('MainLayout.vue', () => {
         stubs: {
           AddFederation: true,
           PwaUpdateBanner: true,
-          QRouteTab: defineComponent({
-            name: 'QRouteTab',
+          QTabs: defineComponent({
+            name: 'QTabs',
             props: {
-              name: { type: String, required: false, default: '' },
-              to: { type: [String, Object], required: false, default: '' },
-              label: { type: String, required: false, default: '' },
-              icon: { type: String, required: false, default: '' },
-              exact: { type: Boolean, required: false, default: false },
-            },
-            setup(props) {
-              const targetPath = computed(() => {
-                if (typeof props.to === 'string') {
-                  return props.to
-                }
-
-                return (
-                  (props.to as { path?: string; name?: string } | null)?.path ??
-                  (props.to as { path?: string; name?: string } | null)?.name ??
-                  ''
-                )
-              })
-
-              const isActive = computed(() => {
-                if (targetPath.value.length === 0 || routeState.path.length === 0) {
-                  return false
-                }
-
-                if (props.exact) {
-                  return routeState.path === targetPath.value
-                }
-
-                return (
-                  routeState.path === targetPath.value ||
-                  routeState.path.startsWith(`${targetPath.value}/`) ||
-                  routeState.path.startsWith(targetPath.value.replace(/\/$/, ''))
-                )
-              })
-
-              return {
-                isActive,
-              }
+              modelValue: { type: String, required: false, default: null },
             },
             template:
-              '<div class="q-route-tab-stub" :data-name="name" :class="{ \'footer-route-active\': isActive }"><slot /></div>',
+              '<div data-testid="footer-tabs" :data-model-value="modelValue"><slot /></div>',
+          }),
+          QTab: defineComponent({
+            name: 'QTab',
+            props: {
+              name: { type: String, required: false, default: '' },
+              label: { type: String, required: false, default: '' },
+              icon: { type: String, required: false, default: '' },
+            },
+            emits: ['click'],
+            template:
+              '<button type="button" class="q-tab-stub" :data-name="name" @click="$emit(\'click\')"><slot /></button>',
           }),
         },
       },
@@ -88,6 +66,7 @@ describe('MainLayout.vue', () => {
       meta: {},
     })
     mockUseRoute.mockReturnValue(routeState)
+    mockRouterPush.mockReset()
   })
 
   it('shows footer and maps home route to home tab', async () => {
@@ -95,7 +74,7 @@ describe('MainLayout.vue', () => {
     await flushPromises()
 
     expect(wrapper.findComponent(QFooter).exists()).toBe(true)
-    expect(wrapper.find('[data-name="home"]').classes()).toContain('footer-route-active')
+    expect(wrapper.find('[data-testid="footer-tabs"]').attributes('data-model-value')).toBe('home')
   })
 
   it('maps federation route to federations tab', async () => {
@@ -104,7 +83,9 @@ describe('MainLayout.vue', () => {
     const wrapper = createWrapper()
     await flushPromises()
 
-    expect(wrapper.find('[data-name="federations"]').classes()).toContain('footer-route-active')
+    expect(wrapper.find('[data-testid="footer-tabs"]').attributes('data-model-value')).toBe(
+      'federations',
+    )
   })
 
   it('maps settings route to settings tab', async () => {
@@ -113,7 +94,9 @@ describe('MainLayout.vue', () => {
     const wrapper = createWrapper()
     await flushPromises()
 
-    expect(wrapper.find('[data-name="settings"]').classes()).toContain('footer-route-active')
+    expect(wrapper.find('[data-testid="footer-tabs"]').attributes('data-model-value')).toBe(
+      'settings',
+    )
   })
 
   it('hides footer when route meta requests hidden nav', async () => {
@@ -127,12 +110,23 @@ describe('MainLayout.vue', () => {
   it('reacts to route changes after mount', async () => {
     const wrapper = createWrapper()
     await flushPromises()
-    expect(wrapper.find('[data-name="home"]').classes()).toContain('footer-route-active')
+    expect(wrapper.find('[data-testid="footer-tabs"]').attributes('data-model-value')).toBe('home')
 
     routeState.name = '/settings/'
     routeState.path = '/settings/'
     await nextTick()
 
-    expect(wrapper.find('[data-name="settings"]').classes()).toContain('footer-route-active')
+    expect(wrapper.find('[data-testid="footer-tabs"]').attributes('data-model-value')).toBe(
+      'settings',
+    )
+  })
+
+  it('navigates with named routes when clicking a footer tab', async () => {
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.find('[data-name="federations"]').trigger('click')
+
+    expect(mockRouterPush).toHaveBeenCalledWith({ name: '/federations/' })
   })
 })

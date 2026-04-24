@@ -13,39 +13,33 @@
         active-color="primary"
         indicator-color="transparent"
         inactive-color="white"
+        :model-value="currentTab"
         align="justify"
         class="footer-tabs"
       >
-        <q-route-tab
+        <q-tab
           name="home"
           icon="home"
           label="Home"
-          :to="{ name: '/' }"
-          active-class="footer-route-active"
-          exact-active-class="footer-route-active"
-          exact
           :ripple="false"
           data-testid="nav-home"
+          @click="goToTab('/')"
         />
-        <q-route-tab
+        <q-tab
           name="federations"
           icon="account_balance"
           label="Federations"
-          :to="{ name: '/federations/' }"
-          active-class="footer-route-active"
-          exact-active-class="footer-route-active"
           :ripple="false"
           data-testid="nav-federations"
+          @click="goToTab('/federations/')"
         />
-        <q-route-tab
+        <q-tab
           name="settings"
           icon="settings"
           label="Settings"
-          :to="{ name: '/settings/' }"
-          active-class="footer-route-active"
-          exact-active-class="footer-route-active"
           :ripple="false"
           data-testid="nav-settings"
+          @click="goToTab('/settings/')"
         />
       </q-tabs>
     </q-footer>
@@ -54,13 +48,34 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter, type RouteRecordName } from 'vue-router'
 
 import PwaUpdateBanner from 'src/components/PwaUpdateBanner.vue'
 
 const route = useRoute()
+const router = useRouter()
 
 const showFooter = computed(() => route.meta?.hideBottomNav !== true)
+const currentTab = computed<'home' | 'federations' | 'settings' | null>(() => {
+  switch (route.name) {
+    case '/':
+      return 'home'
+    case '/federations/':
+      return 'federations'
+    case '/settings/':
+      return 'settings'
+    default:
+      return null
+  }
+})
+
+async function goToTab(name: RouteRecordName): Promise<void> {
+  if (route.name === name) {
+    return
+  }
+
+  await router.push({ name })
+}
 </script>
 
 <style scoped>
@@ -128,7 +143,7 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
 }
 
 :deep(.footer-tabs .q-tab:hover) {
-  background: rgba(255, 255, 255, 0.035) !important;
+  background: transparent !important;
 }
 
 :deep(.footer-tabs .q-tab:hover .q-tab__icon),
@@ -137,7 +152,6 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
   opacity: 1;
 }
 
-:deep(.footer-route-active .q-tab__icon),
 :deep(.q-tab--active .q-tab__icon) {
   transform: translateY(-1px);
 }
@@ -159,33 +173,10 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
   background: #141414;
 }
 
-:deep(.footer-container .footer-route-active),
-:deep(.footer-container .q-tab--active) {
-  border-color: transparent;
-  background: transparent !important;
-  box-shadow: none !important;
-  color: rgba(255, 255, 255, 0.68) !important;
-}
-
-:deep(.footer-container .q-tab--active .q-focus-helper),
-:deep(.footer-container .footer-route-active .q-focus-helper) {
+:deep(.footer-container .q-tab--active .q-focus-helper) {
   display: none !important;
   opacity: 0 !important;
   background: transparent !important;
-}
-
-:deep(.footer-container .footer-route-active .q-tab__icon),
-:deep(.footer-container .q-tab--active .q-tab__icon) {
-  color: #a970ff;
-  opacity: 1;
-  filter: none;
-}
-
-:deep(.footer-container .footer-route-active .q-tab__label),
-:deep(.footer-container .q-tab--active .q-tab__label) {
-  color: #a970ff;
-  font-weight: 600;
-  opacity: 1;
 }
 
 @media (max-width: 599px) {
@@ -198,5 +189,21 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
   :deep(.footer-tabs .q-tab__icon) {
     font-size: 1.42rem;
   }
+}
+
+:deep(.footer-container .q-tab--active) {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #a970ff !important;
+}
+
+:deep(.footer-container .q-tab--active .q-tab__icon),
+:deep(.footer-container .q-tab--active .q-tab__label) {
+  color: inherit !important;
+  opacity: 1;
+}
+
+:deep(.footer-container .q-tab--active .q-tab__label) {
+  font-weight: 600;
 }
 </style>
