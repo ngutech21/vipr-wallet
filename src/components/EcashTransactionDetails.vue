@@ -28,7 +28,7 @@
       </div>
     </section>
 
-    <section class="transaction-card">
+    <section class="transaction-card transaction-card--details">
       <div class="detail-stack">
         <div class="detail-row">
           <div class="label">Created on</div>
@@ -42,28 +42,25 @@
           <div class="label">Transaction ID</div>
           <div class="value value--transaction-id text-caption">{{ transaction.txId }}</div>
         </div>
-      </div>
-    </section>
+        <div v-if="transaction.notes" class="detail-row detail-row--separated detail-row--block">
+          <div class="detail-row__heading">
+            <div class="label">Notes</div>
+            <q-btn
+              flat
+              dense
+              round
+              icon="content_copy"
+              @click="copyNotes"
+              class="copy-button"
+              data-testid="ecash-transaction-details-copy-notes-btn"
+            />
+          </div>
 
-    <section v-if="transaction.notes" class="transaction-card">
-      <div class="detail-row detail-row--header">
-        <div class="detail-row__heading">
-          <div class="label">Notes</div>
-          <q-btn
-            flat
-            dense
-            round
-            icon="content_copy"
-            @click="copyNotes"
-            class="copy-button"
-            data-testid="ecash-transaction-details-copy-notes-btn"
-          />
-        </div>
-      </div>
-
-      <div class="notes-section q-mt-sm">
-        <div class="notes-container">
-          <div class="notes-text text-caption">{{ transaction.notes }}</div>
+          <div class="notes-section q-mt-sm">
+            <div class="notes-container">
+              <div class="notes-text text-caption">{{ transaction.notes }}</div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -210,6 +207,12 @@ async function copyNotes() {
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
 }
 
+.transaction-card--details {
+  background: rgba(255, 255, 255, 0.012);
+  border-color: rgba(255, 255, 255, 0.045);
+  padding: 6px 18px 14px;
+}
+
 .transaction-type {
   display: flex;
   align-items: center;
@@ -275,7 +278,7 @@ async function copyNotes() {
   padding: 12px 0;
 
   &--separated {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.055);
   }
 
   .label {
@@ -304,10 +307,9 @@ async function copyNotes() {
   }
 }
 
-.detail-row--header {
-  justify-content: flex-start;
-  padding-top: 4px;
-  padding-bottom: 8px;
+.detail-row--block {
+  display: block;
+  padding-top: 14px;
 }
 
 .detail-row__heading {
@@ -321,10 +323,10 @@ async function copyNotes() {
 }
 
 .notes-section {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 18px;
-  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  padding: 12px 14px;
 
   .notes-container {
     max-height: 80px;

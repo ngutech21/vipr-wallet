@@ -35,7 +35,7 @@
       </div>
     </section>
 
-    <section class="transaction-card">
+    <section class="transaction-card transaction-card--details">
       <div class="detail-stack">
         <div class="detail-row">
           <div class="label">Created on</div>
@@ -60,37 +60,29 @@
           <div class="label">Transaction ID</div>
           <div class="value text-caption">{{ transaction.txId }}</div>
         </div>
-      </div>
-    </section>
-
-    <section v-if="transaction.preimage" class="transaction-card">
-      <div class="detail-stack">
-        <div class="detail-row">
+        <div v-if="transaction.preimage" class="detail-row detail-row--separated">
           <div class="label">Preimage</div>
           <div class="value text-caption">{{ transaction.preimage }}</div>
         </div>
-      </div>
-    </section>
+        <div class="detail-row detail-row--separated detail-row--block">
+          <div class="detail-row__heading">
+            <div class="label">Lightning Invoice</div>
+            <q-btn
+              flat
+              dense
+              round
+              icon="content_copy"
+              @click="copyInvoice"
+              class="copy-button"
+              data-testid="lightning-transaction-details-copy-invoice-btn"
+            />
+          </div>
 
-    <section class="transaction-card">
-      <div class="detail-row detail-row--header">
-        <div class="detail-row__heading">
-          <div class="label">Lightning Invoice</div>
-          <q-btn
-            flat
-            dense
-            round
-            icon="content_copy"
-            @click="copyInvoice"
-            class="copy-button"
-            data-testid="lightning-transaction-details-copy-invoice-btn"
-          />
-        </div>
-      </div>
-
-      <div class="invoice-section q-mt-sm">
-        <div class="invoice-container">
-          <div class="invoice-text text-caption">{{ transaction.invoice }}</div>
+          <div class="invoice-section q-mt-sm">
+            <div class="invoice-container">
+              <div class="invoice-text text-caption">{{ transaction.invoice }}</div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -197,6 +189,12 @@ async function copyInvoice() {
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
 }
 
+.transaction-card--details {
+  background: rgba(255, 255, 255, 0.012);
+  border-color: rgba(255, 255, 255, 0.045);
+  padding: 6px 18px 14px;
+}
+
 .transaction-type {
   display: flex;
   align-items: center;
@@ -262,7 +260,7 @@ async function copyInvoice() {
   padding: 12px 0;
 
   &--separated {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.055);
   }
 
   .label {
@@ -280,10 +278,9 @@ async function copyInvoice() {
   }
 }
 
-.detail-row--header {
-  justify-content: flex-start;
-  padding-top: 4px;
-  padding-bottom: 8px;
+.detail-row--block {
+  display: block;
+  padding-top: 14px;
 }
 
 .detail-row__heading {
@@ -297,10 +294,10 @@ async function copyInvoice() {
 }
 
 .invoice-section {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 18px;
-  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  padding: 12px 14px;
 
   .invoice-container {
     max-height: 80px;

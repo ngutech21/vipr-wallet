@@ -38,7 +38,7 @@
       </div>
     </section>
 
-    <section class="transaction-card">
+    <section class="transaction-card transaction-card--details">
       <div class="detail-stack">
         <div class="detail-row">
           <div class="label">Created on</div>
@@ -66,28 +66,25 @@
             <template v-else>Unknown</template>
           </div>
         </div>
-      </div>
-    </section>
+        <div class="detail-row detail-row--separated detail-row--block">
+          <div class="detail-row__heading">
+            <div class="label">Bitcoin address</div>
+            <q-btn
+              flat
+              dense
+              round
+              icon="content_copy"
+              @click="copyAddress"
+              class="copy-button"
+              data-testid="wallet-transaction-details-copy-address-btn"
+            />
+          </div>
 
-    <section class="transaction-card">
-      <div class="detail-row detail-row--header">
-        <div class="detail-row__heading">
-          <div class="label">Bitcoin address</div>
-          <q-btn
-            flat
-            dense
-            round
-            icon="content_copy"
-            @click="copyAddress"
-            class="copy-button"
-            data-testid="wallet-transaction-details-copy-address-btn"
-          />
-        </div>
-      </div>
-
-      <div class="address-section q-mt-sm">
-        <div class="address-container">
-          <div class="address-text text-caption">{{ transaction.onchainAddress }}</div>
+          <div class="address-section q-mt-sm">
+            <div class="address-container">
+              <div class="address-text text-caption">{{ transaction.onchainAddress }}</div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -198,6 +195,12 @@ async function copyAddress() {
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
 }
 
+.transaction-card--details {
+  background: rgba(255, 255, 255, 0.012);
+  border-color: rgba(255, 255, 255, 0.045);
+  padding: 6px 18px 14px;
+}
+
 .transaction-type {
   display: flex;
   align-items: center;
@@ -264,7 +267,7 @@ async function copyAddress() {
   padding: 12px 0;
 
   &--separated {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.055);
   }
 
   .label {
@@ -282,10 +285,9 @@ async function copyAddress() {
   }
 }
 
-.detail-row--header {
-  justify-content: flex-start;
-  padding-top: 4px;
-  padding-bottom: 8px;
+.detail-row--block {
+  display: block;
+  padding-top: 14px;
 }
 
 .detail-row__heading {
@@ -299,10 +301,10 @@ async function copyAddress() {
 }
 
 .address-section {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 18px;
-  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  padding: 12px 14px;
 
   .address-container {
     max-height: 80px;

@@ -122,7 +122,8 @@ onMounted(async () => {
   width: 100%;
   max-width: 700px;
   margin: 0 auto;
-  padding-bottom: 80px;
+  padding-bottom: 140px;
+  padding-bottom: calc(140px + env(safe-area-inset-bottom));
 }
 
 .transaction-details-topbar {
