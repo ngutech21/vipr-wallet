@@ -14,13 +14,15 @@ Vipr Wallet is a modern Progressive Web App (PWA) that serves as an ecash wallet
 # ⚠️ Disclaimer
 
 This software is experimental and comes with risks:
-
-- Current version is in **beta stage** with incomplete features and potential bugs
-- **DO NOT USE** with significant amounts of ecash or in production environments
+**DO NOT USE** with significant amounts of ecash or in production environments
 
 By using this wallet, you acknowledge and accept these risks.
 
-A demo version of the wallet is available at [beta.vipr.cash](https://beta.vipr.cash)
+The productive released version of the wallet is available at
+[app.vipr.cash](https://app.vipr.cash).
+
+For development and testing, [beta.vipr.cash](https://beta.vipr.cash) always
+tracks the current `master` branch.
 
 Learn more about the project at [vipr.cash](https://vipr.cash)
 
