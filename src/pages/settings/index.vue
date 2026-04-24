@@ -431,7 +431,6 @@ defineOptions({
   name: 'SettingsPage',
 })
 
-import { version as quasarVersion } from 'quasar/package.json'
 import BuildInfo from 'src/components/BuildInfo.vue'
 import { Dialog } from 'quasar'
 import { useAppNotify } from 'src/composables/useAppNotify'

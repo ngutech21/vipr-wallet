@@ -52,28 +52,25 @@ meta:
         </div>
 
         <!-- QR Code Card -->
-        <div class="column items-center justify-center">
-          <q-card v-if="qrData" class="qr-card task-card" data-testid="receive-qr-container">
+        <div class="qr-card-shell">
+          <q-card v-if="qrData" flat class="qr-card task-card" data-testid="receive-qr-container">
             <q-card-section class="qr-container">
-              <qrcode-vue
-                :value="qrData"
-                level="M"
-                render-as="svg"
-                :size="0"
-                class="responsive-qr"
-              />
-            </q-card-section>
-            <q-separator />
-            <q-card-section>
-              <div class="invoice-row">
-                <q-input
-                  v-model="qrData"
-                  readonly
-                  filled
-                  dense
-                  class="col invoice-input receive-input"
-                  data-testid="receive-invoice-input"
+              <div class="qr-surface">
+                <qrcode-vue
+                  :value="qrData"
+                  level="M"
+                  render-as="svg"
+                  :size="0"
+                  class="responsive-qr"
                 />
+              </div>
+            </q-card-section>
+            <q-separator class="qr-separator" />
+            <q-card-section class="invoice-section">
+              <div class="invoice-row">
+                <div class="invoice-label" :title="qrData" data-testid="receive-invoice-input">
+                  <span class="invoice-label__text">{{ qrData }}</span>
+                </div>
                 <q-btn
                   icon="content_copy"
                   flat
@@ -86,7 +83,6 @@ meta:
                   flat
                   round
                   @click="shareQrcode"
-                  v-if="isSupported"
                   data-testid="receive-share-invoice-btn"
                 />
               </div>
@@ -95,15 +91,17 @@ meta:
         </div>
 
         <!-- Payment Status -->
-        <div v-if="qrData" class="column items-center justify-center q-mt-xs">
-          <span class="highlight">{{ formattedCountdown }}</span>
-          <span class="countdown-text">
-            Waiting for Lightning payment...
-            <q-spinner v-if="isWaiting" size="20px" class="q-ml-sm" />
-          </span>
+        <div v-if="qrData" class="receive-status">
+          <div class="status-expiry">
+            <div class="status-label">Expires in</div>
+            <div class="status-time">{{ formattedCountdown }}</div>
+          </div>
+          <div class="status-message">
+            <span>Waiting for Lightning payment</span>
+          </div>
         </div>
 
-        <div class="row justify-center q-mt-lg">
+        <div class="receive-actions">
           <q-btn
             v-if="qrData"
             label="Pay with Bitcoin wallet"
@@ -143,7 +141,7 @@ import { getErrorMessage } from 'src/utils/error'
 
 const qrData = ref('')
 const router = useRouter()
-const lnExpiry = 60 * 20 // 20 minutes
+const lnExpiry = 60 * 59 // 59 minutes
 const countdown = ref(lnExpiry)
 const isWaiting = ref(false)
 const { share, isSupported } = useShare()
@@ -216,6 +214,12 @@ async function payWithBitcoinConnect() {
 
 async function shareQrcode() {
   logger.ui.debug('Sharing Lightning invoice')
+  if (!isSupported.value) {
+    await navigator.clipboard.writeText(qrData.value)
+    notify.info('Invoice copied. Share is not available in this browser.')
+    return
+  }
+
   await share({
     title: `Lightning Invoice for ${amount.value} sats`,
     text: qrData.value,
@@ -295,14 +299,21 @@ async function goBack() {
 }
 
 .receive-content {
+  box-sizing: border-box;
   width: 100%;
   padding: 0 16px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .task-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.022)),
+    rgba(15, 16, 22, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.075);
   border-radius: 24px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
 .amount-entry-container {
@@ -324,58 +335,181 @@ async function goBack() {
   margin-bottom: 10px;
 }
 
-.countdown-text {
-  font-size: 1.25rem;
-  margin-top: 10px;
-}
-
-.highlight {
-  font-size: 1.5rem;
-  color: var(--q-positive);
-  font-weight: bold;
-  margin-top: 10px;
+.qr-card-shell {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  justify-content: center;
 }
 
 .qr-card {
   width: 100%;
-  max-width: 560px;
-  margin-bottom: 0;
+  margin-bottom: 14px;
+  overflow: hidden;
 }
 
 .qr-container {
+  box-sizing: border-box;
+  width: 100%;
   aspect-ratio: 1;
-  padding: 16px;
+  padding: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.qr-surface {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
 .responsive-qr {
+  display: block;
   width: 100%;
   height: 100%;
 }
 
+.qr-separator {
+  background: rgba(255, 255, 255, 0.075);
+}
+
+.invoice-section {
+  padding: 12px 16px 14px;
+}
+
 .invoice-row {
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.invoice-input {
+.invoice-label {
   min-width: 0;
-}
-
-.receive-input :deep(.q-field__control) {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-}
-
-.receive-input :deep(.q-field__native),
-.receive-input :deep(.q-field__input) {
+  flex: 1;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background-color: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 14px;
   color: white;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.invoice-label__text {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
   white-space: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.invoice-row :deep(.q-btn) {
+  flex: 0 0 auto;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.receive-status {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  color: white;
+  text-align: center;
+}
+
+.status-label {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.status-time {
+  margin-top: 2px;
+  color: var(--q-positive);
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.status-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.receive-actions {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+@media (max-width: 520px) {
+  .receive-content {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .qr-container {
+    padding: 6px;
+  }
+
+  .qr-surface {
+    padding: 3px;
+    border-radius: 14px;
+  }
+
+  .invoice-section {
+    padding: 10px 10px 12px;
+  }
+
+  .invoice-row {
+    gap: 4px;
+  }
+
+  .invoice-label {
+    min-height: 40px;
+    padding: 0 12px;
+    font-size: 0.86rem;
+  }
+
+  .invoice-row :deep(.q-btn) {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+  }
+
+  .status-message {
+    font-size: 0.88rem;
+  }
+
+  .receive-actions {
+    max-width: 100%;
+  }
+
+  .receive-actions :deep(.q-btn) {
+    width: 100%;
+  }
 }
 </style>
