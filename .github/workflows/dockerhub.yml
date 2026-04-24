@@ -1,4 +1,4 @@
-name: Build docker image and push to DockerHub & DigitalOcean Dev
+name: Build docker image and deploy to Dev
 
 on:
   push:
