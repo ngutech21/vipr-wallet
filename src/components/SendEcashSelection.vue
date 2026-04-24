@@ -7,21 +7,21 @@
 
       <div class="selection-sheet__options">
         <BottomSheetOptionCard
-          title="Send via Lightning"
-          description="Pay a Lightning invoice, address, or LNURL while online."
-          icon="flash_on"
-          icon-color="warning"
-          data-testid="send-lightning-card"
-          @select="onSendLightning"
-        />
-
-        <BottomSheetOptionCard
           title="Send On-chain"
           description="Withdraw Bitcoin to an on-chain address or Bitcoin QR code."
           icon="currency_bitcoin"
           icon-color="orange"
           data-testid="send-onchain-card"
           @select="onSendOnchain"
+        />
+
+        <BottomSheetOptionCard
+          title="Send via Lightning"
+          description="Pay a Lightning invoice, address, or LNURL while online."
+          icon="flash_on"
+          icon-color="warning"
+          data-testid="send-lightning-card"
+          @select="onSendLightning"
         />
 
         <BottomSheetOptionCard
