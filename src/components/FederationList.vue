@@ -58,6 +58,10 @@
       </q-item>
     </q-card>
   </div>
+  <div v-else class="federation-empty-state" data-testid="federation-empty-state">
+    <div class="federation-empty-state__title">No federations yet</div>
+    <div class="federation-empty-state__copy">Federation details will appear here after setup.</div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -152,5 +156,30 @@ function formatCountLabel(count: number, noun: string): string {
   font-size: 0.7rem;
   letter-spacing: 0.01em;
   flex-shrink: 0;
+}
+
+.federation-empty-state {
+  min-height: calc(100dvh - 220px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px 120px;
+  text-align: center;
+}
+
+.federation-empty-state__title {
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.federation-empty-state__copy {
+  max-width: 320px;
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 1rem;
+  line-height: 1.35;
 }
 </style>

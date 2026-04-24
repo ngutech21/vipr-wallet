@@ -55,8 +55,9 @@ meta:
           label="I've written down my recovery phrase"
           color="primary"
           icon="check_circle"
+          no-caps
+          unelevated
           class="full-width q-mb-sm"
-          size="lg"
           @click="confirmBackup"
           data-testid="backup-words-confirm-btn"
         />
@@ -205,6 +206,21 @@ async function loadRecoveryWords() {
 
 .full-width {
   width: 100%;
+}
+
+.backup-words-container :deep(.q-btn:not(.q-btn--round)) {
+  min-height: 48px;
+  border-radius: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.backup-words-container :deep(.q-btn.bg-primary) {
+  background: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)) !important;
+  color: white !important;
+  box-shadow:
+    0 7px 16px rgba(111, 0, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 /* Responsive adjustments for smaller screens */

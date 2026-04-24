@@ -33,6 +33,7 @@ import {
   matGroups,
   matHome,
   matInfo,
+  matLink,
   matLogout,
   matOpenInNew,
   matPermContactCalendar,
@@ -49,9 +50,11 @@ import {
   matShare,
   matShield,
   matSwapHoriz,
+  matUpdate,
   matVerified,
   matVisibility,
   matWarning,
+  matWallet,
   matCurrencyBitcoin,
 } from '@quasar/extras/material-icons'
 
@@ -88,6 +91,7 @@ const iconMap: Record<string, string> = {
   groups: matGroups,
   home: matHome,
   info: matInfo,
+  link: matLink,
   logout: matLogout,
   open_in_new: matOpenInNew,
   perm_contact_calendar: matPermContactCalendar,
@@ -104,9 +108,11 @@ const iconMap: Record<string, string> = {
   share: matShare,
   shield: matShield,
   swap_horiz: matSwapHoriz,
+  update: matUpdate,
   verified: matVerified,
   visibility: matVisibility,
   warning: matWarning,
+  wallet: matWallet,
   currency_bitcoin: matCurrencyBitcoin,
 }
 

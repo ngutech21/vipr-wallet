@@ -50,8 +50,9 @@ meta:
             label="Show recovery phrase"
             color="primary"
             icon="visibility"
+            no-caps
+            unelevated
             class="full-width q-mb-sm"
-            size="lg"
             @click="showRecoveryWords"
             data-testid="backup-intro-show-words-btn"
           />
@@ -59,6 +60,7 @@ meta:
           <q-btn
             label="Cancel"
             flat
+            no-caps
             color="grey-6"
             class="full-width"
             @click="goBack"
@@ -189,6 +191,21 @@ async function goBack() {
 
 .full-width {
   width: 100%;
+}
+
+.backup-actions :deep(.q-btn:not(.q-btn--round)) {
+  min-height: 48px;
+  border-radius: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.backup-actions :deep(.q-btn.bg-primary) {
+  background: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)) !important;
+  color: white !important;
+  box-shadow:
+    0 7px 16px rgba(111, 0, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 @media (max-width: 599px) {

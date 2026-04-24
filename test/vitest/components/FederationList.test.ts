@@ -54,9 +54,12 @@ describe('FederationList.vue', () => {
   })
 
   describe('Rendering', () => {
-    it('should render nothing when federations list is empty', () => {
+    it('should render an empty state when federations list is empty', () => {
       wrapper = createWrapper()
-      expect(wrapper.html()).toBe('<!--v-if-->')
+      expect(wrapper.find('[data-testid="federation-empty-state"]').exists()).toBe(true)
+      expect(wrapper.text()).toContain('No federations yet')
+      expect(wrapper.text()).toContain('Federation details will appear here after setup.')
+      expect(wrapper.find('.federation-card').exists()).toBe(false)
     })
 
     it('should render a single federation card', () => {

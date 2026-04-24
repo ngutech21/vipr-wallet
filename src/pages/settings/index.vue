@@ -4,7 +4,7 @@
       <div class="settings-stack settings-stack--primary">
         <q-expansion-item
           class="settings-section settings-section--primary"
-          icon="account_balance_wallet"
+          icon="wallet"
           label="Lightning"
           caption="Connect wallet"
           header-class="settings-header"
@@ -39,8 +39,11 @@
                 <div class="col-12 col-sm-4 flex justify-end q-mt-sm q-mt-sm-none">
                   <q-btn
                     :label="connectedProvider ? 'Change' : 'Connect'"
-                    :icon="connectedProvider ? 'swap_horiz' : 'bolt'"
+                    :icon="connectedProvider ? 'swap_horiz' : 'link'"
                     :color="connectedProvider ? 'secondary' : 'primary'"
+                    no-caps
+                    unelevated
+                    class="settings-action-btn"
                     @click="configureBitcoinConnect"
                     :flat="!!connectedProvider"
                     :outline="!!connectedProvider"
@@ -111,6 +114,8 @@
                     label="Add"
                     icon="add"
                     color="primary"
+                    no-caps
+                    unelevated
                     class="full-width"
                     :disable="!isValidRelayUrl"
                     @click="addNewRelay"
@@ -123,8 +128,10 @@
                 <q-btn
                   label="Reset to Defaults"
                   outline
+                  no-caps
                   color="secondary"
                   icon="settings_backup_restore"
+                  class="settings-action-btn settings-action-btn--secondary"
                   @click="resetRelays"
                   data-testid="settings-reset-relays-btn"
                 />
@@ -172,6 +179,8 @@
                   <q-btn
                     label="Sync contacts"
                     color="primary"
+                    no-caps
+                    unelevated
                     class="full-width"
                     :loading="isSyncingContacts"
                     :disable="isSyncingContacts"
@@ -181,6 +190,7 @@
                   <q-btn
                     label="Clear contacts"
                     outline
+                    no-caps
                     color="secondary"
                     class="full-width q-mt-sm"
                     :disable="isSyncingContacts"
@@ -267,6 +277,7 @@
                     v-if="hasMoreContacts"
                     label="Show more"
                     flat
+                    no-caps
                     color="primary"
                     @click="showMoreContacts"
                     data-testid="settings-show-more-contacts-btn"
@@ -282,7 +293,7 @@
         <!-- Updates Section -->
         <q-expansion-item
           class="settings-section settings-section--secondary"
-          icon="info"
+          icon="update"
           label="Updates"
           caption="Check for updates"
           header-class="settings-header"
@@ -302,8 +313,10 @@
                   :label="updateButtonLabel"
                   :icon="updateButtonIcon"
                   color="primary"
+                  no-caps
+                  unelevated
                   @click="handleUpdateAction"
-                  class="q-mt-sm full-width"
+                  class="full-width"
                   data-testid="settings-check-updates-btn"
                   :loading="isUpdateActionRunning"
                   :disable="isUpdateActionRunning"
@@ -341,6 +354,8 @@
                 label="Create backup"
                 color="primary"
                 icon="backup"
+                no-caps
+                unelevated
                 :to="{ name: '/settings/backup' }"
                 class="full-width"
                 data-testid="settings-create-backup-btn"
@@ -367,6 +382,8 @@
                 label="Open GitHub Repository"
                 icon="open_in_new"
                 color="primary"
+                no-caps
+                unelevated
                 :href="'https://github.com/ngutech21/vipr-wallet'"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -396,6 +413,8 @@
                 label="Delete ALL Data"
                 color="negative"
                 icon="delete"
+                no-caps
+                unelevated
                 @click="deleteData"
                 class="full-width"
                 data-testid="settings-delete-data-btn"
@@ -453,9 +472,9 @@ const isUpdateActionRunning = computed(() => isCheckingForUpdates.value || isApp
 const canApplyUpdateHere = computed(() => pwaUpdateStore.canApplyOnRoute(route.name))
 const showApplyRestrictionHint = computed(() => isUpdateReady.value && !canApplyUpdateHere.value)
 const updateButtonLabel = computed(() =>
-  isUpdateReady.value ? 'Update ready' : 'Check for Updates',
+  isUpdateReady.value ? 'Update ready' : 'Check for updates',
 )
-const updateButtonIcon = computed(() => 'refresh')
+const updateButtonIcon = computed(() => (isUpdateReady.value ? 'update' : 'refresh'))
 const syncedContacts = computed(() => nostrStore.contacts)
 const isSyncingContacts = computed(() => nostrStore.syncStatus === 'syncing')
 const contactSyncError = computed(() => nostrStore.contactSyncMeta.lastSyncError)
@@ -748,12 +767,47 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-copy-block {
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 4px 0;
   color: rgba(255, 255, 255, 0.78);
   line-height: 1.45;
+}
+
+.settings-panel--secondary .settings-copy-block {
+  padding: 4px 2px;
+  background: transparent;
+  border: 0;
+}
+
+.settings-panel--secondary .settings-copy-block + .q-btn,
+.settings-panel--secondary .settings-copy-block + div {
+  margin-top: 14px;
+}
+
+.settings-panel :deep(.q-btn:not(.q-btn--round):not(.q-btn--dense)) {
+  min-height: 44px;
+  border-radius: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.settings-panel :deep(.q-btn.bg-primary),
+.settings-panel :deep(.q-btn.text-primary:not(.q-btn--flat):not(.q-btn--outline)) {
+  background: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)) !important;
+  color: white !important;
+  box-shadow:
+    0 4px 10px rgba(111, 0, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.settings-panel :deep(.q-btn.q-btn--outline) {
+  background: rgba(255, 255, 255, 0.025);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.settings-panel :deep(.q-btn.bg-negative) {
+  box-shadow:
+    0 4px 10px rgba(255, 68, 68, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .contacts-section {
@@ -880,12 +934,14 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 
 .settings-section--secondary
   :deep(.q-expansion-item__container > .q-item .q-item__section--avatar .q-icon) {
-  background: rgba(255, 255, 255, 0.05);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.74);
 }
 
 .settings-section--danger
   :deep(.q-expansion-item__container > .q-item .q-item__section--avatar .q-icon) {
-  background: rgba(255, 99, 99, 0.12);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
 }
 
 .settings-section :deep(.q-expansion-item__toggle-icon) {
