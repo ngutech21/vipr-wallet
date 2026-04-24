@@ -298,7 +298,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .startup-wizard-page {
-  padding: 16px;
+  padding: calc(16px + env(safe-area-inset-top)) 16px 16px;
 }
 
 .wizard-shell {
@@ -562,7 +562,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 599px) {
   .startup-wizard-page {
-    padding: 8px;
+    padding: calc(8px + env(safe-area-inset-top)) 8px 8px;
   }
 
   .wizard-card__section {

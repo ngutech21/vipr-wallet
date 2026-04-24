@@ -701,6 +701,7 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 .settings-page {
   max-width: 860px;
   margin: 0 auto;
+  padding-top: calc(16px + env(safe-area-inset-top)) !important;
 }
 
 .settings-stack {

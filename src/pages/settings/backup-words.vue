@@ -116,7 +116,7 @@ async function loadRecoveryWords() {
   display: flex;
   align-items: center;
   min-height: 44px;
-  padding: 12px 16px 8px;
+  padding: calc(12px + env(safe-area-inset-top)) 16px 8px;
 }
 
 .backup-topbar__back {

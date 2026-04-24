@@ -117,6 +117,7 @@ function returnToDiscovery() {
 <style scoped>
 .page-content {
   position: relative;
+  padding-top: calc(16px + env(safe-area-inset-top)) !important;
 }
 
 .add-federation-fab {

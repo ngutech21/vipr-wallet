@@ -155,7 +155,7 @@ function getQueryString(value: LocationQueryValue | LocationQueryValue[] | undef
   display: flex;
   align-items: center;
   min-height: 44px;
-  padding: 12px 16px 4px;
+  padding: calc(12px + env(safe-area-inset-top)) 16px 4px;
 }
 
 .receive-ecash-topbar__back {

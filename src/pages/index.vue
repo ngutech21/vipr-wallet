@@ -231,6 +231,7 @@ function returnToDiscovery() {
   gap: 16px;
   max-width: 700px;
   margin: 0 auto;
+  padding-top: calc(16px + env(safe-area-inset-top));
 }
 
 .home-empty-state {

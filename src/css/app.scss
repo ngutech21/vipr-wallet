@@ -9,9 +9,18 @@ body,
   color-scheme: dark;
 }
 
+:root {
+  --q-dark-page: #141414;
+}
+
 body {
   min-height: 100vh;
   min-height: 100dvh;
+  background-color: #141414;
+}
+
+body.body--dark {
+  background: #141414;
 }
 
 // E2E mode: remove motion to reduce test flakiness in CI.

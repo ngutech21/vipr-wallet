@@ -9,7 +9,8 @@ const appReadyAttribute = computed(() => (appStore.isReady ? 'true' : 'false'))
 </script>
 
 <template>
-  <div :data-app-ready="appReadyAttribute">
+  <div class="app-root" :data-app-ready="appReadyAttribute">
+    <div class="app-statusbar-fill" aria-hidden="true" />
     <RouterView v-slot="{ Component, route }">
       <MainLayout
         v-if="Component && route.meta?.layout !== 'none'"
@@ -25,3 +26,21 @@ const appReadyAttribute = computed(() => (appStore.isReady ? 'true' : 'false'))
     </RouterView>
   </div>
 </template>
+
+<style scoped>
+.app-root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #141414;
+}
+
+.app-statusbar-fill {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: env(safe-area-inset-top);
+  pointer-events: none;
+  background: #141414;
+}
+</style>

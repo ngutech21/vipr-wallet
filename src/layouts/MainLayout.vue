@@ -1,6 +1,5 @@
 <template>
   <q-layout view="hHh lpR fFf" class="app-layout">
-    <div class="app-top-shell ios-safe-area-top" aria-hidden="true" />
     <q-page-container>
       <PwaUpdateBanner />
       <!-- <q-page class="dark-gradient"> -->
@@ -11,6 +10,7 @@
     <q-footer v-if="showFooter" class="text-white footer-container ios-safe-area">
       <q-tabs
         no-caps
+        active-color="primary"
         indicator-color="transparent"
         inactive-color="white"
         align="justify"
@@ -86,6 +86,8 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
   border-radius: 15px;
   margin: 0 6px;
   padding: 6px 10px;
+  background: transparent !important;
+  box-shadow: none !important;
   color: rgba(255, 255, 255, 0.68);
   transition:
     background-color 160ms ease,
@@ -118,7 +120,9 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
     opacity 160ms ease;
 }
 
-:deep(.footer-tabs .q-tab .q-focus-helper) {
+:deep(.footer-tabs .q-tab .q-focus-helper),
+:deep(.footer-tabs .q-tab .q-ripple) {
+  display: none !important;
   opacity: 0 !important;
   background: transparent !important;
 }
@@ -150,16 +154,6 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
   padding-right: env(safe-area-inset-right);
 }
 
-.ios-safe-area-top {
-  padding-top: env(safe-area-inset-top);
-}
-
-.app-top-shell {
-  background: #1a1a1a;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  min-height: 14px;
-}
-
 .app-layout,
 :deep(.q-page-container) {
   background: #141414;
@@ -169,7 +163,15 @@ const showFooter = computed(() => route.meta?.hideBottomNav !== true)
 :deep(.footer-container .q-tab--active) {
   border-color: transparent;
   background: transparent !important;
+  box-shadow: none !important;
   color: rgba(255, 255, 255, 0.68) !important;
+}
+
+:deep(.footer-container .q-tab--active .q-focus-helper),
+:deep(.footer-container .footer-route-active .q-focus-helper) {
+  display: none !important;
+  opacity: 0 !important;
+  background: transparent !important;
 }
 
 :deep(.footer-container .footer-route-active .q-tab__icon),
