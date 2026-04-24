@@ -94,10 +94,10 @@ function onDismissSwipe() {
 
 <style scoped>
 .modal-card {
-  width: 100vw !important;
-  max-width: 100vw !important;
+  width: min(100vw, 700px) !important;
+  max-width: min(100vw, 700px) !important;
   max-height: 92vh;
-  margin: 0 !important;
+  margin: 0 auto !important;
   border-radius: 24px 24px 0 0;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)), #1f1f1f;
@@ -167,5 +167,12 @@ function onDismissSwipe() {
   gap: 12px;
   justify-content: flex-end;
   flex-wrap: nowrap;
+}
+
+@media (max-width: 599px) {
+  .modal-card {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
 }
 </style>
