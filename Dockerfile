@@ -1,6 +1,13 @@
 # Stage 1: Build the Quasar PWA
 FROM node:24-slim AS builder
 
+ARG COMMITHASH
+ARG BUILDTIME
+ARG APP_VERSION
+ENV COMMITHASH=${COMMITHASH}
+ENV BUILDTIME=${BUILDTIME}
+ENV APP_VERSION=${APP_VERSION}
+
 RUN corepack enable \
     && corepack prepare pnpm@10 --activate \
     && apt-get update \
@@ -12,14 +19,6 @@ COPY . .
 
 RUN pnpm install --frozen-lockfile --strict-peer-dependencies
 RUN pnpm build
-
-
-ARG COMMITHASH
-ARG BUILDTIME
-ARG APP_VERSION
-ENV COMMITHASH=${COMMITHASH}
-ENV BUILDTIME=${BUILDTIME}
-ENV APP_VERSION=${APP_VERSION}
 
 # Stage 2: Serve the app using Nginx
 FROM alpine:3.23
