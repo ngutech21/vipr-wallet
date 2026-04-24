@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { useFormatters } from 'src/utils/formatter'
+import { afterEach, describe, it, expect, vi } from 'vitest'
+import { formatTransactionListTimestamp, useFormatters } from 'src/utils/formatter'
 
 describe('formatter.ts', () => {
   describe('useFormatters', () => {
@@ -52,6 +52,36 @@ describe('formatter.ts', () => {
 
     it('should be consistent for same input', () => {
       expect(formatNumber(5000)).toBe(formatNumber(5000))
+    })
+  })
+
+  describe('formatTransactionListTimestamp', () => {
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('keeps the full timestamp format by default', () => {
+      expect(formatTransactionListTimestamp(new Date(2026, 3, 22, 10, 10).getTime())).toBe(
+        'Apr 22, 2026 • 10:10 AM',
+      )
+    })
+
+    it('uses Today for compact timestamps from the current day', () => {
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date(2026, 3, 22, 12, 0))
+
+      expect(formatTransactionListTimestamp(new Date(2026, 3, 22, 10, 10).getTime(), true)).toBe(
+        'Today · 10:10 AM',
+      )
+    })
+
+    it('omits the year for compact timestamps in the current year', () => {
+      vi.useFakeTimers()
+      vi.setSystemTime(new Date(2026, 5, 1, 12, 0))
+
+      expect(formatTransactionListTimestamp(new Date(2026, 3, 22, 10, 10).getTime(), true)).toBe(
+        'Apr 22 · 10:10 AM',
+      )
     })
   })
 })

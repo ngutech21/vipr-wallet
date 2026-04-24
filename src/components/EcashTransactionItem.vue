@@ -35,13 +35,14 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
-import { date } from 'quasar'
 import { useLightningStore } from 'src/stores/lightning'
 import type { EcashTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
+import { formatTransactionListTimestamp } from 'src/utils/formatter'
 
 interface Props {
   transaction: EcashTransaction
+  compactTimestamp?: boolean
 }
 
 const props = defineProps<Props>()
@@ -53,7 +54,7 @@ defineEmits<{
 const lightningStore = useLightningStore()
 const amountInFiat = ref<string>('0.00')
 const formattedTimestamp = computed(() => {
-  return date.formatDate(props.transaction.timestamp, 'MMM D, YYYY • h:mm A')
+  return formatTransactionListTimestamp(props.transaction.timestamp, props.compactTimestamp)
 })
 const amountInSats = computed(() => {
   return Math.floor(props.transaction.amountMsats / 1000).toLocaleString()

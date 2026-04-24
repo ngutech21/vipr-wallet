@@ -45,7 +45,6 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { date } from 'quasar'
 import { useLightningStore } from 'src/stores/lightning'
 import type { WalletTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
@@ -53,9 +52,11 @@ import {
   getWalletTransactionAmountSats,
   getWalletTransactionListTitle,
 } from 'src/utils/walletTransactionPresentation'
+import { formatTransactionListTimestamp } from 'src/utils/formatter'
 
 interface Props {
   transaction: WalletTransaction
+  compactTimestamp?: boolean
 }
 
 const props = defineProps<Props>()
@@ -68,7 +69,7 @@ const lightningStore = useLightningStore()
 const amountInFiat = ref('0.00')
 const transactionTitle = computed(() => getWalletTransactionListTitle(props.transaction))
 const formattedTimestamp = computed(() => {
-  return date.formatDate(props.transaction.timestamp, 'MMM D, YYYY • h:mm A')
+  return formatTransactionListTimestamp(props.transaction.timestamp, props.compactTimestamp)
 })
 
 const amountInSats = computed(() => {

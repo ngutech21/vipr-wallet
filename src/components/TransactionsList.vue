@@ -30,16 +30,19 @@
           <LightningTransactionItem
             v-if="transaction.kind === 'ln'"
             :transaction="transaction as LightningTransaction"
+            :compact-timestamp="useCompactTimestamps"
             @click="viewTransactionDetails"
           />
           <EcashTransactionItem
             v-else-if="transaction.kind === 'mint'"
             :transaction="transaction as EcashTransaction"
+            :compact-timestamp="useCompactTimestamps"
             @click="viewTransactionDetails"
           />
           <WalletTransactionItem
             v-else-if="transaction.kind === 'wallet'"
             :transaction="transaction as WalletTransaction"
+            :compact-timestamp="useCompactTimestamps"
             @click="viewTransactionDetails"
           />
         </template>
@@ -133,6 +136,7 @@ const emptyTransactionsTestId = 'transactions-empty-state'
 let activeLoadRequestId = 0
 
 const pageSize = computed(() => (props.mode === 'history' ? HISTORY_PAGE_SIZE : HOME_PAGE_SIZE))
+const useCompactTimestamps = computed(() => props.mode === 'home')
 const showHomeEmptyState = computed(() => {
   return props.mode === 'home' && !isInitialLoading.value && transactions.value.length === 0
 })
@@ -284,10 +288,13 @@ defineExpose({
 }
 
 .transactions-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  padding: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.022)),
+    rgba(15, 16, 22, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 26px;
+  padding: 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
 .transactions-list--home .transactions-card {
@@ -300,7 +307,7 @@ defineExpose({
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
 
 .transactions-title {
@@ -319,6 +326,30 @@ defineExpose({
   list-style-type: none;
   padding: 0;
   margin: 0;
+}
+
+.transaction-list-container :deep(.transaction-item) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 0;
+  margin-bottom: 0;
+  padding: 14px 0;
+}
+
+.transaction-list-container :deep(.transaction-item:first-child) {
+  padding-top: 0;
+}
+
+.transaction-list-container :deep(.transaction-item:last-child) {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.transaction-list-container :deep(.transaction-item:hover) {
+  background-color: transparent;
+}
+
+.transaction-list-container :deep(.transaction-item:active) {
+  background-color: rgba(255, 255, 255, 0.035);
 }
 
 .transactions-empty-state {

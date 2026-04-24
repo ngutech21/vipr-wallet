@@ -113,6 +113,7 @@ function createWrapper(mode: 'home' | 'history' = 'home') {
           name: 'LightningTransactionItem',
           props: {
             transaction: { type: Object, required: true },
+            compactTimestamp: { type: Boolean, default: false },
           },
           emits: ['click'],
           template:
@@ -122,6 +123,7 @@ function createWrapper(mode: 'home' | 'history' = 'home') {
           name: 'EcashTransactionItem',
           props: {
             transaction: { type: Object, required: true },
+            compactTimestamp: { type: Boolean, default: false },
           },
           emits: ['click'],
           template:
@@ -131,6 +133,7 @@ function createWrapper(mode: 'home' | 'history' = 'home') {
           name: 'WalletTransactionItem',
           props: {
             transaction: { type: Object, required: true },
+            compactTimestamp: { type: Boolean, default: false },
           },
           emits: ['click'],
           template:
@@ -188,6 +191,9 @@ describe('TransactionsList.vue', () => {
 
     expect(mockGetTransactionsPage).toHaveBeenCalledWith(3, undefined, { visibleOnly: true })
     expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(3)
+    expect(
+      wrapper.getComponent({ name: 'LightningTransactionItem' }).props('compactTimestamp'),
+    ).toBe(true)
     expect(wrapper.get('[data-testid="transactions-show-full-history-btn"]').text()).toContain(
       'View all',
     )
