@@ -108,6 +108,13 @@ function onDismissSwipe() {
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.45);
 }
 
+:global(.q-dialog__inner--bottom:not(.q-dialog__inner--maximized) > .modal-card) {
+  width: min(100vw, 700px) !important;
+  max-width: min(100vw, 700px) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
 .modal-card__handle {
   width: 56px;
   height: 5px;
@@ -167,12 +174,5 @@ function onDismissSwipe() {
   gap: 12px;
   justify-content: flex-end;
   flex-wrap: nowrap;
-}
-
-@media (max-width: 599px) {
-  .modal-card {
-    width: 100vw !important;
-    max-width: 100vw !important;
-  }
 }
 </style>
