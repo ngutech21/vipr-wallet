@@ -303,7 +303,6 @@
             <q-card-section class="settings-panel settings-panel--secondary">
               <!-- Version information -->
               <div class="settings-copy-block q-mb-md">
-                <div class="text-subtitle1">Quasar Version: {{ quasarVersion }}</div>
                 <BuildInfo />
               </div>
 

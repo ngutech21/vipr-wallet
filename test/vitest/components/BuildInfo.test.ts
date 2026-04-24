@@ -63,7 +63,7 @@ describe('BuildInfo.vue', () => {
         VITE_BUILD_TIME: '2024-02-20T15:45:00Z',
       })
 
-      expect(wrapper.text()).toContain('2024-02-20T15:45:00Z')
+      expect(wrapper.text()).toContain('Build Time: Feb 20, 2024, 15:45 UTC')
     })
 
     it('should render both commit hash and build time together', () => {
@@ -75,7 +75,7 @@ describe('BuildInfo.vue', () => {
       const text = wrapper.text()
       expect(text).toContain('Release Version: 0.0.1')
       expect(text).toContain('Commit SHA: xyz789')
-      expect(text).toContain('2024-03-10T08:00:00Z')
+      expect(text).toContain('Build Time: Mar 10, 2024, 08:00 UTC')
     })
 
     it('should have proper text structure with subtitle1 class', () => {
@@ -140,7 +140,7 @@ describe('BuildInfo.vue', () => {
       const text = wrapper.text()
       expect(text).toContain('Release Version: 0.0.1')
       expect(text).toContain('Commit SHA: abc123')
-      expect(text).toContain('2024-01-15')
+      expect(text).toContain('Build Time: Jan 15, 2024, 00:00 UTC')
       expect(text).not.toContain('Debug:')
     })
 
@@ -237,7 +237,7 @@ describe('BuildInfo.vue', () => {
         VITE_BUILD_TIME: '2024-01-15T10:30:00.000Z',
       })
 
-      expect(wrapper.text()).toContain('2024-01-15T10:30:00.000Z')
+      expect(wrapper.text()).toContain('Build Time: Jan 15, 2024, 10:30 UTC')
     })
 
     it('should handle numeric environment variables', () => {
