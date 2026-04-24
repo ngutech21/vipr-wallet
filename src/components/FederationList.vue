@@ -8,8 +8,8 @@
       @click="selectFederation(fedi)"
       :data-testid="`federation-list-item-${fedi.federationId}`"
     >
-      <q-item>
-        <q-item-section avatar>
+      <q-item class="federation-item">
+        <q-item-section avatar class="federation-avatar-section">
           <q-avatar size="44px" v-if="fedi?.metadata?.federation_icon_url">
             <q-img
               :src="fedi?.metadata?.federation_icon_url"
@@ -19,7 +19,7 @@
             />
           </q-avatar>
           <template v-else>
-            <q-avatar color="grey-3" text-color="grey-7" class="logo q-mr-md" size="44px">
+            <q-avatar color="grey-3" text-color="grey-7" class="logo" size="44px">
               <q-icon name="account_balance" />
             </q-avatar>
           </template>

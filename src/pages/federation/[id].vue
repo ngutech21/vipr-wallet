@@ -183,23 +183,27 @@ meta:
         <!-- Vetted Gateways Card -->
         <div class="section-title q-mb-xs" v-if="hasVettedGateways">Gateways</div>
         <q-card flat class="federation-card q-mb-md" v-if="hasVettedGateways">
-          <q-card-section>
-            <q-list>
-              <q-item v-for="(gateway, index) in vettedGateways" :key="gateway" class="q-py-sm">
-                <q-item-section avatar>
-                  <q-icon name="router" color="primary" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>Gateway {{ index + 1 }}</q-item-label>
-                  <q-item-label caption class="text-mono">{{ gateway }}</q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-chip color="positive" text-color="black" size="sm" icon="verified">
-                    Vetted
-                  </q-chip>
-                </q-item-section>
-              </q-item>
-            </q-list>
+          <q-card-section class="gateways-section">
+            <div class="gateway-list">
+              <div v-for="(gateway, index) in vettedGateways" :key="gateway" class="gateway-row">
+                <div class="gateway-icon">
+                  <q-icon name="router" />
+                </div>
+                <div class="gateway-body">
+                  <div class="gateway-title">Gateway {{ index + 1 }}</div>
+                  <div class="gateway-id" :title="gateway">{{ gateway }}</div>
+                </div>
+                <q-chip
+                  color="positive"
+                  text-color="black"
+                  size="sm"
+                  icon="verified"
+                  class="gateway-badge"
+                >
+                  Vetted
+                </q-chip>
+              </div>
+            </div>
           </q-card-section>
         </q-card>
 
@@ -665,6 +669,64 @@ async function leaveFederation() {
   color: rgba(255, 255, 255, 0.78);
 }
 
+.gateways-section {
+  padding: 18px 18px;
+}
+
+.gateway-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gateway-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+}
+
+.gateway-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(156, 39, 255, 0.12);
+  color: var(--q-primary);
+  font-size: 1.35rem;
+}
+
+.gateway-body {
+  min-width: 0;
+}
+
+.gateway-title {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.gateway-id {
+  min-width: 0;
+  margin-top: 4px;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.58);
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', monospace;
+  font-size: 0.84rem;
+  letter-spacing: 0;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gateway-badge {
+  margin: 0;
+}
+
 @media (max-width: 599px) {
   .summary-layout {
     align-items: flex-start;
@@ -701,6 +763,26 @@ async function leaveFederation() {
     width: 40px;
     min-width: 40px;
     height: 40px;
+  }
+
+  .gateways-section {
+    padding: 14px 14px;
+  }
+
+  .gateway-row {
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+
+  .gateway-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    font-size: 1.2rem;
+  }
+
+  .gateway-id {
+    font-size: 0.78rem;
   }
 }
 </style>
