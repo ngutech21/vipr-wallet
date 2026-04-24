@@ -4,7 +4,7 @@ meta:
 </route>
 
 <template>
-  <q-page class="page-container" data-testid="sent-onchain-page">
+  <q-page class="page-container page-container--onchain" data-testid="sent-onchain-page">
     <div class="content-container">
       <q-btn
         flat
@@ -319,106 +319,3 @@ function isTerminalOutcome(outcome: WalletTransaction['outcome'] | undefined): b
   return outcome === 'Confirmed' || outcome === 'Claimed' || outcome === 'Failed'
 }
 </script>
-
-<style scoped>
-.page-container {
-  position: relative;
-  background:
-    radial-gradient(circle at top left, rgba(29, 78, 216, 0.28), transparent 38%),
-    linear-gradient(180deg, #171717 0%, #121212 100%);
-  min-height: 100vh;
-  overflow: hidden;
-}
-
-.content-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 24px 16px;
-}
-
-.success-close-btn {
-  position: absolute;
-  top: calc(16px + env(safe-area-inset-top));
-  right: 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.success-shell {
-  width: 100%;
-  max-width: 560px;
-  text-align: center;
-  color: white;
-}
-
-.success-icon {
-  margin-bottom: 12px;
-}
-
-.success-title {
-  font-size: 1.9rem;
-  font-weight: 700;
-}
-
-.success-amount {
-  font-size: 2.75rem;
-  font-weight: 700;
-}
-
-.success-subtitle {
-  color: #b3b3b3;
-}
-
-.success-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  color: white;
-}
-
-.summary-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.summary-row--top {
-  align-items: flex-start;
-}
-
-.summary-label {
-  color: #9e9e9e;
-}
-
-.summary-value {
-  font-weight: 600;
-}
-
-.summary-address {
-  max-width: 260px;
-  word-break: break-word;
-  text-align: right;
-}
-
-.status-badge {
-  font-weight: 600;
-  padding: 6px 10px;
-  border-radius: 999px;
-}
-
-.success-actions {
-  width: 100%;
-}
-
-.success-action-btn,
-.success-secondary-btn {
-  width: 100%;
-}
-</style>

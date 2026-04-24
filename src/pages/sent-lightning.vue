@@ -4,7 +4,7 @@ meta:
 </route>
 
 <template>
-  <q-page class="page-container">
+  <q-page class="page-container page-container--lightning">
     <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
 
     <div class="content-container">
@@ -125,96 +125,3 @@ onUnmounted(() => {
   jsConfetti = null
 })
 </script>
-
-<style scoped>
-.page-container {
-  position: relative;
-  background:
-    radial-gradient(circle at top left, rgba(128, 0, 255, 0.22), transparent 36%),
-    linear-gradient(180deg, #171717 0%, #121212 100%);
-  min-height: 100vh;
-  overflow: hidden;
-}
-
-.confetti-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.content-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  z-index: 2;
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 24px 16px;
-}
-
-.success-close-btn {
-  position: absolute;
-  top: calc(16px + env(safe-area-inset-top));
-  right: 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.success-shell {
-  width: 100%;
-  max-width: 560px;
-  text-align: center;
-  color: white;
-}
-
-.success-icon {
-  margin-bottom: 12px;
-}
-
-.success-title {
-  font-size: 1.9rem;
-  font-weight: 700;
-}
-
-.success-amount {
-  font-size: 2.75rem;
-  font-weight: 700;
-}
-
-.success-subtitle {
-  color: #b3b3b3;
-}
-
-.success-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  color: white;
-}
-
-.summary-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.summary-label {
-  color: #9e9e9e;
-}
-
-.summary-value {
-  font-weight: 600;
-}
-
-.success-action-btn {
-  width: 100%;
-}
-</style>

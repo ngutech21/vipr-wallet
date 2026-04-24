@@ -83,24 +83,24 @@ meta:
         </q-card>
 
         <q-card flat class="federation-card q-mb-md" v-if="inviteCode">
-          <q-card-section class="invite-qr-container">
-            <div class="invite-qr-surface">
+          <q-card-section class="vipr-qr-container">
+            <div class="vipr-qr-surface">
               <qrcode-vue
                 :value="inviteCode"
                 level="M"
                 render-as="svg"
                 :size="0"
-                class="invite-qr"
+                class="vipr-qr-code"
               />
             </div>
           </q-card-section>
 
-          <q-separator class="invite-separator" />
-          <q-card-section class="invite-code-section">
-            <div class="invite-code-label">Invite code</div>
-            <div class="invite-code-row">
+          <q-separator class="vipr-copy-separator" />
+          <q-card-section class="vipr-copy-section">
+            <div class="vipr-copy-label">Invite code</div>
+            <div class="vipr-copy-row">
               <input
-                class="invite-code"
+                class="vipr-copy-value"
                 :title="inviteCode"
                 :value="inviteCode"
                 readonly
@@ -111,18 +111,14 @@ meta:
                 icon="content_copy"
                 flat
                 round
-                dense
                 @click="copyInviteCode"
-                class="invite-copy-button"
                 data-testid="federation-details-copy-invite-btn"
               />
               <q-btn
                 icon="share"
                 flat
                 round
-                dense
                 @click="shareInviteCode"
-                class="invite-copy-button"
                 data-testid="federation-details-share-invite-btn"
               />
             </div>
@@ -553,82 +549,6 @@ async function leaveFederation() {
   margin-top: 14px;
 }
 
-.invite-qr-container {
-  box-sizing: border-box;
-  width: 100%;
-  aspect-ratio: 1;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.invite-qr-surface {
-  box-sizing: border-box;
-  width: 100%;
-  height: 100%;
-  padding: 4px;
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04);
-}
-
-.invite-qr {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.invite-separator {
-  background: rgba(255, 255, 255, 0.075);
-}
-
-.invite-code-section {
-  padding: 12px 16px 14px;
-}
-
-.invite-code-label {
-  margin-bottom: 8px;
-  color: rgba(255, 255, 255, 0.48);
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-.invite-code-row {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.invite-code {
-  min-width: 0;
-  flex: 1;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  background-color: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.055);
-  border-radius: 14px;
-  color: white;
-  font-size: 0.95rem;
-  line-height: 1;
-  font: inherit;
-  outline: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.invite-copy-button {
-  flex: 0 0 auto !important;
-  color: rgba(255, 255, 255, 0.78);
-}
-
 .gateways-section {
   padding: 18px 18px;
 }
@@ -694,35 +614,6 @@ async function leaveFederation() {
 
   .summary-title {
     font-size: 1.3rem;
-  }
-
-  .invite-qr-container {
-    padding: 6px;
-  }
-
-  .invite-qr-surface {
-    padding: 3px;
-    border-radius: 14px;
-  }
-
-  .invite-code-section {
-    padding: 10px 10px 12px;
-  }
-
-  .invite-code-row {
-    gap: 4px;
-  }
-
-  .invite-code {
-    min-height: 40px;
-    padding: 0 12px;
-    font-size: 0.86rem;
-  }
-
-  .invite-code-row :deep(.q-btn) {
-    width: 40px;
-    min-width: 40px;
-    height: 40px;
   }
 
   .gateways-section {
