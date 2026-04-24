@@ -6,6 +6,24 @@ import { Buffer } from 'buffer'
 // Make Buffer available globally for tests that need it
 globalThis.Buffer = Buffer
 
+// Prevent unit tests from making real requests through @getalby/lightning-tools.
+vi.mock('@getalby/lightning-tools', () => ({
+  getFiatValue: vi.fn(() => Promise.resolve(0)),
+  Invoice: vi.fn().mockImplementation(({ pr }: { pr: string }) => ({
+    pr,
+    paymentHash: 'mock-payment-hash',
+    satoshi: 0,
+    description: '',
+    expiry: undefined,
+    timestamp: 0,
+  })),
+  LightningAddress: vi.fn().mockImplementation(() => ({
+    fetchWithProxy: vi.fn(() => Promise.resolve()),
+    requestInvoice: vi.fn(() => Promise.resolve({ paymentRequest: 'lnbc-mock' })),
+    lnurlpData: null,
+  })),
+}))
+
 // Mock the logger to prevent console noise during tests
 vi.mock('src/services/logger', () => ({
   logger: {
