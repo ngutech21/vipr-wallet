@@ -33,7 +33,7 @@ defineProps<{
 
 .keypad-btn {
   min-height: 56px;
-  border-radius: 14px;
+  border-radius: var(--vipr-radius-control);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.016)),
     rgba(255, 255, 255, 0.04);
@@ -75,7 +75,7 @@ defineProps<{
 @media (max-width: 520px) {
   .keypad-btn {
     min-height: 52px;
-    border-radius: 13px;
+    border-radius: var(--vipr-radius-sm);
     font-size: 1.08rem;
   }
 }

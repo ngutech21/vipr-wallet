@@ -321,7 +321,7 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 .entry-container {
   width: 100%;
   max-width: 500px;
-  border-radius: 16px;
+  border-radius: var(--vipr-radius-md);
 }
 
 .send-content {
@@ -351,7 +351,7 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .rounded-contact-list {
-  border-radius: 24px;
+  border-radius: var(--vipr-radius-card);
   overflow: hidden;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -362,7 +362,7 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .empty-contacts-card {
-  border-radius: 24px;
+  border-radius: var(--vipr-radius-card);
 }
 
 .contacts-hint-card {

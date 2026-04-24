@@ -331,15 +331,15 @@ function safeParseBitcoinInput(input: string): {
 <style scoped>
 .send-onchain-content {
   width: 100%;
-  padding: 0 16px 24px;
+  padding: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-6);
 }
 
 .amount-entry-container {
   width: 100%;
-  max-width: 560px;
+  max-width: var(--vipr-width-flow-panel);
 }
 
 .task-card--secondary {
-  border-radius: 18px;
+  border-radius: var(--vipr-radius-button-lg);
 }
 </style>

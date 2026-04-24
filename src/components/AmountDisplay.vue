@@ -41,7 +41,7 @@ withDefaults(
 
 .amount-display {
   min-height: 88px;
-  border-radius: 20px;
+  border-radius: var(--vipr-radius-button-lg);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.032), rgba(255, 255, 255, 0.018)),
     rgba(255, 255, 255, 0.035);
@@ -49,8 +49,8 @@ withDefaults(
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 18px 20px;
+  gap: var(--vipr-space-2);
+  padding: 18px var(--vipr-space-5);
   border: 1px solid rgba(255, 255, 255, 0.055);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.024);
 }
@@ -81,7 +81,7 @@ withDefaults(
 }
 
 .amount-display__error {
-  margin-top: 8px;
+  margin-top: var(--vipr-space-2);
   color: var(--q-negative);
   font-size: 0.78rem;
   text-align: center;

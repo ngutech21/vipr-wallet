@@ -98,7 +98,7 @@ function onDismissSwipe() {
   max-width: min(100vw, 700px) !important;
   max-height: 92vh;
   margin: 0 auto !important;
-  border-radius: 24px 24px 0 0;
+  border-radius: var(--vipr-radius-lg) var(--vipr-radius-lg) 0 0;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)), #1f1f1f;
   color: var(--vipr-text-primary);
@@ -119,7 +119,7 @@ function onDismissSwipe() {
   width: 56px;
   height: 5px;
   margin: 12px auto 4px;
-  border-radius: 999px;
+  border-radius: var(--vipr-radius-pill);
   background: rgba(255, 255, 255, 0.28);
   flex: 0 0 auto;
 }
@@ -132,8 +132,8 @@ function onDismissSwipe() {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) 40px;
   align-items: center;
-  gap: 12px;
-  padding: 8px 20px 18px;
+  gap: var(--vipr-space-3);
+  padding: var(--vipr-space-2) var(--vipr-space-5) 18px;
   flex: 0 0 auto;
 }
 
@@ -171,7 +171,7 @@ function onDismissSwipe() {
 
 .modal-card__footer {
   padding: 16px 20px calc(20px + env(safe-area-inset-bottom));
-  gap: 12px;
+  gap: var(--vipr-space-3);
   justify-content: flex-end;
   flex-wrap: nowrap;
 }

@@ -34,24 +34,28 @@ meta:
         </div>
 
         <template v-else>
-          <div class="qr-card-shell">
-            <q-card v-if="bitcoinAddress" flat class="task-card vipr-surface-card--strong qr-card">
-              <q-card-section class="qr-container">
-                <div class="qr-surface">
+          <div class="vipr-qr-card-shell">
+            <q-card
+              v-if="bitcoinAddress"
+              flat
+              class="task-card vipr-surface-card--strong vipr-qr-card"
+            >
+              <q-card-section class="vipr-qr-container">
+                <div class="vipr-qr-surface">
                   <qrcode-vue
                     :value="bitcoinAddress"
                     level="M"
                     render-as="svg"
                     :size="0"
-                    class="responsive-qr"
+                    class="vipr-qr-code"
                   />
                 </div>
               </q-card-section>
-              <q-separator class="qr-separator" />
-              <q-card-section class="address-section">
-                <div class="address-row">
+              <q-separator class="vipr-copy-separator" />
+              <q-card-section class="vipr-copy-section">
+                <div class="vipr-copy-row">
                   <input
-                    class="address-label"
+                    class="vipr-copy-value"
                     :title="bitcoinAddress"
                     :value="bitcoinAddress"
                     readonly
@@ -352,7 +356,7 @@ async function goBack() {
 .receive-onchain-content {
   box-sizing: border-box;
   width: 100%;
-  padding: 0 16px 24px;
+  padding: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-6);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -360,86 +364,7 @@ async function goBack() {
 
 .amount-entry-container {
   width: 100%;
-  max-width: 560px;
-}
-
-.qr-card-shell {
-  width: 100%;
-  max-width: 600px;
-  display: flex;
-  justify-content: center;
-}
-
-.qr-card {
-  width: 100%;
-  margin-bottom: 14px;
-  overflow: hidden;
-}
-
-.qr-container {
-  box-sizing: border-box;
-  width: 100%;
-  aspect-ratio: 1;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.qr-surface {
-  box-sizing: border-box;
-  width: 100%;
-  height: 100%;
-  padding: 4px;
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04);
-}
-
-.responsive-qr {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.qr-separator {
-  background: rgba(255, 255, 255, 0.075);
-}
-
-.address-section {
-  padding: 12px 16px 14px;
-}
-
-.address-row {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.address-label {
-  min-width: 0;
-  flex: 1;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  background-color: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.055);
-  border-radius: 14px;
-  color: var(--vipr-text-primary);
-  font-size: 0.95rem;
-  line-height: 1;
-  font: inherit;
-  outline: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.address-row :deep(.q-btn) {
-  flex: 0 0 auto;
-  color: var(--vipr-text-secondary);
+  max-width: var(--vipr-width-flow-panel);
 }
 
 .receive-onchain-status {
@@ -448,7 +373,7 @@ async function goBack() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: var(--vipr-space-3);
   margin-top: 18px;
   color: var(--vipr-text-primary);
   text-align: center;
@@ -479,35 +404,6 @@ async function goBack() {
   .receive-onchain-content {
     padding-right: 12px;
     padding-left: 12px;
-  }
-
-  .qr-container {
-    padding: 6px;
-  }
-
-  .qr-surface {
-    padding: 3px;
-    border-radius: 14px;
-  }
-
-  .address-section {
-    padding: 10px 10px 12px;
-  }
-
-  .address-row {
-    gap: 4px;
-  }
-
-  .address-label {
-    min-height: 40px;
-    padding: 0 12px;
-    font-size: 0.86rem;
-  }
-
-  .address-row :deep(.q-btn) {
-    width: 40px;
-    min-width: 40px;
-    height: 40px;
   }
 
   .status-copy {

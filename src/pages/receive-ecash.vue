@@ -149,7 +149,7 @@ function getQueryString(value: LocationQueryValue | LocationQueryValue[] | undef
 <style scoped>
 .receive-ecash-content {
   width: 100%;
-  padding: 0 16px 24px;
+  padding: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-6);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -157,7 +157,7 @@ function getQueryString(value: LocationQueryValue | LocationQueryValue[] | undef
 
 .receive-ecash-card {
   width: 100%;
-  max-width: 560px;
+  max-width: var(--vipr-width-flow-panel);
 }
 
 .text-grey {
@@ -166,6 +166,6 @@ function getQueryString(value: LocationQueryValue | LocationQueryValue[] | undef
 
 .receive-ecash-action-btn {
   width: 100%;
-  max-width: 560px;
+  max-width: var(--vipr-width-flow-panel);
 }
 </style>

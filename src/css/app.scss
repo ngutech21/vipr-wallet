@@ -22,8 +22,28 @@ body,
   --vipr-text-subtle: rgba(255, 255, 255, 0.52);
   --vipr-text-faint: rgba(255, 255, 255, 0.48);
   --vipr-text-grey: #9e9e9e;
-  --vipr-radius-card: 24px;
-  --vipr-radius-input: 16px;
+  --vipr-space-0: 0;
+  --vipr-space-1: 4px;
+  --vipr-space-2: 8px;
+  --vipr-space-3: 12px;
+  --vipr-space-4: 16px;
+  --vipr-space-5: 20px;
+  --vipr-space-6: 24px;
+  --vipr-space-8: 32px;
+  --vipr-radius-xs: 8px;
+  --vipr-radius-sm: 12px;
+  --vipr-radius-control: 14px;
+  --vipr-radius-md: 16px;
+  --vipr-radius-button-lg: 18px;
+  --vipr-radius-lg: 24px;
+  --vipr-radius-xl: 32px;
+  --vipr-radius-pill: 999px;
+  --vipr-radius-card: var(--vipr-radius-lg);
+  --vipr-radius-input: var(--vipr-radius-md);
+  --vipr-width-mobile: 700px;
+  --vipr-width-mobile-wide: 760px;
+  --vipr-width-flow-panel: 560px;
+  --vipr-size-touch-min: 44px;
   --vipr-surface-card-bg: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.04),
@@ -77,7 +97,7 @@ html[data-e2e='1'] *::after {
 
 // Rounded buttons
 .q-btn:not(.q-btn--fab) {
-  border-radius: 8px;
+  border-radius: var(--vipr-radius-xs);
 
   &.q-btn--round {
     border-radius: 50%;
@@ -96,13 +116,13 @@ html[data-e2e='1'] *::after {
 // Shared app button styles. Use these for prominent CTAs instead of
 // redefining height/radius/gradient per view.
 .vipr-btn {
-  border-radius: 14px;
+  border-radius: var(--vipr-radius-control);
   font-weight: 600;
   letter-spacing: 0;
   text-transform: none;
 
   .q-btn__content {
-    gap: 8px;
+    gap: var(--vipr-space-2);
     letter-spacing: 0;
     text-transform: none;
   }
@@ -123,32 +143,33 @@ html[data-e2e='1'] *::after {
 
 .vipr-btn--lg {
   min-height: 54px;
-  border-radius: 18px;
+  border-radius: var(--vipr-radius-button-lg);
 }
 
 .vipr-btn--md {
-  min-height: 44px;
+  min-height: var(--vipr-size-touch-min);
 }
 
 .vipr-mobile-page {
   width: 100%;
-  max-width: 700px;
+  max-width: var(--vipr-width-mobile);
   margin: 0 auto;
 }
 
 .vipr-mobile-page--wide {
-  max-width: 760px;
+  max-width: var(--vipr-width-mobile-wide);
 }
 
 .vipr-topbar {
   display: flex;
   align-items: center;
-  min-height: 44px;
-  padding: calc(12px + env(safe-area-inset-top)) 16px 4px;
+  min-height: var(--vipr-size-touch-min);
+  padding: calc(var(--vipr-space-3) + env(safe-area-inset-top)) var(--vipr-space-4)
+    var(--vipr-space-1);
 }
 
 .vipr-topbar--comfortable {
-  padding-bottom: 8px;
+  padding-bottom: var(--vipr-space-2);
 }
 
 .vipr-topbar__back {
@@ -157,7 +178,7 @@ html[data-e2e='1'] *::after {
 }
 
 .vipr-topbar__back--bleed {
-  margin-left: -4px;
+  margin-left: calc(-1 * var(--vipr-space-1));
 }
 
 .task-card,
@@ -188,6 +209,116 @@ html[data-e2e='1'] *::after {
 .custom-input .q-field__suffix,
 .custom-input .q-field__input {
   color: var(--vipr-text-primary);
+}
+
+.vipr-qr-card-shell {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  justify-content: center;
+}
+
+.vipr-qr-card {
+  width: 100%;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.vipr-qr-container {
+  box-sizing: border-box;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vipr-qr-surface {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: var(--vipr-space-1);
+  border-radius: var(--vipr-radius-button-lg);
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.vipr-qr-code {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.vipr-copy-separator {
+  background: rgba(255, 255, 255, 0.075);
+}
+
+.vipr-copy-section {
+  padding: var(--vipr-space-3) var(--vipr-space-4) 14px;
+}
+
+.vipr-copy-row {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--vipr-space-2);
+}
+
+.vipr-copy-value {
+  min-width: 0;
+  flex: 1;
+  min-height: var(--vipr-size-touch-min);
+  display: flex;
+  align-items: center;
+  padding: var(--vipr-space-0) var(--vipr-space-4);
+  background-color: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: var(--vipr-radius-control);
+  color: var(--vipr-text-primary);
+  font-size: 0.95rem;
+  line-height: 1;
+  font: inherit;
+  outline: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vipr-copy-row .q-btn {
+  flex: 0 0 auto;
+  color: var(--vipr-text-secondary);
+}
+
+@media (max-width: 520px) {
+  .vipr-qr-container {
+    padding: 6px;
+  }
+
+  .vipr-qr-surface {
+    padding: 3px;
+    border-radius: var(--vipr-radius-control);
+  }
+
+  .vipr-copy-section {
+    padding: 10px 10px var(--vipr-space-3);
+  }
+
+  .vipr-copy-row {
+    gap: var(--vipr-space-1);
+  }
+
+  .vipr-copy-value {
+    min-height: 40px;
+    padding: var(--vipr-space-0) var(--vipr-space-3);
+    font-size: 0.86rem;
+  }
+
+  .vipr-copy-row .q-btn {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+  }
 }
 
 .vipr-text-primary {
@@ -256,10 +387,10 @@ html[data-e2e='1'] *::after {
 .header-section {
   background-color: #202020;
   color: white;
-  padding: 16px;
+  padding: var(--vipr-space-4);
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: var(--vipr-space-4);
 }
 
 .q-dialog {
@@ -269,7 +400,7 @@ html[data-e2e='1'] *::after {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 12px;
+    border-radius: var(--vipr-radius-sm);
     color: white;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 
@@ -278,14 +409,14 @@ html[data-e2e='1'] *::after {
 
     // Card sections styling
     .q-card__section {
-      padding: 16px 20px;
+      padding: var(--vipr-space-4) var(--vipr-space-5);
 
       &.q-card__section--vert {
-        padding: 20px;
+        padding: var(--vipr-space-5);
       }
 
       + .q-card__section--vert {
-        padding-top: 0;
+        padding-top: var(--vipr-space-0);
       }
     }
 
@@ -304,12 +435,12 @@ html[data-e2e='1'] *::after {
 
     // Dialog actions/footer
     .q-card__actions {
-      padding: 12px 20px;
+      padding: var(--vipr-space-3) var(--vipr-space-5);
       border-top: 1px solid rgba(255, 255, 255, 0.07);
       justify-content: flex-end;
 
       .q-btn:not(:first-child) {
-        margin-left: 8px;
+        margin-left: var(--vipr-space-2);
       }
     }
 
@@ -317,7 +448,7 @@ html[data-e2e='1'] *::after {
     .q-field {
       .q-field__control {
         background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
+        border-radius: var(--vipr-radius-xs);
         border: 1px solid rgba(255, 255, 255, 0.07);
 
         &:hover {
@@ -333,7 +464,7 @@ html[data-e2e='1'] *::after {
     // Lists within dialogs
     .q-list {
       background: rgba(255, 255, 255, 0.03);
-      border-radius: 8px;
+      border-radius: var(--vipr-radius-xs);
 
       .q-item {
         border-bottom: 1px solid rgba(255, 255, 255, 0.07);
@@ -376,8 +507,8 @@ html[data-e2e='1'] *::after {
 .vipr-notify {
   min-height: 60px;
   max-width: min(92vw, 420px);
-  padding: 14px 16px;
-  border-radius: 18px;
+  padding: 14px var(--vipr-space-4);
+  border-radius: var(--vipr-radius-button-lg);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
@@ -391,17 +522,17 @@ html[data-e2e='1'] *::after {
     content: '';
     position: absolute;
     inset: 0 auto 0 0;
-    width: 4px;
-    border-radius: 18px 0 0 18px;
+    width: var(--vipr-space-1);
+    border-radius: var(--vipr-radius-button-lg) 0 0 var(--vipr-radius-button-lg);
     background: rgba(255, 255, 255, 0.2);
   }
 
   .q-notification__wrapper {
-    padding: 0;
+    padding: var(--vipr-space-0);
   }
 
   .q-notification__icon {
-    margin-right: 12px;
+    margin-right: var(--vipr-space-3);
     font-size: 1.2rem;
     opacity: 0.95;
   }
