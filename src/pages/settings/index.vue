@@ -782,19 +782,17 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-panel :deep(.q-btn:not(.q-btn--round):not(.q-btn--dense)) {
-  min-height: 44px;
-  border-radius: 14px;
+  min-height: var(--vipr-size-touch-min);
+  border-radius: var(--vipr-radius-control);
   font-weight: 600;
   letter-spacing: 0;
 }
 
 .settings-panel :deep(.q-btn.bg-primary),
 .settings-panel :deep(.q-btn.text-primary:not(.q-btn--flat):not(.q-btn--outline)) {
-  background: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)) !important;
-  color: white !important;
-  box-shadow:
-    0 4px 10px rgba(111, 0, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  background: var(--vipr-gradient-primary) !important;
+  color: var(--vipr-text-primary) !important;
+  box-shadow: var(--vipr-shadow-primary-subtle);
 }
 
 .settings-panel :deep(.q-btn.q-btn--outline) {

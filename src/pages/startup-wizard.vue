@@ -390,17 +390,15 @@ onBeforeUnmount(() => {
 .wizard-primary-btn,
 .wizard-secondary-btn {
   min-height: 52px;
-  border-radius: 18px;
+  border-radius: var(--vipr-radius-button-lg);
 }
 
 .wizard-primary-btn {
   flex: 1 1 0;
   min-width: 0;
-  background: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)) !important;
-  color: white !important;
-  box-shadow:
-    0 7px 16px rgba(111, 0, 255, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  background: var(--vipr-gradient-primary) !important;
+  color: var(--vipr-text-primary) !important;
+  box-shadow: var(--vipr-shadow-primary-soft);
 }
 
 .wizard-secondary-btn {
@@ -553,18 +551,16 @@ onBeforeUnmount(() => {
 .startup-wizard-page :deep([data-testid='startup-wizard-backup-confirm-btn']),
 .startup-wizard-page :deep([data-testid='startup-wizard-restore-submit-btn']) {
   min-height: 52px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)) !important;
-  color: white !important;
-  box-shadow:
-    0 7px 16px rgba(111, 0, 255, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  border-radius: var(--vipr-radius-button-lg);
+  background: var(--vipr-gradient-primary) !important;
+  color: var(--vipr-text-primary) !important;
+  box-shadow: var(--vipr-shadow-primary-soft);
 }
 
 .startup-wizard-page :deep([data-testid='startup-wizard-backup-back-btn']),
 .startup-wizard-page :deep([data-testid='startup-wizard-restore-back-btn']) {
   min-height: 52px;
-  border-radius: 18px;
+  border-radius: var(--vipr-radius-button-lg);
   color: rgba(255, 255, 255, 0.92) !important;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.04);

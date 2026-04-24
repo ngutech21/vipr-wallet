@@ -55,7 +55,7 @@ meta:
             icon="visibility"
             no-caps
             unelevated
-            class="full-width q-mb-sm"
+            class="full-width q-mb-sm vipr-btn vipr-btn--primary-soft vipr-btn--md"
             @click="showRecoveryWords"
             data-testid="backup-intro-show-words-btn"
           />
@@ -178,18 +178,8 @@ async function goBack() {
 }
 
 .backup-actions :deep(.q-btn:not(.q-btn--round)) {
-  min-height: 48px;
-  border-radius: 16px;
   font-weight: 600;
   letter-spacing: 0;
-}
-
-.backup-actions :deep(.q-btn.bg-primary) {
-  background: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)) !important;
-  color: white !important;
-  box-shadow:
-    0 7px 16px rgba(111, 0, 255, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 @media (max-width: 599px) {

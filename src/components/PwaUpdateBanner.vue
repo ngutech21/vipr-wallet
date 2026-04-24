@@ -19,7 +19,7 @@
           label="Update now"
           :loading="isApplying"
           :disable="isApplying"
-          class="pwa-update-banner__button"
+          class="pwa-update-banner__button vipr-btn vipr-btn--primary-soft vipr-btn--compact"
           @click="applyUpdate"
           data-testid="pwa-update-apply-btn"
         />
@@ -112,16 +112,6 @@ async function applyUpdate() {
 }
 
 .pwa-update-banner__button {
-  min-height: 38px;
-  border-radius: 13px;
-  padding: 0 16px;
-  background:
-    linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
-  box-shadow:
-    0 5px 12px rgba(111, 0, 255, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  color: white;
   font-weight: 600;
 }
 

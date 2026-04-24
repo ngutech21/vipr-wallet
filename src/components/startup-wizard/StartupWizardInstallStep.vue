@@ -43,7 +43,7 @@
       label="Continue in Browser"
       unelevated
       no-caps
-      class="install-panel__continue-btn"
+      class="install-panel__continue-btn vipr-btn vipr-btn--primary-soft vipr-btn--lg"
       data-testid="startup-wizard-install-next-btn"
       @click="$emit('continue')"
     />
@@ -169,13 +169,6 @@ defineEmits<{
 
 .install-panel__continue-btn {
   width: 100%;
-  min-height: 52px;
   padding-inline: 24px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)) !important;
-  color: white !important;
-  box-shadow:
-    0 7px 16px rgba(111, 0, 255, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 </style>

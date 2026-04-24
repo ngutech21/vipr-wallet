@@ -44,6 +44,14 @@ body,
   --vipr-width-mobile-wide: 760px;
   --vipr-width-flow-panel: 560px;
   --vipr-size-touch-min: 44px;
+  --vipr-control-height-md: 48px;
+  --vipr-control-height-lg: 54px;
+  --vipr-gradient-primary: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96));
+  --vipr-shadow-primary: 0 12px 28px rgba(128, 0, 255, 0.24);
+  --vipr-shadow-primary-soft:
+    0 7px 16px rgba(111, 0, 255, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  --vipr-shadow-primary-subtle:
+    0 4px 10px rgba(111, 0, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   --vipr-surface-card-bg: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.04),
@@ -129,25 +137,37 @@ html[data-e2e='1'] *::after {
 }
 
 .vipr-btn--primary {
-  color: white !important;
-  background: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)) !important;
-  box-shadow: 0 12px 28px rgba(128, 0, 255, 0.24);
+  color: var(--vipr-text-primary) !important;
+  background: var(--vipr-gradient-primary) !important;
+  box-shadow: var(--vipr-shadow-primary);
 }
 
 .vipr-btn--secondary {
-  color: rgba(255, 255, 255, 0.82) !important;
+  color: var(--vipr-text-secondary) !important;
   background: rgba(255, 255, 255, 0.04) !important;
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: none;
 }
 
+.vipr-btn--primary-soft {
+  color: var(--vipr-text-primary) !important;
+  background: var(--vipr-gradient-primary) !important;
+  box-shadow: var(--vipr-shadow-primary-soft);
+}
+
 .vipr-btn--lg {
-  min-height: 54px;
+  min-height: var(--vipr-control-height-lg);
   border-radius: var(--vipr-radius-button-lg);
 }
 
 .vipr-btn--md {
-  min-height: var(--vipr-size-touch-min);
+  min-height: var(--vipr-control-height-md);
+}
+
+.vipr-btn--compact {
+  min-height: 38px;
+  border-radius: var(--vipr-radius-sm);
+  padding: var(--vipr-space-0) var(--vipr-space-4);
 }
 
 .vipr-mobile-page {
