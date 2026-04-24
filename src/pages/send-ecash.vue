@@ -9,14 +9,14 @@ meta:
     enter-active-class="animated slideInLeft"
     leave-active-class="animated slideOutLeft"
   >
-    <q-page class="column dark-gradient send-ecash-page">
-      <div class="send-ecash-topbar">
+    <q-page class="column dark-gradient vipr-mobile-page send-ecash-page">
+      <div class="vipr-topbar send-ecash-topbar">
         <q-btn
           flat
           round
           icon="arrow_back"
           @click="goBack"
-          class="send-ecash-topbar__back"
+          class="vipr-topbar__back send-ecash-topbar__back"
           data-testid="send-ecash-back-btn"
         />
       </div>
@@ -374,24 +374,6 @@ function canRepresentExactMsats(targetMsats: number, noteCounts: Record<number, 
 </script>
 
 <style scoped>
-.send-ecash-page {
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.send-ecash-topbar {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  padding: calc(12px + env(safe-area-inset-top)) 16px 4px;
-}
-
-.send-ecash-topbar__back {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
 .send-ecash-content {
   width: 100%;
   padding: 0 16px 24px;
@@ -402,31 +384,8 @@ function canRepresentExactMsats(targetMsats: number, noteCounts: Record<number, 
   max-width: 560px;
 }
 
-.task-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-}
-
-.section-title {
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-
-.custom-input :deep(.q-field__control) {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-}
-
-.custom-input :deep(.q-field__native),
-.custom-input :deep(.q-field__prefix),
-.custom-input :deep(.q-field__suffix),
-.custom-input :deep(.q-field__input) {
-  color: white;
-}
-
 .text-grey {
-  color: #9e9e9e;
+  color: var(--vipr-text-grey);
 }
 
 .export-card {

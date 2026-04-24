@@ -4,14 +4,17 @@ meta:
 </route>
 
 <template>
-  <q-page class="backup-page dark-gradient" data-testid="backup-words-page">
-    <div class="backup-topbar">
+  <q-page
+    class="backup-page dark-gradient vipr-mobile-page vipr-mobile-page--wide"
+    data-testid="backup-words-page"
+  >
+    <div class="vipr-topbar vipr-topbar--comfortable backup-topbar">
       <q-btn
         flat
         round
         color="white"
         icon="arrow_back"
-        class="backup-topbar__back"
+        class="vipr-topbar__back vipr-topbar__back--bleed backup-topbar__back"
         @click="goBack"
         data-testid="backup-words-back-btn"
       />
@@ -107,25 +110,6 @@ async function loadRecoveryWords() {
 </script>
 
 <style scoped>
-.backup-page {
-  width: 100%;
-  max-width: 760px;
-  margin: 0 auto;
-}
-
-.backup-topbar {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  padding: calc(12px + env(safe-area-inset-top)) 16px 8px;
-}
-
-.backup-topbar__back {
-  margin-left: -4px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
 .backup-page__content {
   max-width: 760px;
   margin: 0 auto;

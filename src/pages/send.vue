@@ -4,14 +4,14 @@
     enter-active-class="animated slideInLeft"
     leave-active-class="animated slideOutLeft"
   >
-    <q-page class="column dark-gradient send-page">
-      <div class="send-topbar">
+    <q-page class="column dark-gradient vipr-mobile-page send-page">
+      <div class="vipr-topbar send-topbar">
         <q-btn
           flat
           round
           icon="arrow_back"
           :to="{ name: '/' }"
-          class="send-topbar__back"
+          class="vipr-topbar__back send-topbar__back"
           data-testid="send-back-btn"
         />
       </div>
@@ -324,42 +324,8 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   border-radius: 16px;
 }
 
-.send-page {
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.send-topbar {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  padding: calc(12px + env(safe-area-inset-top)) 16px 4px;
-}
-
-.send-topbar__back {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
 .send-content {
   width: 100%;
-}
-
-.task-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-}
-
-.section-title {
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-
-.custom-input :deep(.q-field__control) {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
 }
 
 .custom-input--single-line :deep(.q-field__native),
@@ -376,15 +342,8 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   display: none;
 }
 
-.custom-input :deep(.q-field__native),
-.custom-input :deep(.q-field__prefix),
-.custom-input :deep(.q-field__suffix),
-.custom-input :deep(.q-field__input) {
-  color: white;
-}
-
 .text-grey {
-  color: #9e9e9e;
+  color: var(--vipr-text-grey);
 }
 
 .bg-dark {
@@ -399,7 +358,7 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .rounded-contact-list :deep(.q-item__label--caption) {
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--vipr-text-muted);
 }
 
 .empty-contacts-card {

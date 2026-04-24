@@ -9,27 +9,33 @@ meta:
     enter-active-class="animated slideInLeft"
     leave-active-class="animated slideOutLeft"
   >
-    <q-page class="column dark-gradient receive-onchain-page" data-testid="receive-onchain-page">
-      <div class="receive-onchain-topbar">
+    <q-page
+      class="column dark-gradient vipr-mobile-page receive-onchain-page"
+      data-testid="receive-onchain-page"
+    >
+      <div class="vipr-topbar receive-onchain-topbar">
         <q-btn
           flat
           round
           icon="arrow_back"
           @click="goBack"
-          class="receive-onchain-topbar__back"
+          class="vipr-topbar__back receive-onchain-topbar__back"
           data-testid="receive-onchain-back-btn"
         />
       </div>
 
       <div class="receive-onchain-content">
-        <div v-if="isGenerating" class="amount-entry-container task-card text-center q-pa-xl">
+        <div
+          v-if="isGenerating"
+          class="amount-entry-container task-card vipr-surface-card--strong text-center q-pa-xl"
+        >
           <q-spinner color="primary" size="3em" />
           <div class="section-title q-mt-md">Generating Bitcoin address...</div>
         </div>
 
         <template v-else>
           <div class="qr-card-shell">
-            <q-card v-if="bitcoinAddress" flat class="task-card qr-card">
+            <q-card v-if="bitcoinAddress" flat class="task-card vipr-surface-card--strong qr-card">
               <q-card-section class="qr-container">
                 <div class="qr-surface">
                   <qrcode-vue
@@ -343,24 +349,6 @@ async function goBack() {
 </script>
 
 <style scoped>
-.receive-onchain-page {
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.receive-onchain-topbar {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  padding: calc(12px + env(safe-area-inset-top)) 16px 4px;
-}
-
-.receive-onchain-topbar__back {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
 .receive-onchain-content {
   box-sizing: border-box;
   width: 100%;
@@ -414,15 +402,6 @@ async function goBack() {
   height: 100%;
 }
 
-.task-card {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.022)),
-    rgba(15, 16, 22, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.075);
-  border-radius: 24px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
-}
-
 .qr-separator {
   background: rgba(255, 255, 255, 0.075);
 }
@@ -448,7 +427,7 @@ async function goBack() {
   background-color: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.055);
   border-radius: 14px;
-  color: white;
+  color: var(--vipr-text-primary);
   font-size: 0.95rem;
   line-height: 1;
   font: inherit;
@@ -460,7 +439,7 @@ async function goBack() {
 
 .address-row :deep(.q-btn) {
   flex: 0 0 auto;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--vipr-text-secondary);
 }
 
 .receive-onchain-status {
@@ -471,13 +450,8 @@ async function goBack() {
   align-items: center;
   gap: 10px;
   margin-top: 18px;
-  color: white;
+  color: var(--vipr-text-primary);
   text-align: center;
-}
-
-.section-title {
-  font-size: 1.05rem;
-  font-weight: 600;
 }
 
 .status-title {
@@ -487,18 +461,18 @@ async function goBack() {
 
 .status-copy {
   max-width: 480px;
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--vipr-text-muted);
   font-size: 0.92rem;
   line-height: 1.45;
 }
 
 .confirmation-info {
   margin-bottom: 6px;
-  color: rgba(255, 255, 255, 0.74);
+  color: var(--vipr-text-secondary);
 }
 
 .status-helper {
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--vipr-text-muted);
 }
 
 @media (max-width: 520px) {

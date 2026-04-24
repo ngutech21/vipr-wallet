@@ -10,10 +10,10 @@ meta:
     leave-active-class="animated slideOutLeft fast"
     mode="out-in"
   >
-    <q-page class="transaction-details-page">
+    <q-page class="vipr-mobile-page transaction-details-page">
       <div
         v-touch-swipe.right.mouse="navigateBack"
-        class="transaction-details-topbar"
+        class="vipr-topbar transaction-details-topbar"
         data-testid="transaction-details-swipe-zone"
       >
         <q-btn
@@ -21,7 +21,7 @@ meta:
           round
           color="white"
           icon="arrow_back"
-          class="transaction-details-topbar__back"
+          class="vipr-topbar__back vipr-topbar__back--bleed transaction-details-topbar__back"
           @click="navigateBack"
           data-testid="transaction-details-back-btn"
         />
@@ -126,23 +126,7 @@ onMounted(async () => {
 }
 
 .transaction-details-page {
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
   padding-bottom: 140px;
   padding-bottom: calc(140px + env(safe-area-inset-bottom));
-}
-
-.transaction-details-topbar {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  padding: calc(12px + env(safe-area-inset-top)) 16px 4px;
-}
-
-.transaction-details-topbar__back {
-  margin-left: -4px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 </style>

@@ -101,7 +101,7 @@ function onDismissSwipe() {
   border-radius: 24px 24px 0 0;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)), #1f1f1f;
-  color: white;
+  color: var(--vipr-text-primary);
   overflow: hidden;
   display: flex;
   flex-direction: column;

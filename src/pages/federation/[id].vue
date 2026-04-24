@@ -10,14 +10,14 @@ meta:
     leave-active-class="animated slideOutLeft fast"
     mode="out-in"
   >
-    <q-page class="federation-details-page">
-      <div class="federation-details-topbar">
+    <q-page class="vipr-mobile-page federation-details-page">
+      <div class="vipr-topbar federation-details-topbar">
         <q-btn
           flat
           round
           icon="arrow_back"
           :to="{ name: '/federations/' }"
-          class="federation-details-topbar__back"
+          class="vipr-topbar__back federation-details-topbar__back"
           data-testid="federation-details-back-btn"
         />
       </div>
@@ -503,24 +503,6 @@ async function leaveFederation() {
 }
 </script>
 <style scoped>
-.federation-details-page {
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.federation-details-topbar {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  padding: calc(12px + env(safe-area-inset-top)) 16px 4px;
-}
-
-.federation-details-topbar__back {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
 .federation-details-content {
   padding-bottom: 24px;
 }

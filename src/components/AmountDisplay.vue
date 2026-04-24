@@ -64,14 +64,14 @@ withDefaults(
 }
 
 .amount-display__label {
-  color: rgba(255, 255, 255, 0.56);
+  color: var(--vipr-text-soft);
   font-size: 0.88rem;
   line-height: 1.2;
   text-align: center;
 }
 
 .amount-display__value {
-  color: white;
+  color: var(--vipr-text-primary);
   text-align: center;
   font-size: clamp(2rem, 6vw, 2.5rem);
   line-height: 1.05;

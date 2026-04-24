@@ -9,14 +9,17 @@ meta:
     enter-active-class="animated slideInLeft"
     leave-active-class="animated slideOutLeft"
   >
-    <q-page class="column dark-gradient send-onchain-page" data-testid="send-onchain-page">
-      <div class="send-onchain-topbar">
+    <q-page
+      class="column dark-gradient vipr-mobile-page send-onchain-page"
+      data-testid="send-onchain-page"
+    >
+      <div class="vipr-topbar send-onchain-topbar">
         <q-btn
           flat
           round
           icon="arrow_back"
           @click="goBack"
-          class="send-onchain-topbar__back"
+          class="vipr-topbar__back send-onchain-topbar__back"
           data-testid="send-onchain-back-btn"
         />
       </div>
@@ -326,24 +329,6 @@ function safeParseBitcoinInput(input: string): {
 </script>
 
 <style scoped>
-.send-onchain-page {
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.send-onchain-topbar {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  padding: calc(12px + env(safe-area-inset-top)) 16px 4px;
-}
-
-.send-onchain-topbar__back {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
 .send-onchain-content {
   width: 100%;
   padding: 0 16px 24px;
@@ -354,49 +339,7 @@ function safeParseBitcoinInput(input: string): {
   max-width: 560px;
 }
 
-.task-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-}
-
 .task-card--secondary {
   border-radius: 18px;
-}
-
-.section-title {
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-
-.custom-input :deep(.q-field__control) {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-}
-
-.custom-input :deep(.q-field__native),
-.custom-input :deep(.q-field__prefix),
-.custom-input :deep(.q-field__suffix),
-.custom-input :deep(.q-field__input) {
-  color: white;
-}
-</style>
-
-<style scoped>
-.amount-entry-container {
-  width: 100%;
-  max-width: 500px;
-  border-radius: 16px;
-}
-
-.custom-input :deep(.q-field__control) {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-.custom-input :deep(.q-field__native),
-.custom-input :deep(.q-field__prefix),
-.custom-input :deep(.q-field__suffix),
-.custom-input :deep(.q-field__input) {
-  color: white;
 }
 </style>

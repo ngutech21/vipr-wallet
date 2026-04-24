@@ -11,21 +11,24 @@ meta:
   >
     <!-- Only render layout if not leaving -->
 
-    <q-page class="dark-gradient receive-page" data-testid="receive-page">
-      <div class="receive-topbar">
+    <q-page class="dark-gradient vipr-mobile-page receive-page" data-testid="receive-page">
+      <div class="vipr-topbar receive-topbar">
         <q-btn
           flat
           round
           icon="arrow_back"
           @click="goBack"
-          class="receive-topbar__back"
+          class="vipr-topbar__back receive-topbar__back"
           data-testid="receive-back-btn"
         />
       </div>
 
       <div class="receive-content">
         <div class="flex flex-center full-width">
-          <div v-if="!qrData" class="amount-entry-container q-pa-lg task-card">
+          <div
+            v-if="!qrData"
+            class="amount-entry-container q-pa-lg task-card vipr-surface-card--strong"
+          >
             <AmountDisplay :value="formattedAmount" class="q-mb-lg" data-testid="amount-input" />
 
             <NumericKeypad :buttons="keypadButtons" class="q-mb-lg" />
@@ -52,7 +55,12 @@ meta:
 
         <!-- QR Code Card -->
         <div class="qr-card-shell">
-          <q-card v-if="qrData" flat class="qr-card task-card" data-testid="receive-qr-container">
+          <q-card
+            v-if="qrData"
+            flat
+            class="qr-card task-card vipr-surface-card--strong"
+            data-testid="receive-qr-container"
+          >
             <q-card-section class="qr-container">
               <div class="qr-surface">
                 <qrcode-vue
@@ -284,24 +292,6 @@ async function goBack() {
 </script>
 
 <style scoped>
-.receive-page {
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.receive-topbar {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  padding: calc(12px + env(safe-area-inset-top)) 16px 4px;
-}
-
-.receive-topbar__back {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
 .receive-content {
   box-sizing: border-box;
   width: 100%;
@@ -309,15 +299,6 @@ async function goBack() {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.task-card {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.022)),
-    rgba(15, 16, 22, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.075);
-  border-radius: 24px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
 .amount-entry-container {
@@ -403,7 +384,7 @@ async function goBack() {
   background-color: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.055);
   border-radius: 14px;
-  color: white;
+  color: var(--vipr-text-primary);
   font-size: 0.95rem;
   line-height: 1;
   font: inherit;
@@ -415,7 +396,7 @@ async function goBack() {
 
 .invoice-row :deep(.q-btn) {
   flex: 0 0 auto;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--vipr-text-secondary);
 }
 
 .receive-status {
@@ -426,12 +407,12 @@ async function goBack() {
   align-items: center;
   gap: 8px;
   margin-top: 18px;
-  color: white;
+  color: var(--vipr-text-primary);
   text-align: center;
 }
 
 .status-label {
-  color: rgba(255, 255, 255, 0.52);
+  color: var(--vipr-text-subtle);
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0;
@@ -452,7 +433,7 @@ async function goBack() {
   justify-content: center;
   gap: 8px;
   min-width: 0;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--vipr-text-muted);
   font-size: 0.9rem;
   text-align: center;
 }
