@@ -219,6 +219,89 @@ html[data-e2e='1'] *::after {
   font-weight: 600;
 }
 
+.transaction-item {
+  border-bottom: 1px solid var(--vipr-color-surface-border);
+  border-radius: var(--vipr-radius-control);
+  margin-bottom: 2px;
+  padding: 10px 0;
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.transaction-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.transaction-item:active {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.transaction-item .q-focus-helper {
+  display: none;
+}
+
+.transaction-item .transaction-icon-shell {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.transaction-item .transaction-title {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.transaction-item .transaction-meta {
+  margin-top: var(--vipr-space-1);
+  color: var(--vipr-text-soft);
+}
+
+.transaction-item .transaction-amount {
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.transaction-item .transaction-fiat {
+  margin-top: var(--vipr-space-1);
+  font-size: 0.75rem;
+  color: var(--vipr-text-faint);
+  text-align: right;
+}
+
+.transaction-list-container .transaction-item {
+  position: relative;
+  border-bottom-color: rgba(255, 255, 255, 0.075);
+  margin: 0 calc(-1 * var(--vipr-space-2));
+  padding: 14px var(--vipr-space-2);
+}
+
+.transaction-list-container .transaction-item:first-child {
+  padding-top: 10px;
+}
+
+.transaction-list-container .transaction-item:last-child {
+  border-bottom: 0;
+  padding-bottom: 10px;
+}
+
+.transaction-list-container .transaction-item:hover {
+  background-color: rgba(255, 255, 255, 0.028);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+}
+
+.transaction-list-container .transaction-item:active {
+  background-color: rgba(255, 255, 255, 0.042);
+}
+
 .custom-input .q-field__control {
   background-color: var(--vipr-color-input-bg);
   border-radius: var(--vipr-radius-input);

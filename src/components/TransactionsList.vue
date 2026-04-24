@@ -340,39 +340,6 @@ defineExpose({
   margin: 0;
 }
 
-.transaction-list-container :deep(.transaction-item) {
-  position: relative;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.075);
-  border-radius: 14px;
-  margin: 0 -8px;
-  padding: 14px 8px;
-  transition:
-    background-color 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.transaction-list-container :deep(.transaction-item:first-child) {
-  padding-top: 10px;
-}
-
-.transaction-list-container :deep(.transaction-item:last-child) {
-  border-bottom: 0;
-  padding-bottom: 10px;
-}
-
-.transaction-list-container :deep(.transaction-item:hover) {
-  background-color: rgba(255, 255, 255, 0.028);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
-}
-
-.transaction-list-container :deep(.transaction-item:active) {
-  background-color: rgba(255, 255, 255, 0.042);
-}
-
-.transaction-list-container :deep(.transaction-item .q-focus-helper) {
-  display: none;
-}
-
 .transactions-empty-state {
   min-height: 132px;
   display: flex;
