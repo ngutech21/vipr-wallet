@@ -87,9 +87,10 @@
       <div class="text-h6">Ready to start?</div>
       <div class="text-subtitle7">Join a federation to get up and running</div>
       <q-btn
+        no-caps
+        unelevated
         label="Join a federation"
-        color="primary"
-        class="q-mt-md"
+        class="home-empty-state__action q-mt-md"
         icon="add"
         @click="showSelection = true"
         :data-testid="'home-join-federation-btn'"
@@ -239,6 +240,19 @@ function returnToDiscovery() {
   text-align: center;
 }
 
+.home-empty-state__action {
+  min-height: 48px;
+  min-width: min(100%, 230px);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
+  box-shadow:
+    0 6px 13px rgba(111, 0, 255, 0.13),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  color: white;
+}
+
 .hero-card {
   background:
     radial-gradient(circle at top left, rgba(156, 39, 255, 0.18), transparent 42%),
@@ -320,6 +334,26 @@ function returnToDiscovery() {
   gap: 0;
 }
 
+.home-empty-state__action :deep(.q-btn__content) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.home-empty-state__action :deep(.q-icon) {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.home-empty-state__action :deep(.block) {
+  white-space: nowrap;
+  line-height: 1;
+}
+
 .home-transactions {
   padding-bottom: 96px;
   width: 100%;
@@ -335,6 +369,10 @@ function returnToDiscovery() {
 
   .home-action-btn {
     min-height: 50px;
+  }
+
+  .home-empty-state__action {
+    min-height: 48px;
   }
 
   .home-action-btn--icon {
