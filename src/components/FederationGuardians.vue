@@ -48,7 +48,7 @@ const props = withDefaults(
 
 const guardianCountLabel = computed(() => {
   const count = props.guardians.length
-  return `${count} guardians`
+  return `${count}`
 })
 
 function guardianLabel(guardian: FederationGuardian): string {
