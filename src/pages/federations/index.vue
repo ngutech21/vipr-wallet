@@ -117,12 +117,15 @@ function returnToDiscovery() {
 <style scoped>
 .page-content {
   position: relative;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
   padding-top: calc(16px + env(safe-area-inset-top)) !important;
 }
 
 .add-federation-fab {
   position: fixed;
-  right: 24px;
+  right: max(24px, calc((100vw - 700px) / 2 + 24px));
   bottom: calc(120px + env(safe-area-inset-bottom));
   z-index: 1200;
 }

@@ -13,7 +13,7 @@
       <q-list v-else separator class="guardian-list">
         <q-item v-for="guardian in guardians" :key="guardian.peerId" class="q-py-md">
           <q-item-section avatar top>
-            <q-avatar color="grey-3" text-color="grey-8">
+            <q-avatar class="guardian-avatar">
               {{ guardian.peerId + 1 }}
             </q-avatar>
           </q-item-section>
@@ -58,16 +58,35 @@ function guardianLabel(guardian: FederationGuardian): string {
 
 <style scoped>
 .guardian-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.006)),
+    rgba(255, 255, 255, 0.004);
+  border: 1px solid rgba(255, 255, 255, 0.028);
   border-radius: 24px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
 }
 
 .guardian-list {
   background: transparent;
 }
 
+.guardian-list :deep(.q-item) {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.guardian-list :deep(.q-item + .q-item),
+.guardian-list :deep(.q-item-type + .q-item-type) {
+  border-top-color: rgba(255, 255, 255, 0.032);
+}
+
+.guardian-avatar {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.72);
+}
+
 .guardian-url {
+  color: rgba(255, 255, 255, 0.58);
   word-break: break-all;
 }
 </style>

@@ -478,24 +478,29 @@ async function leaveFederation() {
 }
 
 .federation-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.006)),
+    rgba(255, 255, 255, 0.004);
+  border: 1px solid rgba(255, 255, 255, 0.028);
   border-radius: 24px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
 }
 
 .federation-card--summary {
   background:
     radial-gradient(circle at top left, rgba(156, 39, 255, 0.14), transparent 42%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .q-card-section {
-  padding: 16px;
+  padding: 14px 18px 18px;
 }
 
 .section-title {
   font-size: 1.05rem;
   font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .summary-layout {
@@ -568,10 +573,10 @@ async function leaveFederation() {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 18px;
-  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.018);
+  border-radius: 14px;
+  padding: 11px 12px;
 }
 
 .invite-code {

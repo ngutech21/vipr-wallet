@@ -718,7 +718,7 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 
 <style scoped>
 .settings-page {
-  max-width: 860px;
+  max-width: 700px;
   margin: 0 auto;
   padding-top: calc(16px + env(safe-area-inset-top)) !important;
 }
@@ -811,7 +811,7 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .contacts-section {
-  max-width: 720px;
+  max-width: none;
 }
 
 .contacts-source-toggle {

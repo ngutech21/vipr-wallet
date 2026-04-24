@@ -93,6 +93,8 @@ async function goToTab(name: RouteRecordName): Promise<void> {
 }
 
 :deep(.footer-tabs) {
+  width: min(100%, 700px);
+  margin: 0 auto;
   padding: 8px 12px 6px;
 }
 
