@@ -389,23 +389,27 @@ onBeforeUnmount(() => {
 
 .wizard-primary-btn,
 .wizard-secondary-btn {
-  min-height: 54px;
+  min-height: 52px;
   border-radius: 18px;
 }
 
 .wizard-primary-btn {
-  flex: 1;
-  background: white !important;
-  color: #111827 !important;
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
+  flex: 1 1 0;
+  min-width: 0;
+  background: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)) !important;
+  color: white !important;
+  box-shadow:
+    0 7px 16px rgba(111, 0, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .wizard-secondary-btn {
-  flex: 0 0 auto;
-  min-width: 128px;
+  flex: 1 1 0;
+  min-width: 0;
   color: rgba(255, 255, 255, 0.92) !important;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .wizard-actions--stack .wizard-primary-btn,
@@ -548,16 +552,23 @@ onBeforeUnmount(() => {
 
 .startup-wizard-page :deep([data-testid='startup-wizard-backup-confirm-btn']),
 .startup-wizard-page :deep([data-testid='startup-wizard-restore-submit-btn']) {
-  background: white !important;
-  color: #111827 !important;
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
+  min-height: 52px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)) !important;
+  color: white !important;
+  box-shadow:
+    0 7px 16px rgba(111, 0, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .startup-wizard-page :deep([data-testid='startup-wizard-backup-back-btn']),
 .startup-wizard-page :deep([data-testid='startup-wizard-restore-back-btn']) {
+  min-height: 52px;
+  border-radius: 18px;
   color: rgba(255, 255, 255, 0.92) !important;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 @media (max-width: 599px) {
@@ -593,10 +604,6 @@ onBeforeUnmount(() => {
 
   .wizard-footer {
     align-items: stretch;
-  }
-
-  .wizard-footer .wizard-secondary-btn {
-    min-width: 112px;
   }
 
   .federation-card {

@@ -38,7 +38,7 @@
     </div>
   </div>
 
-  <div class="row justify-end q-mt-lg">
+  <div class="install-panel__actions q-mt-lg">
     <q-btn
       label="Continue in Browser"
       unelevated
@@ -163,12 +163,19 @@ defineEmits<{
   color: rgba(255, 255, 255, 0.58);
 }
 
+.install-panel__actions {
+  display: flex;
+}
+
 .install-panel__continue-btn {
-  min-height: 54px;
+  width: 100%;
+  min-height: 52px;
   padding-inline: 24px;
   border-radius: 18px;
-  background: white !important;
-  color: #111827 !important;
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
+  background: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)) !important;
+  color: white !important;
+  box-shadow:
+    0 7px 16px rgba(111, 0, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 </style>
