@@ -40,16 +40,19 @@ withDefaults(
 }
 
 .amount-display {
-  min-height: 92px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.04);
+  min-height: 88px;
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.032), rgba(255, 255, 255, 0.018)),
+    rgba(255, 255, 255, 0.035);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 6px;
   padding: 18px 20px;
-  border: 1px solid transparent;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.024);
 }
 
 .amount-display--label-less {
@@ -61,7 +64,7 @@ withDefaults(
 }
 
 .amount-display__label {
-  color: rgba(255, 255, 255, 0.58);
+  color: rgba(255, 255, 255, 0.56);
   font-size: 0.88rem;
   line-height: 1.2;
   text-align: center;
@@ -73,7 +76,7 @@ withDefaults(
   font-size: clamp(2rem, 6vw, 2.5rem);
   line-height: 1.05;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   word-break: break-word;
 }
 
