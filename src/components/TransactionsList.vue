@@ -287,6 +287,12 @@ defineExpose({
   max-width: 100%;
 }
 
+.transactions-list:not(.transactions-list--home) {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
 .transactions-card {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.022)),
@@ -329,27 +335,36 @@ defineExpose({
 }
 
 .transaction-list-container :deep(.transaction-item) {
+  position: relative;
   border-bottom: 1px solid rgba(255, 255, 255, 0.075);
-  border-radius: 0;
-  margin-bottom: 0;
-  padding: 14px 0;
+  border-radius: 14px;
+  margin: 0 -8px;
+  padding: 14px 8px;
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .transaction-list-container :deep(.transaction-item:first-child) {
-  padding-top: 0;
+  padding-top: 10px;
 }
 
 .transaction-list-container :deep(.transaction-item:last-child) {
   border-bottom: 0;
-  padding-bottom: 0;
+  padding-bottom: 10px;
 }
 
 .transaction-list-container :deep(.transaction-item:hover) {
-  background-color: transparent;
+  background-color: rgba(255, 255, 255, 0.028);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
 }
 
 .transaction-list-container :deep(.transaction-item:active) {
-  background-color: rgba(255, 255, 255, 0.035);
+  background-color: rgba(255, 255, 255, 0.042);
+}
+
+.transaction-list-container :deep(.transaction-item .q-focus-helper) {
+  display: none;
 }
 
 .transactions-empty-state {
