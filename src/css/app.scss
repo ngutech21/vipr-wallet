@@ -310,6 +310,186 @@ html[data-e2e='1'] *::after {
   color: var(--vipr-text-secondary);
 }
 
+.transaction-content {
+  max-width: var(--vipr-width-mobile);
+  margin: 0 auto;
+}
+
+.transaction-content .transaction-card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--vipr-color-surface-border);
+  border-radius: var(--vipr-radius-card);
+  padding: 14px 18px 18px;
+  margin-bottom: var(--vipr-space-4);
+}
+
+.transaction-content .transaction-card--summary {
+  background:
+    radial-gradient(circle at top left, rgba(156, 39, 255, 0.14), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+}
+
+.transaction-content .transaction-card--details {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.006)),
+    rgba(255, 255, 255, 0.004);
+  border-color: rgba(255, 255, 255, 0.028);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
+  padding: var(--vipr-space-1) 18px var(--vipr-space-3);
+}
+
+.transaction-content .transaction-type {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.transaction-content .summary-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--vipr-space-2);
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+
+.transaction-content .status-badge {
+  flex-shrink: 0;
+  color: rgba(0, 0, 0, 0.82);
+  border-radius: var(--vipr-radius-pill);
+  padding: var(--vipr-space-1) 10px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.transaction-content .amount-section {
+  padding: var(--vipr-space-2) 0 18px;
+}
+
+.transaction-content .amount-value {
+  font-size: clamp(2.4rem, 6vw, 3rem);
+  line-height: 1.05;
+  font-weight: 700;
+  margin: 0;
+}
+
+.transaction-content .amount-fiat {
+  margin-top: 6px;
+  color: var(--vipr-text-subtle);
+  font-size: 0.95rem;
+}
+
+.transaction-content .summary-title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.transaction-content .summary-row {
+  display: flex;
+  align-items: center;
+  gap: var(--vipr-space-4);
+}
+
+.transaction-content .detail-stack {
+  display: grid;
+  gap: var(--vipr-space-0);
+}
+
+.transaction-content .detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--vipr-space-4);
+  padding: var(--vipr-space-3) 0;
+}
+
+.transaction-content .detail-row--separated {
+  border-top: 1px solid rgba(255, 255, 255, 0.032);
+}
+
+.transaction-content .detail-row .label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--vipr-text-muted);
+}
+
+.transaction-content .detail-row .value {
+  font-weight: 500;
+  max-width: 70%;
+  word-break: break-all;
+  text-align: right;
+}
+
+.transaction-content .detail-row .value--transaction-id {
+  flex: 1 1 auto;
+  max-width: none;
+  min-width: 0;
+  text-align: right;
+  white-space: normal;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  font-family: monospace;
+}
+
+.transaction-content .detail-row--block {
+  display: block;
+  padding-top: 14px;
+}
+
+.transaction-content .detail-row__heading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vipr-space-2);
+}
+
+.transaction-content .copy-button {
+  color: var(--vipr-text-secondary);
+}
+
+.transaction-content .address-section,
+.transaction-content .notes-section,
+.transaction-content .invoice-section {
+  background: rgba(255, 255, 255, 0.018);
+  border: 0;
+  border-radius: var(--vipr-radius-control);
+  padding: 11px var(--vipr-space-3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.018);
+}
+
+.transaction-content .address-container,
+.transaction-content .notes-container,
+.transaction-content .invoice-container {
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.transaction-content .address-text,
+.transaction-content .notes-text,
+.transaction-content .invoice-text {
+  word-break: break-all;
+  font-family: monospace;
+  color: var(--vipr-text-secondary);
+}
+
+@media (max-width: 599px) {
+  .transaction-content .summary-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .transaction-content .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .transaction-content .detail-row .value {
+    max-width: 100%;
+    text-align: left;
+  }
+}
+
 @media (max-width: 520px) {
   .vipr-qr-container {
     padding: 6px;
