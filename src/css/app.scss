@@ -142,6 +142,23 @@ body,
   --vipr-action-slider-border: var(--vipr-control-panel-border);
   --vipr-action-slider-handle-bg: var(--vipr-gradient-primary);
   --vipr-action-slider-shadow: var(--vipr-shadow-primary-subtle);
+  --vipr-scan-page-bg: #050505;
+  --vipr-scan-overlay-bg:
+    linear-gradient(
+      180deg,
+      rgba(8, 8, 8, 0.64),
+      rgba(8, 8, 8, 0.2) 22%,
+      rgba(8, 8, 8, 0.2) 78%,
+      rgba(8, 8, 8, 0.72)
+    ),
+    rgba(0, 0, 0, 0.22);
+  --vipr-scan-frame-border: rgba(162, 43, 255, 0.92);
+  --vipr-scan-frame-shadow:
+    0 0 0 5000px rgba(0, 0, 0, 0.44), 0 0 0 1px var(--vipr-color-surface-border) inset,
+    0 0 32px rgba(111, 0, 255, 0.22);
+  --vipr-glass-panel-bg: rgba(24, 24, 24, 0.78);
+  --vipr-glass-panel-border: var(--vipr-color-surface-border);
+  --vipr-glass-panel-backdrop: blur(16px);
   --vipr-result-bg-lightning:
     radial-gradient(circle at top left, rgba(128, 0, 255, 0.22), transparent 36%),
     linear-gradient(180deg, #171717 0%, #121212 100%);
