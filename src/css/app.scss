@@ -98,6 +98,20 @@ body,
   --vipr-modal-shadow: 0 -12px 40px rgba(0, 0, 0, 0.45);
   --vipr-modal-separator: rgba(255, 255, 255, 0.12);
   --vipr-modal-handle-bg: rgba(255, 255, 255, 0.28);
+  --vipr-dialog-bg: rgba(40, 40, 40, 0.95);
+  --vipr-dialog-backdrop-filter: blur(12px);
+  --vipr-dialog-border: rgba(255, 255, 255, 0.07);
+  --vipr-dialog-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  --vipr-dialog-animation: dialog-fade-in 0.25s ease-out;
+  --vipr-dialog-section-padding: var(--vipr-space-4) var(--vipr-space-5);
+  --vipr-dialog-section-padding-vertical: var(--vipr-space-5);
+  --vipr-dialog-actions-padding: var(--vipr-space-3) var(--vipr-space-5);
+  --vipr-dialog-title-letter-spacing: 0;
+  --vipr-dialog-field-bg: var(--vipr-color-input-bg);
+  --vipr-dialog-field-border: var(--vipr-color-input-border);
+  --vipr-dialog-field-border-hover: rgba(255, 255, 255, 0.15);
+  --vipr-dialog-list-bg: var(--vipr-list-bg);
+  --vipr-dialog-list-item-hover-bg: var(--vipr-row-hover-bg);
   --vipr-option-card-bg: rgba(255, 255, 255, 0.04);
   --vipr-option-card-bg-hover: rgba(255, 255, 255, 0.06);
   --vipr-option-card-border-hover: rgba(156, 39, 176, 0.5);
@@ -1503,23 +1517,23 @@ html[data-e2e='1'] *::after {
 .q-dialog {
   // Glass effect dialog
   .q-card {
-    background: rgba(40, 40, 40, 0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: var(--vipr-dialog-bg);
+    backdrop-filter: var(--vipr-dialog-backdrop-filter);
+    -webkit-backdrop-filter: var(--vipr-dialog-backdrop-filter);
+    border: 1px solid var(--vipr-dialog-border);
     border-radius: var(--vipr-radius-sm);
-    color: white;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    color: var(--vipr-text-primary);
+    box-shadow: var(--vipr-dialog-shadow);
 
     // Smooth entrance animation
-    animation: dialog-fade-in 0.25s ease-out;
+    animation: var(--vipr-dialog-animation);
 
     // Card sections styling
     .q-card__section {
-      padding: var(--vipr-space-4) var(--vipr-space-5);
+      padding: var(--vipr-dialog-section-padding);
 
       &.q-card__section--vert {
-        padding: var(--vipr-space-5);
+        padding: var(--vipr-dialog-section-padding-vertical);
       }
 
       + .q-card__section--vert {
@@ -1529,21 +1543,21 @@ html[data-e2e='1'] *::after {
 
     // Dialog header
     .q-card__section--vert:first-child {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      border-bottom: 1px solid var(--vipr-dialog-border);
     }
 
     // Dialog title
     .q-card__title,
     .text-h6 {
       font-weight: 600;
-      letter-spacing: -0.5px;
-      color: white;
+      letter-spacing: var(--vipr-dialog-title-letter-spacing);
+      color: var(--vipr-text-primary);
     }
 
     // Dialog actions/footer
     .q-card__actions {
-      padding: var(--vipr-space-3) var(--vipr-space-5);
-      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      padding: var(--vipr-dialog-actions-padding);
+      border-top: 1px solid var(--vipr-dialog-border);
       justify-content: flex-end;
 
       .q-btn:not(:first-child) {
@@ -1554,12 +1568,12 @@ html[data-e2e='1'] *::after {
     // Form controls within dialogs
     .q-field {
       .q-field__control {
-        background: rgba(255, 255, 255, 0.05);
+        background: var(--vipr-dialog-field-bg);
         border-radius: var(--vipr-radius-xs);
-        border: 1px solid rgba(255, 255, 255, 0.07);
+        border: 1px solid var(--vipr-dialog-field-border);
 
         &:hover {
-          border-color: rgba(255, 255, 255, 0.15);
+          border-color: var(--vipr-dialog-field-border-hover);
         }
 
         &.q-field__control--focused {
@@ -1570,18 +1584,18 @@ html[data-e2e='1'] *::after {
 
     // Lists within dialogs
     .q-list {
-      background: rgba(255, 255, 255, 0.03);
+      background: var(--vipr-dialog-list-bg);
       border-radius: var(--vipr-radius-xs);
 
       .q-item {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        border-bottom: 1px solid var(--vipr-dialog-border);
 
         &:last-child {
           border-bottom: none;
         }
 
         &:hover {
-          background: rgba(255, 255, 255, 0.05);
+          background: var(--vipr-dialog-list-item-hover-bg);
         }
       }
     }
