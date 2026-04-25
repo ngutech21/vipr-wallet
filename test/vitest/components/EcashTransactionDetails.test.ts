@@ -480,7 +480,7 @@ describe('EcashTransactionDetails.vue', () => {
       wrapper = createWrapper(transaction)
 
       // Should display 1 sat (1999 msats / 1000 = 1.999, floored to 1)
-      const amountText = wrapper.find('.text-h4').text()
+      const amountText = wrapper.find('.amount-value').text()
       expect(amountText).toContain('+1')
       expect(amountText).not.toContain('1.999')
       expect(amountText).not.toContain('+2')

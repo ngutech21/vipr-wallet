@@ -228,6 +228,30 @@ body,
   --vipr-qr-surface-bg: #fff;
   --vipr-copy-field-bg: rgba(255, 255, 255, 0.045);
   --vipr-copy-field-border: rgba(255, 255, 255, 0.055);
+  --vipr-transaction-content-padding: var(--vipr-space-4);
+  --vipr-transaction-card-bg: rgba(255, 255, 255, 0.025);
+  --vipr-transaction-card-padding: var(--vipr-row-padding-y) var(--vipr-row-padding-x)
+    var(--vipr-row-padding-x);
+  --vipr-transaction-card-gap: var(--vipr-space-4);
+  --vipr-transaction-details-padding: var(--vipr-space-1) var(--vipr-row-padding-x)
+    var(--vipr-space-3);
+  --vipr-transaction-type-gap: 10px;
+  --vipr-transaction-status-color: var(--vipr-text-on-accent);
+  --vipr-transaction-status-padding: var(--vipr-space-1) 10px;
+  --vipr-transaction-amount-section-padding: var(--vipr-space-2) var(--vipr-space-0)
+    var(--vipr-row-padding-x);
+  --vipr-transaction-amount-line-height: 1.05;
+  --vipr-transaction-fiat-top-space: 6px;
+  --vipr-transaction-fiat-font-size: 0.95rem;
+  --vipr-transaction-row-padding: var(--vipr-space-3) var(--vipr-space-0);
+  --vipr-transaction-row-separator: var(--vipr-detail-separator);
+  --vipr-transaction-label-font-size: 0.82rem;
+  --vipr-transaction-block-row-top-padding: var(--vipr-row-padding-y);
+  --vipr-transaction-data-section-bg: rgba(255, 255, 255, 0.018);
+  --vipr-transaction-data-section-padding: 11px var(--vipr-space-3);
+  --vipr-transaction-data-section-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.018);
+  --vipr-transaction-data-section-top-space: var(--vipr-space-2);
+  --vipr-transaction-data-section-max-height: 80px;
   --vipr-action-slider-bg: var(--vipr-control-panel-bg);
   --vipr-action-slider-border: var(--vipr-control-panel-border);
   --vipr-action-slider-handle-bg: var(--vipr-gradient-primary);
@@ -1307,14 +1331,15 @@ html[data-e2e='1'] *::after {
 .transaction-content {
   max-width: var(--vipr-width-mobile);
   margin: 0 auto;
+  padding: var(--vipr-transaction-content-padding);
 }
 
 .transaction-content .transaction-card {
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--vipr-transaction-card-bg);
   border: 1px solid var(--vipr-color-surface-border);
   border-radius: var(--vipr-radius-card);
-  padding: 14px 18px 18px;
-  margin-bottom: var(--vipr-space-4);
+  padding: var(--vipr-transaction-card-padding);
+  margin-bottom: var(--vipr-transaction-card-gap);
 }
 
 .transaction-content .transaction-card--summary {
@@ -1325,14 +1350,15 @@ html[data-e2e='1'] *::after {
   background: var(--vipr-surface-card-bg-subtle);
   border-color: var(--vipr-surface-card-border-subtle);
   box-shadow: var(--vipr-surface-card-shadow-subtle);
-  padding: var(--vipr-space-1) 18px var(--vipr-space-3);
+  padding: var(--vipr-transaction-details-padding);
 }
 
 .transaction-content .transaction-type {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--vipr-transaction-type-gap);
   min-width: 0;
+  width: 100%;
 }
 
 .transaction-content .summary-meta {
@@ -1340,38 +1366,45 @@ html[data-e2e='1'] *::after {
   align-items: center;
   gap: var(--vipr-space-2);
   min-width: 0;
+  flex: 1 1 auto;
   flex-wrap: nowrap;
+  justify-content: space-between;
 }
 
 .transaction-content .status-badge {
   flex-shrink: 0;
-  color: rgba(0, 0, 0, 0.82);
+  margin-left: auto;
+  color: var(--vipr-transaction-status-color);
   border-radius: var(--vipr-radius-pill);
-  padding: var(--vipr-space-1) 10px;
+  padding: var(--vipr-transaction-status-padding);
   font-weight: 500;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 
 .transaction-content .amount-section {
-  padding: var(--vipr-space-2) 0 18px;
+  padding: var(--vipr-transaction-amount-section-padding);
+  text-align: center;
 }
 
 .transaction-content .amount-value {
   font-size: var(--vipr-font-size-detail-amount);
-  line-height: 1.05;
+  line-height: var(--vipr-transaction-amount-line-height);
   font-weight: 700;
   margin: 0;
 }
 
 .transaction-content .amount-fiat {
-  margin-top: 6px;
+  margin-top: var(--vipr-transaction-fiat-top-space);
   color: var(--vipr-text-subtle);
-  font-size: 0.95rem;
+  font-size: var(--vipr-transaction-fiat-font-size);
 }
 
 .transaction-content .summary-title {
+  min-width: 0;
   font-size: var(--vipr-font-size-summary-title);
   font-weight: 600;
+  line-height: var(--vipr-line-height-tight);
+  overflow-wrap: anywhere;
   white-space: nowrap;
 }
 
@@ -1379,6 +1412,7 @@ html[data-e2e='1'] *::after {
   display: flex;
   align-items: center;
   gap: var(--vipr-space-4);
+  width: 100%;
 }
 
 .transaction-content .detail-stack {
@@ -1391,17 +1425,17 @@ html[data-e2e='1'] *::after {
   justify-content: space-between;
   align-items: center;
   gap: var(--vipr-space-4);
-  padding: var(--vipr-space-3) 0;
+  padding: var(--vipr-transaction-row-padding);
 }
 
 .transaction-content .detail-row--separated {
-  border-top: 1px solid rgba(255, 255, 255, 0.032);
+  border-top: 1px solid var(--vipr-transaction-row-separator);
 }
 
 .transaction-content .detail-row .label {
-  font-size: 0.82rem;
+  font-size: var(--vipr-transaction-label-font-size);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   color: var(--vipr-text-muted);
 }
 
@@ -1420,12 +1454,12 @@ html[data-e2e='1'] *::after {
   white-space: normal;
   word-break: break-all;
   overflow-wrap: anywhere;
-  font-family: monospace;
+  font-family: var(--vipr-font-family-mono);
 }
 
 .transaction-content .detail-row--block {
   display: block;
-  padding-top: 14px;
+  padding-top: var(--vipr-transaction-block-row-top-padding);
 }
 
 .transaction-content .detail-row__heading {
@@ -1441,17 +1475,18 @@ html[data-e2e='1'] *::after {
 .transaction-content .address-section,
 .transaction-content .notes-section,
 .transaction-content .invoice-section {
-  background: rgba(255, 255, 255, 0.018);
+  margin-top: var(--vipr-transaction-data-section-top-space);
+  background: var(--vipr-transaction-data-section-bg);
   border: 0;
   border-radius: var(--vipr-radius-control);
-  padding: 11px var(--vipr-space-3);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.018);
+  padding: var(--vipr-transaction-data-section-padding);
+  box-shadow: var(--vipr-transaction-data-section-shadow);
 }
 
 .transaction-content .address-container,
 .transaction-content .notes-container,
 .transaction-content .invoice-container {
-  max-height: 80px;
+  max-height: var(--vipr-transaction-data-section-max-height);
   overflow-y: auto;
 }
 
@@ -1459,8 +1494,9 @@ html[data-e2e='1'] *::after {
 .transaction-content .notes-text,
 .transaction-content .invoice-text {
   word-break: break-all;
-  font-family: monospace;
+  font-family: var(--vipr-font-family-mono);
   color: var(--vipr-text-secondary);
+  font-size: var(--vipr-font-size-caption);
 }
 
 @media (max-width: 599px) {
