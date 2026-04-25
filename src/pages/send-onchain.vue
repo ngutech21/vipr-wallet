@@ -10,7 +10,7 @@ meta:
     leave-active-class="animated slideOutLeft"
   >
     <q-page
-      class="column dark-gradient vipr-mobile-page send-onchain-page"
+      class="dark-gradient vipr-mobile-page send-onchain-page"
       data-testid="send-onchain-page"
     >
       <div class="vipr-topbar send-onchain-topbar">
@@ -25,9 +25,9 @@ meta:
       </div>
 
       <div class="send-onchain-content">
-        <div class="flex flex-center full-width">
-          <div class="vipr-flow-panel q-pa-lg task-card vipr-surface-card--strong">
-            <div class="section-title q-mb-md text-center">Bitcoin destination</div>
+        <div class="vipr-flow-center">
+          <div class="vipr-flow-panel vipr-flow-panel--padded task-card vipr-surface-card--strong">
+            <div class="section-title vipr-flow-title--center">Bitcoin destination</div>
 
             <q-input
               v-model="paymentTarget"
@@ -37,7 +37,7 @@ meta:
               dark
               type="textarea"
               label="Bitcoin address or bitcoin: URI"
-              class="vipr-input q-mb-md"
+              class="vipr-input vipr-flow-spacer-md"
               :error="addressError != null"
               :error-message="addressError ?? undefined"
               data-testid="send-onchain-target-input"
@@ -57,11 +57,15 @@ meta:
             <q-card
               v-if="bitcoinUriDetails.length > 0"
               flat
-              class="task-card task-card--secondary q-mb-md"
+              class="task-card task-card--secondary vipr-flow-spacer-md"
               data-testid="send-onchain-uri-details"
             >
-              <q-card-section class="q-py-sm">
-                <div v-for="detail in bitcoinUriDetails" :key="detail" class="vipr-caption q-mb-xs">
+              <q-card-section class="send-onchain-uri-details__body">
+                <div
+                  v-for="detail in bitcoinUriDetails"
+                  :key="detail"
+                  class="vipr-caption send-onchain-uri-details__item"
+                >
                   {{ detail }}
                 </div>
               </q-card-section>
@@ -70,29 +74,29 @@ meta:
             <AmountDisplay
               :value="formattedAmount"
               label="Amount (sats)"
-              class="q-mb-md"
+              class="vipr-flow-spacer-md"
               :error-message="amountError"
               data-testid="send-onchain-amount-input"
             />
 
-            <NumericKeypad class="q-mb-md" :buttons="keypadButtons" />
+            <NumericKeypad class="vipr-flow-spacer-md" :buttons="keypadButtons" />
 
             <div
               v-if="uriAmountHint"
-              class="vipr-caption q-mb-md"
+              class="vipr-caption vipr-flow-spacer-md"
               data-testid="send-onchain-uri-amount-hint"
             >
               {{ uriAmountHint }}
             </div>
 
-            <div class="vipr-caption q-mb-lg" data-testid="send-onchain-max-amount">
+            <div class="vipr-caption vipr-flow-spacer-lg" data-testid="send-onchain-max-amount">
               <template v-if="selectedFederation != null">
                 Maximum spendable after fee reserve: {{ maxSendAmount.toLocaleString() }} sats
               </template>
               <template v-else> Select a federation before sending Bitcoin on-chain </template>
             </div>
 
-            <div class="vipr-caption q-mb-lg">
+            <div class="vipr-caption vipr-flow-spacer-lg">
               A {{ ONCHAIN_FEE_RESERVE_SATS.toLocaleString() }} sat fee reserve is kept for network
               fees. Minimum on-chain send: {{ MIN_ONCHAIN_SEND_SATS.toLocaleString() }}
               sats.
@@ -103,7 +107,7 @@ meta:
               color="primary"
               no-caps
               unelevated
-              class="full-width vipr-btn vipr-btn--primary vipr-btn--lg"
+              class="vipr-flow-action vipr-btn vipr-btn--primary vipr-btn--lg"
               :loading="isProcessing"
               :disable="!canSendOnchain"
               @click="submitOnchainPayment"
@@ -332,5 +336,18 @@ function safeParseBitcoinInput(input: string): {
 
 .task-card--secondary {
   border-radius: var(--vipr-radius-button-lg);
+}
+
+.send-onchain-uri-details__body {
+  padding-top: var(--vipr-space-2);
+  padding-bottom: var(--vipr-space-2);
+}
+
+.send-onchain-uri-details__item {
+  margin-bottom: var(--vipr-space-1);
+}
+
+.send-onchain-uri-details__item:last-child {
+  margin-bottom: 0;
 }
 </style>

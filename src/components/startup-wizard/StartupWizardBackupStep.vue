@@ -1,10 +1,10 @@
 <template>
-  <div class="vipr-caption q-mb-md">
+  <div class="backup-step__intro vipr-caption">
     Write down these 12 words in order. They are your recovery phrase and the only way to recover
     your wallet.
   </div>
 
-  <div class="words-grid vipr-word-grid q-mb-md">
+  <div class="words-grid vipr-word-grid backup-step__words">
     <q-card
       v-for="(word, index) in mnemonicWords"
       :key="index"
@@ -19,24 +19,24 @@
     </q-card>
   </div>
 
-  <div class="row q-col-gutter-sm">
-    <div class="col-12 col-sm-6">
+  <div class="backup-step__actions">
+    <div class="backup-step__action">
       <q-btn
         label="Back"
         flat
         no-caps
-        class="full-width vipr-btn vipr-btn--secondary vipr-btn--lg"
+        class="backup-step__button vipr-btn vipr-btn--secondary vipr-btn--lg"
         data-testid="startup-wizard-backup-back-btn"
         @click="$emit('back')"
       />
     </div>
-    <div class="col-12 col-sm-6">
+    <div class="backup-step__action">
       <q-btn
         label="Recovery phrase saved"
         color="primary"
         icon="check_circle"
         no-caps
-        class="full-width backup-confirm-btn vipr-btn vipr-btn--primary-soft vipr-btn--lg"
+        class="backup-step__button backup-confirm-btn vipr-btn vipr-btn--primary-soft vipr-btn--lg"
         :disable="mnemonicWords.length !== 12"
         data-testid="startup-wizard-backup-confirm-btn"
         @click="$emit('confirm')"
@@ -57,8 +57,25 @@ defineEmits<{
 </script>
 
 <style scoped>
-.full-width {
+.backup-step__intro,
+.backup-step__words {
+  margin-bottom: var(--vipr-space-4);
+}
+
+.backup-step__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--vipr-space-2);
+}
+
+.backup-step__button {
   width: 100%;
+}
+
+@media (max-width: 599px) {
+  .backup-step__actions {
+    grid-template-columns: 1fr;
+  }
 }
 
 .backup-confirm-btn :deep(.q-btn__content) {

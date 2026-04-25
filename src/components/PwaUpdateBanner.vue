@@ -2,7 +2,7 @@
   <q-banner
     v-if="showBanner"
     rounded
-    class="pwa-update-banner vipr-surface-card vipr-surface-card--summary q-mx-md q-mt-md"
+    class="pwa-update-banner vipr-surface-card vipr-surface-card--summary"
     data-testid="pwa-update-banner"
   >
     <div class="pwa-update-banner__content">
@@ -73,8 +73,7 @@ async function applyUpdate() {
 <style scoped>
 .pwa-update-banner {
   max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: var(--vipr-space-4) auto 0;
   border-radius: var(--vipr-radius-button-lg);
 }
 

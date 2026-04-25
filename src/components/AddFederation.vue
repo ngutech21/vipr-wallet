@@ -26,7 +26,7 @@
         color="primary"
         no-caps
         unelevated
-        class="full-width vipr-btn vipr-btn--primary vipr-btn--lg"
+        class="add-federation-submit vipr-btn vipr-btn--primary vipr-btn--lg"
         data-testid="add-federation-preview-btn"
         :disable="isSubmitting || inviteCode.trim() === ''"
         :loading="isSubmitting"
@@ -40,7 +40,7 @@
         color="primary"
         no-caps
         unelevated
-        class="full-width vipr-btn vipr-btn--primary vipr-btn--lg"
+        class="add-federation-submit vipr-btn vipr-btn--primary vipr-btn--lg"
         data-testid="add-federation-submit-btn"
         :disable="isSubmitting"
         :loading="isSubmitting"
@@ -213,3 +213,9 @@ async function addFederation() {
   onClose()
 }
 </script>
+
+<style scoped>
+.add-federation-submit {
+  width: 100%;
+}
+</style>

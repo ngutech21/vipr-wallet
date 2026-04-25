@@ -1,8 +1,5 @@
 <template>
-  <div
-    :class="['transactions-list', { 'transactions-list--home': props.mode === 'home' }]"
-    class="q-px-md q-pb-md"
-  >
+  <div :class="['transactions-list', { 'transactions-list--home': props.mode === 'home' }]">
     <div
       v-if="showTransactionsCard"
       class="transactions-card vipr-surface-card vipr-surface-card--strong"

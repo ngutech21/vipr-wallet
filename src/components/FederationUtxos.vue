@@ -1,15 +1,15 @@
 <template>
   <div>
-    <div class="row items-baseline q-mb-xs q-gutter-sm">
+    <div class="utxo-header">
       <div class="vipr-section-title">UTXOs</div>
       <div v-if="utxos.length > 0" class="vipr-caption">{{ utxos.length }} spendable</div>
     </div>
-    <q-card flat class="q-mb-md utxo-card vipr-surface-card vipr-surface-card--subtle">
-      <q-card-section v-if="isLoading" class="row items-center justify-center q-py-xl">
+    <q-card flat class="utxo-card vipr-surface-card vipr-surface-card--subtle">
+      <q-card-section v-if="isLoading" class="utxo-loading">
         <q-spinner color="primary" size="28px" />
       </q-card-section>
 
-      <q-card-section v-else-if="error" class="text-negative">
+      <q-card-section v-else-if="error" class="utxo-error">
         {{ error }}
       </q-card-section>
 
@@ -40,7 +40,7 @@
         </q-item>
       </q-list>
 
-      <q-card-actions v-if="utxos.length > initialVisibleCount" align="center" class="q-pb-md">
+      <q-card-actions v-if="utxos.length > initialVisibleCount" align="center" class="utxo-actions">
         <q-btn
           flat
           :label="isExpanded ? 'Show less' : `Show more (${utxos.length - visibleUtxos.length})`"
@@ -113,6 +113,33 @@ function getMempoolNetworkPath(network?: string | null): string {
 </script>
 
 <style scoped>
+.utxo-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--vipr-space-2);
+  margin-bottom: var(--vipr-space-1);
+}
+
+.utxo-card {
+  margin-bottom: var(--vipr-space-4);
+}
+
+.utxo-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--vipr-space-8);
+  padding-bottom: var(--vipr-space-8);
+}
+
+.utxo-error {
+  color: var(--q-negative);
+}
+
+.utxo-actions {
+  padding-bottom: var(--vipr-space-4);
+}
+
 .utxo-list {
   background: transparent;
 }

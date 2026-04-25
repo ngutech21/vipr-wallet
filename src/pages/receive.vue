@@ -24,18 +24,25 @@ meta:
       </div>
 
       <div class="receive-content">
-        <div class="flex flex-center full-width">
-          <div v-if="!qrData" class="vipr-flow-panel q-pa-lg task-card vipr-surface-card--strong">
-            <AmountDisplay :value="formattedAmount" class="q-mb-lg" data-testid="amount-input" />
+        <div class="vipr-flow-center">
+          <div
+            v-if="!qrData"
+            class="vipr-flow-panel vipr-flow-panel--padded task-card vipr-surface-card--strong"
+          >
+            <AmountDisplay
+              :value="formattedAmount"
+              class="vipr-flow-spacer-lg"
+              data-testid="amount-input"
+            />
 
-            <NumericKeypad :buttons="keypadButtons" class="q-mb-lg" />
+            <NumericKeypad :buttons="keypadButtons" class="vipr-flow-spacer-lg" />
 
             <q-btn
               label="Create Invoice"
               color="primary"
               no-caps
               unelevated
-              class="full-width vipr-btn vipr-btn--primary vipr-btn--lg"
+              class="vipr-flow-action vipr-btn vipr-btn--primary vipr-btn--lg"
               :disable="amount <= 0 || isCreatingInvoice"
               @click="onRequest"
               icon="bolt"

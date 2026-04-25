@@ -24,16 +24,16 @@ meta:
         </div>
 
         <div class="success-title" data-testid="received-lightning-title">Payment received</div>
-        <div class="success-amount q-mt-md" data-testid="received-lightning-amount">
+        <div class="success-amount" data-testid="received-lightning-amount">
           {{ formatNumber(amount) }} sats
         </div>
-        <div class="success-subtitle q-mt-sm">The funds are now available in your wallet.</div>
+        <div class="success-subtitle">The funds are now available in your wallet.</div>
 
         <q-btn
           color="primary"
           no-caps
           unelevated
-          class="success-action-btn vipr-btn vipr-btn--primary vipr-btn--lg q-mt-xl"
+          class="success-action-btn vipr-btn vipr-btn--primary vipr-btn--lg"
           :to="{ name: '/' }"
           label="Back to home"
           data-testid="back-home-button"

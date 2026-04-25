@@ -1,7 +1,7 @@
 <template>
   <div class="payment-verification">
     <div
-      class="payment-details-card vipr-surface-card vipr-surface-card--strong q-mb-lg"
+      class="payment-details-card vipr-surface-card vipr-surface-card--strong"
       data-testid="verify-payment-details"
     >
       <div class="payment-details-row vipr-detail-row">
@@ -27,7 +27,7 @@
       </div>
     </div>
 
-    <div class="q-mt-md payment-slider-container">
+    <div class="payment-slider-container">
       <q-slide-item
         @left="$emit('pay')"
         @action="onSlideAction"
@@ -36,7 +36,7 @@
         data-testid="verify-payment-slider"
       >
         <template #left>
-          <div class="full-height full-width row justify-end items-center">
+          <div class="payment-slider-confirmation">
             <q-icon name="check" size="32px" color="white" />
           </div>
         </template>
@@ -97,6 +97,7 @@ function onSlideAction({
 }
 
 .payment-details-card {
+  margin-bottom: var(--vipr-space-6);
   padding: var(--vipr-space-1) 18px;
 }
 
@@ -123,9 +124,18 @@ function onSlideAction({
 .payment-slider-container {
   position: relative;
   width: 100%;
+  margin-top: var(--vipr-space-4);
   border-radius: var(--vipr-radius-pill);
   overflow: hidden;
   box-shadow: var(--vipr-action-slider-shadow);
+}
+
+.payment-slider-confirmation {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .payment-slider {

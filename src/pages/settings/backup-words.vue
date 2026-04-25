@@ -57,7 +57,7 @@ meta:
           icon="check_circle"
           no-caps
           unelevated
-          class="full-width backup-confirm-btn vipr-btn vipr-btn--primary-soft vipr-btn--md"
+          class="backup-confirm-btn vipr-btn vipr-btn--primary-soft vipr-btn--md"
           @click="confirmBackup"
           data-testid="backup-words-confirm-btn"
         />
@@ -142,16 +142,13 @@ async function loadRecoveryWords() {
   margin-bottom: var(--vipr-backup-card-copy-gap);
 }
 
-.full-width {
-  width: 100%;
-}
-
 .backup-words-container :deep(.q-btn:not(.q-btn--round)) {
   font-weight: 600;
   letter-spacing: 0;
 }
 
 .backup-confirm-btn {
+  width: 100%;
   margin-bottom: var(--vipr-backup-action-gap);
 }
 

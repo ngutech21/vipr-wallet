@@ -506,6 +506,38 @@ html[data-e2e='1'] *::after {
   max-width: var(--vipr-width-flow-panel);
 }
 
+.vipr-flow-panel--padded {
+  padding: var(--vipr-space-6);
+}
+
+.vipr-flow-center {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.vipr-flow-spacer-sm {
+  margin-bottom: var(--vipr-space-2);
+}
+
+.vipr-flow-spacer-md {
+  margin-bottom: var(--vipr-space-4);
+}
+
+.vipr-flow-spacer-lg {
+  margin-bottom: var(--vipr-space-6);
+}
+
+.vipr-flow-title--center {
+  margin-bottom: var(--vipr-space-4);
+  text-align: center;
+}
+
+.vipr-flow-action {
+  width: 100%;
+}
+
 .vipr-title,
 .success-title {
   color: var(--vipr-text-primary);
@@ -1017,7 +1049,16 @@ html[data-e2e='1'] *::after {
   margin-bottom: var(--vipr-space-3);
 }
 
+.success-amount {
+  margin-top: var(--vipr-space-4);
+}
+
+.success-subtitle {
+  margin-top: var(--vipr-space-2);
+}
+
 .success-card {
+  margin-top: var(--vipr-space-8);
   background: var(--vipr-surface-card-bg);
   border: 1px solid var(--vipr-color-surface-border);
   border-radius: var(--vipr-radius-card);
@@ -1059,6 +1100,19 @@ html[data-e2e='1'] *::after {
 .success-action-btn,
 .success-secondary-btn {
   width: 100%;
+}
+
+.success-actions,
+.success-action-btn {
+  margin-top: var(--vipr-space-8);
+}
+
+.success-actions .success-action-btn {
+  margin-top: 0;
+}
+
+.success-secondary-btn {
+  margin-top: var(--vipr-space-2);
 }
 
 .transaction-item {

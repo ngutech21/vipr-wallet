@@ -32,7 +32,7 @@
       />
     </q-dialog>
 
-    <div class="page-content q-px-md q-pt-md q-pb-md">
+    <div class="page-content federations-page-content">
       <FederationList />
 
       <div class="add-federation-fab">
@@ -120,7 +120,11 @@ function returnToDiscovery() {
   width: 100%;
   max-width: 700px;
   margin: 0 auto;
-  padding-top: calc(16px + env(safe-area-inset-top)) !important;
+}
+
+.federations-page-content {
+  padding: calc(var(--vipr-space-4) + env(safe-area-inset-top)) var(--vipr-space-4)
+    var(--vipr-space-4);
 }
 
 .add-federation-fab {

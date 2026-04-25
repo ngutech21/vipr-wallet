@@ -4,7 +4,7 @@
     enter-active-class="animated slideInLeft"
     leave-active-class="animated slideOutLeft"
   >
-    <q-page class="column dark-gradient vipr-mobile-page send-page">
+    <q-page class="dark-gradient vipr-mobile-page send-page">
       <div class="vipr-topbar send-topbar">
         <q-btn
           flat
@@ -15,12 +15,12 @@
           data-testid="send-back-btn"
         />
       </div>
-      <div class="send-content q-px-md">
+      <div class="send-content">
         <!-- Payment input section -->
         <template v-if="!decodedInvoice">
-          <q-card flat class="task-card q-mb-md">
+          <q-card flat class="task-card send-section-card">
             <q-card-section>
-              <div class="section-title q-mb-sm">Send payment</div>
+              <div class="section-title send-section-title">Send payment</div>
               <q-input
                 v-model="lightningInvoice"
                 filled
@@ -45,7 +45,7 @@
             </q-card-section>
           </q-card>
 
-          <div class="q-mb-md">
+          <div class="send-contacts-block">
             <q-list
               v-if="showFilteredContacts"
               bordered
@@ -79,11 +79,11 @@
               class="task-card empty-contacts-card contacts-hint-card"
               data-testid="send-contacts-hint"
             >
-              <q-card-section class="row items-center q-col-gutter-sm">
-                <div class="col-auto">
+              <q-card-section class="send-contact-hint">
+                <div class="send-contact-hint__icon">
                   <q-icon name="search" size="md" class="send-contact-icon" />
                 </div>
-                <div class="col">
+                <div class="send-contact-hint__body">
                   <div class="vipr-section-title">Contacts appear as you type</div>
                   <div class="vipr-caption">
                     Use the field above to search by name or Lightning address.
@@ -98,11 +98,11 @@
               class="task-card empty-contacts-card contacts-hint-card"
               data-testid="send-no-contact-matches"
             >
-              <q-card-section class="row items-center q-col-gutter-sm">
-                <div class="col-auto">
+              <q-card-section class="send-contact-hint">
+                <div class="send-contact-hint__icon">
                   <q-icon name="search_off" size="md" class="send-contact-icon" />
                 </div>
-                <div class="col">
+                <div class="send-contact-hint__body">
                   <div class="vipr-section-title">No matching contacts</div>
                   <div class="vipr-caption">Try a different name or Lightning address.</div>
                 </div>
@@ -116,36 +116,36 @@
               class="task-card empty-contacts-card"
               data-testid="send-no-contacts"
             >
-              <q-card-section class="row items-center q-col-gutter-sm">
-                <div class="col-auto">
+              <q-card-section class="send-contact-hint">
+                <div class="send-contact-hint__icon">
                   <q-icon name="account_circle" size="md" class="send-contact-icon" />
                 </div>
-                <div class="col vipr-section-title">No Contacts</div>
+                <div class="send-contact-hint__body vipr-section-title">No Contacts</div>
               </q-card-section>
             </q-card>
           </div>
 
           <!-- Amount input section (for lightning address) -->
           <q-slide-transition>
-            <q-card v-if="amountRequired" flat class="task-card q-mb-md">
+            <q-card v-if="amountRequired" flat class="task-card send-section-card">
               <q-card-section>
-                <div class="section-title q-mb-sm">Payment details</div>
+                <div class="section-title send-section-title">Payment details</div>
 
-                <div class="row q-col-gutter-md">
-                  <div class="col-12">
+                <div class="send-payment-details">
+                  <div class="send-payment-details__field">
                     <AmountDisplay
                       :value="formattedInvoiceAmount"
                       label="Amount in sats"
-                      class="q-mb-md"
+                      class="vipr-flow-spacer-md"
                       data-testid="send-amount-input"
                     />
                   </div>
                 </div>
 
-                <NumericKeypad :buttons="keypadButtons" class="q-mb-md" />
+                <NumericKeypad :buttons="keypadButtons" class="vipr-flow-spacer-md" />
 
-                <div class="row q-col-gutter-md q-mt-md" v-if="lnAddress">
-                  <div class="col-12">
+                <div class="send-payment-details send-payment-details--spaced" v-if="lnAddress">
+                  <div class="send-payment-details__field">
                     <q-input
                       filled
                       dense
@@ -162,13 +162,13 @@
           </q-slide-transition>
 
           <!-- Action button -->
-          <div class="q-mt-lg">
+          <div class="send-action">
             <q-btn
               :label="amountRequired ? 'Create Invoice' : 'Continue'"
               color="primary"
               no-caps
               unelevated
-              class="full-width q-py-sm vipr-btn vipr-btn--primary vipr-btn--lg"
+              class="send-action__button vipr-btn vipr-btn--primary vipr-btn--lg"
               size="lg"
               :loading="isProcessing"
               :disable="isProcessing"
@@ -324,6 +324,52 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 
 .send-content {
   width: 100%;
+  padding-right: var(--vipr-space-4);
+  padding-left: var(--vipr-space-4);
+}
+
+.send-section-card,
+.send-contacts-block {
+  margin-bottom: var(--vipr-space-4);
+}
+
+.send-section-title {
+  margin-bottom: var(--vipr-space-2);
+}
+
+.send-contact-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--vipr-space-2);
+}
+
+.send-contact-hint__icon {
+  flex: 0 0 auto;
+}
+
+.send-contact-hint__body {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.send-payment-details {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--vipr-space-4);
+}
+
+.send-payment-details--spaced {
+  margin-top: var(--vipr-space-4);
+}
+
+.send-action {
+  margin-top: var(--vipr-space-6);
+}
+
+.send-action__button {
+  width: 100%;
+  padding-top: var(--vipr-space-2);
+  padding-bottom: var(--vipr-space-2);
 }
 
 .rounded-contact-list {

@@ -1,5 +1,5 @@
 <template>
-  <q-page class="column" data-testid="home-page">
+  <q-page class="home-page" data-testid="home-page">
     <q-dialog
       v-model="showSelection"
       position="bottom"
@@ -58,7 +58,7 @@
       />
     </q-dialog>
 
-    <section v-if="federationStore.federations.length > 0" class="home-hero q-pa-md">
+    <section v-if="federationStore.federations.length > 0" class="home-hero">
       <div class="hero-card">
         <div class="hero-balance" data-testid="home-balance">
           {{ Math.ceil(totalBalance).toLocaleString() }} sats
@@ -72,7 +72,7 @@
             outline
             data-testid="home-selected-federation-chip"
           >
-            <q-icon name="account_balance" class="q-mr-sm" />
+            <q-icon name="account_balance" class="hero-federation__icon" />
             {{ federationStore.selectedFederation.title }}
           </q-chip>
         </div>
@@ -81,8 +81,7 @@
 
     <div
       v-if="federationStore.federations.length == 0"
-      class="home-empty-state vipr-empty-state vipr-empty-state--hero full-height"
-      style="flex: 1"
+      class="home-empty-state vipr-empty-state vipr-empty-state--hero"
     >
       <div class="vipr-empty-state__title">Ready to start?</div>
       <div class="vipr-empty-state__body">Join a federation to get up and running</div>
@@ -90,7 +89,7 @@
         no-caps
         unelevated
         label="Join a federation"
-        class="home-empty-state__action vipr-btn vipr-btn--primary-soft vipr-btn--md q-mt-md"
+        class="home-empty-state__action vipr-btn vipr-btn--primary-soft vipr-btn--md"
         icon="add"
         @click="showSelection = true"
         :data-testid="'home-join-federation-btn'"
@@ -106,7 +105,7 @@
       position="bottom"
       :offset="[0, 52]"
     >
-      <div class="home-actions q-px-md">
+      <div class="home-actions">
         <q-btn
           no-caps
           unelevated
@@ -240,7 +239,22 @@ function returnToDiscovery() {
 }
 
 .home-empty-state__action {
+  margin-top: var(--vipr-space-4);
   min-width: var(--vipr-home-empty-action-width);
+}
+
+.home-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-empty-state {
+  min-height: 100%;
+  flex: 1 1 auto;
+}
+
+.home-hero {
+  padding: var(--vipr-space-4);
 }
 
 .hero-card {
@@ -269,13 +283,19 @@ function returnToDiscovery() {
   max-width: 100%;
 }
 
+.hero-federation__icon {
+  margin-right: var(--vipr-space-2);
+}
+
 .home-actions {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--vipr-home-action-gap);
   width: var(--vipr-home-actions-width);
+  padding-right: var(--vipr-space-4);
   padding-bottom: var(--vipr-row-padding-y);
+  padding-left: var(--vipr-space-4);
 }
 
 .home-action-btn {

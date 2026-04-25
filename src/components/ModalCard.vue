@@ -22,7 +22,7 @@
           />
         </div>
 
-        <div class="modal-card__title text-center">
+        <div class="modal-card__title">
           {{ title }}
         </div>
 
@@ -153,6 +153,7 @@ function onDismissSwipe() {
 }
 
 .modal-card__title {
+  text-align: center;
   font-size: 1.25rem;
   font-weight: 600;
   line-height: 1.3;

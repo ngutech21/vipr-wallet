@@ -1,10 +1,14 @@
 <template>
-  <div class="numeric-keypad row q-col-gutter-sm" data-testid="numeric-keypad">
-    <div class="col-4" v-for="(button, index) in buttons" :key="`${button.testId}-${index}`">
+  <div class="numeric-keypad" data-testid="numeric-keypad">
+    <div
+      class="numeric-keypad__cell"
+      v-for="(button, index) in buttons"
+      :key="`${button.testId}-${index}`"
+    >
       <q-btn
         unelevated
         :ripple="false"
-        class="keypad-btn full-width"
+        class="keypad-btn"
         :class="{
           'keypad-btn--clear': button.icon === 'clear',
           'keypad-btn--backspace': button.icon === 'backspace',
@@ -29,9 +33,17 @@ defineProps<{
 <style scoped>
 .numeric-keypad {
   width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--vipr-space-2);
+}
+
+.numeric-keypad__cell {
+  min-width: 0;
 }
 
 .keypad-btn {
+  width: 100%;
   min-height: 56px;
   border-radius: var(--vipr-radius-control);
   background: var(--vipr-control-panel-bg);

@@ -1,9 +1,5 @@
 <template>
-  <div
-    v-if="frames.length > 0"
-    class="column items-center q-gutter-md"
-    data-testid="animated-ecash-qr"
-  >
+  <div v-if="frames.length > 0" class="animated-ecash-qr" data-testid="animated-ecash-qr">
     <qrcode-vue
       :value="currentFrame"
       level="M"
@@ -68,6 +64,13 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.animated-ecash-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--vipr-space-4);
+}
+
 .responsive-qr {
   width: min(70vw, 320px);
   height: min(70vw, 320px);

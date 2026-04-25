@@ -10,7 +10,7 @@ meta:
     leave-active-class="animated slideOutLeft"
   >
     <q-page
-      class="column dark-gradient vipr-mobile-page receive-onchain-page"
+      class="dark-gradient vipr-mobile-page receive-onchain-page"
       data-testid="receive-onchain-page"
     >
       <div class="vipr-topbar receive-onchain-topbar">
@@ -27,10 +27,12 @@ meta:
       <div class="receive-onchain-content">
         <div
           v-if="isGenerating"
-          class="vipr-flow-panel task-card vipr-surface-card--strong text-center q-pa-xl"
+          class="receive-onchain-generating vipr-flow-panel task-card vipr-surface-card--strong"
         >
           <q-spinner color="primary" size="3em" />
-          <div class="section-title q-mt-md">Generating Bitcoin address...</div>
+          <div class="section-title receive-onchain-generating__title">
+            Generating Bitcoin address...
+          </div>
         </div>
 
         <template v-else>
@@ -360,6 +362,15 @@ async function goBack() {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.receive-onchain-generating {
+  padding: var(--vipr-space-8);
+  text-align: center;
+}
+
+.receive-onchain-generating__title {
+  margin-top: var(--vipr-space-4);
 }
 
 .receive-onchain-status {

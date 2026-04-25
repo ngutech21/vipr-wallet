@@ -9,7 +9,7 @@ meta:
     enter-active-class="animated slideInLeft"
     leave-active-class="animated slideOutLeft"
   >
-    <q-page class="column dark-gradient vipr-mobile-page send-ecash-page">
+    <q-page class="dark-gradient vipr-mobile-page send-ecash-page">
       <div class="vipr-topbar send-ecash-topbar">
         <q-btn
           flat
@@ -22,25 +22,27 @@ meta:
       </div>
 
       <div class="send-ecash-content">
-        <div class="flex flex-center full-width">
+        <div class="vipr-flow-center">
           <template v-if="exportedNotes === ''">
-            <div class="vipr-flow-panel q-pa-lg task-card vipr-surface-card--strong">
-              <div class="section-title q-mb-md text-center">Enter amount</div>
+            <div
+              class="vipr-flow-panel vipr-flow-panel--padded task-card vipr-surface-card--strong"
+            >
+              <div class="section-title vipr-flow-title--center">Enter amount</div>
 
               <AmountDisplay
                 :value="formattedAmount"
                 label="Amount (sats)"
-                class="q-mb-lg"
+                class="vipr-flow-spacer-lg"
                 :error-message="amountError"
                 data-testid="send-ecash-amount-input"
               />
 
-              <NumericKeypad :buttons="keypadButtons" class="q-mb-md" />
+              <NumericKeypad :buttons="keypadButtons" class="vipr-flow-spacer-md" />
 
-              <div class="vipr-caption q-mb-lg" data-testid="send-ecash-max-amount">
+              <div class="vipr-caption vipr-flow-spacer-lg" data-testid="send-ecash-max-amount">
                 <template v-if="selectedFederation != null">
                   <div>Balance available: {{ maxOfflineAmount.toLocaleString() }} sats</div>
-                  <div class="q-mt-xs">
+                  <div class="send-ecash-denomination-note">
                     Exact offline amounts depend on your current note denominations.
                   </div>
                 </template>
@@ -52,7 +54,7 @@ meta:
                 color="primary"
                 no-caps
                 unelevated
-                class="full-width vipr-btn vipr-btn--primary vipr-btn--lg"
+                class="vipr-flow-action vipr-btn vipr-btn--primary vipr-btn--lg"
                 :loading="isProcessing"
                 :disable="!canCreateOfflineEcash"
                 @click="createOfflineEcash"
@@ -67,24 +69,27 @@ meta:
           </template>
 
           <template v-else>
-            <q-card flat class="task-card vipr-flow-panel vipr-surface-card--strong q-mb-md">
+            <q-card
+              flat
+              class="task-card vipr-flow-panel vipr-surface-card--strong send-ecash-export-card"
+            >
               <q-card-section>
                 <div class="section-title">Exported ecash</div>
-                <div class="vipr-caption q-mt-xs">
+                <div class="vipr-caption send-ecash-export-copy">
                   Share these notes with the recipient. Anyone with the notes can redeem them.
                 </div>
-                <div class="vipr-caption q-mt-sm">
+                <div class="vipr-caption send-ecash-export-amount">
                   Amount: {{ exportedAmount.toLocaleString() }} sats
                 </div>
               </q-card-section>
 
               <q-separator dark />
 
-              <q-card-section class="column items-center q-pt-lg">
+              <q-card-section class="send-ecash-qr-section">
                 <AnimatedEcashQr :notes="exportedNotes" data-testid="send-ecash-animated-qr" />
               </q-card-section>
 
-              <q-card-actions class="q-px-md q-pb-md">
+              <q-card-actions class="send-ecash-actions">
                 <q-btn
                   flat
                   icon="content_copy"
@@ -377,5 +382,31 @@ function canRepresentExactMsats(targetMsats: number, noteCounts: Record<number, 
 .send-ecash-content {
   width: 100%;
   padding: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-6);
+}
+
+.send-ecash-denomination-note,
+.send-ecash-export-copy {
+  margin-top: var(--vipr-space-1);
+}
+
+.send-ecash-export-amount {
+  margin-top: var(--vipr-space-2);
+}
+
+.send-ecash-export-card {
+  margin-bottom: var(--vipr-space-4);
+}
+
+.send-ecash-qr-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--vipr-space-6);
+}
+
+.send-ecash-actions {
+  padding-right: var(--vipr-space-4);
+  padding-bottom: var(--vipr-space-4);
+  padding-left: var(--vipr-space-4);
 }
 </style>

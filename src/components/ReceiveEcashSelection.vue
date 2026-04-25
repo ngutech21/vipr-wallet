@@ -1,7 +1,7 @@
 <template>
   <ModalCard title="Receive ecash" @close="emit('close')">
     <div class="vipr-selection-sheet">
-      <div class="vipr-selection-sheet__intro text-body2">
+      <div class="vipr-selection-sheet__intro">
         Choose how you want to receive funds into your current federation.
       </div>
 

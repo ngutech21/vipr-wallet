@@ -1,9 +1,9 @@
 <template>
-  <div class="vipr-caption q-mb-md">
+  <div class="restore-step__intro vipr-caption">
     Enter your 12-word recovery phrase in order to restore your wallet.
   </div>
 
-  <div class="restore-grid q-mb-md">
+  <div class="restore-grid">
     <q-input
       v-for="(_, index) in localRestoreWords"
       :key="index"
@@ -22,24 +22,24 @@
     />
   </div>
 
-  <div class="row q-col-gutter-sm">
-    <div class="col-12 col-sm-6">
+  <div class="restore-step__actions">
+    <div class="restore-step__action">
       <q-btn
         label="Back"
         flat
         no-caps
-        class="full-width vipr-btn vipr-btn--secondary vipr-btn--lg"
+        class="restore-step__button vipr-btn vipr-btn--secondary vipr-btn--lg"
         :disable="isRestoring"
         data-testid="startup-wizard-restore-back-btn"
         @click="$emit('back')"
       />
     </div>
-    <div class="col-12 col-sm-6">
+    <div class="restore-step__action">
       <q-btn
         label="Restore wallet"
         color="primary"
         no-caps
-        class="full-width vipr-btn vipr-btn--primary-soft vipr-btn--lg"
+        class="restore-step__button vipr-btn vipr-btn--primary-soft vipr-btn--lg"
         :loading="isRestoring"
         :disable="isCreating || isRestoring"
         data-testid="startup-wizard-restore-submit-btn"
@@ -87,15 +87,30 @@ function updateWord(index: number, value: string | number | null) {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--vipr-space-2);
+  margin-bottom: var(--vipr-space-4);
 }
 
-.full-width {
+.restore-step__intro {
+  margin-bottom: var(--vipr-space-4);
+}
+
+.restore-step__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--vipr-space-2);
+}
+
+.restore-step__button {
   width: 100%;
 }
 
 @media (max-width: 599px) {
   .restore-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .restore-step__actions {
+    grid-template-columns: 1fr;
   }
 }
 </style>

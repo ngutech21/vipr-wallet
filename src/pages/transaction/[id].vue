@@ -28,19 +28,19 @@ meta:
       </div>
 
       <!-- Loading state -->
-      <div v-if="loading" class="full-height column flex-center">
+      <div v-if="loading" class="transaction-state">
         <q-spinner color="primary" size="3em" />
-        <div class="q-mt-sm">Loading transaction...</div>
+        <div class="transaction-state__message">Loading transaction...</div>
       </div>
 
       <!-- Error state -->
-      <div v-else-if="error" class="full-height column flex-center">
+      <div v-else-if="error" class="transaction-state">
         <q-icon name="error_outline" color="negative" size="3em" />
-        <div class="q-mt-sm">{{ error }}</div>
+        <div class="transaction-state__message">{{ error }}</div>
         <q-btn
           color="primary"
           label="Go Back"
-          class="q-mt-md"
+          class="transaction-state__action"
           @click="navigateBack"
           data-testid="transaction-details-error-go-back-btn"
         />
@@ -119,6 +119,24 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.transaction-state {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.transaction-state__message {
+  margin-top: var(--vipr-space-2);
+}
+
+.transaction-state__action {
+  margin-top: var(--vipr-space-4);
+}
+</style>
 
 <style lang="scss" scoped>
 .animated {

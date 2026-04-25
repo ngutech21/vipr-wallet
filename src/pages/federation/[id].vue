@@ -303,7 +303,7 @@ meta:
                 outline
                 @click="confirmLeave = true"
                 icon="logout"
-                class="full-width vipr-btn vipr-btn--md"
+                class="leave-action__button vipr-btn vipr-btn--md"
                 data-testid="federation-details-leave-btn"
               />
             </div>
@@ -313,7 +313,7 @@ meta:
         <!-- Confirmation Dialog -->
         <q-dialog v-model="confirmLeave">
           <q-card>
-            <q-card-section class="row items-center">
+            <q-card-section class="leave-dialog-header">
               <q-avatar icon="warning" color="negative" text-color="white" />
               <span class="leave-dialog-title">Leave Federation</span>
             </q-card-section>
@@ -644,6 +644,15 @@ async function leaveFederation() {
 
 .leave-action {
   padding: var(--vipr-federation-detail-action-padding);
+}
+
+.leave-action__button {
+  width: 100%;
+}
+
+.leave-dialog-header {
+  display: flex;
+  align-items: center;
 }
 
 .leave-dialog-title {

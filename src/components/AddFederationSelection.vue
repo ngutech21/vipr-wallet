@@ -5,7 +5,7 @@
     @close="emit('close')"
   >
     <div class="vipr-selection-sheet">
-      <div class="vipr-selection-sheet__intro text-body2">
+      <div class="vipr-selection-sheet__intro">
         Join a federation you already trust or browse community recommendations first.
       </div>
 

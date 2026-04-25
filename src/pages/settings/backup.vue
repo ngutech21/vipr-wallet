@@ -58,7 +58,7 @@ meta:
             icon="visibility"
             no-caps
             unelevated
-            class="full-width backup-action-primary vipr-btn vipr-btn--primary-soft vipr-btn--md"
+            class="backup-action-button backup-action-primary vipr-btn vipr-btn--primary-soft vipr-btn--md"
             @click="showRecoveryWords"
             data-testid="backup-intro-show-words-btn"
           />
@@ -67,7 +67,7 @@ meta:
             label="Cancel"
             flat
             no-caps
-            class="full-width vipr-btn vipr-btn--secondary vipr-btn--md"
+            class="backup-action-button vipr-btn vipr-btn--secondary vipr-btn--md"
             @click="goBack"
             data-testid="backup-intro-cancel-btn"
           />
@@ -154,7 +154,7 @@ async function goBack() {
   margin-top: var(--vipr-backup-list-item-gap);
 }
 
-.full-width {
+.backup-action-button {
   width: 100%;
 }
 

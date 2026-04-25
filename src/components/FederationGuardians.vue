@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div v-if="showHeader" class="vipr-section-title q-mb-xs">
+    <div v-if="showHeader" class="guardian-header vipr-section-title">
       Guardians
-      <span class="guardian-count q-ml-xs">{{ guardianCountLabel }}</span>
+      <span class="guardian-count">{{ guardianCountLabel }}</span>
     </div>
 
     <q-card flat class="guardian-card vipr-surface-card vipr-surface-card--subtle">
@@ -58,8 +58,13 @@ function guardianLabel(guardian: FederationGuardian): string {
 
 <style scoped>
 .guardian-count {
+  margin-left: var(--vipr-space-1);
   color: var(--vipr-text-muted);
   font-weight: 500;
+}
+
+.guardian-header {
+  margin-bottom: var(--vipr-space-1);
 }
 
 .guardian-list {

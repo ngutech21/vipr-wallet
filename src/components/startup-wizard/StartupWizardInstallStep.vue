@@ -12,7 +12,7 @@
       </div>
 
       <div class="install-panel__copy">
-        <div class="install-panel__title vipr-title q-mb-sm">Add Vipr to your home screen</div>
+        <div class="install-panel__title vipr-title">Add Vipr to your home screen</div>
         <div class="install-panel__description vipr-caption">
           {{ installHintDescription }}
         </div>
@@ -38,7 +38,7 @@
     </div>
   </div>
 
-  <div class="install-panel__actions q-mt-lg">
+  <div class="install-panel__actions">
     <q-btn
       label="Continue in Browser"
       unelevated
@@ -85,6 +85,14 @@ defineEmits<{
   display: flex;
   gap: var(--vipr-row-padding-y);
   align-items: flex-start;
+}
+
+.install-panel__title {
+  margin-bottom: var(--vipr-space-2);
+}
+
+.install-panel__actions {
+  margin-top: var(--vipr-space-6);
 }
 
 .install-panel__icon {

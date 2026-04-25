@@ -9,7 +9,7 @@ meta:
     enter-active-class="animated slideInLeft"
     leave-active-class="animated slideOutLeft"
   >
-    <q-page class="column dark-gradient vipr-mobile-page receive-ecash-page">
+    <q-page class="dark-gradient vipr-mobile-page receive-ecash-page">
       <div class="vipr-topbar receive-ecash-topbar">
         <q-btn
           flat
@@ -22,9 +22,9 @@ meta:
       </div>
 
       <div class="receive-ecash-content">
-        <q-card flat class="task-card vipr-flow-panel vipr-surface-card--strong q-mb-md">
+        <q-card flat class="task-card vipr-flow-panel vipr-surface-card--strong receive-ecash-card">
           <q-card-section>
-            <div class="section-title q-mb-md">Paste ecash</div>
+            <div class="section-title receive-ecash-title">Paste ecash</div>
             <q-input
               v-model="ecashToken"
               filled
@@ -153,5 +153,13 @@ function getQueryString(value: LocationQueryValue | LocationQueryValue[] | undef
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.receive-ecash-card {
+  margin-bottom: var(--vipr-space-4);
+}
+
+.receive-ecash-title {
+  margin-bottom: var(--vipr-space-4);
 }
 </style>

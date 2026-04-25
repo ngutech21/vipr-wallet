@@ -1,6 +1,6 @@
 <template>
   <ModalCard title="Discover Federations" @close="emit('close')">
-    <div class="discover-sheet q-pa-md">
+    <div class="discover-sheet">
       <q-list
         v-if="visibleFederations.length > 0"
         class="discover-list vipr-surface-card vipr-surface-card--list"
@@ -18,17 +18,17 @@
             <q-img :src="federation.pictureUrl" class="logo" />
           </q-item-section>
           <template v-else>
-            <q-avatar color="grey-3" text-color="grey-7" class="logo q-mr-md">
+            <q-avatar color="grey-3" text-color="grey-7" class="logo logo--fallback">
               <q-icon name="account_balance" />
             </q-avatar>
           </template>
           <q-item-section>
-            <q-item-label class="federation-title row items-center no-wrap">
+            <q-item-label class="federation-title">
               <span class="federation-title__text">{{ federation.title }}</span>
               <q-badge
                 v-if="isAdded(federation)"
                 outline
-                class="q-ml-sm vipr-chip vipr-chip--muted"
+                class="federation-title__badge vipr-chip vipr-chip--muted"
               >
                 Added
               </q-badge>
@@ -62,24 +62,24 @@
 
       <div
         v-if="!isDiscovering && visibleFederations.length === 0"
-        class="vipr-empty-state vipr-empty-state--inline q-pa-lg"
+        class="vipr-empty-state vipr-empty-state--inline discover-empty-state"
       >
         <div class="vipr-caption">No federations discovered yet.</div>
       </div>
 
       <div
         v-if="isDiscovering && visibleFederations.length === 0"
-        class="vipr-empty-state vipr-empty-state--inline q-pa-lg"
+        class="vipr-empty-state vipr-empty-state--inline discover-empty-state"
       >
         <div class="loading-container">
           <q-spinner color="primary" size="2em" />
-          <div class="vipr-caption q-mt-xs">Searching...</div>
+          <div class="vipr-caption discover-loading-text">Searching...</div>
         </div>
       </div>
 
-      <div class="discovery-footer q-mt-md">
-        <div class="discovery-status row items-center vipr-caption">
-          <q-spinner v-if="isDiscovering" color="primary" size="16px" class="q-mr-sm" />
+      <div class="discovery-footer">
+        <div class="discovery-status vipr-caption">
+          <q-spinner v-if="isDiscovering" color="primary" size="16px" class="discovery-spinner" />
           <span>{{ discoveryStatusText }}</span>
         </div>
 
@@ -264,6 +264,7 @@ function truncateFederationId(federationId: string): string {
 .discover-sheet {
   display: flex;
   flex-direction: column;
+  padding: var(--vipr-space-4);
 }
 
 .discover-list {
@@ -306,6 +307,10 @@ function truncateFederationId(federationId: string): string {
   border: 1px solid var(--vipr-color-surface-border);
 }
 
+.logo--fallback {
+  margin-right: var(--vipr-space-4);
+}
+
 .federation-title {
   display: flex;
   align-items: center;
@@ -320,6 +325,10 @@ function truncateFederationId(federationId: string): string {
   white-space: nowrap;
   font-weight: 600;
   color: var(--vipr-text-primary);
+}
+
+.federation-title__badge {
+  margin-left: var(--vipr-space-2);
 }
 
 .federation-summary {
@@ -341,7 +350,16 @@ function truncateFederationId(federationId: string): string {
   padding: 32px 16px;
 }
 
+.discover-empty-state {
+  padding: var(--vipr-space-6);
+}
+
+.discover-loading-text {
+  margin-top: var(--vipr-space-1);
+}
+
 .discovery-footer {
+  margin-top: var(--vipr-space-4);
   border-top: 1px solid var(--vipr-color-surface-border);
   padding-top: 12px;
   display: flex;
@@ -350,7 +368,13 @@ function truncateFederationId(federationId: string): string {
 }
 
 .discovery-status {
+  display: flex;
+  align-items: center;
   min-height: 16px;
+}
+
+.discovery-spinner {
+  margin-right: var(--vipr-space-2);
 }
 
 .discovery-actions {
