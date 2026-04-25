@@ -22,10 +22,10 @@ meta:
         />
       </div>
 
-      <div class="federation-details-content q-px-md">
+      <div class="federation-details-content">
         <q-card
           flat
-          class="federation-card federation-card--summary vipr-surface-card vipr-surface-card--summary q-mb-md"
+          class="federation-card federation-card--summary vipr-surface-card vipr-surface-card--summary"
         >
           <q-card-section class="summary-layout">
             <div class="summary-logo">
@@ -74,7 +74,7 @@ meta:
                   v-for="module in federation?.modules"
                   :key="module.kind"
                   size="sm"
-                  class="vipr-chip vipr-chip--positive q-mr-xs"
+                  class="vipr-chip vipr-chip--positive summary-module-chip"
                 >
                   {{ module.kind }}
                 </q-chip>
@@ -85,7 +85,7 @@ meta:
 
         <q-card
           flat
-          class="federation-card vipr-surface-card vipr-surface-card--subtle q-mb-md"
+          class="federation-card vipr-surface-card vipr-surface-card--subtle"
           v-if="inviteCode"
         >
           <q-card-section class="vipr-qr-container">
@@ -130,12 +130,12 @@ meta:
           </q-card-section>
         </q-card>
 
-        <FederationGuardians :guardians="federation?.guardians ?? []" class="q-mb-md" />
+        <FederationGuardians :guardians="federation?.guardians ?? []" class="federation-card" />
 
-        <div class="vipr-section-title q-mb-xs" v-if="hasMetadata">Details</div>
+        <div class="vipr-section-title federation-section-title" v-if="hasMetadata">Details</div>
         <q-card
           flat
-          class="federation-card vipr-surface-card vipr-surface-card--subtle q-mb-md"
+          class="federation-card vipr-surface-card vipr-surface-card--subtle"
           v-if="hasMetadata"
         >
           <q-card-section>
@@ -188,10 +188,12 @@ meta:
         </q-card>
 
         <!-- Vetted Gateways Card -->
-        <div class="vipr-section-title q-mb-xs" v-if="hasVettedGateways">Gateways</div>
+        <div class="vipr-section-title federation-section-title" v-if="hasVettedGateways">
+          Gateways
+        </div>
         <q-card
           flat
-          class="federation-card vipr-surface-card vipr-surface-card--subtle q-mb-md"
+          class="federation-card vipr-surface-card vipr-surface-card--subtle"
           v-if="hasVettedGateways"
         >
           <q-card-section class="gateways-section">
@@ -216,10 +218,10 @@ meta:
           </q-card-section>
         </q-card>
 
-        <div class="vipr-section-title q-mb-xs" v-if="hasMessages">Messages</div>
+        <div class="vipr-section-title federation-section-title" v-if="hasMessages">Messages</div>
         <q-card
           flat
-          class="federation-card vipr-surface-card vipr-surface-card--subtle q-mb-md"
+          class="federation-card vipr-surface-card vipr-surface-card--subtle"
           v-if="hasMessages"
         >
           <q-card-section>
@@ -227,7 +229,7 @@ meta:
               <template v-if="federation?.metadata?.preview_message">
                 <div class="vipr-detail-row vipr-detail-row--block">
                   <div class="vipr-detail-label">Preview Message</div>
-                  <div class="vipr-body q-mt-xs">
+                  <div class="vipr-body federation-message-copy">
                     {{ federation?.metadata?.preview_message }}
                   </div>
                 </div>
@@ -236,12 +238,12 @@ meta:
               <template v-if="federation?.metadata?.popup_countdown_message">
                 <div class="vipr-detail-row vipr-detail-row--block">
                   <div class="vipr-detail-label">End Message</div>
-                  <div class="vipr-body q-mt-xs">
+                  <div class="vipr-body federation-message-copy">
                     {{ federation?.metadata?.popup_countdown_message }}
                   </div>
                   <div
                     v-if="federation?.metadata?.popup_end_timestamp"
-                    class="vipr-caption q-mt-xs"
+                    class="vipr-caption federation-message-copy"
                   >
                     Ends: {{ formatDate(federation?.metadata?.popup_end_timestamp) }}
                   </div>
@@ -253,7 +255,7 @@ meta:
 
         <q-card
           flat
-          class="federation-card vipr-surface-card vipr-surface-card--subtle q-mb-md"
+          class="federation-card vipr-surface-card vipr-surface-card--subtle"
           v-if="federation?.metadata?.tos_url"
         >
           <q-card-section>
@@ -294,7 +296,7 @@ meta:
 
         <q-card flat class="federation-card vipr-surface-card vipr-surface-card--subtle">
           <q-card-section>
-            <div class="q-pa-md">
+            <div class="leave-action">
               <q-btn
                 label="Leave Federation"
                 color="negative"
@@ -313,7 +315,7 @@ meta:
           <q-card>
             <q-card-section class="row items-center">
               <q-avatar icon="warning" color="negative" text-color="white" />
-              <span class="q-ml-sm">Leave Federation</span>
+              <span class="leave-dialog-title">Leave Federation</span>
             </q-card-section>
 
             <q-card-section>
@@ -519,13 +521,21 @@ async function leaveFederation() {
 </script>
 <style scoped>
 .federation-details-content {
-  padding-bottom: 24px;
+  padding: var(--vipr-federation-detail-content-padding);
+}
+
+.federation-card {
+  margin-bottom: var(--vipr-federation-detail-card-gap);
+}
+
+.federation-section-title {
+  margin-bottom: var(--vipr-federation-detail-section-title-gap);
 }
 
 .summary-layout {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: var(--vipr-federation-detail-summary-gap);
 }
 
 .summary-logo {
@@ -540,7 +550,7 @@ async function leaveFederation() {
 .summary-title-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--vipr-federation-detail-title-row-gap);
 }
 
 .summary-title {
@@ -556,24 +566,28 @@ async function leaveFederation() {
 }
 
 .summary-currency {
-  margin-top: 6px;
+  margin-top: var(--vipr-federation-detail-currency-gap);
 }
 
 .summary-modules {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 14px;
+  gap: var(--vipr-federation-detail-modules-gap);
+  margin-top: var(--vipr-federation-detail-modules-top-space);
+}
+
+.summary-module-chip {
+  margin: 0;
 }
 
 .gateways-section {
-  padding: 18px 18px;
+  padding: var(--vipr-federation-detail-gateways-padding);
 }
 
 .gateway-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--vipr-federation-detail-gateway-list-gap);
 }
 
 .gateway-row {
@@ -581,19 +595,19 @@ async function leaveFederation() {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 14px;
-  padding: 10px 0;
+  gap: var(--vipr-federation-detail-gateway-row-gap);
+  padding: var(--vipr-federation-detail-gateway-row-padding);
 }
 
 .gateway-icon {
-  width: 42px;
-  height: 42px;
+  width: var(--vipr-federation-detail-gateway-icon-size);
+  height: var(--vipr-federation-detail-gateway-icon-size);
   display: grid;
   place-items: center;
-  border-radius: 14px;
+  border-radius: var(--vipr-federation-detail-gateway-icon-radius);
   background: var(--vipr-detail-icon-bg);
   color: var(--q-primary);
-  font-size: 1.35rem;
+  font-size: var(--vipr-federation-detail-gateway-icon-font-size);
 }
 
 .gateway-body {
@@ -602,20 +616,20 @@ async function leaveFederation() {
 
 .gateway-title {
   color: var(--vipr-text-primary);
-  font-size: 1rem;
+  font-size: var(--vipr-federation-detail-gateway-title-font-size);
   font-weight: 600;
-  line-height: 1.2;
+  line-height: var(--vipr-line-height-tight);
 }
 
 .gateway-id {
   min-width: 0;
-  margin-top: 4px;
+  margin-top: var(--vipr-federation-detail-gateway-id-top-space);
   overflow: hidden;
   color: var(--vipr-text-soft);
   font-family: var(--vipr-font-family-mono);
-  font-size: 0.84rem;
+  font-size: var(--vipr-federation-detail-gateway-id-font-size);
   letter-spacing: 0;
-  line-height: 1.25;
+  line-height: var(--vipr-line-height-tight);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -624,33 +638,47 @@ async function leaveFederation() {
   margin: 0;
 }
 
+.federation-message-copy {
+  margin-top: var(--vipr-federation-detail-message-gap);
+}
+
+.leave-action {
+  padding: var(--vipr-federation-detail-action-padding);
+}
+
+.leave-dialog-title {
+  margin-left: var(--vipr-federation-detail-dialog-title-gap);
+}
+
 @media (max-width: 599px) {
   .summary-layout {
     align-items: flex-start;
   }
 
   .summary-title {
-    font-size: 1.3rem;
+    font-size: var(--vipr-federation-detail-title-font-size-mobile);
   }
 
   .gateways-section {
-    padding: 14px 14px;
+    padding: var(--vipr-federation-detail-gateways-padding-mobile);
   }
 
   .gateway-row {
-    grid-template-columns: 38px minmax(0, 1fr) auto;
-    gap: 10px;
+    grid-template-columns:
+      var(--vipr-federation-detail-gateway-icon-size-mobile) minmax(0, 1fr)
+      auto;
+    gap: var(--vipr-federation-detail-gateway-row-gap-mobile);
   }
 
   .gateway-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    font-size: 1.2rem;
+    width: var(--vipr-federation-detail-gateway-icon-size-mobile);
+    height: var(--vipr-federation-detail-gateway-icon-size-mobile);
+    border-radius: var(--vipr-federation-detail-gateway-icon-radius-mobile);
+    font-size: var(--vipr-federation-detail-gateway-icon-font-size-mobile);
   }
 
   .gateway-id {
-    font-size: 0.78rem;
+    font-size: var(--vipr-federation-detail-gateway-id-font-size-mobile);
   }
 }
 </style>
