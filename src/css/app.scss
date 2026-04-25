@@ -84,6 +84,18 @@ body,
   --vipr-option-card-bg: rgba(255, 255, 255, 0.04);
   --vipr-option-card-bg-hover: rgba(255, 255, 255, 0.06);
   --vipr-option-card-border-hover: rgba(156, 39, 176, 0.5);
+  --vipr-list-gap: var(--vipr-space-3);
+  --vipr-list-bg: rgba(255, 255, 255, 0.03);
+  --vipr-list-border: var(--vipr-color-surface-border);
+  --vipr-row-min-height: 74px;
+  --vipr-row-padding-y: 14px;
+  --vipr-row-padding-x: 18px;
+  --vipr-row-border: rgba(255, 255, 255, 0.075);
+  --vipr-row-hover-bg: rgba(255, 255, 255, 0.028);
+  --vipr-row-active-bg: rgba(255, 255, 255, 0.042);
+  --vipr-row-hover-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+  --vipr-row-icon-bg: rgba(255, 255, 255, 0.07);
+  --vipr-row-icon-bg-subtle: rgba(255, 255, 255, 0.05);
   --vipr-qr-surface-bg: #fff;
   --vipr-copy-field-bg: rgba(255, 255, 255, 0.045);
   --vipr-copy-field-border: rgba(255, 255, 255, 0.055);
@@ -310,17 +322,21 @@ html[data-e2e='1'] *::after {
 .federation-list {
   display: flex;
   flex-direction: column;
-  gap: var(--vipr-space-3);
+  gap: var(--vipr-list-gap);
 }
 
 .federation-list .federation-card {
-  transition: all 0.2s ease;
   overflow: hidden;
   cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .federation-list .federation-card:hover {
-  background: var(--vipr-surface-card-bg-hover);
+  background: var(--vipr-row-hover-bg);
+  box-shadow: var(--vipr-row-hover-shadow);
 }
 
 .federation-list .federation-card.federation-selected {
@@ -328,7 +344,7 @@ html[data-e2e='1'] *::after {
 }
 
 .federation-list .federation-item {
-  min-height: 76px;
+  min-height: var(--vipr-row-min-height);
   align-items: center;
 }
 
@@ -343,7 +359,7 @@ html[data-e2e='1'] *::after {
 .federation-list .federation-title-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--vipr-space-2);
   min-width: 0;
 }
 
@@ -561,7 +577,7 @@ html[data-e2e='1'] *::after {
 }
 
 .transaction-item {
-  border-bottom: 1px solid var(--vipr-color-surface-border);
+  border-bottom: 1px solid var(--vipr-row-border);
   border-radius: var(--vipr-radius-control);
   margin-bottom: 2px;
   padding: 10px 0;
@@ -571,11 +587,11 @@ html[data-e2e='1'] *::after {
 }
 
 .transaction-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--vipr-row-hover-bg);
 }
 
 .transaction-item:active {
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: var(--vipr-row-active-bg);
 }
 
 .transaction-item .q-focus-helper {
@@ -588,7 +604,7 @@ html[data-e2e='1'] *::after {
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--vipr-row-icon-bg-subtle);
 }
 
 .transaction-item .transaction-title {
@@ -620,7 +636,7 @@ html[data-e2e='1'] *::after {
 
 .transaction-list-container .transaction-item {
   position: relative;
-  border-bottom-color: rgba(255, 255, 255, 0.075);
+  border-bottom-color: var(--vipr-row-border);
   margin: 0 calc(-1 * var(--vipr-space-2));
   padding: 14px var(--vipr-space-2);
 }
@@ -635,12 +651,12 @@ html[data-e2e='1'] *::after {
 }
 
 .transaction-list-container .transaction-item:hover {
-  background-color: rgba(255, 255, 255, 0.028);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+  background-color: var(--vipr-row-hover-bg);
+  box-shadow: var(--vipr-row-hover-shadow);
 }
 
 .transaction-list-container .transaction-item:active {
-  background-color: rgba(255, 255, 255, 0.042);
+  background-color: var(--vipr-row-active-bg);
 }
 
 .vipr-input .q-field__control,

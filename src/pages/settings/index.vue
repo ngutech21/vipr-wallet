@@ -102,10 +102,11 @@
                   <q-input
                     v-model="newRelay"
                     label="Add relay URL"
-                    outlined
+                    filled
+                    dark
                     dense
                     placeholder="Must start with wss://"
-                    class="relay-input"
+                    class="vipr-input relay-input"
                     data-testid="settings-new-relay-input"
                   />
                 </div>
@@ -164,10 +165,11 @@
 
                 <q-input
                   v-model="contactSourceValue"
-                  outlined
+                  filled
+                  dark
                   :label="contactSourceLabel"
                   :placeholder="contactSourcePlaceholder"
-                  class="relay-input"
+                  class="vipr-input relay-input"
                   data-testid="settings-contact-source-input"
                 />
 
@@ -724,11 +726,11 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 .settings-stack {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--vipr-list-gap);
 }
 
 .settings-stack--secondary {
-  margin-top: 10px;
+  margin-top: var(--vipr-list-gap);
 }
 
 .full-width {
@@ -856,9 +858,9 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .rounded-borders {
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--vipr-radius-input);
+  background: var(--vipr-list-bg);
+  border: 1px solid var(--vipr-list-border);
 }
 
 .rounded-borders :deep(.q-item__section--avatar) {
@@ -874,8 +876,8 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-section :deep(.q-expansion-item__container) {
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--vipr-radius-card);
+  border: 1px solid var(--vipr-list-border);
   overflow: hidden;
 }
 
@@ -899,8 +901,8 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-section :deep(.q-item) {
-  min-height: 74px;
-  padding: 14px 18px;
+  min-height: var(--vipr-row-min-height);
+  padding: var(--vipr-row-padding-y) var(--vipr-row-padding-x);
 }
 
 .settings-section :deep(.q-item__label) {
@@ -924,7 +926,7 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   border-radius: 12px;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--vipr-row-icon-bg);
   color: white;
 }
 
@@ -946,7 +948,7 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 
 .settings-section :deep(.q-expansion-item__content) {
   background: transparent;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--vipr-color-input-border);
 }
 
 .settings-section :deep(.q-card) {

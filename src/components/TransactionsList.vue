@@ -328,7 +328,7 @@ defineExpose({
 
 .transactions-subtitle {
   margin-top: 4px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--vipr-text-subtle);
   font-size: 0.875rem;
 }
 
@@ -362,12 +362,12 @@ defineExpose({
 }
 
 .transactions-header-action:hover {
-  background-color: rgba(255, 255, 255, 0.028);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+  background-color: var(--vipr-row-hover-bg);
+  box-shadow: var(--vipr-row-hover-shadow);
 }
 
 .transactions-header-action:active {
-  background-color: rgba(255, 255, 255, 0.042);
+  background-color: var(--vipr-row-active-bg);
 }
 
 .transactions-header-action :deep(.q-focus-helper) {
