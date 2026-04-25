@@ -10,7 +10,7 @@ meta:
     leave-active-class="animated slideOutLeft"
   >
     <q-page
-      class="column dark-gradient vipr-mobile-page receive-onchain-page"
+      class="dark-gradient vipr-mobile-page receive-onchain-page"
       data-testid="receive-onchain-page"
     >
       <div class="vipr-topbar receive-onchain-topbar">
@@ -27,10 +27,12 @@ meta:
       <div class="receive-onchain-content">
         <div
           v-if="isGenerating"
-          class="amount-entry-container task-card vipr-surface-card--strong text-center q-pa-xl"
+          class="receive-onchain-generating vipr-flow-panel task-card vipr-surface-card--strong"
         >
           <q-spinner color="primary" size="3em" />
-          <div class="section-title q-mt-md">Generating Bitcoin address...</div>
+          <div class="section-title receive-onchain-generating__title">
+            Generating Bitcoin address...
+          </div>
         </div>
 
         <template v-else>
@@ -362,9 +364,13 @@ async function goBack() {
   align-items: center;
 }
 
-.amount-entry-container {
-  width: 100%;
-  max-width: var(--vipr-width-flow-panel);
+.receive-onchain-generating {
+  padding: var(--vipr-space-8);
+  text-align: center;
+}
+
+.receive-onchain-generating__title {
+  margin-top: var(--vipr-space-4);
 }
 
 .receive-onchain-status {
@@ -374,40 +380,24 @@ async function goBack() {
   flex-direction: column;
   align-items: center;
   gap: var(--vipr-space-3);
-  margin-top: 18px;
+  margin-top: var(--vipr-space-4-5);
   color: var(--vipr-text-primary);
   text-align: center;
 }
 
-.status-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-}
-
 .status-copy {
   max-width: 480px;
-  color: var(--vipr-text-muted);
-  font-size: 0.92rem;
-  line-height: 1.45;
 }
 
 .confirmation-info {
-  margin-bottom: 6px;
+  margin-bottom: calc(var(--vipr-space-3) / 2);
   color: var(--vipr-text-secondary);
-}
-
-.status-helper {
-  color: var(--vipr-text-muted);
 }
 
 @media (max-width: 520px) {
   .receive-onchain-content {
-    padding-right: 12px;
-    padding-left: 12px;
-  }
-
-  .status-copy {
-    font-size: 0.88rem;
+    padding-right: var(--vipr-space-4);
+    padding-left: var(--vipr-space-4);
   }
 }
 </style>

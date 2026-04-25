@@ -7,7 +7,7 @@
       <!-- </q-page> -->
     </q-page-container>
 
-    <q-footer v-if="showFooter" class="text-white footer-container ios-safe-area">
+    <q-footer v-if="showFooter" class="footer-container ios-safe-area">
       <q-tabs
         no-caps
         active-color="primary"
@@ -80,33 +80,29 @@ async function goToTab(name: RouteRecordName): Promise<void> {
 
 <style scoped>
 :deep(.footer-container) {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 18px),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.018)),
-    rgba(15, 16, 22, 0.96);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255, 255, 255, 0.012);
-  box-shadow:
-    0 -6px 18px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.008);
+  background: var(--vipr-layout-footer-bg);
+  backdrop-filter: var(--vipr-layout-footer-backdrop);
+  -webkit-backdrop-filter: var(--vipr-layout-footer-backdrop);
+  border-top: 1px solid var(--vipr-layout-footer-border) !important;
+  box-shadow: var(--vipr-layout-footer-shadow);
+  color: var(--vipr-text-primary);
 }
 
 :deep(.footer-tabs) {
   width: min(100%, 700px);
   margin: 0 auto;
-  padding: 8px 12px 6px;
+  padding: var(--vipr-space-2) var(--vipr-space-3) 6px;
 }
 
 :deep(.footer-tabs .q-tab) {
   min-height: 56px;
   border: 1px solid transparent;
-  border-radius: 15px;
+  border-radius: var(--vipr-radius-control);
   margin: 0 6px;
   padding: 6px 10px;
   background: transparent !important;
   box-shadow: none !important;
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--vipr-text-muted);
   transition:
     background-color 160ms ease,
     border-color 160ms ease,
@@ -151,7 +147,7 @@ async function goToTab(name: RouteRecordName): Promise<void> {
 
 :deep(.footer-tabs .q-tab:hover .q-tab__icon),
 :deep(.footer-tabs .q-tab:hover .q-tab__label) {
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--vipr-text-primary);
   opacity: 1;
 }
 
@@ -173,7 +169,7 @@ async function goToTab(name: RouteRecordName): Promise<void> {
 
 .app-layout,
 :deep(.q-page-container) {
-  background: #141414;
+  background: var(--vipr-color-page);
 }
 
 :deep(.footer-container .q-tab--active .q-focus-helper) {
@@ -197,7 +193,7 @@ async function goToTab(name: RouteRecordName): Promise<void> {
 :deep(.footer-container .q-tab--active) {
   background: transparent !important;
   box-shadow: none !important;
-  color: #a970ff !important;
+  color: var(--vipr-layout-tab-active) !important;
 }
 
 :deep(.footer-container .q-tab--active .q-tab__icon),

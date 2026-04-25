@@ -164,7 +164,7 @@ describe('WalletTransactionDetails.vue', () => {
       const transaction = createMockTransaction({ outcome: 'WaitingForTransaction' })
       wrapper = createWrapper(transaction)
 
-      expect(wrapper.text()).toContain('Waiting for Bitcoin')
+      expect(wrapper.text()).toContain('Waiting')
     })
 
     it('should show warning color for detected transactions waiting on confirmations', () => {
@@ -187,7 +187,7 @@ describe('WalletTransactionDetails.vue', () => {
       })
       wrapper = createWrapper(transactionWithoutOutcome)
 
-      expect(wrapper.text()).toContain('Waiting for Bitcoin')
+      expect(wrapper.text()).toContain('Waiting')
     })
 
     it('should not show status badge when outcome is undefined', () => {
@@ -197,7 +197,7 @@ describe('WalletTransactionDetails.vue', () => {
 
       const badge = wrapper.find('.status-badge')
       expect(badge.exists()).toBe(true)
-      expect(badge.text()).toContain('Waiting for Bitcoin')
+      expect(badge.text()).toContain('Waiting')
     })
 
     it('should return grey color for empty string status', () => {
@@ -207,7 +207,7 @@ describe('WalletTransactionDetails.vue', () => {
 
       const badge = wrapper.find('.status-badge')
       expect(badge.exists()).toBe(true)
-      expect(badge.text()).toContain('Waiting for Bitcoin')
+      expect(badge.text()).toContain('Waiting')
       expect(badge.attributes('class')).toContain('bg-warning')
     })
   })
@@ -548,7 +548,7 @@ describe('WalletTransactionDetails.vue', () => {
       wrapper = createWrapper(transaction)
 
       // Should display 1 sat (1999 msats / 1000 = 1.999, floored to 1)
-      const amountText = wrapper.find('.text-h4').text()
+      const amountText = wrapper.find('.amount-value').text()
       expect(amountText).toContain('+1')
       expect(amountText).not.toContain('1.999')
       expect(amountText).not.toContain('+2')
@@ -696,7 +696,7 @@ describe('WalletTransactionDetails.vue', () => {
       expect(wrapper.exists()).toBe(true)
       const badge = wrapper.find('.status-badge')
       expect(badge.exists()).toBe(true)
-      expect(badge.text()).toContain('Waiting for Bitcoin')
+      expect(badge.text()).toContain('Waiting')
     })
 
     it('should handle extremely small amounts', () => {

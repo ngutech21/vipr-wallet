@@ -38,6 +38,16 @@ Playwright is configured in `playwright.config.ts` (tests live under `test/e2e`)
 - After any updates (code, config, or dependencies), run tests and ensure they pass before finalizing changes.
 - For UI verification/debugging tasks, use the `playwright` skill workflow and Playwright MCP tooling (`browser_snapshot` first, then interactions/assertions).
 
+### Local Federation UI Testing
+
+- Helper scripts live in `scripts/` and should be used for manual Playwright flows against a local Devimint federation.
+- Start or enter the local test environment with `nix develop --accept-flake-config`. `scripts/run_devimint.sh` runs `devimint wasm-test-setup --exec bash`; `scripts/setup_test_shell.sh <cmd>` runs a command inside that setup. Use `scripts/kill_devimint.sh` to clean up local Devimint processes when a run leaves stale services behind.
+- Prefer the Faucet scripts when the Faucet is healthy: `scripts/get_connect_string.sh` returns the federation invite code from `http://localhost:15243/connect-string`, `scripts/pay_invoice.sh <bolt11>` pays a UI-generated Lightning invoice, and `scripts/create_invoice.sh <sats>` creates a Faucet invoice.
+- Before relying on Faucet scripts, verify `scripts/get_connect_string.sh` succeeds. If it cannot connect to `localhost:15243`, use the active Devimint environment instead: read the invite from `$FM_CLIENT_DIR/invite-code` or `fedimint-cli invite-code`, and pay UI-generated Lightning invoices via the funded gateway, for example `$FM_GWCLI_LDK lightning pay-invoice <bolt11>` or `$FM_GWCLI_LND lightning pay-invoice <bolt11>`.
+- On-chain helper scripts require `FM_BITCOIND_URL` from the active Devimint environment. `scripts/pay_onchain.sh <bitcoin-address>` sends regtest BTC and mines blocks, `scripts/check_onchain_address.sh <bitcoin-address>` checks UTXOs, and `scripts/get_block_height.sh` reads the current regtest height.
+- For manual app runs that should mirror Playwright E2E, start the dev server with `VITE_E2E_MODE=1 pnpm dev:e2e` and open `http://127.0.0.1:9303/`. The configured E2E tests use the same base URL, block service workers, and rely on `data-testid` selectors.
+- A complete Lightning receive workflow is: create/skip startup wizard, join the local federation, click `home-receive-btn`, choose `receive-lightning-card`, enter an amount with `receive-keypad-btn-*`, click `receive-create-invoice-btn`, extract `receive-invoice-input`, pay it with `scripts/pay_invoice.sh` or the gateway fallback, then assert `received-lightning-success-state`, return home, and verify `home-balance` and the latest transaction update.
+
 ### Package Management
 
 - `pnpm install` - Install dependencies
@@ -109,12 +119,13 @@ Located in `src/stores/`:
 - Router import hint: import runtime APIs/composables from `vue-router` (e.g. `useRoute`, `useRouter`, `createRouter`) and keep generated route types/routes from `vue-router/auto-routes` only.
 - When wiring app navigation, prefer named routes such as `:to="{ name: '/federations/' }"` over string paths like `to="/federations/"` so route references stay type-safe and refactor-friendly.
 - Always register every Quasar icon name you add or change in templates in `src/boot/icon-map.ts`; otherwise the icon may render as raw text instead of a mapped symbol.
+- Vipr has a mandatory design system documented in `docs/design-system.md`. All new or changed UI must use the shared `vipr-*` classes and CSS tokens from `src/css/app.scss`; do not add ad hoc hardcoded colors, raw pixel radii, or Quasar layout/typography utility classes when an existing token or shared class covers the use case.
 
 ### Key Implementation Patterns
 
 - Pinia stores use localStorage for persistence via `@vueuse/core`
 - Fedimint wallet operations are async and handle federation switching
-- Components follow Quasar Material Design patterns
+- Components follow the Vipr design system on top of Quasar primitives
 - Error handling via custom error utilities
 - Transaction history and balance updates via reactive stores
 - PWA features with offline capability and caching strategies

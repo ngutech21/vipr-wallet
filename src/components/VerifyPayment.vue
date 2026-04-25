@@ -1,36 +1,42 @@
 <template>
   <div class="payment-verification">
-    <div class="payment-details-card q-mb-lg">
-      <div class="payment-details-row">
-        <div class="payment-details-label">Amount</div>
-        <div class="payment-details-value">{{ decodedInvoice.amount }} sats</div>
+    <div
+      class="payment-details-card vipr-surface-card vipr-surface-card--strong"
+      data-testid="verify-payment-details"
+    >
+      <div class="payment-details-row vipr-detail-row">
+        <div class="vipr-detail-label">Amount</div>
+        <div class="vipr-detail-value payment-details-value">{{ decodedInvoice.amount }} sats</div>
       </div>
 
-      <div class="payment-details-row">
-        <div class="payment-details-label">Description</div>
-        <div class="payment-details-value">{{ decodedInvoice.description }}</div>
+      <div class="payment-details-row vipr-detail-row">
+        <div class="vipr-detail-label">Description</div>
+        <div class="vipr-detail-value payment-details-value">{{ decodedInvoice.description }}</div>
       </div>
 
-      <div class="payment-details-row">
-        <div class="payment-details-label">Payment hash</div>
-        <div class="payment-details-value text-wrap">{{ decodedInvoice.paymentHash }}</div>
+      <div class="payment-details-row vipr-detail-row">
+        <div class="vipr-detail-label">Payment hash</div>
+        <div class="vipr-detail-value vipr-detail-value--mono payment-details-value text-wrap">
+          {{ decodedInvoice.paymentHash }}
+        </div>
       </div>
 
-      <div class="payment-details-row payment-details-row--last">
-        <div class="payment-details-label">Expires</div>
-        <div class="payment-details-value">{{ formatExpiry }}</div>
+      <div class="payment-details-row vipr-detail-row">
+        <div class="vipr-detail-label">Expires</div>
+        <div class="vipr-detail-value payment-details-value">{{ formatExpiry }}</div>
       </div>
     </div>
 
-    <div class="q-mt-md payment-slider-container">
+    <div class="payment-slider-container">
       <q-slide-item
         @left="$emit('pay')"
         @action="onSlideAction"
         left-color="transparent"
         class="no-border payment-slider"
+        data-testid="verify-payment-slider"
       >
         <template #left>
-          <div class="full-height full-width row justify-end items-center">
+          <div class="payment-slider-confirmation">
             <q-icon name="check" size="32px" color="white" />
           </div>
         </template>
@@ -39,7 +45,7 @@
           <div class="slider-handle">
             <q-icon name="bolt" color="white" size="20px" />
           </div>
-          <div class="slider-text">Slide to Pay</div>
+          <div class="slider-text vipr-section-title">Slide to Pay</div>
         </div>
       </q-slide-item>
     </div>
@@ -87,59 +93,56 @@ function onSlideAction({
 }
 
 .payment-verification {
-  padding-bottom: 20px;
+  padding-bottom: var(--vipr-space-5);
 }
 
 .payment-details-card {
-  padding: 16px 18px;
-  border-radius: 24px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.025)),
-    rgba(18, 18, 18, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: var(--vipr-space-6);
+  padding: var(--vipr-space-1) var(--vipr-space-4-5);
 }
 
 .payment-details-row {
   display: grid;
   grid-template-columns: minmax(92px, 120px) minmax(0, 1fr);
-  gap: 14px;
+  gap: var(--vipr-space-3);
   align-items: start;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .payment-details-row:first-child {
   padding-top: 0;
 }
 
-.payment-details-row--last {
+.payment-details-row:last-child {
   padding-bottom: 0;
-  border-bottom: 0;
-}
-
-.payment-details-label {
-  color: rgba(255, 255, 255, 0.62);
-  font-weight: 600;
 }
 
 .payment-details-value {
-  color: white;
+  color: var(--vipr-text-primary);
   font-weight: 600;
 }
 
-/* Payment Slider Styling */
 .payment-slider-container {
   position: relative;
   width: 100%;
-  border-radius: 30px;
+  margin-top: var(--vipr-space-4);
+  border-radius: var(--vipr-radius-pill);
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--vipr-action-slider-shadow);
+}
+
+.payment-slider-confirmation {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .payment-slider {
   height: 56px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 30px;
+  background: var(--vipr-action-slider-bg);
+  border: 1px solid var(--vipr-action-slider-border);
+  border-radius: var(--vipr-radius-pill);
 }
 
 .payment-slider :deep(.q-slide-item__left .q-icon) {
@@ -152,7 +155,6 @@ function onSlideAction({
 }
 
 .payment-slider :deep(.q-slide-item__left) {
-  /* Remove the gradient background */
   background: transparent !important;
 }
 
@@ -172,25 +174,21 @@ function onSlideAction({
   top: 8px;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, var(--q-primary), #8000ff);
+  border-radius: var(--vipr-radius-round);
+  background: var(--vipr-action-slider-handle-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--vipr-shadow-primary-subtle);
+  border: 1px solid var(--vipr-color-surface-border);
   z-index: 2;
 }
 
 .slider-text {
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 500;
-  font-size: larger;
-  letter-spacing: 0.5px;
+  color: var(--vipr-text-primary);
   z-index: 1;
 }
 
-/* Animation for successful slide */
 .q-slide-item__content {
   transition: transform 0.3s;
 }

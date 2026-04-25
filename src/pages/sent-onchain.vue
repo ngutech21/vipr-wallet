@@ -21,14 +21,14 @@ meta:
           <q-icon :name="statusIcon" size="3.5em" :color="statusColor" />
         </div>
         <div class="success-title" data-testid="sent-onchain-title">{{ statusTitle }}</div>
-        <div class="success-amount q-mt-md" data-testid="sent-onchain-amount-text">
+        <div class="success-amount" data-testid="sent-onchain-amount-text">
           {{ formatNumber(displayAmount) }} sats
         </div>
-        <div v-if="statusMessage" class="success-subtitle q-mt-sm">
+        <div v-if="statusMessage" class="success-subtitle">
           {{ statusMessage }}
         </div>
 
-        <q-card flat class="success-card q-mt-xl">
+        <q-card flat class="success-card">
           <q-card-section class="summary-row">
             <span class="summary-label">Status</span>
             <q-badge
@@ -69,7 +69,7 @@ meta:
           </template>
         </q-card>
 
-        <div class="success-actions q-mt-xl">
+        <div class="success-actions">
           <q-btn
             color="primary"
             no-caps
@@ -84,7 +84,7 @@ meta:
             flat
             color="white"
             no-caps
-            class="success-secondary-btn vipr-btn vipr-btn--secondary vipr-btn--lg q-mt-sm"
+            class="success-secondary-btn vipr-btn vipr-btn--secondary vipr-btn--lg"
             label="View details"
             @click="viewTransaction"
             data-testid="sent-onchain-view-details-btn"

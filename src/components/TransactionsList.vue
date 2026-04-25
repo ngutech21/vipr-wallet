@@ -1,9 +1,10 @@
 <template>
-  <div
-    :class="['transactions-list', { 'transactions-list--home': props.mode === 'home' }]"
-    class="q-px-md q-pb-md"
-  >
-    <div v-if="showTransactionsCard" class="transactions-card" data-testid="transactions-card">
+  <div :class="['transactions-list', { 'transactions-list--home': props.mode === 'home' }]">
+    <div
+      v-if="showTransactionsCard"
+      class="transactions-card vipr-surface-card vipr-surface-card--strong"
+      data-testid="transactions-card"
+    >
       <div class="transactions-header">
         <div>
           <div class="transactions-title">
@@ -285,10 +286,6 @@ defineExpose({
 </script>
 
 <style scoped>
-.transactions-list {
-  padding-bottom: 24px;
-}
-
 .transactions-list--home {
   max-width: 100%;
 }
@@ -299,14 +296,12 @@ defineExpose({
   margin: 0 auto;
 }
 
+.transactions-list {
+  padding: 0 var(--vipr-space-4) var(--vipr-space-4);
+}
+
 .transactions-card {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.022)),
-    rgba(15, 16, 22, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.075);
-  border-radius: 26px;
-  padding: 20px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  padding: var(--vipr-space-5);
 }
 
 .transactions-list--home .transactions-card {
@@ -318,19 +313,19 @@ defineExpose({
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: var(--vipr-space-3);
+  margin-bottom: var(--vipr-space-4);
 }
 
 .transactions-title {
-  color: white;
+  color: var(--vipr-text-primary);
   font-size: 1rem;
   font-weight: 600;
 }
 
 .transactions-subtitle {
-  margin-top: 4px;
-  color: rgba(255, 255, 255, 0.5);
+  margin-top: var(--vipr-space-1);
+  color: var(--vipr-text-subtle);
   font-size: 0.875rem;
 }
 
@@ -343,11 +338,11 @@ defineExpose({
 .transactions-footer {
   display: flex;
   justify-content: center;
-  padding-top: 12px;
+  padding-top: var(--vipr-space-3);
 }
 
 .transactions-footer--history {
-  padding-top: 16px;
+  padding-top: var(--vipr-space-4);
 }
 
 .transactions-footer-btn {
@@ -356,20 +351,21 @@ defineExpose({
 
 .transactions-header-action {
   flex-shrink: 0;
-  border-radius: 14px;
-  padding: 6px 8px 6px 10px;
+  border-radius: var(--vipr-radius-control);
+  padding: calc(var(--vipr-space-3) / 2) var(--vipr-space-2) calc(var(--vipr-space-3) / 2)
+    calc(var(--vipr-space-5) / 2);
   transition:
     background-color 160ms ease,
     box-shadow 160ms ease;
 }
 
 .transactions-header-action:hover {
-  background-color: rgba(255, 255, 255, 0.028);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+  background-color: var(--vipr-row-hover-bg);
+  box-shadow: var(--vipr-row-hover-shadow);
 }
 
 .transactions-header-action:active {
-  background-color: rgba(255, 255, 255, 0.042);
+  background-color: var(--vipr-row-active-bg);
 }
 
 .transactions-header-action :deep(.q-focus-helper) {

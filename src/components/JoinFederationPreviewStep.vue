@@ -1,22 +1,22 @@
 <template>
-  <div class="preview-step q-pa-md" data-testid="join-federation-preview-step">
-    <q-card flat class="preview-card q-mb-md">
-      <q-card-section class="row items-center no-wrap">
-        <q-avatar v-if="federation.metadata?.federation_icon_url" size="64px" class="q-mr-md">
+  <div class="vipr-flow-step preview-step" data-testid="join-federation-preview-step">
+    <q-card flat class="preview-card vipr-surface-card vipr-surface-card--strong">
+      <q-card-section class="preview-header">
+        <q-avatar v-if="federation.metadata?.federation_icon_url" size="64px" class="preview-icon">
           <q-img :src="federation.metadata.federation_icon_url" loading="eager" no-spinner />
         </q-avatar>
-        <q-avatar v-else size="64px" color="grey-3" text-color="grey-8" class="q-mr-md">
+        <q-avatar v-else size="64px" color="grey-3" text-color="grey-8" class="preview-icon">
           <q-icon name="account_balance" />
         </q-avatar>
 
-        <div class="col">
-          <div class="text-h6">{{ federation.title }}</div>
-          <div class="text-body2 text-grey-5 q-mt-sm">
+        <div class="preview-header__body">
+          <div class="preview-title">{{ federation.title }}</div>
+          <div class="preview-copy">
             Review this federation before you join. Your ecash will be held by a federation you
             trust.
           </div>
 
-          <div class="row q-gutter-sm q-mt-md">
+          <div class="preview-chip-row">
             <q-chip v-if="defaultCurrency" color="primary" text-color="white" size="sm">
               {{ defaultCurrency }}
             </q-chip>
@@ -31,28 +31,36 @@
             </q-chip>
           </div>
 
-          <div v-if="previewMessage" class="preview-note q-mt-md">
+          <div v-if="previewMessage" class="preview-note preview-note--prominent">
             {{ previewMessage }}
           </div>
 
-          <div v-if="welcomeMessage" class="preview-note q-mt-sm">
+          <div v-if="welcomeMessage" class="preview-note">
             {{ welcomeMessage }}
           </div>
         </div>
       </q-card-section>
     </q-card>
 
-    <q-card v-if="importAmountSats != null" flat class="preview-card q-mb-md">
+    <q-card
+      v-if="importAmountSats != null"
+      flat
+      class="preview-card vipr-surface-card vipr-surface-card--strong"
+    >
       <q-card-section>
-        <div class="text-subtitle1 text-weight-medium">Import amount</div>
-        <div class="text-h5 q-mt-sm">{{ formatNumber(importAmountSats) }} sats</div>
+        <div class="preview-section-title">Import amount</div>
+        <div class="preview-amount">{{ formatNumber(importAmountSats) }} sats</div>
       </q-card-section>
     </q-card>
 
-    <q-card v-if="moduleKinds.length > 0" flat class="preview-card q-mb-md">
+    <q-card
+      v-if="moduleKinds.length > 0"
+      flat
+      class="preview-card vipr-surface-card vipr-surface-card--strong"
+    >
       <q-card-section>
-        <div class="text-subtitle1 text-weight-medium">Supported modules</div>
-        <div class="row q-gutter-sm q-mt-sm">
+        <div class="preview-section-title">Supported modules</div>
+        <div class="preview-chip-row preview-chip-row--compact">
           <q-chip
             v-for="moduleKind in moduleKinds"
             :key="moduleKind"
@@ -67,32 +75,32 @@
     </q-card>
 
     <q-expansion-item
-      class="detail-accordion q-mb-md"
+      class="detail-accordion vipr-surface-card vipr-surface-card--subtle"
       expand-separator
       icon="groups"
       label="Guardians"
       header-class="text-white"
       data-testid="guardian-details-accordion"
     >
-      <div class="detail-accordion__body q-pa-md">
+      <div class="detail-accordion__body">
         <FederationGuardians :guardians="federation.guardians ?? []" :show-header="false" />
       </div>
     </q-expansion-item>
 
     <q-expansion-item
-      class="detail-accordion"
+      class="detail-accordion vipr-surface-card vipr-surface-card--subtle"
       expand-separator
       icon="info"
       label="Federation details"
       header-class="text-white"
     >
-      <div class="technical-details__body q-pa-md">
-        <div class="text-caption text-grey-5">Federation ID</div>
-        <div class="preview-id q-mt-xs">{{ federation.federationId }}</div>
+      <div class="technical-details__body">
+        <div class="preview-label">Federation ID</div>
+        <div class="preview-id">{{ federation.federationId }}</div>
 
         <template v-if="federation.inviteCode !== ''">
-          <div class="text-caption text-grey-5 q-mt-md">Invite code</div>
-          <div class="preview-id q-mt-xs">{{ federation.inviteCode }}</div>
+          <div class="preview-label preview-label--spaced">Invite code</div>
+          <div class="preview-id">{{ federation.inviteCode }}</div>
         </template>
       </div>
     </q-expansion-item>
@@ -123,37 +131,104 @@ const welcomeMessage = computed(() => props.federation.metadata?.welcome_message
 
 <style scoped>
 .preview-step {
-  display: flex;
-  flex-direction: column;
+  gap: var(--vipr-space-3);
 }
 
 .preview-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
+  overflow: hidden;
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.preview-icon {
+  margin-right: var(--vipr-space-4);
+  flex: 0 0 auto;
+}
+
+.preview-header__body {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.preview-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: var(--vipr-line-height-tight);
+}
+
+.preview-copy {
+  margin-top: var(--vipr-space-2);
+  color: var(--vipr-text-soft);
+  font-size: var(--vipr-font-size-body);
+  line-height: var(--vipr-line-height-body);
+}
+
+.preview-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vipr-space-2);
+  margin-top: var(--vipr-space-4);
+}
+
+.preview-chip-row--compact {
+  margin-top: var(--vipr-space-2);
+}
+
+.preview-section-title {
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: var(--vipr-line-height-tight);
+}
+
+.preview-amount {
+  margin-top: var(--vipr-space-2);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: var(--vipr-line-height-tight);
+}
+
+.preview-label {
+  color: var(--vipr-text-soft);
+  font-size: var(--vipr-font-size-caption);
+}
+
+.preview-label--spaced {
+  margin-top: var(--vipr-space-4);
 }
 
 .preview-id {
+  margin-top: var(--vipr-space-1);
   word-break: break-all;
   font-family: monospace;
   font-size: 0.875rem;
 }
 
 .preview-note {
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.82);
+  margin-top: var(--vipr-space-2);
+  padding: var(--vipr-space-3) var(--vipr-radius-control);
+  border-radius: var(--vipr-radius-sm);
+  background: var(--vipr-surface-card-bg-hover);
+  color: var(--vipr-text-secondary);
+}
+
+.preview-note--prominent {
+  margin-top: var(--vipr-space-4);
 }
 
 .detail-accordion {
-  border-radius: 18px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .detail-accordion__body {
-  background: rgba(0, 0, 0, 0.1);
+  padding: var(--vipr-space-4);
+  background: var(--vipr-color-overlay-subtle);
+}
+
+.technical-details__body {
+  padding: var(--vipr-space-4);
 }
 </style>

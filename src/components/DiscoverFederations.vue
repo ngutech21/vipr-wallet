@@ -1,11 +1,15 @@
 <template>
   <ModalCard title="Discover Federations" @close="emit('close')">
-    <div class="discover-sheet q-pa-md">
-      <q-list bordered separator v-if="visibleFederations.length > 0">
+    <div class="discover-sheet">
+      <q-list
+        v-if="visibleFederations.length > 0"
+        class="discover-list vipr-surface-card vipr-surface-card--list"
+      >
         <q-item
           v-for="federation in visibleFederations"
           :key="federation.federationId"
           clickable
+          class="discover-row"
           @click="openFederationPreview(federation)"
           :disable="isAdded(federation)"
           :data-testid="`discover-federation-item-${federation.federationId}`"
@@ -14,19 +18,17 @@
             <q-img :src="federation.pictureUrl" class="logo" />
           </q-item-section>
           <template v-else>
-            <q-avatar color="grey-3" text-color="grey-7" class="logo q-mr-md">
+            <q-avatar color="grey-3" text-color="grey-7" class="logo logo--fallback">
               <q-icon name="account_balance" />
             </q-avatar>
           </template>
           <q-item-section>
-            <q-item-label class="federation-title row items-center no-wrap">
+            <q-item-label class="federation-title">
               <span class="federation-title__text">{{ federation.title }}</span>
               <q-badge
                 v-if="isAdded(federation)"
                 outline
-                color="grey-6"
-                text-color="grey-4"
-                class="q-ml-sm"
+                class="federation-title__badge vipr-chip vipr-chip--muted"
               >
                 Added
               </q-badge>
@@ -60,24 +62,24 @@
 
       <div
         v-if="!isDiscovering && visibleFederations.length === 0"
-        class="text-center q-pa-lg text-grey-7"
+        class="vipr-empty-state vipr-empty-state--inline discover-empty-state"
       >
-        <div class="text-caption">No federations discovered yet.</div>
+        <div class="vipr-caption">No federations discovered yet.</div>
       </div>
 
       <div
         v-if="isDiscovering && visibleFederations.length === 0"
-        class="text-center q-pa-lg text-grey-7"
+        class="vipr-empty-state vipr-empty-state--inline discover-empty-state"
       >
         <div class="loading-container">
           <q-spinner color="primary" size="2em" />
-          <div class="text-caption q-mt-xs">Searching...</div>
+          <div class="vipr-caption discover-loading-text">Searching...</div>
         </div>
       </div>
 
-      <div class="discovery-footer q-mt-md">
-        <div class="discovery-status row items-center text-caption text-grey-7">
-          <q-spinner v-if="isDiscovering" color="primary" size="16px" class="q-mr-sm" />
+      <div class="discovery-footer">
+        <div class="discovery-status vipr-caption">
+          <q-spinner v-if="isDiscovering" color="primary" size="16px" class="discovery-spinner" />
           <span>{{ discoveryStatusText }}</span>
         </div>
 
@@ -87,9 +89,9 @@
             flat
             dense
             no-caps
-            color="grey-4"
             label="Load more"
             icon="expand_more"
+            class="vipr-btn vipr-btn--compact vipr-btn--secondary"
             @click="loadMoreFederations"
             data-testid="discover-federations-load-more-btn"
           />
@@ -97,8 +99,8 @@
             flat
             dense
             no-caps
-            color="primary"
             :label="isDiscovering ? 'Stop' : 'Start'"
+            class="vipr-btn vipr-btn--compact vipr-btn--primary-soft"
             @click="toggleDiscovery"
             data-testid="discover-federations-toggle-btn"
           />
@@ -262,47 +264,51 @@ function truncateFederationId(federationId: string): string {
 .discover-sheet {
   display: flex;
   flex-direction: column;
+  padding: var(--vipr-space-4);
 }
 
-.q-list {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px !important;
-  border: none !important;
+.discover-list {
+  overflow: hidden;
 }
 
-.q-item {
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+.discover-row {
+  min-height: var(--vipr-row-min-height);
+  padding: var(--vipr-row-padding-y) var(--vipr-row-padding-x);
+  border-bottom: 1px solid var(--vipr-row-border) !important;
   transition: background-color 0.2s ease;
 }
 
-.q-item:hover {
-  background-color: rgba(255, 255, 255, 0.08);
+.discover-row:hover {
+  background-color: var(--vipr-row-hover-bg);
+  box-shadow: var(--vipr-row-hover-shadow);
 }
 
-.q-item:last-child {
+.discover-row:last-child {
   border-bottom: none !important;
 }
 
-/* Create better transitions for interactive elements */
-.q-item,
-.q-btn {
+.discover-row,
+.discover-sheet .q-btn {
   transition:
     transform 0.2s,
     background-color 0.2s;
 }
 
-.q-item:active {
+.discover-row:active {
   transform: translateY(1px);
+  background-color: var(--vipr-row-active-bg);
 }
 
-/* Improve logo styling */
 .logo {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: var(--vipr-radius-xs);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--vipr-color-surface-border);
+}
+
+.logo--fallback {
+  margin-right: var(--vipr-space-4);
 }
 
 .federation-title {
@@ -318,16 +324,21 @@ function truncateFederationId(federationId: string): string {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 600;
+  color: var(--vipr-text-primary);
+}
+
+.federation-title__badge {
+  margin-left: var(--vipr-space-2);
 }
 
 .federation-summary {
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--vipr-text-muted);
   margin-top: 2px;
   line-height: 1.35;
 }
 
 .federation-recommendation {
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--vipr-text-secondary);
   margin-top: 4px;
 }
 
@@ -336,19 +347,34 @@ function truncateFederationId(federationId: string): string {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
+  padding: var(--vipr-space-8) var(--vipr-space-4);
+}
+
+.discover-empty-state {
+  padding: var(--vipr-space-6);
+}
+
+.discover-loading-text {
+  margin-top: var(--vipr-space-1);
 }
 
 .discovery-footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 12px;
+  margin-top: var(--vipr-space-4);
+  border-top: 1px solid var(--vipr-color-surface-border);
+  padding-top: var(--vipr-space-3);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--vipr-transaction-type-gap);
 }
 
 .discovery-status {
-  min-height: 16px;
+  display: flex;
+  align-items: center;
+  min-height: var(--vipr-space-4);
+}
+
+.discovery-spinner {
+  margin-right: var(--vipr-space-2);
 }
 
 .discovery-actions {

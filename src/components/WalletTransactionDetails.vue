@@ -1,9 +1,9 @@
 <template>
-  <div class="transaction-content q-pa-md">
+  <div class="transaction-content">
     <section class="transaction-card transaction-card--summary">
-      <div class="amount-section text-center">
+      <div class="amount-section">
         <div
-          class="amount-value text-h4"
+          class="amount-value"
           :class="transaction.type === 'withdraw' ? 'text-negative' : 'text-positive'"
         >
           <template v-if="amountInSats != null">
@@ -28,7 +28,7 @@
 
             <q-badge
               :color="getWalletTransactionStatusColor(statusLabel)"
-              class="status-badge q-pa-sm text-caption"
+              class="status-badge"
               v-if="statusLabel"
             >
               {{ statusLabel }}
@@ -80,9 +80,9 @@
             />
           </div>
 
-          <div class="address-section q-mt-sm">
+          <div class="address-section">
             <div class="address-container">
-              <div class="address-text text-caption">{{ transaction.onchainAddress }}</div>
+              <div class="address-text">{{ transaction.onchainAddress }}</div>
             </div>
           </div>
         </div>

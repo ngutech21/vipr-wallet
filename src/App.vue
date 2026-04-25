@@ -31,7 +31,7 @@ const appReadyAttribute = computed(() => (appStore.isReady ? 'true' : 'false'))
 .app-root {
   min-height: 100vh;
   min-height: 100dvh;
-  background: #141414;
+  background: var(--vipr-color-page);
 }
 
 .app-statusbar-fill {
@@ -41,6 +41,6 @@ const appReadyAttribute = computed(() => (appStore.isReady ? 'true' : 'false'))
   left: 0;
   height: env(safe-area-inset-top);
   pointer-events: none;
-  background: #141414;
+  background: var(--vipr-color-page);
 }
 </style>

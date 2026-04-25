@@ -6,7 +6,7 @@ meta:
 <template>
   <q-page class="dark-gradient startup-wizard-page" data-testid="startup-wizard-page">
     <div class="wizard-shell">
-      <q-card flat class="wizard-card">
+      <q-card flat class="wizard-card vipr-page-panel">
         <q-card-section class="wizard-card__section">
           <div v-if="currentStep === 'install' && showInstallStep">
             <StartupWizardInstallStep
@@ -43,7 +43,7 @@ meta:
                 label="Create new wallet"
                 unelevated
                 no-caps
-                class="wizard-primary-btn"
+                class="wizard-primary-btn vipr-btn vipr-btn--primary-soft"
                 :disable="isCreating || isRestoring"
                 data-testid="startup-wizard-create-btn"
                 @click="startCreateFlow"
@@ -51,7 +51,7 @@ meta:
               <q-btn
                 flat
                 no-caps
-                class="wizard-secondary-btn"
+                class="wizard-secondary-btn vipr-btn vipr-btn--secondary"
                 :disable="isCreating || isRestoring"
                 data-testid="startup-wizard-restore-btn"
                 @click="startRestoreFlow"
@@ -94,7 +94,7 @@ meta:
               <q-btn
                 flat
                 no-caps
-                class="wizard-secondary-btn"
+                class="wizard-secondary-btn vipr-btn vipr-btn--secondary"
                 data-testid="startup-wizard-custody-back-btn"
                 @click="backToWelcome"
               >
@@ -104,7 +104,7 @@ meta:
                 label="Next"
                 unelevated
                 no-caps
-                class="wizard-primary-btn"
+                class="wizard-primary-btn vipr-btn vipr-btn--primary-soft"
                 data-testid="startup-wizard-custody-next-btn"
                 @click="goToFederationStep"
               />
@@ -144,7 +144,7 @@ meta:
               <q-btn
                 flat
                 no-caps
-                class="wizard-secondary-btn"
+                class="wizard-secondary-btn vipr-btn vipr-btn--secondary"
                 data-testid="startup-wizard-federation-back-btn"
                 @click="backToCustody"
               >
@@ -154,7 +154,7 @@ meta:
                 label="Next"
                 unelevated
                 no-caps
-                class="wizard-primary-btn"
+                class="wizard-primary-btn vipr-btn vipr-btn--primary-soft"
                 :loading="isCreating"
                 :disable="isRestoring"
                 data-testid="startup-wizard-federation-next-btn"
@@ -226,7 +226,7 @@ meta:
                 label="Get started"
                 unelevated
                 no-caps
-                class="wizard-primary-btn"
+                class="wizard-primary-btn vipr-btn vipr-btn--primary-soft"
                 data-testid="startup-wizard-done-btn"
                 @click="finishWizardAndEnterApp"
               />
@@ -298,7 +298,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .startup-wizard-page {
-  padding: calc(16px + env(safe-area-inset-top)) 16px 16px;
+  padding: var(--vipr-wizard-page-padding);
 }
 
 .wizard-shell {
@@ -310,23 +310,16 @@ onBeforeUnmount(() => {
 
 .wizard-card {
   width: 100%;
-  max-width: 560px;
-  border-radius: 32px;
-  color: white;
-  background:
-    radial-gradient(circle at top left, rgba(var(--q-primary-rgb), 0.2), transparent 34%),
-    radial-gradient(circle at 85% 12%, rgba(var(--q-primary-rgb), 0.1), transparent 20%),
-    linear-gradient(180deg, rgba(24, 24, 28, 0.98), rgba(15, 15, 18, 1));
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.44);
+  max-width: var(--vipr-width-flow-panel);
+  color: var(--vipr-text-primary);
 }
 
 .wizard-card__section {
-  padding: 28px 24px 24px;
+  padding: var(--vipr-wizard-card-padding);
 }
 
 .wizard-slide {
-  min-height: 680px;
+  min-height: var(--vipr-wizard-slide-min-height);
   display: flex;
   flex-direction: column;
 }
@@ -342,72 +335,54 @@ onBeforeUnmount(() => {
 
 .wizard-copy--compact {
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: var(--vipr-wizard-compact-copy-gap);
 }
 
 .wizard-kicker {
-  margin-bottom: 8px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.62);
+  margin-bottom: var(--vipr-space-2);
 }
 
 .wizard-title {
   margin: 0;
-  font-size: 2.2rem;
-  line-height: 1.1;
-  font-weight: 700;
 }
 
 .wizard-body {
-  margin: 14px 0 0;
-  font-size: 1.18rem;
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.78);
+  margin: var(--vipr-wizard-body-gap) 0 0;
 }
 
 .wizard-actions,
 .wizard-footer {
   margin-top: auto;
-  padding-top: 24px;
+  padding-top: var(--vipr-wizard-actions-top-space);
 }
 
 .wizard-actions--stack {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--vipr-wizard-actions-gap);
 }
 
 .wizard-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--vipr-wizard-actions-gap);
 }
 
 .wizard-primary-btn,
 .wizard-secondary-btn {
-  min-height: 52px;
+  min-height: var(--vipr-wizard-button-height);
   border-radius: var(--vipr-radius-button-lg);
 }
 
 .wizard-primary-btn {
   flex: 1 1 0;
   min-width: 0;
-  background: var(--vipr-gradient-primary) !important;
-  color: var(--vipr-text-primary) !important;
-  box-shadow: var(--vipr-shadow-primary-soft);
 }
 
 .wizard-secondary-btn {
   flex: 1 1 0;
   min-width: 0;
-  color: rgba(255, 255, 255, 0.92) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .wizard-actions--stack .wizard-primary-btn,
@@ -418,19 +393,19 @@ onBeforeUnmount(() => {
 
 .wizard-skip {
   align-self: flex-end;
-  padding: 0;
+  padding: var(--vipr-space-0);
   border: 0;
   background: transparent;
-  color: rgba(255, 255, 255, 0.66);
-  font-size: 0.98rem;
+  color: var(--vipr-text-muted);
+  font-size: var(--vipr-wizard-skip-font-size);
   cursor: pointer;
 }
 
 .wizard-visual {
   position: relative;
   flex: 1;
-  min-height: 300px;
-  margin-bottom: 28px;
+  min-height: var(--vipr-wizard-visual-min-height);
+  margin-bottom: var(--vipr-wizard-visual-bottom-space);
 }
 
 .wizard-visual--welcome,
@@ -443,9 +418,9 @@ onBeforeUnmount(() => {
 
 .welcome-orb {
   position: absolute;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--vipr-radius-pill);
+  background: var(--vipr-wizard-orb-bg);
+  border: 1px solid var(--vipr-wizard-orb-border);
 }
 
 .welcome-orb--large {
@@ -456,7 +431,7 @@ onBeforeUnmount(() => {
 .welcome-orb--small {
   width: 180px;
   height: 180px;
-  top: 28px;
+  top: var(--vipr-space-7);
   left: 30px;
 }
 
@@ -464,13 +439,13 @@ onBeforeUnmount(() => {
   width: 110px;
   height: 110px;
   right: 34px;
-  bottom: 24px;
+  bottom: var(--vipr-space-6);
 }
 
 .custody-ring {
   position: absolute;
-  border-radius: 999px;
-  border: 24px solid rgba(var(--q-primary-rgb), 0.16);
+  border-radius: var(--vipr-radius-pill);
+  border: var(--vipr-space-6) solid var(--vipr-wizard-ring-border);
 }
 
 .custody-ring--outer {
@@ -486,8 +461,8 @@ onBeforeUnmount(() => {
 .custody-ring--inner {
   width: 120px;
   height: 120px;
-  background: rgba(var(--q-primary-rgb), 0.14);
-  border-width: 18px;
+  background: var(--vipr-wizard-ring-bg);
+  border-width: var(--vipr-space-4-5);
 }
 
 .federation-card {
@@ -496,19 +471,19 @@ onBeforeUnmount(() => {
   place-items: center;
   width: 180px;
   height: 120px;
-  padding: 16px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: var(--vipr-wizard-federation-card-padding);
+  border-radius: var(--vipr-radius-card);
+  background: var(--vipr-control-panel-bg);
+  border: 1px solid var(--vipr-control-panel-border);
   text-align: center;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--vipr-text-primary);
 }
 
 .federation-card--left {
   transform: rotate(-10deg);
   left: 10px;
-  bottom: 24px;
+  bottom: var(--vipr-space-6);
 }
 
 .federation-card--center {
@@ -518,84 +493,43 @@ onBeforeUnmount(() => {
 .federation-card--right {
   transform: rotate(10deg);
   right: 10px;
-  top: 32px;
+  top: var(--vipr-space-8);
 }
 
 .wizard-visual--done {
   min-height: 220px;
-  background:
-    radial-gradient(circle at 25% 20%, rgba(255, 244, 173, 0.55), transparent 12%),
-    radial-gradient(circle at 70% 34%, rgba(255, 145, 214, 0.52), transparent 10%),
-    radial-gradient(circle at 30% 70%, rgba(120, 232, 255, 0.4), transparent 10%),
-    radial-gradient(circle at 82% 76%, rgba(255, 255, 255, 0.34), transparent 8%);
-}
-
-.startup-wizard-page :deep(.words-grid .q-card),
-.startup-wizard-page :deep(.restore-grid .q-field__control) {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.08);
-  color: white;
-}
-
-.startup-wizard-page :deep(.restore-grid .q-field__label),
-.startup-wizard-page :deep(.restore-grid .q-field__native),
-.startup-wizard-page :deep(.restore-grid input) {
-  color: rgba(255, 255, 255, 0.92) !important;
-}
-
-.startup-wizard-page :deep(.restore-grid .q-field--outlined .q-field__control:before),
-.startup-wizard-page :deep(.restore-grid .q-field--outlined .q-field__control:after) {
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.startup-wizard-page :deep([data-testid='startup-wizard-backup-confirm-btn']),
-.startup-wizard-page :deep([data-testid='startup-wizard-restore-submit-btn']) {
-  min-height: 52px;
-  border-radius: var(--vipr-radius-button-lg);
-  background: var(--vipr-gradient-primary) !important;
-  color: var(--vipr-text-primary) !important;
-  box-shadow: var(--vipr-shadow-primary-soft);
-}
-
-.startup-wizard-page :deep([data-testid='startup-wizard-backup-back-btn']),
-.startup-wizard-page :deep([data-testid='startup-wizard-restore-back-btn']) {
-  min-height: 52px;
-  border-radius: var(--vipr-radius-button-lg);
-  color: rgba(255, 255, 255, 0.92) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  background: var(--vipr-wizard-done-visual-bg);
 }
 
 @media (max-width: 599px) {
   .startup-wizard-page {
-    padding: calc(8px + env(safe-area-inset-top)) 8px 8px;
+    padding: var(--vipr-wizard-page-padding-mobile);
   }
 
   .wizard-card__section {
-    padding: 22px 18px 18px;
+    padding: var(--vipr-wizard-card-padding-mobile);
   }
 
   .wizard-slide {
-    min-height: 620px;
+    min-height: var(--vipr-wizard-slide-min-height-mobile);
   }
 
   .wizard-visual {
-    min-height: 244px;
-    margin-bottom: 20px;
+    min-height: var(--vipr-wizard-visual-min-height-mobile);
+    margin-bottom: var(--vipr-wizard-visual-bottom-space-mobile);
   }
 
   .wizard-title {
-    font-size: 1.9rem;
+    font-size: var(--vipr-font-size-title);
   }
 
   .wizard-body {
-    font-size: 1.05rem;
+    font-size: var(--vipr-font-size-section-title);
   }
 
   .wizard-actions,
   .wizard-footer {
-    padding-top: 18px;
+    padding-top: var(--vipr-wizard-actions-top-space-mobile);
   }
 
   .wizard-footer {
@@ -605,7 +539,7 @@ onBeforeUnmount(() => {
   .federation-card {
     width: 148px;
     height: 108px;
-    font-size: 0.92rem;
+    font-size: var(--vipr-font-size-caption);
   }
 }
 </style>

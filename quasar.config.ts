@@ -10,6 +10,8 @@ import { loadEnv } from 'vite'
 
 export default defineConfig((ctx) => {
   const env = loadEnv('dev', process.cwd(), '')
+  const shouldOpenDevServerBrowser =
+    process.env.BROWSER !== 'none' && process.env.VITE_E2E_MODE !== '1'
   // use env variables HTTPS_KEY and HTTPS_CERT for enabling https using self-signed certificates
   console.log('- HTTPS_KEY:', env.HTTPS_KEY)
   console.log('- HTTPS_CERT:', env.HTTPS_CERT)
@@ -117,7 +119,7 @@ export default defineConfig((ctx) => {
     },
 
     devServer: {
-      open: { app: { name: 'firefox' } },
+      open: shouldOpenDevServerBrowser ? { app: { name: 'firefox' } } : false,
       // Modify this to include debug info
       ...(() => {
         if (env.HTTPS_KEY && env.HTTPS_CERT) {

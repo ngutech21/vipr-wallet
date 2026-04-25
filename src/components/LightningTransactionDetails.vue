@@ -1,9 +1,9 @@
 <template>
-  <div class="transaction-content q-pa-md">
+  <div class="transaction-content">
     <section class="transaction-card transaction-card--summary">
-      <div class="amount-section text-center">
+      <div class="amount-section">
         <div
-          class="amount-value text-h4"
+          class="amount-value"
           :class="transaction.type === 'send' ? 'text-negative' : 'text-positive'"
         >
           {{ transaction.type === 'receive' ? '+' : '-' }}{{ amountInSats }}
@@ -25,7 +25,7 @@
 
             <q-badge
               :color="getStatusColor(transaction.outcome)"
-              class="status-badge q-pa-sm text-caption"
+              class="status-badge"
               v-if="transaction.outcome"
             >
               {{ formatOutcome(transaction.outcome) }}
@@ -58,11 +58,11 @@
         </div>
         <div class="detail-row detail-row--separated">
           <div class="label">Transaction ID</div>
-          <div class="value text-caption">{{ transaction.txId }}</div>
+          <div class="value value--transaction-id">{{ transaction.txId }}</div>
         </div>
         <div v-if="transaction.preimage" class="detail-row detail-row--separated">
           <div class="label">Preimage</div>
-          <div class="value text-caption">{{ transaction.preimage }}</div>
+          <div class="value value--transaction-id">{{ transaction.preimage }}</div>
         </div>
         <div class="detail-row detail-row--separated detail-row--block">
           <div class="detail-row__heading">
@@ -78,9 +78,9 @@
             />
           </div>
 
-          <div class="invoice-section q-mt-sm">
+          <div class="invoice-section">
             <div class="invoice-container">
-              <div class="invoice-text text-caption">{{ transaction.invoice }}</div>
+              <div class="invoice-text">{{ transaction.invoice }}</div>
             </div>
           </div>
         </div>

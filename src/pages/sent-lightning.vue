@@ -23,10 +23,10 @@ meta:
           <q-icon name="check_circle" size="3.5em" color="positive" />
         </div>
         <div class="success-title">Payment sent</div>
-        <div class="success-amount q-mt-md">{{ formatNumber(amount) }} sats</div>
-        <div class="success-subtitle q-mt-sm">Your Lightning payment was completed.</div>
+        <div class="success-amount">{{ formatNumber(amount) }} sats</div>
+        <div class="success-subtitle">Your Lightning payment was completed.</div>
 
-        <q-card flat class="success-card q-mt-xl">
+        <q-card flat class="success-card">
           <q-card-section class="summary-row">
             <span class="summary-label">Amount</span>
             <span class="summary-value">{{ formatNumber(amount) }} sats</span>
@@ -42,7 +42,7 @@ meta:
           color="primary"
           no-caps
           unelevated
-          class="success-action-btn vipr-btn vipr-btn--primary vipr-btn--lg q-mt-xl"
+          class="success-action-btn vipr-btn vipr-btn--primary vipr-btn--lg"
           :to="{ name: '/' }"
           label="Back to home"
           data-testid="sent-lightning-back-home-btn"

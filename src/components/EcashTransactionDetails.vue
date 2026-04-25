@@ -1,8 +1,8 @@
 <template>
-  <div class="transaction-content q-pa-md">
+  <div class="transaction-content">
     <section class="transaction-card transaction-card--summary">
-      <div class="amount-section text-center">
-        <div class="amount-value text-h4" :class="getAmountClass()">
+      <div class="amount-section">
+        <div class="amount-value" :class="getAmountClass()">
           {{ getAmountPrefix() }}{{ amountInSats }}
         </div>
         <div class="amount-fiat">≈ ${{ amountInFiat }} USD</div>
@@ -18,7 +18,7 @@
 
             <q-badge
               :color="getStatusColor(transaction.outcome)"
-              class="status-badge q-pa-sm text-caption"
+              class="status-badge"
               v-if="transaction.outcome"
             >
               {{ formatOutcome(transaction.outcome) }}
@@ -40,7 +40,7 @@
         </div>
         <div v-if="transaction.txId" class="detail-row detail-row--separated">
           <div class="label">Transaction ID</div>
-          <div class="value value--transaction-id text-caption">{{ transaction.txId }}</div>
+          <div class="value value--transaction-id">{{ transaction.txId }}</div>
         </div>
         <div v-if="transaction.notes" class="detail-row detail-row--separated detail-row--block">
           <div class="detail-row__heading">
@@ -56,9 +56,9 @@
             />
           </div>
 
-          <div class="notes-section q-mt-sm">
+          <div class="notes-section">
             <div class="notes-container">
-              <div class="notes-text text-caption">{{ transaction.notes }}</div>
+              <div class="notes-text">{{ transaction.notes }}</div>
             </div>
           </div>
         </div>

@@ -42,17 +42,15 @@ withDefaults(
 .amount-display {
   min-height: 88px;
   border-radius: var(--vipr-radius-button-lg);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.032), rgba(255, 255, 255, 0.018)),
-    rgba(255, 255, 255, 0.035);
+  background: var(--vipr-control-panel-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--vipr-space-2);
-  padding: 18px var(--vipr-space-5);
-  border: 1px solid rgba(255, 255, 255, 0.055);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.024);
+  padding: var(--vipr-space-4-5) var(--vipr-space-5);
+  border: 1px solid var(--vipr-control-panel-border);
+  box-shadow: var(--vipr-control-panel-shadow);
 }
 
 .amount-display--label-less {
@@ -60,12 +58,12 @@ withDefaults(
 }
 
 .amount-display--error {
-  border-color: rgba(255, 82, 111, 0.55);
+  border-color: var(--q-negative);
 }
 
 .amount-display__label {
   color: var(--vipr-text-soft);
-  font-size: 0.88rem;
+  font-size: var(--vipr-font-size-caption);
   line-height: 1.2;
   text-align: center;
 }
@@ -73,8 +71,8 @@ withDefaults(
 .amount-display__value {
   color: var(--vipr-text-primary);
   text-align: center;
-  font-size: clamp(2rem, 6vw, 2.5rem);
-  line-height: 1.05;
+  font-size: var(--vipr-font-size-control-amount);
+  line-height: var(--vipr-line-height-tight);
   font-weight: 700;
   letter-spacing: 0;
   word-break: break-word;
@@ -83,7 +81,8 @@ withDefaults(
 .amount-display__error {
   margin-top: var(--vipr-space-2);
   color: var(--q-negative);
-  font-size: 0.78rem;
+  font-size: var(--vipr-font-size-label);
+  line-height: var(--vipr-line-height-body);
   text-align: center;
 }
 </style>

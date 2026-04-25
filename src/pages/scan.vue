@@ -31,15 +31,15 @@ meta:
         color="white"
         icon="arrow_back"
         :to="{ name: '/' }"
-        class="scan-topbar__back"
+        class="scan-topbar__back vipr-topbar__back"
         data-testid="scan-back-btn"
       />
     </div>
 
-    <div class="scan-utility-card">
+    <div class="scan-utility-card vipr-surface-card">
       <div class="scan-status">
-        <div class="scan-status__eyebrow">Scanner</div>
-        <div class="scan-status__text" data-testid="scan-detected-text">
+        <div class="scan-status__eyebrow vipr-eyebrow">Scanner</div>
+        <div class="scan-status__text vipr-caption" data-testid="scan-detected-text">
           {{ detectedContent || 'No QR code detected yet' }}
         </div>
       </div>
@@ -149,7 +149,11 @@ function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingCont
     const [firstPoint, ...otherPoints] = detectedCode.cornerPoints
 
     ctx.lineWidth = 4
-    ctx.strokeStyle = 'red'
+    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--q-primary')
+    const strokeColor = primaryColor.trim()
+    if (strokeColor !== '') {
+      ctx.strokeStyle = strokeColor
+    }
 
     ctx.beginPath()
     ctx.moveTo(firstPoint.x, firstPoint.y)
@@ -165,7 +169,7 @@ function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingCont
 
 <style scoped>
 .scan-page {
-  background-color: #000;
+  background-color: var(--vipr-scan-page-bg);
 }
 
 .camera-container {
@@ -186,15 +190,7 @@ function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingCont
   display: flex;
   align-items: center;
   justify-content: center;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(8, 8, 8, 0.64),
-      rgba(8, 8, 8, 0.2) 22%,
-      rgba(8, 8, 8, 0.2) 78%,
-      rgba(8, 8, 8, 0.72)
-    ),
-    rgba(0, 0, 0, 0.22);
+  background: var(--vipr-scan-overlay-bg);
 }
 
 .targeting-frame {
@@ -202,46 +198,43 @@ function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingCont
   height: 70vw;
   max-width: 300px;
   max-height: 300px;
-  border: 2px solid rgba(162, 43, 255, 0.92);
-  border-radius: 28px;
-  box-shadow:
-    0 0 0 5000px rgba(0, 0, 0, 0.44),
-    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
-    0 0 32px rgba(111, 0, 255, 0.22);
+  border: 2px solid var(--vipr-scan-frame-border);
+  border-radius: var(--vipr-radius-lg);
+  box-shadow: var(--vipr-scan-frame-shadow);
 }
 
 .scan-topbar {
   position: absolute;
-  top: calc(12px + env(safe-area-inset-top));
-  left: 16px;
+  top: calc(var(--vipr-space-3) + env(safe-area-inset-top));
+  left: var(--vipr-space-4);
   z-index: 10;
 }
 
 .scan-topbar__back {
   width: 52px;
   height: 52px;
-  border-radius: 999px;
-  background: rgba(24, 24, 24, 0.76);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
+  border-radius: var(--vipr-radius-pill);
+  background: var(--vipr-glass-panel-bg);
+  border-color: var(--vipr-glass-panel-border);
+  backdrop-filter: var(--vipr-glass-panel-backdrop);
 }
 
 .scan-utility-card {
   position: absolute;
   left: 50%;
-  bottom: calc(18px + env(safe-area-inset-bottom));
+  bottom: calc(var(--vipr-space-4-5) + env(safe-area-inset-bottom));
   transform: translateX(-50%);
-  width: min(calc(100vw - 32px), 520px);
+  width: min(calc(100vw - var(--vipr-space-8)), 520px);
   z-index: 10;
-  padding: 14px 18px;
-  border-radius: 22px;
-  background: rgba(24, 24, 24, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
+  padding: var(--vipr-radius-control) var(--vipr-radius-button-lg);
+  border-radius: var(--vipr-radius-card);
+  background: var(--vipr-glass-panel-bg);
+  border-color: var(--vipr-glass-panel-border);
+  backdrop-filter: var(--vipr-glass-panel-backdrop);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--vipr-space-4);
 }
 
 .scan-status {
@@ -249,18 +242,11 @@ function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingCont
 }
 
 .scan-status__eyebrow {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.72rem;
   line-height: 1.1;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .scan-status__text {
-  margin-top: 4px;
-  color: white;
-  font-size: 0.92rem;
+  margin-top: var(--vipr-space-1);
   line-height: 1.35;
   font-weight: 500;
   max-width: 100%;
@@ -281,8 +267,8 @@ function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingCont
 
 @media (max-width: 599px) {
   .scan-utility-card {
-    padding: 12px 14px;
-    gap: 12px;
+    padding: var(--vipr-space-3) var(--vipr-radius-control);
+    gap: var(--vipr-space-3);
   }
 
   .scan-status__text {

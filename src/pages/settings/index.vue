@@ -1,6 +1,6 @@
 <template>
   <q-page class="dark-gradient" data-testid="settings-page">
-    <div class="settings-page q-px-md q-pt-md q-pb-xl">
+    <div class="settings-page">
       <div class="settings-stack settings-stack--primary">
         <q-expansion-item
           class="settings-section settings-section--primary"
@@ -13,30 +13,30 @@
         >
           <q-card>
             <q-card-section class="settings-panel settings-panel--compact">
-              <div class="row items-center q-col-gutter-md">
-                <div class="col-12 col-sm-8">
+              <div class="settings-inline-grid settings-inline-grid--center">
+                <div class="settings-inline-grid__main">
                   <div class="connection-status">
                     <q-icon
                       :name="connectedProvider ? 'check_circle' : 'radio_button_unchecked'"
-                      :class="connectedProvider ? 'text-positive' : 'text-grey-6'"
+                      :class="connectedProvider ? 'text-positive' : 'settings-disconnected-icon'"
                       size="md"
-                      class="q-mr-sm"
+                      class="connection-status__icon"
                     />
                     <div>
-                      <div class="text-subtitle1 q-mb-xs">
+                      <div class="settings-subtitle">
                         {{ connectedProvider ? 'Connected' : 'Not Connected' }}
                       </div>
-                      <div class="text-caption text-grey-8" v-if="connectedProvider">
+                      <div class="settings-caption settings-muted" v-if="connectedProvider">
                         {{ connectedProvider }}
                       </div>
-                      <div class="text-caption text-grey-8" v-else>
+                      <div class="settings-caption settings-muted" v-else>
                         Connect to send and receive payments via Lightning
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div class="col-12 col-sm-4 flex justify-end q-mt-sm q-mt-sm-none">
+                <div class="settings-inline-grid__side settings-inline-grid__side--end">
                   <q-btn
                     :label="connectedProvider ? 'Change' : 'Connect'"
                     :icon="connectedProvider ? 'swap_horiz' : 'link'"
@@ -68,8 +68,8 @@
           <q-card>
             <q-card-section class="settings-panel">
               <!-- Relays List -->
-              <div class="text-subtitle2 q-mb-sm">Relays</div>
-              <q-list bordered separator class="rounded-borders settings-list q-mb-md">
+              <div class="settings-section-title">Relays</div>
+              <q-list bordered separator class="rounded-borders settings-list settings-block">
                 <q-item v-for="(relay, index) in relays" :key="index">
                   <q-item-section>
                     <q-item-label>{{ relay }}</q-item-label>
@@ -97,26 +97,27 @@
               </q-list>
 
               <!-- Add new relay -->
-              <div class="row q-col-gutter-md items-center">
-                <div class="col-12 col-sm-8">
+              <div class="settings-inline-grid settings-inline-grid--center">
+                <div class="settings-inline-grid__main">
                   <q-input
                     v-model="newRelay"
                     label="Add relay URL"
-                    outlined
+                    filled
+                    dark
                     dense
                     placeholder="Must start with wss://"
-                    class="relay-input"
+                    class="vipr-input relay-input"
                     data-testid="settings-new-relay-input"
                   />
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="settings-inline-grid__side">
                   <q-btn
                     label="Add"
                     icon="add"
                     color="primary"
                     no-caps
                     unelevated
-                    class="full-width"
+                    class="settings-action-full"
                     :disable="!isValidRelayUrl"
                     @click="addNewRelay"
                     data-testid="settings-add-relay-btn"
@@ -124,7 +125,7 @@
                 </div>
               </div>
 
-              <div class="q-mt-md">
+              <div class="settings-block">
                 <q-btn
                   label="Reset to Defaults"
                   outline
@@ -152,36 +153,37 @@
           <q-card>
             <q-card-section class="settings-panel">
               <div class="contacts-section">
-                <div class="text-subtitle2 q-mb-sm">Sync Contacts</div>
+                <div class="settings-section-title">Sync Contacts</div>
                 <q-btn-toggle
                   v-model="contactSourceType"
                   unelevated
                   toggle-color="primary"
                   :options="contactSourceOptions"
-                  class="q-mb-md full-width contacts-source-toggle"
+                  class="settings-action-full contacts-source-toggle settings-block"
                   data-testid="settings-contact-source-toggle"
                 />
 
                 <q-input
                   v-model="contactSourceValue"
-                  outlined
+                  filled
+                  dark
                   :label="contactSourceLabel"
                   :placeholder="contactSourcePlaceholder"
-                  class="relay-input"
+                  class="vipr-input relay-input"
                   data-testid="settings-contact-source-input"
                 />
 
-                <div class="text-caption text-grey-8 q-mt-xs">
+                <div class="settings-caption settings-muted settings-caption--spaced">
                   {{ contactSourceHint }}
                 </div>
 
-                <div class="contacts-actions q-mt-md">
+                <div class="contacts-actions">
                   <q-btn
                     label="Sync contacts"
                     color="primary"
                     no-caps
                     unelevated
-                    class="full-width"
+                    class="settings-action-full"
                     :loading="isSyncingContacts"
                     :disable="isSyncingContacts"
                     @click="syncContacts"
@@ -192,7 +194,7 @@
                     outline
                     no-caps
                     color="secondary"
-                    class="full-width q-mt-sm"
+                    class="settings-action-full contacts-action-secondary"
                     :disable="isSyncingContacts"
                     @click="clearContacts"
                     data-testid="settings-clear-contacts-btn"
@@ -201,19 +203,19 @@
 
                 <div
                   v-if="contactSyncError"
-                  class="text-negative text-caption q-mt-sm"
+                  class="settings-error"
                   data-testid="settings-contact-sync-error"
                 >
                   {{ contactSyncError }}
                 </div>
 
-                <div class="contacts-summary q-mt-md">
-                  <div class="text-caption text-grey-8" data-testid="settings-contact-count">
+                <div class="contacts-summary">
+                  <div class="settings-caption settings-muted" data-testid="settings-contact-count">
                     {{ syncedContacts.length }} imported contacts
                   </div>
                   <div
                     v-if="lastSyncedLabel"
-                    class="text-caption text-grey-8 q-mt-xs"
+                    class="settings-caption settings-muted settings-caption--spaced"
                     data-testid="settings-contact-last-synced"
                   >
                     {{ lastSyncedLabel }}
@@ -223,7 +225,7 @@
                 <q-list
                   bordered
                   separator
-                  class="rounded-borders settings-list q-mt-md"
+                  class="rounded-borders settings-list settings-list--spaced"
                   data-testid="settings-contact-list"
                 >
                   <q-item v-if="syncedContacts.length === 0">
@@ -247,7 +249,12 @@
                       <q-avatar v-if="contact.picture">
                         <img :src="contact.picture" :alt="getContactDisplayName(contact)" />
                       </q-avatar>
-                      <q-icon v-else name="account_circle" size="md" color="grey-5" />
+                      <q-icon
+                        v-else
+                        name="account_circle"
+                        size="md"
+                        class="settings-contact-placeholder-icon"
+                      />
                     </q-item-section>
                     <q-item-section>
                       <q-item-label>{{ getContactDisplayName(contact) }}</q-item-label>
@@ -263,12 +270,9 @@
                   </q-item>
                 </q-list>
 
-                <div
-                  v-if="syncedContacts.length > 0"
-                  class="row items-center justify-between q-mt-sm q-gutter-sm"
-                >
+                <div v-if="syncedContacts.length > 0" class="settings-contact-pagination">
                   <div
-                    class="text-caption text-grey-8"
+                    class="settings-caption settings-muted"
                     data-testid="settings-contact-visible-count"
                   >
                     Showing {{ visibleContacts.length }} of {{ syncedContacts.length }} contacts
@@ -302,7 +306,7 @@
           <q-card>
             <q-card-section class="settings-panel settings-panel--secondary">
               <!-- Version information -->
-              <div class="settings-copy-block q-mb-md">
+              <div class="settings-copy-block settings-block">
                 <BuildInfo />
               </div>
 
@@ -315,12 +319,12 @@
                   no-caps
                   unelevated
                   @click="handleUpdateAction"
-                  class="full-width"
+                  class="settings-action-full"
                   data-testid="settings-check-updates-btn"
                   :loading="isUpdateActionRunning"
                   :disable="isUpdateActionRunning"
                 />
-                <div v-if="showApplyRestrictionHint" class="text-warning text-caption q-mt-sm">
+                <div v-if="showApplyRestrictionHint" class="settings-warning">
                   Update is ready. Open Home or Settings to apply safely.
                 </div>
               </div>
@@ -345,7 +349,7 @@
           </template>
           <q-card>
             <q-card-section class="settings-panel settings-panel--secondary">
-              <div class="settings-copy-block q-mb-md">
+              <div class="settings-copy-block settings-block">
                 Create a backup of your wallet using your recovery phrase. Write it down and store
                 it safely to recover your wallet if you lose access to this device.
               </div>
@@ -356,7 +360,7 @@
                 no-caps
                 unelevated
                 :to="{ name: '/settings/backup' }"
-                class="full-width"
+                class="settings-action-full"
                 data-testid="settings-create-backup-btn"
               />
             </q-card-section>
@@ -373,7 +377,7 @@
         >
           <q-card>
             <q-card-section class="settings-panel settings-panel--secondary">
-              <div class="settings-copy-block q-mb-sm">
+              <div class="settings-copy-block settings-copy-block--compact">
                 Built with ❤️ as free and open source software. You can review the project on
                 GitHub.
               </div>
@@ -386,7 +390,7 @@
                 :href="'https://github.com/ngutech21/vipr-wallet'"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="full-width"
+                class="settings-action-full"
                 data-testid="settings-open-github-btn"
               />
             </q-card-section>
@@ -404,7 +408,7 @@
         >
           <q-card>
             <q-card-section class="settings-panel settings-panel--danger">
-              <div class="settings-copy-block q-mb-md">
+              <div class="settings-copy-block settings-block">
                 Deleting all data will remove your wallet connections, federations and all settings.
                 This cannot be undone.
               </div>
@@ -415,7 +419,7 @@
                 no-caps
                 unelevated
                 @click="deleteData"
-                class="full-width"
+                class="settings-action-full"
                 data-testid="settings-delete-data-btn"
               />
             </q-card-section>
@@ -718,20 +722,21 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 .settings-page {
   max-width: 700px;
   margin: 0 auto;
-  padding-top: calc(16px + env(safe-area-inset-top)) !important;
+  padding: calc(var(--vipr-space-4) + env(safe-area-inset-top)) var(--vipr-space-4)
+    var(--vipr-space-8);
 }
 
 .settings-stack {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--vipr-list-gap);
 }
 
 .settings-stack--secondary {
-  margin-top: 10px;
+  margin-top: var(--vipr-list-gap);
 }
 
-.full-width {
+.settings-action-full {
   width: 100%;
 }
 
@@ -744,19 +749,19 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-panel {
-  padding: 14px 18px 18px;
+  padding: var(--vipr-settings-panel-padding);
 }
 
 .settings-panel--compact {
-  padding-top: 12px;
+  padding-top: var(--vipr-space-3);
 }
 
 .settings-panel--secondary {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--vipr-text-secondary);
 }
 
 .settings-panel--danger {
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--vipr-settings-header-icon-color-danger);
 }
 
 .connection-status {
@@ -764,21 +769,97 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   align-items: center;
 }
 
+.connection-status__icon {
+  margin-right: var(--vipr-space-2);
+}
+
+.settings-inline-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(140px, 1fr);
+  gap: var(--vipr-space-4);
+}
+
+.settings-inline-grid--center {
+  align-items: center;
+}
+
+.settings-inline-grid__main,
+.settings-inline-grid__side {
+  min-width: 0;
+}
+
+.settings-inline-grid__side--end {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.settings-subtitle {
+  margin-bottom: var(--vipr-space-1);
+  color: var(--vipr-text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: var(--vipr-line-height-tight);
+}
+
+.settings-section-title {
+  margin-bottom: var(--vipr-space-2);
+  color: var(--vipr-text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: var(--vipr-line-height-tight);
+}
+
+.settings-caption {
+  font-size: var(--vipr-font-size-caption);
+  line-height: var(--vipr-line-height-body);
+}
+
+.settings-caption--spaced {
+  margin-top: var(--vipr-space-1);
+}
+
+.settings-block {
+  margin-bottom: var(--vipr-space-4);
+}
+
+.settings-list--spaced {
+  margin-top: var(--vipr-space-4);
+}
+
+.settings-warning,
+.settings-error {
+  margin-top: var(--vipr-space-2);
+  font-size: var(--vipr-font-size-caption);
+  line-height: var(--vipr-line-height-body);
+}
+
+.settings-warning {
+  color: var(--vipr-warning-text);
+}
+
+.settings-error {
+  color: var(--q-negative);
+}
+
 .settings-copy-block {
-  padding: 4px 0;
-  color: rgba(255, 255, 255, 0.78);
-  line-height: 1.45;
+  padding: var(--vipr-settings-copy-padding);
+  color: var(--vipr-text-secondary);
+  line-height: var(--vipr-line-height-body);
+}
+
+.settings-copy-block--compact {
+  margin-bottom: var(--vipr-space-2);
 }
 
 .settings-panel--secondary .settings-copy-block {
-  padding: 4px 2px;
+  padding: var(--vipr-settings-copy-padding-secondary);
   background: transparent;
   border: 0;
 }
 
 .settings-panel--secondary .settings-copy-block + .q-btn,
 .settings-panel--secondary .settings-copy-block + div {
-  margin-top: 14px;
+  margin-top: var(--vipr-settings-copy-action-gap);
 }
 
 .settings-panel :deep(.q-btn:not(.q-btn--round):not(.q-btn--dense)) {
@@ -796,14 +877,12 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-panel :deep(.q-btn.q-btn--outline) {
-  background: rgba(255, 255, 255, 0.025);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  background: var(--vipr-settings-outline-button-bg);
+  box-shadow: var(--vipr-settings-outline-button-shadow);
 }
 
 .settings-panel :deep(.q-btn.bg-negative) {
-  box-shadow:
-    0 4px 10px rgba(255, 68, 68, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: var(--vipr-settings-danger-button-shadow);
 }
 
 .contacts-section {
@@ -814,16 +893,33 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   display: block;
 }
 
+.contacts-actions {
+  margin-top: var(--vipr-space-4);
+}
+
+.contacts-action-secondary {
+  margin-top: var(--vipr-space-2);
+}
+
 .contacts-summary {
-  min-height: 20px;
+  margin-top: var(--vipr-space-4);
+  min-height: var(--vipr-space-5);
+}
+
+.settings-contact-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vipr-space-2);
+  margin-top: var(--vipr-space-2);
 }
 
 .empty-contact-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  width: var(--vipr-space-8);
+  height: var(--vipr-space-8);
+  border-radius: var(--vipr-radius-pill);
+  background: var(--vipr-settings-empty-avatar-bg);
+  border: 1px solid var(--vipr-settings-empty-avatar-border);
   position: relative;
 }
 
@@ -834,8 +930,8 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   top: 8px;
   width: 10px;
   height: 10px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.52);
+  border-radius: var(--vipr-radius-pill);
+  background: var(--vipr-settings-empty-avatar-head-bg);
   transform: translateX(-50%);
 }
 
@@ -844,21 +940,22 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   position: absolute;
   left: 50%;
   bottom: 6px;
-  width: 16px;
+  width: var(--vipr-space-4);
   height: 8px;
-  border-radius: 999px 999px 6px 6px;
-  background: rgba(255, 255, 255, 0.35);
+  border-radius: var(--vipr-radius-pill) var(--vipr-radius-pill) var(--vipr-space-2)
+    var(--vipr-space-2);
+  background: var(--vipr-settings-empty-avatar-body-bg);
   transform: translateX(-50%);
 }
 
 .relay-input :deep(.q-field__bottom) {
-  padding: 4px 12px 0;
+  padding: var(--vipr-space-1) var(--vipr-space-3) var(--vipr-space-0);
 }
 
 .rounded-borders {
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--vipr-radius-input);
+  background: var(--vipr-list-bg);
+  border: 1px solid var(--vipr-list-border);
 }
 
 .rounded-borders :deep(.q-item__section--avatar) {
@@ -874,44 +971,38 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-section :deep(.q-expansion-item__container) {
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--vipr-radius-card);
+  border: 1px solid var(--vipr-list-border);
   overflow: hidden;
 }
 
 .settings-section--primary :deep(.q-expansion-item__container) {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04)),
-    rgba(18, 18, 18, 0.92);
+  background: var(--vipr-settings-section-bg-primary);
 }
 
 .settings-section--secondary :deep(.q-expansion-item__container) {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.025)),
-    rgba(18, 18, 18, 0.88);
+  background: var(--vipr-settings-section-bg-secondary);
 }
 
 .settings-section--danger :deep(.q-expansion-item__container) {
-  background:
-    linear-gradient(180deg, rgba(255, 99, 99, 0.08), rgba(255, 255, 255, 0.03)),
-    rgba(18, 18, 18, 0.9);
-  border-color: rgba(255, 99, 99, 0.18);
+  background: var(--vipr-settings-section-bg-danger);
+  border-color: var(--vipr-settings-section-border-danger);
 }
 
 .settings-section :deep(.q-item) {
-  min-height: 74px;
-  padding: 14px 18px;
+  min-height: var(--vipr-row-min-height);
+  padding: var(--vipr-row-padding-y) var(--vipr-row-padding-x);
 }
 
 .settings-section :deep(.q-item__label) {
-  color: white;
+  color: var(--vipr-text-primary);
 }
 
 .settings-section :deep(.q-item__label--caption) {
-  margin-top: 2px;
+  margin-top: calc(var(--vipr-space-1) / 2);
   font-size: 0.95rem;
   line-height: 1.25;
-  color: rgba(255, 255, 255, 0.56);
+  color: var(--vipr-text-soft);
 }
 
 .settings-section :deep(.q-item__section--avatar) {
@@ -921,32 +1012,32 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 .settings-section :deep(.q-expansion-item__container > .q-item .q-item__section--avatar .q-icon) {
   width: 36px;
   height: 36px;
-  border-radius: 12px;
+  border-radius: var(--vipr-radius-sm);
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.07);
-  color: white;
+  background: var(--vipr-row-icon-bg);
+  color: var(--vipr-text-primary);
 }
 
 .settings-section--secondary
   :deep(.q-expansion-item__container > .q-item .q-item__section--avatar .q-icon) {
   background: transparent;
-  color: rgba(255, 255, 255, 0.74);
+  color: var(--vipr-settings-header-icon-color-secondary);
 }
 
 .settings-section--danger
   :deep(.q-expansion-item__container > .q-item .q-item__section--avatar .q-icon) {
   background: transparent;
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--vipr-settings-header-icon-color-danger);
 }
 
 .settings-section :deep(.q-expansion-item__toggle-icon) {
-  color: rgba(255, 255, 255, 0.76);
+  color: var(--vipr-settings-toggle-icon-color);
 }
 
 .settings-section :deep(.q-expansion-item__content) {
   background: transparent;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--vipr-color-input-border);
 }
 
 .settings-section :deep(.q-card) {
@@ -959,14 +1050,29 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-section :deep(.q-expansion-item__content .q-item) {
-  padding: 8px 12px;
+  padding: var(--vipr-space-2) var(--vipr-space-3);
+}
+
+.settings-muted {
+  color: var(--vipr-text-muted);
+}
+
+.settings-contact-placeholder-icon {
+  color: var(--vipr-text-muted);
+}
+
+.settings-disconnected-icon {
+  color: var(--vipr-text-soft);
 }
 
 /* Responsive adjustments */
 @media (max-width: 599px) {
-  .justify-end {
+  .settings-inline-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-inline-grid__side--end {
     justify-content: flex-start;
-    margin-top: 8px;
   }
 
   .contacts-section {
@@ -974,12 +1080,12 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   }
 
   .settings-panel {
-    padding: 0 16px 16px;
+    padding: var(--vipr-settings-panel-padding-mobile);
   }
 
   .settings-section :deep(.q-item) {
     min-height: 70px;
-    padding: 12px 16px;
+    padding: var(--vipr-space-3) var(--vipr-space-4);
   }
 }
 </style>

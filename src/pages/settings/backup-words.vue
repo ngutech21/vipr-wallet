@@ -20,36 +20,33 @@ meta:
       />
     </div>
 
-    <div class="backup-page__content q-px-md q-pb-xl">
-      <div class="backup-words-container">
-        <div class="backup-warning-banner q-mb-md">
+    <div class="backup-page__content">
+      <div class="backup-words-container vipr-page-panel">
+        <div class="backup-warning-banner vipr-warning-card">
           Write this recovery phrase down in order and keep it somewhere safe.
         </div>
 
-        <div class="words-grid q-mb-lg">
+        <div class="words-grid vipr-word-grid">
           <q-card
             v-for="(word, index) in recoveryWords"
             :key="index"
             flat
             bordered
-            class="word-card"
+            class="word-card vipr-word-card"
             :data-testid="`backup-word-card-${index + 1}`"
           >
-            <q-card-section class="word-card__section">
-              <div class="word-number text-caption text-grey-6">{{ index + 1 }}</div>
-              <div
-                class="word-text text-h6 text-weight-medium"
-                :data-testid="`backup-word-${index + 1}`"
-              >
+            <q-card-section class="vipr-word-card__section">
+              <div class="vipr-word-card__number">{{ index + 1 }}</div>
+              <div class="vipr-word-card__text" :data-testid="`backup-word-${index + 1}`">
                 {{ word }}
               </div>
             </q-card-section>
           </q-card>
         </div>
 
-        <div class="backup-info-card q-mb-lg">
-          <div class="backup-info-card__title">Store this secret safely</div>
-          <div class="backup-info-card__copy">
+        <div class="backup-info-card vipr-info-card">
+          <div class="backup-info-card__title vipr-section-title">Store this secret safely</div>
+          <div class="backup-info-card__copy vipr-caption">
             This is your real wallet recovery phrase. Anyone with it can recover your wallet.
           </div>
         </div>
@@ -60,7 +57,7 @@ meta:
           icon="check_circle"
           no-caps
           unelevated
-          class="full-width q-mb-sm vipr-btn vipr-btn--primary-soft vipr-btn--md"
+          class="backup-confirm-btn vipr-btn vipr-btn--primary-soft vipr-btn--md"
           @click="confirmBackup"
           data-testid="backup-words-confirm-btn"
         />
@@ -111,85 +108,38 @@ async function loadRecoveryWords() {
 
 <style scoped>
 .backup-page__content {
-  max-width: 760px;
+  max-width: var(--vipr-backup-content-width);
   margin: 0 auto;
+  padding: var(--vipr-backup-content-padding);
 }
 
 .backup-words-container {
-  max-width: 760px;
+  max-width: var(--vipr-backup-content-width);
   margin: 0 auto;
-  padding: 20px;
-  border-radius: 32px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)),
-    rgba(18, 18, 18, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: var(--vipr-backup-panel-padding);
 }
 
 .backup-warning-banner {
-  padding: 14px 16px;
-  border-radius: 22px;
-  background: rgba(255, 184, 77, 0.12);
-  border: 1px solid rgba(255, 184, 77, 0.2);
-  color: rgba(255, 244, 224, 0.96);
-  font-size: 1rem;
+  margin-bottom: var(--vipr-backup-section-gap);
+  padding: var(--vipr-backup-card-padding);
+  border-radius: var(--vipr-radius-card);
+  font-size: var(--vipr-font-size-body);
   font-weight: 600;
-  line-height: 1.4;
+  line-height: var(--vipr-line-height-body);
 }
 
 .words-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.word-card {
-  border-radius: 24px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.03)),
-    rgba(35, 35, 35, 0.92);
-  border-color: rgba(255, 255, 255, 0.07);
-}
-
-.word-card__section {
-  padding: 14px 16px;
-}
-
-.word-number {
-  font-size: 0.7rem;
-  margin-bottom: 6px;
-}
-
-.word-text {
-  color: white;
-  font-family: 'Courier New', monospace;
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  user-select: none;
+  margin-bottom: var(--vipr-backup-section-gap);
 }
 
 .backup-info-card {
-  padding: 16px 18px;
-  border-radius: 24px;
-  background: rgba(82, 197, 255, 0.1);
-  border: 1px solid rgba(82, 197, 255, 0.16);
+  margin: var(--vipr-backup-section-gap) 0;
+  padding: var(--vipr-backup-card-padding);
+  border-radius: var(--vipr-radius-card);
 }
 
 .backup-info-card__title {
-  margin-bottom: 6px;
-  color: white;
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.backup-info-card__copy {
-  color: rgba(255, 255, 255, 0.78);
-  line-height: 1.45;
-}
-
-.full-width {
-  width: 100%;
+  margin-bottom: var(--vipr-backup-card-copy-gap);
 }
 
 .backup-words-container :deep(.q-btn:not(.q-btn--round)) {
@@ -197,20 +147,21 @@ async function loadRecoveryWords() {
   letter-spacing: 0;
 }
 
+.backup-confirm-btn {
+  width: 100%;
+  margin-bottom: var(--vipr-backup-action-gap);
+}
+
 /* Responsive adjustments for smaller screens */
 @media (max-width: 599px) {
   .backup-words-container {
-    padding: 18px;
-    border-radius: 28px;
+    padding: var(--vipr-backup-panel-padding-mobile);
+    border-radius: var(--vipr-backup-panel-radius-mobile);
   }
 
-  .words-grid {
+  .backup-words-container .vipr-word-grid {
     grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .word-text {
-    font-size: 1.1rem;
+    gap: var(--vipr-backup-word-grid-gap-mobile);
   }
 }
 </style>

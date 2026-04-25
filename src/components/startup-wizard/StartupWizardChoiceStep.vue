@@ -1,9 +1,9 @@
 <template>
-  <div class="text-body1 q-mb-md">
+  <div class="choice-step__intro">
     Choose how you want to continue with your wallet on this device
   </div>
 
-  <div class="column q-gutter-y-sm q-mb-sm">
+  <div class="choice-step__options">
     <q-radio
       :model-value="selectedFlow"
       val="create"
@@ -22,11 +22,11 @@
     />
   </div>
 
-  <div v-if="isCreateLocked" class="text-caption text-warning q-mt-md">
+  <div v-if="isCreateLocked" class="choice-step__warning">
     Wallet was already created in this setup. Continue backup to proceed.
   </div>
 
-  <div class="row justify-end q-mt-lg">
+  <div class="choice-step__actions">
     <q-btn
       label="Next"
       color="primary"
@@ -54,3 +54,31 @@ defineEmits<{
   'update:selectedFlow': [value: SelectableFlow]
 }>()
 </script>
+
+<style scoped>
+.choice-step__intro {
+  margin-bottom: var(--vipr-space-4);
+  font-size: var(--vipr-font-size-body);
+  line-height: var(--vipr-line-height-body);
+}
+
+.choice-step__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vipr-space-2);
+  margin-bottom: var(--vipr-space-2);
+}
+
+.choice-step__warning {
+  margin-top: var(--vipr-space-4);
+  color: var(--vipr-warning-text);
+  font-size: var(--vipr-font-size-caption);
+  line-height: var(--vipr-line-height-body);
+}
+
+.choice-step__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--vipr-space-6);
+}
+</style>

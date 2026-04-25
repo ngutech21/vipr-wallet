@@ -32,7 +32,7 @@
       />
     </q-dialog>
 
-    <div class="page-content q-px-md q-pt-md q-pb-md">
+    <div class="page-content federations-page-content">
       <FederationList />
 
       <div class="add-federation-fab">
@@ -41,7 +41,7 @@
           icon="add"
           color="primary"
           unelevated
-          class="add-federation-fab__button"
+          class="add-federation-fab__button vipr-fab--primary"
           :aria-expanded="showSelection"
           @click="showSelection = true"
           data-testid="add-federation-button"
@@ -120,24 +120,18 @@ function returnToDiscovery() {
   width: 100%;
   max-width: 700px;
   margin: 0 auto;
-  padding-top: calc(16px + env(safe-area-inset-top)) !important;
+}
+
+.federations-page-content {
+  padding: calc(var(--vipr-space-4) + env(safe-area-inset-top)) var(--vipr-space-4)
+    var(--vipr-space-4);
 }
 
 .add-federation-fab {
   position: fixed;
-  right: max(24px, calc((100vw - 700px) / 2 + 24px));
+  right: max(var(--vipr-space-6), calc((100vw - 700px) / 2 + var(--vipr-space-6)));
   bottom: calc(120px + env(safe-area-inset-bottom));
   z-index: 1200;
-}
-
-.add-federation-fab__button {
-  background:
-    linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
-  box-shadow:
-    0 7px 16px rgba(111, 0, 255, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  color: white;
 }
 
 .add-federation-fab__button :deep(.q-icon) {

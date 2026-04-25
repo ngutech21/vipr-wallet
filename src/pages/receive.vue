@@ -24,21 +24,25 @@ meta:
       </div>
 
       <div class="receive-content">
-        <div class="flex flex-center full-width">
+        <div class="vipr-flow-center">
           <div
             v-if="!qrData"
-            class="amount-entry-container q-pa-lg task-card vipr-surface-card--strong"
+            class="vipr-flow-panel vipr-flow-panel--padded task-card vipr-surface-card--strong"
           >
-            <AmountDisplay :value="formattedAmount" class="q-mb-lg" data-testid="amount-input" />
+            <AmountDisplay
+              :value="formattedAmount"
+              class="vipr-flow-spacer-lg"
+              data-testid="amount-input"
+            />
 
-            <NumericKeypad :buttons="keypadButtons" class="q-mb-lg" />
+            <NumericKeypad :buttons="keypadButtons" class="vipr-flow-spacer-lg" />
 
             <q-btn
               label="Create Invoice"
               color="primary"
               no-caps
               unelevated
-              class="full-width vipr-btn vipr-btn--primary vipr-btn--lg"
+              class="vipr-flow-action vipr-btn vipr-btn--primary vipr-btn--lg"
               :disable="amount <= 0 || isCreatingInvoice"
               @click="onRequest"
               icon="bolt"
@@ -301,13 +305,8 @@ async function goBack() {
   align-items: center;
 }
 
-.amount-entry-container {
-  width: 100%;
-  max-width: var(--vipr-width-flow-panel);
-}
-
 .entry-title {
-  margin-bottom: 16px;
+  margin-bottom: var(--vipr-space-4);
   font-size: 1.05rem;
   font-weight: 600;
 }
@@ -327,25 +326,13 @@ async function goBack() {
   flex-direction: column;
   align-items: center;
   gap: var(--vipr-space-2);
-  margin-top: 18px;
+  margin-top: var(--vipr-space-4-5);
   color: var(--vipr-text-primary);
   text-align: center;
 }
 
-.status-label {
-  color: var(--vipr-text-subtle);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
 .status-time {
   margin-top: 2px;
-  color: var(--q-positive);
-  font-size: 1.55rem;
-  font-weight: 700;
-  line-height: 1.1;
 }
 
 .status-message {
@@ -354,8 +341,6 @@ async function goBack() {
   justify-content: center;
   gap: var(--vipr-space-2);
   min-width: 0;
-  color: var(--vipr-text-muted);
-  font-size: 0.9rem;
   text-align: center;
 }
 
@@ -364,17 +349,13 @@ async function goBack() {
   max-width: 420px;
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: var(--vipr-space-5);
 }
 
 @media (max-width: 520px) {
   .receive-content {
-    padding-right: 12px;
-    padding-left: 12px;
-  }
-
-  .status-message {
-    font-size: 0.88rem;
+    padding-right: var(--vipr-space-4);
+    padding-left: var(--vipr-space-4);
   }
 
   .receive-actions {

@@ -9,7 +9,7 @@ meta:
     enter-active-class="animated slideInLeft"
     leave-active-class="animated slideOutLeft"
   >
-    <q-page class="column dark-gradient vipr-mobile-page receive-ecash-page">
+    <q-page class="dark-gradient vipr-mobile-page receive-ecash-page">
       <div class="vipr-topbar receive-ecash-topbar">
         <q-btn
           flat
@@ -22,9 +22,9 @@ meta:
       </div>
 
       <div class="receive-ecash-content">
-        <q-card flat class="task-card receive-ecash-card q-mb-md">
+        <q-card flat class="task-card vipr-flow-panel vipr-surface-card--strong receive-ecash-card">
           <q-card-section>
-            <div class="section-title q-mb-md">Paste ecash</div>
+            <div class="section-title receive-ecash-title">Paste ecash</div>
             <q-input
               v-model="ecashToken"
               filled
@@ -33,7 +33,7 @@ meta:
               dark
               type="textarea"
               placeholder="Paste ecash token here"
-              class="custom-input"
+              class="vipr-input"
               data-testid="receive-ecash-token-input"
             >
               <template #after>
@@ -55,7 +55,7 @@ meta:
           color="primary"
           no-caps
           unelevated
-          class="full-width vipr-btn vipr-btn--primary vipr-btn--lg receive-ecash-action-btn"
+          class="vipr-flow-panel vipr-btn vipr-btn--primary vipr-btn--lg"
           :loading="isProcessing"
           :disable="!ecashToken.trim() || isProcessing"
           @click="redeemEcash"
@@ -156,16 +156,10 @@ function getQueryString(value: LocationQueryValue | LocationQueryValue[] | undef
 }
 
 .receive-ecash-card {
-  width: 100%;
-  max-width: var(--vipr-width-flow-panel);
+  margin-bottom: var(--vipr-space-4);
 }
 
-.text-grey {
-  color: var(--vipr-text-grey);
-}
-
-.receive-ecash-action-btn {
-  width: 100%;
-  max-width: var(--vipr-width-flow-panel);
+.receive-ecash-title {
+  margin-bottom: var(--vipr-space-4);
 }
 </style>

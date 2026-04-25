@@ -1,5 +1,5 @@
 <template>
-  <q-page class="column" data-testid="home-page">
+  <q-page class="home-page" data-testid="home-page">
     <q-dialog
       v-model="showSelection"
       position="bottom"
@@ -58,7 +58,7 @@
       />
     </q-dialog>
 
-    <section v-if="federationStore.federations.length > 0" class="home-hero q-pa-md">
+    <section v-if="federationStore.federations.length > 0" class="home-hero">
       <div class="hero-card">
         <div class="hero-balance" data-testid="home-balance">
           {{ Math.ceil(totalBalance).toLocaleString() }} sats
@@ -72,7 +72,7 @@
             outline
             data-testid="home-selected-federation-chip"
           >
-            <q-icon name="account_balance" class="q-mr-sm" />
+            <q-icon name="account_balance" class="hero-federation__icon" />
             {{ federationStore.selectedFederation.title }}
           </q-chip>
         </div>
@@ -81,8 +81,7 @@
 
     <div
       v-if="federationStore.federations.length == 0"
-      class="home-empty-state vipr-empty-state vipr-empty-state--hero full-height"
-      style="flex: 1"
+      class="home-empty-state vipr-empty-state vipr-empty-state--hero"
     >
       <div class="vipr-empty-state__title">Ready to start?</div>
       <div class="vipr-empty-state__body">Join a federation to get up and running</div>
@@ -90,7 +89,7 @@
         no-caps
         unelevated
         label="Join a federation"
-        class="home-empty-state__action vipr-btn vipr-btn--primary-soft vipr-btn--md q-mt-md"
+        class="home-empty-state__action vipr-btn vipr-btn--primary-soft vipr-btn--md"
         icon="add"
         @click="showSelection = true"
         :data-testid="'home-join-federation-btn'"
@@ -106,14 +105,14 @@
       position="bottom"
       :offset="[0, 52]"
     >
-      <div class="home-actions q-px-md">
+      <div class="home-actions">
         <q-btn
           no-caps
           unelevated
           label="Send"
           icon="arrow_upward"
           color="primary"
-          class="home-action-btn"
+          class="home-action-btn vipr-btn vipr-btn--primary-soft vipr-btn--lg"
           @click="showSendEcashSelection = true"
           :disable="totalBalance <= 0"
           :data-testid="'home-send-btn'"
@@ -124,7 +123,7 @@
           aria-label="Scan"
           color="primary"
           icon="qr_code_scanner"
-          class="home-action-btn home-action-btn--icon"
+          class="home-action-btn home-action-btn--icon vipr-btn vipr-btn--primary-soft vipr-btn--lg"
           :to="'/scan'"
           :data-testid="'home-scan-btn'"
         />
@@ -134,7 +133,7 @@
           label="Receive"
           icon="arrow_downward"
           color="primary"
-          class="home-action-btn"
+          class="home-action-btn vipr-btn vipr-btn--primary-soft vipr-btn--lg"
           @click="showReceiveEcashSelection = true"
           :data-testid="'home-receive-btn'"
         />
@@ -229,39 +228,52 @@ function returnToDiscovery() {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  max-width: 700px;
+  gap: var(--vipr-space-4);
+  max-width: var(--vipr-width-mobile);
   margin: 0 auto;
-  padding-top: calc(16px + env(safe-area-inset-top));
+  padding-top: calc(var(--vipr-space-4) + env(safe-area-inset-top));
 }
 
 .home-empty-state {
-  padding: 0 24px 120px;
+  padding: var(--vipr-space-0) var(--vipr-space-6) var(--vipr-home-empty-state-bottom-space);
 }
 
 .home-empty-state__action {
-  min-width: min(100%, 230px);
+  margin-top: var(--vipr-space-4);
+  min-width: var(--vipr-home-empty-action-width);
+}
+
+.home-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-empty-state {
+  min-height: 100%;
+  flex: 1 1 auto;
+}
+
+.home-hero {
+  padding: var(--vipr-space-4);
 }
 
 .hero-card {
-  background:
-    radial-gradient(circle at top left, rgba(156, 39, 255, 0.18), transparent 42%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  padding: 18px 20px 16px;
+  background: var(--vipr-home-hero-bg);
+  border: 1px solid var(--vipr-home-hero-border);
+  border-radius: var(--vipr-radius-card);
+  padding: var(--vipr-home-hero-padding);
   text-align: center;
 }
 
 .hero-balance {
-  font-size: clamp(2rem, 6vw, 2.75rem);
-  line-height: 1.05;
+  font-size: var(--vipr-home-balance-font-size);
+  line-height: var(--vipr-line-height-tight);
   font-weight: 700;
-  color: white;
+  color: var(--vipr-text-primary);
 }
 
 .hero-federation {
-  margin-top: 14px;
+  margin-top: var(--vipr-row-padding-y);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -271,33 +283,31 @@ function returnToDiscovery() {
   max-width: 100%;
 }
 
+.hero-federation__icon {
+  margin-right: var(--vipr-space-2);
+}
+
 .home-actions {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  width: min(calc(100vw - 32px), 420px);
-  padding-bottom: 14px;
+  gap: var(--vipr-home-action-gap);
+  width: var(--vipr-home-actions-width);
+  padding-right: var(--vipr-space-4);
+  padding-bottom: var(--vipr-row-padding-y);
+  padding-left: var(--vipr-space-4);
 }
 
 .home-action-btn {
-  flex: 0 1 148px;
+  flex: 0 1 var(--vipr-home-action-button-width);
   min-width: 0;
-  min-height: 52px;
-  border-radius: 18px;
-  background:
-    linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
-  box-shadow:
-    0 7px 16px rgba(111, 0, 255, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  color: white;
+  min-height: var(--vipr-home-action-height);
 }
 
 .home-action-btn--icon {
-  flex: 0 0 62px;
-  width: 62px;
-  min-width: 62px;
+  flex: 0 0 var(--vipr-home-action-icon-width);
+  width: var(--vipr-home-action-icon-width);
+  min-width: var(--vipr-home-action-icon-width);
   padding: 0;
 }
 
@@ -306,14 +316,14 @@ function returnToDiscovery() {
   align-items: center;
   justify-content: center;
   flex-wrap: nowrap;
-  gap: 10px;
-  font-size: 1rem;
+  gap: var(--vipr-space-3);
+  font-size: var(--vipr-font-size-body);
   line-height: 1;
 }
 
 .home-action-btn :deep(.q-icon) {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: var(--vipr-home-action-icon-size);
 }
 
 .home-action-btn :deep(.block) {
@@ -330,14 +340,14 @@ function returnToDiscovery() {
   align-items: center;
   justify-content: center;
   flex-wrap: nowrap;
-  gap: 10px;
-  font-size: 1rem;
+  gap: var(--vipr-space-3);
+  font-size: var(--vipr-font-size-body);
   line-height: 1;
 }
 
 .home-empty-state__action :deep(.q-icon) {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: var(--vipr-home-empty-action-icon-size);
 }
 
 .home-empty-state__action :deep(.block) {
@@ -346,31 +356,31 @@ function returnToDiscovery() {
 }
 
 .home-transactions {
-  padding-bottom: 96px;
+  padding-bottom: var(--vipr-home-transactions-bottom-space);
   width: 100%;
-  max-width: 700px;
+  max-width: var(--vipr-width-mobile);
   margin: 0 auto;
 }
 
 @media (max-width: 599px) {
   .home-actions {
-    width: min(calc(100vw - 28px), 420px);
-    gap: 10px;
+    width: var(--vipr-home-actions-width-mobile);
+    gap: var(--vipr-home-action-gap-mobile);
   }
 
   .home-action-btn {
     flex: 1 1 0;
-    min-height: 50px;
+    min-height: var(--vipr-home-action-height-mobile);
   }
 
   .home-empty-state__action {
-    min-height: 48px;
+    min-height: var(--vipr-home-empty-action-height-mobile);
   }
 
   .home-action-btn--icon {
-    flex: 0 0 56px;
-    width: 56px;
-    min-width: 56px;
+    flex: 0 0 var(--vipr-home-action-icon-width-mobile);
+    width: var(--vipr-home-action-icon-width-mobile);
+    min-width: var(--vipr-home-action-icon-width-mobile);
   }
 }
 </style>
