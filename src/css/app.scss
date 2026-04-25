@@ -137,6 +137,7 @@ html[data-e2e='1'] *::after {
 
 // Shared app button styles. Use these for prominent CTAs instead of
 // redefining height/radius/gradient per view.
+.q-btn.vipr-btn,
 .vipr-btn {
   border-radius: var(--vipr-radius-control);
   font-weight: 600;
@@ -150,12 +151,14 @@ html[data-e2e='1'] *::after {
   }
 }
 
+.q-btn.vipr-btn--primary,
 .vipr-btn--primary {
   color: var(--vipr-text-primary) !important;
   background: var(--vipr-gradient-primary) !important;
   box-shadow: var(--vipr-shadow-primary);
 }
 
+.q-btn.vipr-btn--secondary,
 .vipr-btn--secondary {
   color: var(--vipr-text-secondary) !important;
   background: rgba(255, 255, 255, 0.04) !important;
@@ -163,25 +166,36 @@ html[data-e2e='1'] *::after {
   box-shadow: none;
 }
 
+.q-btn.vipr-btn--primary-soft,
 .vipr-btn--primary-soft {
   color: var(--vipr-text-primary) !important;
   background: var(--vipr-gradient-primary) !important;
   box-shadow: var(--vipr-shadow-primary-soft);
 }
 
+.q-btn.vipr-btn--lg,
 .vipr-btn--lg {
   min-height: var(--vipr-control-height-lg);
   border-radius: var(--vipr-radius-button-lg);
 }
 
+.q-btn.vipr-btn--md,
 .vipr-btn--md {
   min-height: var(--vipr-control-height-md);
 }
 
+.q-btn.vipr-btn--compact,
 .vipr-btn--compact {
   min-height: 38px;
   border-radius: var(--vipr-radius-sm);
   padding: var(--vipr-space-0) var(--vipr-space-4);
+}
+
+.q-btn.vipr-fab--primary,
+.vipr-fab--primary {
+  color: var(--vipr-text-primary) !important;
+  background: var(--vipr-gradient-primary) !important;
+  box-shadow: var(--vipr-shadow-primary-soft);
 }
 
 .vipr-mobile-page {

@@ -41,7 +41,7 @@
           icon="add"
           color="primary"
           unelevated
-          class="add-federation-fab__button"
+          class="add-federation-fab__button vipr-fab--primary"
           :aria-expanded="showSelection"
           @click="showSelection = true"
           data-testid="add-federation-button"
@@ -128,16 +128,6 @@ function returnToDiscovery() {
   right: max(24px, calc((100vw - 700px) / 2 + 24px));
   bottom: calc(120px + env(safe-area-inset-bottom));
   z-index: 1200;
-}
-
-.add-federation-fab__button {
-  background:
-    linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
-  box-shadow:
-    0 7px 16px rgba(111, 0, 255, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  color: white;
 }
 
 .add-federation-fab__button :deep(.q-icon) {

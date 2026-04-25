@@ -113,7 +113,7 @@
           label="Send"
           icon="arrow_upward"
           color="primary"
-          class="home-action-btn"
+          class="home-action-btn vipr-btn vipr-btn--primary-soft vipr-btn--lg"
           @click="showSendEcashSelection = true"
           :disable="totalBalance <= 0"
           :data-testid="'home-send-btn'"
@@ -124,7 +124,7 @@
           aria-label="Scan"
           color="primary"
           icon="qr_code_scanner"
-          class="home-action-btn home-action-btn--icon"
+          class="home-action-btn home-action-btn--icon vipr-btn vipr-btn--primary-soft vipr-btn--lg"
           :to="'/scan'"
           :data-testid="'home-scan-btn'"
         />
@@ -134,7 +134,7 @@
           label="Receive"
           icon="arrow_downward"
           color="primary"
-          class="home-action-btn"
+          class="home-action-btn vipr-btn vipr-btn--primary-soft vipr-btn--lg"
           @click="showReceiveEcashSelection = true"
           :data-testid="'home-receive-btn'"
         />
@@ -284,14 +284,6 @@ function returnToDiscovery() {
   flex: 0 1 148px;
   min-width: 0;
   min-height: 52px;
-  border-radius: 18px;
-  background:
-    linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
-  box-shadow:
-    0 7px 16px rgba(111, 0, 255, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  color: white;
 }
 
 .home-action-btn--icon {
