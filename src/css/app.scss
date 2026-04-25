@@ -55,11 +55,14 @@ body,
   --vipr-font-size-section-title: 1.05rem;
   --vipr-font-size-summary-title: 1.35rem;
   --vipr-font-size-amount: 2.75rem;
+  --vipr-font-size-control-amount: clamp(2rem, 6vw, 2.5rem);
   --vipr-font-size-detail-amount: clamp(2.4rem, 6vw, 3rem);
   --vipr-font-size-status-value: 1.55rem;
   --vipr-font-size-body: 1rem;
   --vipr-font-size-caption: 0.9rem;
   --vipr-font-size-label: 0.78rem;
+  --vipr-font-size-keypad: 1.16rem;
+  --vipr-font-size-icon-lg: 1.55rem;
   --vipr-line-height-tight: 1.1;
   --vipr-line-height-body: 1.45;
   --vipr-gradient-primary: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96));
@@ -107,6 +110,13 @@ body,
   --vipr-row-hover-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
   --vipr-row-icon-bg: rgba(255, 255, 255, 0.07);
   --vipr-row-icon-bg-subtle: rgba(255, 255, 255, 0.05);
+  --vipr-control-panel-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.032), rgba(255, 255, 255, 0.018)),
+    var(--vipr-color-input-bg);
+  --vipr-control-panel-border: var(--vipr-color-input-border);
+  --vipr-control-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.024);
+  --vipr-control-panel-bg-hover: var(--vipr-color-input-bg-hover);
+  --vipr-control-panel-bg-active: rgba(255, 255, 255, 0.09);
   --vipr-qr-surface-bg: #fff;
   --vipr-copy-field-bg: rgba(255, 255, 255, 0.045);
   --vipr-copy-field-border: rgba(255, 255, 255, 0.055);

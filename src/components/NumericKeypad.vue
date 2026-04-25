@@ -34,14 +34,12 @@ defineProps<{
 .keypad-btn {
   min-height: 56px;
   border-radius: var(--vipr-radius-control);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.016)),
-    rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.075);
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 1.16rem;
+  background: var(--vipr-control-panel-bg);
+  border: 1px solid var(--vipr-row-border);
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-keypad);
   font-weight: 600;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  box-shadow: var(--vipr-control-panel-shadow);
   transition:
     background-color 160ms ease,
     border-color 160ms ease,
@@ -49,22 +47,22 @@ defineProps<{
 }
 
 .keypad-btn:hover {
-  background-color: rgba(255, 255, 255, 0.065);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--vipr-control-panel-bg-hover);
+  border-color: var(--vipr-color-input-border-hover);
 }
 
 .keypad-btn:active {
-  background-color: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.13);
+  background: var(--vipr-control-panel-bg-active);
+  border-color: var(--vipr-color-input-border-focus);
 }
 
 .keypad-btn--clear,
 .keypad-btn--backspace {
-  color: rgba(255, 255, 255, 0.84);
+  color: var(--vipr-text-secondary);
 }
 
 .keypad-btn :deep(.q-icon) {
-  font-size: 1.55rem;
+  font-size: var(--vipr-font-size-icon-lg);
 }
 
 .keypad-btn :deep(.q-focus-helper),
@@ -76,7 +74,7 @@ defineProps<{
   .keypad-btn {
     min-height: 52px;
     border-radius: var(--vipr-radius-sm);
-    font-size: 1.08rem;
+    font-size: var(--vipr-font-size-section-title);
   }
 }
 </style>
