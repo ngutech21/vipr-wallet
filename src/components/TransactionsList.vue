@@ -3,7 +3,11 @@
     :class="['transactions-list', { 'transactions-list--home': props.mode === 'home' }]"
     class="q-px-md q-pb-md"
   >
-    <div v-if="showTransactionsCard" class="transactions-card" data-testid="transactions-card">
+    <div
+      v-if="showTransactionsCard"
+      class="transactions-card vipr-surface-card vipr-surface-card--strong"
+      data-testid="transactions-card"
+    >
       <div class="transactions-header">
         <div>
           <div class="transactions-title">
@@ -300,13 +304,7 @@ defineExpose({
 }
 
 .transactions-card {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.022)),
-    rgba(15, 16, 22, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.075);
-  border-radius: 26px;
   padding: 20px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
 .transactions-list--home .transactions-card {

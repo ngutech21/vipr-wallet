@@ -38,6 +38,16 @@ Playwright is configured in `playwright.config.ts` (tests live under `test/e2e`)
 - After any updates (code, config, or dependencies), run tests and ensure they pass before finalizing changes.
 - For UI verification/debugging tasks, use the `playwright` skill workflow and Playwright MCP tooling (`browser_snapshot` first, then interactions/assertions).
 
+### Local Federation UI Testing
+
+- Helper scripts live in `scripts/` and should be used for manual Playwright flows against a local Devimint federation.
+- Start or enter the local test environment with `nix develop --accept-flake-config`. `scripts/run_devimint.sh` runs `devimint wasm-test-setup --exec bash`; `scripts/setup_test_shell.sh <cmd>` runs a command inside that setup. Use `scripts/kill_devimint.sh` to clean up local Devimint processes when a run leaves stale services behind.
+- Prefer the Faucet scripts when the Faucet is healthy: `scripts/get_connect_string.sh` returns the federation invite code from `http://localhost:15243/connect-string`, `scripts/pay_invoice.sh <bolt11>` pays a UI-generated Lightning invoice, and `scripts/create_invoice.sh <sats>` creates a Faucet invoice.
+- Before relying on Faucet scripts, verify `scripts/get_connect_string.sh` succeeds. If it cannot connect to `localhost:15243`, use the active Devimint environment instead: read the invite from `$FM_CLIENT_DIR/invite-code` or `fedimint-cli invite-code`, and pay UI-generated Lightning invoices via the funded gateway, for example `$FM_GWCLI_LDK lightning pay-invoice <bolt11>` or `$FM_GWCLI_LND lightning pay-invoice <bolt11>`.
+- On-chain helper scripts require `FM_BITCOIND_URL` from the active Devimint environment. `scripts/pay_onchain.sh <bitcoin-address>` sends regtest BTC and mines blocks, `scripts/check_onchain_address.sh <bitcoin-address>` checks UTXOs, and `scripts/get_block_height.sh` reads the current regtest height.
+- For manual app runs that should mirror Playwright E2E, start the dev server with `VITE_E2E_MODE=1 pnpm dev:e2e` and open `http://127.0.0.1:9303/`. The configured E2E tests use the same base URL, block service workers, and rely on `data-testid` selectors.
+- A complete Lightning receive workflow is: create/skip startup wizard, join the local federation, click `home-receive-btn`, choose `receive-lightning-card`, enter an amount with `receive-keypad-btn-*`, click `receive-create-invoice-btn`, extract `receive-invoice-input`, pay it with `scripts/pay_invoice.sh` or the gateway fallback, then assert `received-lightning-success-state`, return home, and verify `home-balance` and the latest transaction update.
+
 ### Package Management
 
 - `pnpm install` - Install dependencies

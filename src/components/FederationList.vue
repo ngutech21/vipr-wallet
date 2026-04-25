@@ -3,7 +3,10 @@
     <q-card
       v-for="fedi in federations"
       :key="fedi.federationId"
-      :class="['federation-card', isSelected(fedi) ? 'federation-selected' : '']"
+      :class="[
+        'federation-card vipr-surface-card vipr-surface-card--list',
+        isSelected(fedi) ? 'federation-selected vipr-surface-card--selected' : '',
+      ]"
       flat
       @click="selectFederation(fedi)"
       :data-testid="`federation-list-item-${fedi.federationId}`"

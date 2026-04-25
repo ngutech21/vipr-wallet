@@ -61,6 +61,8 @@ body,
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.022)),
     var(--vipr-color-surface-base);
   --vipr-surface-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  --vipr-surface-card-bg-hover: rgba(255, 255, 255, 0.05);
+  --vipr-surface-card-bg-selected: rgba(128, 0, 255, 0.08);
   --vipr-surface-card-bg-subtle:
     linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.006)),
     rgba(255, 255, 255, 0.004);
@@ -242,6 +244,23 @@ html[data-e2e='1'] *::after {
   box-shadow: var(--vipr-surface-card-shadow);
 }
 
+.vipr-surface-card--subtle,
+.vipr-surface-card--list {
+  background: var(--vipr-surface-card-bg-subtle);
+  border-color: var(--vipr-surface-card-border-subtle);
+  box-shadow: var(--vipr-surface-card-shadow-subtle);
+}
+
+.vipr-surface-card--summary {
+  background: var(--vipr-surface-card-bg-summary);
+  border-color: var(--vipr-color-surface-border);
+}
+
+.vipr-surface-card--selected {
+  background: var(--vipr-surface-card-bg-selected);
+  border-color: var(--q-primary);
+}
+
 .section-title {
   font-size: 1.05rem;
   font-weight: 600;
@@ -255,20 +274,16 @@ html[data-e2e='1'] *::after {
 
 .federation-list .federation-card {
   transition: all 0.2s ease;
-  border-radius: 20px;
   overflow: hidden;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--vipr-color-surface-border);
 }
 
 .federation-list .federation-card:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--vipr-surface-card-bg-hover);
 }
 
 .federation-list .federation-card.federation-selected {
-  background: rgba(var(--q-primary-rgb), 0.08);
-  border-color: var(--q-primary);
+  background: var(--vipr-surface-card-bg-selected);
 }
 
 .federation-list .federation-item {
