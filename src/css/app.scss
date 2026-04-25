@@ -138,6 +138,10 @@ body,
   --vipr-qr-surface-bg: #fff;
   --vipr-copy-field-bg: rgba(255, 255, 255, 0.045);
   --vipr-copy-field-border: rgba(255, 255, 255, 0.055);
+  --vipr-action-slider-bg: var(--vipr-control-panel-bg);
+  --vipr-action-slider-border: var(--vipr-control-panel-border);
+  --vipr-action-slider-handle-bg: var(--vipr-gradient-primary);
+  --vipr-action-slider-shadow: var(--vipr-shadow-primary-subtle);
   --vipr-result-bg-lightning:
     radial-gradient(circle at top left, rgba(128, 0, 255, 0.22), transparent 36%),
     linear-gradient(180deg, #171717 0%, #121212 100%);
