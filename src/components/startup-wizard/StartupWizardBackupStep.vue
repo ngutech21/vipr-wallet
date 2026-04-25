@@ -32,7 +32,7 @@
     </div>
     <div class="backup-step__action">
       <q-btn
-        label="Recovery phrase saved"
+        label="I saved it"
         color="primary"
         icon="check_circle"
         no-caps
@@ -73,8 +73,30 @@ defineEmits<{
 }
 
 @media (max-width: 599px) {
+  .backup-step__intro,
+  .backup-step__words {
+    margin-bottom: var(--vipr-row-padding-y);
+  }
+
+  .backup-step__words {
+    gap: var(--vipr-backup-word-grid-gap-mobile);
+  }
+
+  .backup-step__words :deep(.vipr-word-card) {
+    border-radius: var(--vipr-radius-button-lg);
+  }
+
+  .backup-step__words :deep(.vipr-word-card__section) {
+    padding: var(--vipr-backup-wizard-word-card-padding-mobile);
+  }
+
+  .backup-step__words :deep(.vipr-word-card__number) {
+    margin-bottom: var(--vipr-backup-wizard-word-number-gap-mobile);
+  }
+
   .backup-step__actions {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--vipr-backup-word-grid-gap-mobile);
   }
 }
 

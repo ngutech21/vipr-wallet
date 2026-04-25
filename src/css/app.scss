@@ -331,6 +331,7 @@ body,
   --vipr-wizard-actions-gap: var(--vipr-space-3);
   --vipr-wizard-button-height: var(--vipr-home-action-height);
   --vipr-wizard-skip-font-size: 0.98rem;
+  --vipr-wizard-backup-compact-copy-gap-mobile: var(--vipr-row-padding-y);
   --vipr-wizard-visual-min-height: 300px;
   --vipr-wizard-visual-min-height-mobile: 244px;
   --vipr-wizard-visual-bottom-space: 28px;
@@ -371,6 +372,8 @@ body,
   --vipr-backup-list-padding: var(--vipr-row-padding-x);
   --vipr-backup-list-item-gap: 6px;
   --vipr-backup-word-grid-gap-mobile: 10px;
+  --vipr-backup-wizard-word-card-padding-mobile: 10px var(--vipr-space-3);
+  --vipr-backup-wizard-word-number-gap-mobile: var(--vipr-space-1);
   --vipr-layout-footer-bg:
     linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 18px),
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.018)),

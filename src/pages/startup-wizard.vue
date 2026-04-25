@@ -165,7 +165,7 @@ meta:
 
           <div
             v-else-if="currentStep === 'backup'"
-            class="wizard-slide"
+            class="wizard-slide wizard-slide--backup"
             data-testid="startup-wizard-backup-step"
           >
             <div class="wizard-copy wizard-copy--compact">
@@ -512,6 +512,14 @@ onBeforeUnmount(() => {
 
   .wizard-slide {
     min-height: var(--vipr-wizard-slide-min-height-mobile);
+  }
+
+  .wizard-slide--backup {
+    min-height: auto;
+  }
+
+  .wizard-slide--backup .wizard-copy--compact {
+    margin-bottom: var(--vipr-wizard-backup-compact-copy-gap-mobile);
   }
 
   .wizard-visual {
