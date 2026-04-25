@@ -113,6 +113,33 @@ body,
   --vipr-row-hover-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
   --vipr-row-icon-bg: rgba(255, 255, 255, 0.07);
   --vipr-row-icon-bg-subtle: rgba(255, 255, 255, 0.05);
+  --vipr-settings-section-bg-primary:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04)),
+    rgba(18, 18, 18, 0.92);
+  --vipr-settings-section-bg-secondary:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.025)),
+    rgba(18, 18, 18, 0.88);
+  --vipr-settings-section-bg-danger:
+    linear-gradient(180deg, rgba(255, 99, 99, 0.08), rgba(255, 255, 255, 0.03)),
+    rgba(18, 18, 18, 0.9);
+  --vipr-settings-section-border-danger: rgba(255, 99, 99, 0.18);
+  --vipr-settings-panel-padding: var(--vipr-row-padding-y) var(--vipr-row-padding-x)
+    var(--vipr-row-padding-x);
+  --vipr-settings-panel-padding-mobile: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-4);
+  --vipr-settings-copy-padding: var(--vipr-space-1) var(--vipr-space-0);
+  --vipr-settings-copy-padding-secondary: var(--vipr-space-1) calc(var(--vipr-space-1) / 2);
+  --vipr-settings-copy-action-gap: var(--vipr-row-padding-y);
+  --vipr-settings-outline-button-bg: rgba(255, 255, 255, 0.025);
+  --vipr-settings-outline-button-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  --vipr-settings-danger-button-shadow:
+    0 4px 10px rgba(255, 68, 68, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --vipr-settings-empty-avatar-bg: rgba(255, 255, 255, 0.08);
+  --vipr-settings-empty-avatar-border: rgba(255, 255, 255, 0.18);
+  --vipr-settings-empty-avatar-head-bg: rgba(255, 255, 255, 0.52);
+  --vipr-settings-empty-avatar-body-bg: rgba(255, 255, 255, 0.35);
+  --vipr-settings-header-icon-color-secondary: rgba(255, 255, 255, 0.74);
+  --vipr-settings-header-icon-color-danger: rgba(255, 255, 255, 0.82);
+  --vipr-settings-toggle-icon-color: rgba(255, 255, 255, 0.76);
   --vipr-detail-separator: rgba(255, 255, 255, 0.032);
   --vipr-detail-icon-bg: rgba(156, 39, 255, 0.12);
   --vipr-chip-bg: rgba(255, 255, 255, 0.075);

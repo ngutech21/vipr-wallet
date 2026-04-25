@@ -18,7 +18,7 @@
                   <div class="connection-status">
                     <q-icon
                       :name="connectedProvider ? 'check_circle' : 'radio_button_unchecked'"
-                      :class="connectedProvider ? 'text-positive' : 'text-grey-6'"
+                      :class="connectedProvider ? 'text-positive' : 'settings-disconnected-icon'"
                       size="md"
                       class="q-mr-sm"
                     />
@@ -26,10 +26,10 @@
                       <div class="text-subtitle1 q-mb-xs">
                         {{ connectedProvider ? 'Connected' : 'Not Connected' }}
                       </div>
-                      <div class="text-caption text-grey-8" v-if="connectedProvider">
+                      <div class="text-caption settings-muted" v-if="connectedProvider">
                         {{ connectedProvider }}
                       </div>
-                      <div class="text-caption text-grey-8" v-else>
+                      <div class="text-caption settings-muted" v-else>
                         Connect to send and receive payments via Lightning
                       </div>
                     </div>
@@ -173,7 +173,7 @@
                   data-testid="settings-contact-source-input"
                 />
 
-                <div class="text-caption text-grey-8 q-mt-xs">
+                <div class="text-caption settings-muted q-mt-xs">
                   {{ contactSourceHint }}
                 </div>
 
@@ -210,12 +210,12 @@
                 </div>
 
                 <div class="contacts-summary q-mt-md">
-                  <div class="text-caption text-grey-8" data-testid="settings-contact-count">
+                  <div class="text-caption settings-muted" data-testid="settings-contact-count">
                     {{ syncedContacts.length }} imported contacts
                   </div>
                   <div
                     v-if="lastSyncedLabel"
-                    class="text-caption text-grey-8 q-mt-xs"
+                    class="text-caption settings-muted q-mt-xs"
                     data-testid="settings-contact-last-synced"
                   >
                     {{ lastSyncedLabel }}
@@ -249,7 +249,12 @@
                       <q-avatar v-if="contact.picture">
                         <img :src="contact.picture" :alt="getContactDisplayName(contact)" />
                       </q-avatar>
-                      <q-icon v-else name="account_circle" size="md" color="grey-5" />
+                      <q-icon
+                        v-else
+                        name="account_circle"
+                        size="md"
+                        class="settings-contact-placeholder-icon"
+                      />
                     </q-item-section>
                     <q-item-section>
                       <q-item-label>{{ getContactDisplayName(contact) }}</q-item-label>
@@ -270,7 +275,7 @@
                   class="row items-center justify-between q-mt-sm q-gutter-sm"
                 >
                   <div
-                    class="text-caption text-grey-8"
+                    class="text-caption settings-muted"
                     data-testid="settings-contact-visible-count"
                   >
                     Showing {{ visibleContacts.length }} of {{ syncedContacts.length }} contacts
@@ -746,19 +751,19 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-panel {
-  padding: 14px 18px 18px;
+  padding: var(--vipr-settings-panel-padding);
 }
 
 .settings-panel--compact {
-  padding-top: 12px;
+  padding-top: var(--vipr-space-3);
 }
 
 .settings-panel--secondary {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--vipr-text-secondary);
 }
 
 .settings-panel--danger {
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--vipr-settings-header-icon-color-danger);
 }
 
 .connection-status {
@@ -767,20 +772,20 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-copy-block {
-  padding: 4px 0;
-  color: rgba(255, 255, 255, 0.78);
-  line-height: 1.45;
+  padding: var(--vipr-settings-copy-padding);
+  color: var(--vipr-text-secondary);
+  line-height: var(--vipr-line-height-body);
 }
 
 .settings-panel--secondary .settings-copy-block {
-  padding: 4px 2px;
+  padding: var(--vipr-settings-copy-padding-secondary);
   background: transparent;
   border: 0;
 }
 
 .settings-panel--secondary .settings-copy-block + .q-btn,
 .settings-panel--secondary .settings-copy-block + div {
-  margin-top: 14px;
+  margin-top: var(--vipr-settings-copy-action-gap);
 }
 
 .settings-panel :deep(.q-btn:not(.q-btn--round):not(.q-btn--dense)) {
@@ -798,14 +803,12 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-panel :deep(.q-btn.q-btn--outline) {
-  background: rgba(255, 255, 255, 0.025);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  background: var(--vipr-settings-outline-button-bg);
+  box-shadow: var(--vipr-settings-outline-button-shadow);
 }
 
 .settings-panel :deep(.q-btn.bg-negative) {
-  box-shadow:
-    0 4px 10px rgba(255, 68, 68, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: var(--vipr-settings-danger-button-shadow);
 }
 
 .contacts-section {
@@ -823,9 +826,9 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 .empty-contact-avatar {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--vipr-radius-pill);
+  background: var(--vipr-settings-empty-avatar-bg);
+  border: 1px solid var(--vipr-settings-empty-avatar-border);
   position: relative;
 }
 
@@ -836,8 +839,8 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   top: 8px;
   width: 10px;
   height: 10px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.52);
+  border-radius: var(--vipr-radius-pill);
+  background: var(--vipr-settings-empty-avatar-head-bg);
   transform: translateX(-50%);
 }
 
@@ -848,13 +851,14 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   bottom: 6px;
   width: 16px;
   height: 8px;
-  border-radius: 999px 999px 6px 6px;
-  background: rgba(255, 255, 255, 0.35);
+  border-radius: var(--vipr-radius-pill) var(--vipr-radius-pill) var(--vipr-space-2)
+    var(--vipr-space-2);
+  background: var(--vipr-settings-empty-avatar-body-bg);
   transform: translateX(-50%);
 }
 
 .relay-input :deep(.q-field__bottom) {
-  padding: 4px 12px 0;
+  padding: var(--vipr-space-1) var(--vipr-space-3) var(--vipr-space-0);
 }
 
 .rounded-borders {
@@ -882,22 +886,16 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-section--primary :deep(.q-expansion-item__container) {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04)),
-    rgba(18, 18, 18, 0.92);
+  background: var(--vipr-settings-section-bg-primary);
 }
 
 .settings-section--secondary :deep(.q-expansion-item__container) {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.025)),
-    rgba(18, 18, 18, 0.88);
+  background: var(--vipr-settings-section-bg-secondary);
 }
 
 .settings-section--danger :deep(.q-expansion-item__container) {
-  background:
-    linear-gradient(180deg, rgba(255, 99, 99, 0.08), rgba(255, 255, 255, 0.03)),
-    rgba(18, 18, 18, 0.9);
-  border-color: rgba(255, 99, 99, 0.18);
+  background: var(--vipr-settings-section-bg-danger);
+  border-color: var(--vipr-settings-section-border-danger);
 }
 
 .settings-section :deep(.q-item) {
@@ -906,14 +904,14 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-section :deep(.q-item__label) {
-  color: white;
+  color: var(--vipr-text-primary);
 }
 
 .settings-section :deep(.q-item__label--caption) {
-  margin-top: 2px;
+  margin-top: calc(var(--vipr-space-1) / 2);
   font-size: 0.95rem;
   line-height: 1.25;
-  color: rgba(255, 255, 255, 0.56);
+  color: var(--vipr-text-soft);
 }
 
 .settings-section :deep(.q-item__section--avatar) {
@@ -923,27 +921,27 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 .settings-section :deep(.q-expansion-item__container > .q-item .q-item__section--avatar .q-icon) {
   width: 36px;
   height: 36px;
-  border-radius: 12px;
+  border-radius: var(--vipr-radius-sm);
   display: grid;
   place-items: center;
   background: var(--vipr-row-icon-bg);
-  color: white;
+  color: var(--vipr-text-primary);
 }
 
 .settings-section--secondary
   :deep(.q-expansion-item__container > .q-item .q-item__section--avatar .q-icon) {
   background: transparent;
-  color: rgba(255, 255, 255, 0.74);
+  color: var(--vipr-settings-header-icon-color-secondary);
 }
 
 .settings-section--danger
   :deep(.q-expansion-item__container > .q-item .q-item__section--avatar .q-icon) {
   background: transparent;
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--vipr-settings-header-icon-color-danger);
 }
 
 .settings-section :deep(.q-expansion-item__toggle-icon) {
-  color: rgba(255, 255, 255, 0.76);
+  color: var(--vipr-settings-toggle-icon-color);
 }
 
 .settings-section :deep(.q-expansion-item__content) {
@@ -961,14 +959,26 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .settings-section :deep(.q-expansion-item__content .q-item) {
-  padding: 8px 12px;
+  padding: var(--vipr-space-2) var(--vipr-space-3);
+}
+
+.settings-muted {
+  color: var(--vipr-text-muted);
+}
+
+.settings-contact-placeholder-icon {
+  color: var(--vipr-text-muted);
+}
+
+.settings-disconnected-icon {
+  color: var(--vipr-text-soft);
 }
 
 /* Responsive adjustments */
 @media (max-width: 599px) {
   .justify-end {
     justify-content: flex-start;
-    margin-top: 8px;
+    margin-top: var(--vipr-space-2);
   }
 
   .contacts-section {
@@ -976,12 +986,12 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   }
 
   .settings-panel {
-    padding: 0 16px 16px;
+    padding: var(--vipr-settings-panel-padding-mobile);
   }
 
   .settings-section :deep(.q-item) {
     min-height: 70px;
-    padding: 12px 16px;
+    padding: var(--vipr-space-3) var(--vipr-space-4);
   }
 }
 </style>
