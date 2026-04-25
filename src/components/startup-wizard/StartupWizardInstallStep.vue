@@ -69,21 +69,21 @@ defineEmits<{
 .install-panel {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--vipr-wizard-install-gap);
 }
 
 .install-panel__eyebrow {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(var(--q-primary-rgb), 0.16);
-  border: 1px solid rgba(var(--q-primary-rgb), 0.28);
+  padding: var(--vipr-space-1) 10px;
+  border-radius: var(--vipr-radius-pill);
+  background: var(--vipr-wizard-install-eyebrow-bg);
+  border: 1px solid var(--vipr-wizard-install-eyebrow-border);
 }
 
 .install-panel__header {
   display: flex;
-  gap: 14px;
+  gap: var(--vipr-row-padding-y);
   align-items: flex-start;
 }
 
@@ -93,7 +93,7 @@ defineEmits<{
   width: 46px;
   height: 46px;
   flex-shrink: 0;
-  border-radius: 14px;
+  border-radius: var(--vipr-radius-control);
   background: var(--vipr-row-icon-bg);
   color: var(--vipr-text-primary);
   border: 1px solid var(--vipr-color-surface-border);
@@ -104,16 +104,16 @@ defineEmits<{
 }
 
 .install-panel__browser-note {
-  padding: 10px 12px;
+  padding: var(--vipr-wizard-install-warning-padding);
   border-radius: var(--vipr-radius-sm);
-  font-size: 0.92rem;
+  font-size: var(--vipr-font-size-caption);
 }
 
 .install-step {
   display: flex;
-  gap: 12px;
+  gap: var(--vipr-space-3);
   align-items: flex-start;
-  padding-top: 14px;
+  padding-top: var(--vipr-row-padding-y);
   border-top: 1px solid var(--vipr-color-surface-border);
 
   + .install-step {
@@ -127,16 +127,16 @@ defineEmits<{
   width: 26px;
   height: 26px;
   flex-shrink: 0;
-  border-radius: 999px;
-  background: rgba(var(--q-primary-rgb), 0.18);
-  border: 1px solid rgba(var(--q-primary-rgb), 0.32);
+  border-radius: var(--vipr-radius-pill);
+  background: var(--vipr-wizard-install-step-bg);
+  border: 1px solid var(--vipr-wizard-install-step-border);
   color: var(--vipr-text-primary);
-  font-size: 0.82rem;
+  font-size: var(--vipr-font-size-label);
   font-weight: 700;
 }
 
 .install-step__text {
-  line-height: 1.45;
+  line-height: var(--vipr-line-height-body);
   color: var(--vipr-text-primary);
 }
 
@@ -146,6 +146,6 @@ defineEmits<{
 
 .install-panel__continue-btn {
   width: 100%;
-  padding-inline: 24px;
+  padding-inline: var(--vipr-space-6);
 }
 </style>

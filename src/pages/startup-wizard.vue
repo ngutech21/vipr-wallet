@@ -298,7 +298,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .startup-wizard-page {
-  padding: calc(16px + env(safe-area-inset-top)) 16px 16px;
+  padding: var(--vipr-wizard-page-padding);
 }
 
 .wizard-shell {
@@ -315,11 +315,11 @@ onBeforeUnmount(() => {
 }
 
 .wizard-card__section {
-  padding: 28px 24px 24px;
+  padding: var(--vipr-wizard-card-padding);
 }
 
 .wizard-slide {
-  min-height: 680px;
+  min-height: var(--vipr-wizard-slide-min-height);
   display: flex;
   flex-direction: column;
 }
@@ -335,11 +335,11 @@ onBeforeUnmount(() => {
 
 .wizard-copy--compact {
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: var(--vipr-wizard-compact-copy-gap);
 }
 
 .wizard-kicker {
-  margin-bottom: 8px;
+  margin-bottom: var(--vipr-space-2);
 }
 
 .wizard-title {
@@ -347,31 +347,31 @@ onBeforeUnmount(() => {
 }
 
 .wizard-body {
-  margin: 14px 0 0;
+  margin: var(--vipr-wizard-body-gap) 0 0;
 }
 
 .wizard-actions,
 .wizard-footer {
   margin-top: auto;
-  padding-top: 24px;
+  padding-top: var(--vipr-wizard-actions-top-space);
 }
 
 .wizard-actions--stack {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--vipr-wizard-actions-gap);
 }
 
 .wizard-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--vipr-wizard-actions-gap);
 }
 
 .wizard-primary-btn,
 .wizard-secondary-btn {
-  min-height: 52px;
+  min-height: var(--vipr-wizard-button-height);
   border-radius: var(--vipr-radius-button-lg);
 }
 
@@ -393,19 +393,19 @@ onBeforeUnmount(() => {
 
 .wizard-skip {
   align-self: flex-end;
-  padding: 0;
+  padding: var(--vipr-space-0);
   border: 0;
   background: transparent;
   color: var(--vipr-text-muted);
-  font-size: 0.98rem;
+  font-size: var(--vipr-wizard-skip-font-size);
   cursor: pointer;
 }
 
 .wizard-visual {
   position: relative;
   flex: 1;
-  min-height: 300px;
-  margin-bottom: 28px;
+  min-height: var(--vipr-wizard-visual-min-height);
+  margin-bottom: var(--vipr-wizard-visual-bottom-space);
 }
 
 .wizard-visual--welcome,
@@ -418,9 +418,9 @@ onBeforeUnmount(() => {
 
 .welcome-orb {
   position: absolute;
-  border-radius: 999px;
-  background: var(--vipr-surface-card-bg-subtle);
-  border: 1px solid var(--vipr-surface-card-border-subtle);
+  border-radius: var(--vipr-radius-pill);
+  background: var(--vipr-wizard-orb-bg);
+  border: 1px solid var(--vipr-wizard-orb-border);
 }
 
 .welcome-orb--large {
@@ -444,8 +444,8 @@ onBeforeUnmount(() => {
 
 .custody-ring {
   position: absolute;
-  border-radius: 999px;
-  border: 24px solid rgba(var(--q-primary-rgb), 0.16);
+  border-radius: var(--vipr-radius-pill);
+  border: var(--vipr-space-6) solid var(--vipr-wizard-ring-border);
 }
 
 .custody-ring--outer {
@@ -461,7 +461,7 @@ onBeforeUnmount(() => {
 .custody-ring--inner {
   width: 120px;
   height: 120px;
-  background: rgba(var(--q-primary-rgb), 0.14);
+  background: var(--vipr-wizard-ring-bg);
   border-width: 18px;
 }
 
@@ -471,7 +471,7 @@ onBeforeUnmount(() => {
   place-items: center;
   width: 180px;
   height: 120px;
-  padding: 16px;
+  padding: var(--vipr-wizard-federation-card-padding);
   border-radius: var(--vipr-radius-card);
   background: var(--vipr-control-panel-bg);
   border: 1px solid var(--vipr-control-panel-border);
@@ -498,29 +498,25 @@ onBeforeUnmount(() => {
 
 .wizard-visual--done {
   min-height: 220px;
-  background:
-    radial-gradient(circle at 25% 20%, rgba(255, 244, 173, 0.55), transparent 12%),
-    radial-gradient(circle at 70% 34%, rgba(255, 145, 214, 0.52), transparent 10%),
-    radial-gradient(circle at 30% 70%, rgba(120, 232, 255, 0.4), transparent 10%),
-    radial-gradient(circle at 82% 76%, rgba(255, 255, 255, 0.34), transparent 8%);
+  background: var(--vipr-wizard-done-visual-bg);
 }
 
 @media (max-width: 599px) {
   .startup-wizard-page {
-    padding: calc(8px + env(safe-area-inset-top)) 8px 8px;
+    padding: var(--vipr-wizard-page-padding-mobile);
   }
 
   .wizard-card__section {
-    padding: 22px 18px 18px;
+    padding: var(--vipr-wizard-card-padding-mobile);
   }
 
   .wizard-slide {
-    min-height: 620px;
+    min-height: var(--vipr-wizard-slide-min-height-mobile);
   }
 
   .wizard-visual {
-    min-height: 244px;
-    margin-bottom: 20px;
+    min-height: var(--vipr-wizard-visual-min-height-mobile);
+    margin-bottom: var(--vipr-wizard-visual-bottom-space-mobile);
   }
 
   .wizard-title {
@@ -533,7 +529,7 @@ onBeforeUnmount(() => {
 
   .wizard-actions,
   .wizard-footer {
-    padding-top: 18px;
+    padding-top: var(--vipr-wizard-actions-top-space-mobile);
   }
 
   .wizard-footer {
@@ -543,7 +539,7 @@ onBeforeUnmount(() => {
   .federation-card {
     width: 148px;
     height: 108px;
-    font-size: 0.92rem;
+    font-size: var(--vipr-font-size-caption);
   }
 }
 </style>

@@ -63,7 +63,7 @@ defineEmits<{
 
 .backup-confirm-btn :deep(.q-btn__content) {
   flex-wrap: nowrap;
-  gap: 8px;
+  gap: var(--vipr-space-2);
 }
 
 .backup-confirm-btn :deep(.block) {

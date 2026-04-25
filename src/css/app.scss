@@ -211,6 +211,41 @@ body,
   --vipr-send-contact-list-bg: var(--vipr-surface-card-bg);
   --vipr-send-contact-list-border: var(--vipr-color-surface-border);
   --vipr-send-contacts-hint-opacity: 0.92;
+  --vipr-wizard-page-padding: calc(var(--vipr-space-4) + env(safe-area-inset-top))
+    var(--vipr-space-4) var(--vipr-space-4);
+  --vipr-wizard-page-padding-mobile: calc(var(--vipr-space-2) + env(safe-area-inset-top))
+    var(--vipr-space-2) var(--vipr-space-2);
+  --vipr-wizard-card-padding: 28px var(--vipr-space-6) var(--vipr-space-6);
+  --vipr-wizard-card-padding-mobile: 22px var(--vipr-row-padding-x) var(--vipr-row-padding-x);
+  --vipr-wizard-slide-min-height: 680px;
+  --vipr-wizard-slide-min-height-mobile: 620px;
+  --vipr-wizard-compact-copy-gap: var(--vipr-space-5);
+  --vipr-wizard-body-gap: var(--vipr-row-padding-y);
+  --vipr-wizard-actions-top-space: var(--vipr-space-6);
+  --vipr-wizard-actions-top-space-mobile: var(--vipr-row-padding-x);
+  --vipr-wizard-actions-gap: var(--vipr-space-3);
+  --vipr-wizard-button-height: var(--vipr-home-action-height);
+  --vipr-wizard-skip-font-size: 0.98rem;
+  --vipr-wizard-visual-min-height: 300px;
+  --vipr-wizard-visual-min-height-mobile: 244px;
+  --vipr-wizard-visual-bottom-space: 28px;
+  --vipr-wizard-visual-bottom-space-mobile: var(--vipr-space-5);
+  --vipr-wizard-orb-bg: var(--vipr-surface-card-bg-subtle);
+  --vipr-wizard-orb-border: var(--vipr-surface-card-border-subtle);
+  --vipr-wizard-ring-border: rgba(var(--q-primary-rgb), 0.16);
+  --vipr-wizard-ring-bg: rgba(var(--q-primary-rgb), 0.14);
+  --vipr-wizard-federation-card-padding: var(--vipr-space-4);
+  --vipr-wizard-done-visual-bg:
+    radial-gradient(circle at 25% 20%, rgba(255, 244, 173, 0.55), transparent 12%),
+    radial-gradient(circle at 70% 34%, rgba(255, 145, 214, 0.52), transparent 10%),
+    radial-gradient(circle at 30% 70%, rgba(120, 232, 255, 0.4), transparent 10%),
+    radial-gradient(circle at 82% 76%, rgba(255, 255, 255, 0.34), transparent 8%);
+  --vipr-wizard-install-gap: var(--vipr-row-padding-x);
+  --vipr-wizard-install-eyebrow-bg: rgba(var(--q-primary-rgb), 0.16);
+  --vipr-wizard-install-eyebrow-border: rgba(var(--q-primary-rgb), 0.28);
+  --vipr-wizard-install-step-bg: rgba(var(--q-primary-rgb), 0.18);
+  --vipr-wizard-install-step-border: rgba(var(--q-primary-rgb), 0.32);
+  --vipr-wizard-install-warning-padding: 10px var(--vipr-space-3);
   --vipr-layout-footer-bg:
     linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 18px),
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.018)),
