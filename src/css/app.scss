@@ -113,6 +113,11 @@ body,
   --vipr-row-hover-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
   --vipr-row-icon-bg: rgba(255, 255, 255, 0.07);
   --vipr-row-icon-bg-subtle: rgba(255, 255, 255, 0.05);
+  --vipr-detail-separator: rgba(255, 255, 255, 0.032);
+  --vipr-detail-icon-bg: rgba(156, 39, 255, 0.12);
+  --vipr-chip-bg: rgba(255, 255, 255, 0.075);
+  --vipr-chip-bg-muted: rgba(255, 255, 255, 0.095);
+  --vipr-text-on-accent: rgba(0, 0, 0, 0.86);
   --vipr-control-panel-bg:
     linear-gradient(180deg, rgba(255, 255, 255, 0.032), rgba(255, 255, 255, 0.018)),
     var(--vipr-color-input-bg);
@@ -345,6 +350,11 @@ html[data-e2e='1'] *::after {
   letter-spacing: 0;
 }
 
+.vipr-mono {
+  font-family: var(--vipr-font-family-mono);
+  letter-spacing: 0;
+}
+
 .vipr-eyebrow,
 .wizard-kicker {
   color: var(--vipr-text-muted);
@@ -494,6 +504,78 @@ html[data-e2e='1'] *::after {
 .vipr-surface-card--selected {
   background: var(--vipr-surface-card-bg-selected);
   border-color: var(--q-primary);
+}
+
+.q-chip.vipr-chip,
+.vipr-chip {
+  height: 24px;
+  border-radius: var(--vipr-radius-pill);
+  background: var(--vipr-chip-bg) !important;
+  color: var(--vipr-text-secondary) !important;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.q-chip.vipr-chip--muted,
+.vipr-chip--muted {
+  background: var(--vipr-chip-bg-muted) !important;
+  color: var(--vipr-text-secondary) !important;
+}
+
+.q-chip.vipr-chip--primary,
+.vipr-chip--primary {
+  background: var(--q-primary) !important;
+  color: var(--vipr-text-primary) !important;
+}
+
+.q-chip.vipr-chip--positive,
+.vipr-chip--positive {
+  background: var(--q-positive) !important;
+  color: var(--vipr-text-on-accent) !important;
+}
+
+.vipr-detail-list {
+  display: grid;
+  gap: 0;
+}
+
+.vipr-detail-row {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vipr-space-4);
+  padding: var(--vipr-space-3) 0;
+}
+
+.vipr-detail-row + .vipr-detail-row {
+  border-top: 1px solid var(--vipr-detail-separator);
+}
+
+.vipr-detail-row--block {
+  display: block;
+}
+
+.vipr-detail-label {
+  color: var(--vipr-text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.vipr-detail-value {
+  min-width: 0;
+  color: var(--vipr-text-secondary);
+  font-weight: 500;
+  text-align: right;
+  word-break: break-word;
+}
+
+.vipr-detail-value--mono {
+  font-family: var(--vipr-font-family-mono);
+  word-break: break-all;
 }
 
 .vipr-selection-sheet,

@@ -1,10 +1,10 @@
 <template>
   <div>
     <div class="row items-baseline q-mb-xs q-gutter-sm">
-      <div class="text-subtitle1">UTXOs</div>
-      <div v-if="utxos.length > 0" class="text-grey-5">{{ utxos.length }} spendable</div>
+      <div class="vipr-section-title">UTXOs</div>
+      <div v-if="utxos.length > 0" class="vipr-caption">{{ utxos.length }} spendable</div>
     </div>
-    <q-card flat class="q-mb-md utxo-card">
+    <q-card flat class="q-mb-md utxo-card vipr-surface-card vipr-surface-card--subtle">
       <q-card-section v-if="isLoading" class="row items-center justify-center q-py-xl">
         <q-spinner color="primary" size="28px" />
       </q-card-section>
@@ -13,11 +13,11 @@
         {{ error }}
       </q-card-section>
 
-      <q-card-section v-else-if="utxos.length === 0" class="text-grey-5">
+      <q-card-section v-else-if="utxos.length === 0" class="vipr-caption">
         No spendable UTXOs available.
       </q-card-section>
 
-      <q-list v-else separator>
+      <q-list v-else separator class="utxo-list">
         <q-item
           v-for="utxo in visibleUtxos"
           :key="`${utxo.txid}:${utxo.vout}`"
@@ -26,15 +26,13 @@
           :href="getMempoolTxUrl(utxo.txid)"
           target="_blank"
           rel="noopener noreferrer"
-          class="q-py-md utxo-link"
+          class="utxo-link utxo-row"
         >
           <q-item-section>
-            <q-item-label class="text-mono"> {{ utxo.txid }}:{{ utxo.vout }} </q-item-label>
+            <q-item-label class="utxo-id vipr-mono"> {{ utxo.txid }}:{{ utxo.vout }} </q-item-label>
           </q-item-section>
           <q-item-section side>
-            <q-item-label class="text-body1 text-weight-medium">
-              {{ formatNumber(utxo.amount) }} sats
-            </q-item-label>
+            <q-item-label class="utxo-amount"> {{ formatNumber(utxo.amount) }} sats </q-item-label>
           </q-item-section>
           <q-item-section side>
             <q-icon name="open_in_new" color="primary" size="18px" />
@@ -45,8 +43,8 @@
       <q-card-actions v-if="utxos.length > initialVisibleCount" align="center" class="q-pb-md">
         <q-btn
           flat
-          color="primary"
           :label="isExpanded ? 'Show less' : `Show more (${utxos.length - visibleUtxos.length})`"
+          class="vipr-btn vipr-btn--compact vipr-btn--secondary"
           @click="toggleExpanded"
         />
       </q-card-actions>
@@ -115,14 +113,34 @@ function getMempoolNetworkPath(network?: string | null): string {
 </script>
 
 <style scoped>
+.utxo-list {
+  background: transparent;
+}
+
 .utxo-link {
   color: inherit;
   text-decoration: none;
 }
 
-.text-mono {
-  font-family: 'Courier New', Courier, monospace;
+.utxo-row {
+  padding-top: var(--vipr-row-padding-y);
+  padding-bottom: var(--vipr-row-padding-y);
+}
+
+.utxo-list :deep(.q-item + .q-item),
+.utxo-list :deep(.q-item-type + .q-item-type) {
+  border-top-color: var(--vipr-detail-separator);
+}
+
+.utxo-id {
+  color: var(--vipr-text-muted);
   font-size: 0.85em;
   word-break: break-all;
+}
+
+.utxo-amount {
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-body);
+  font-weight: 600;
 }
 </style>

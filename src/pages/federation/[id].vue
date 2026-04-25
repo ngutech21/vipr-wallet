@@ -23,7 +23,10 @@ meta:
       </div>
 
       <div class="federation-details-content q-px-md">
-        <q-card flat class="federation-card federation-card--summary q-mb-md">
+        <q-card
+          flat
+          class="federation-card federation-card--summary vipr-surface-card vipr-surface-card--summary q-mb-md"
+        >
           <q-card-section class="summary-layout">
             <div class="summary-logo">
               <q-avatar size="78px" v-if="federation?.metadata?.federation_icon_url">
@@ -62,7 +65,7 @@ meta:
                 </q-btn>
               </div>
 
-              <div class="summary-currency text-grey">
+              <div class="summary-currency vipr-caption">
                 {{ federation?.metadata?.default_currency }}
               </div>
 
@@ -70,10 +73,8 @@ meta:
                 <q-chip
                   v-for="module in federation?.modules"
                   :key="module.kind"
-                  color="positive"
-                  text-color="black"
                   size="sm"
-                  class="q-mr-xs"
+                  class="vipr-chip vipr-chip--positive q-mr-xs"
                 >
                   {{ module.kind }}
                 </q-chip>
@@ -82,7 +83,11 @@ meta:
           </q-card-section>
         </q-card>
 
-        <q-card flat class="federation-card q-mb-md" v-if="inviteCode">
+        <q-card
+          flat
+          class="federation-card vipr-surface-card vipr-surface-card--subtle q-mb-md"
+          v-if="inviteCode"
+        >
           <q-card-section class="vipr-qr-container">
             <div class="vipr-qr-surface">
               <qrcode-vue
@@ -127,40 +132,46 @@ meta:
 
         <FederationGuardians :guardians="federation?.guardians ?? []" class="q-mb-md" />
 
-        <div class="section-title q-mb-xs" v-if="hasMetadata">Details</div>
-        <q-card flat class="federation-card q-mb-md" v-if="hasMetadata">
+        <div class="vipr-section-title q-mb-xs" v-if="hasMetadata">Details</div>
+        <q-card
+          flat
+          class="federation-card vipr-surface-card vipr-surface-card--subtle q-mb-md"
+          v-if="hasMetadata"
+        >
           <q-card-section>
-            <q-list>
-              <q-item v-if="federation?.metadata?.max_balance_msats">
-                <q-item-section>
-                  <q-item-label caption>Maximum Balance</q-item-label>
-                  <q-item-label class="text-body1">
+            <div class="vipr-detail-list">
+              <div v-if="federation?.metadata?.max_balance_msats" class="vipr-detail-row">
+                <div class="vipr-detail-label">Maximum Balance</div>
+                <div class="vipr-detail-value">
+                  <span>
                     {{ formatNumber(parseInt(federation?.metadata?.max_balance_msats) / 1000) }}
                     sats
-                  </q-item-label>
-                </q-item-section>
-              </q-item>
-              <q-separator inset />
+                  </span>
+                </div>
+              </div>
 
-              <q-item v-if="federation?.metadata?.max_invoice_msats">
-                <q-item-section>
-                  <q-item-label caption>Maximum Invoice</q-item-label>
-                  <q-item-label class="text-body1">
+              <div v-if="federation?.metadata?.max_invoice_msats" class="vipr-detail-row">
+                <div class="vipr-detail-label">Maximum Invoice</div>
+                <div class="vipr-detail-value">
+                  <span>
                     {{ formatNumber(parseInt(federation?.metadata?.max_invoice_msats) / 1000) }}
                     sats
-                  </q-item-label>
-                </q-item-section>
-              </q-item>
-              <q-separator inset />
+                  </span>
+                </div>
+              </div>
 
-              <q-item>
-                <q-item-section v-if="federation?.metadata?.public">
-                  <q-item-label caption>Public Federation</q-item-label>
-                  <q-item-label class="text-body1">
+              <div v-if="federation?.metadata?.public" class="vipr-detail-row">
+                <div class="vipr-detail-label">Public Federation</div>
+                <div class="vipr-detail-value">
+                  <span>
                     <q-chip
-                      :color="federation?.metadata?.public === 'true' ? 'positive' : 'blue-grey'"
-                      text-color="black"
                       size="sm"
+                      :class="[
+                        'vipr-chip',
+                        federation?.metadata?.public === 'true'
+                          ? 'vipr-chip--positive'
+                          : 'vipr-chip--muted',
+                      ]"
                     >
                       <q-icon
                         :name="federation?.metadata?.public === 'true' ? 'public' : 'public_off'"
@@ -169,16 +180,20 @@ meta:
                       />
                       {{ federation?.metadata?.public === 'true' ? 'Public' : 'Private' }}
                     </q-chip>
-                  </q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
+                  </span>
+                </div>
+              </div>
+            </div>
           </q-card-section>
         </q-card>
 
         <!-- Vetted Gateways Card -->
-        <div class="section-title q-mb-xs" v-if="hasVettedGateways">Gateways</div>
-        <q-card flat class="federation-card q-mb-md" v-if="hasVettedGateways">
+        <div class="vipr-section-title q-mb-xs" v-if="hasVettedGateways">Gateways</div>
+        <q-card
+          flat
+          class="federation-card vipr-surface-card vipr-surface-card--subtle q-mb-md"
+          v-if="hasVettedGateways"
+        >
           <q-card-section class="gateways-section">
             <div class="gateway-list">
               <div v-for="(gateway, index) in vettedGateways" :key="gateway" class="gateway-row">
@@ -190,11 +205,9 @@ meta:
                   <div class="gateway-id" :title="gateway">{{ gateway }}</div>
                 </div>
                 <q-chip
-                  color="positive"
-                  text-color="black"
                   size="sm"
                   icon="verified"
-                  class="gateway-badge"
+                  class="gateway-badge vipr-chip vipr-chip--positive"
                 >
                   Vetted
                 </q-chip>
@@ -203,42 +216,46 @@ meta:
           </q-card-section>
         </q-card>
 
-        <div class="section-title q-mb-xs" v-if="hasMessages">Messages</div>
-        <q-card flat class="federation-card q-mb-md" v-if="hasMessages">
+        <div class="vipr-section-title q-mb-xs" v-if="hasMessages">Messages</div>
+        <q-card
+          flat
+          class="federation-card vipr-surface-card vipr-surface-card--subtle q-mb-md"
+          v-if="hasMessages"
+        >
           <q-card-section>
-            <q-list>
+            <div class="vipr-detail-list">
               <template v-if="federation?.metadata?.preview_message">
-                <q-item>
-                  <q-item-section>
-                    <q-item-label caption>Preview Message</q-item-label>
-                    <q-item-label class="text-body1">{{
-                      federation?.metadata?.preview_message
-                    }}</q-item-label>
-                  </q-item-section>
-                </q-item>
-                <q-separator inset />
+                <div class="vipr-detail-row vipr-detail-row--block">
+                  <div class="vipr-detail-label">Preview Message</div>
+                  <div class="vipr-body q-mt-xs">
+                    {{ federation?.metadata?.preview_message }}
+                  </div>
+                </div>
               </template>
 
               <template v-if="federation?.metadata?.popup_countdown_message">
-                <q-item>
-                  <q-item-section>
-                    <q-item-label caption>End Message</q-item-label>
-                    <q-item-label class="text-body1">
-                      {{ federation?.metadata?.popup_countdown_message }}
-                      <template v-if="federation?.metadata?.popup_end_timestamp">
-                        <br /><span class="text-caption"
-                          >Ends: {{ formatDate(federation?.metadata?.popup_end_timestamp) }}</span
-                        >
-                      </template>
-                    </q-item-label>
-                  </q-item-section>
-                </q-item>
+                <div class="vipr-detail-row vipr-detail-row--block">
+                  <div class="vipr-detail-label">End Message</div>
+                  <div class="vipr-body q-mt-xs">
+                    {{ federation?.metadata?.popup_countdown_message }}
+                  </div>
+                  <div
+                    v-if="federation?.metadata?.popup_end_timestamp"
+                    class="vipr-caption q-mt-xs"
+                  >
+                    Ends: {{ formatDate(federation?.metadata?.popup_end_timestamp) }}
+                  </div>
+                </div>
               </template>
-            </q-list>
+            </div>
           </q-card-section>
         </q-card>
 
-        <q-card flat class="federation-card q-mb-md" v-if="federation?.metadata?.tos_url">
+        <q-card
+          flat
+          class="federation-card vipr-surface-card vipr-surface-card--subtle q-mb-md"
+          v-if="federation?.metadata?.tos_url"
+        >
           <q-card-section>
             <q-list>
               <q-item
@@ -254,7 +271,9 @@ meta:
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>Terms of Service</q-item-label>
-                  <q-item-label caption>View the federation's terms and conditions</q-item-label>
+                  <q-item-label class="vipr-caption">
+                    View the federation's terms and conditions
+                  </q-item-label>
                 </q-item-section>
                 <q-item-section side>
                   <q-icon name="open_in_new" color="primary" />
@@ -273,7 +292,7 @@ meta:
 
         <!-- Actions Card -->
 
-        <q-card flat class="federation-card">
+        <q-card flat class="federation-card vipr-surface-card vipr-surface-card--subtle">
           <q-card-section>
             <div class="q-pa-md">
               <q-btn
@@ -282,7 +301,7 @@ meta:
                 outline
                 @click="confirmLeave = true"
                 icon="logout"
-                class="full-width"
+                class="full-width vipr-btn vipr-btn--md"
                 data-testid="federation-details-leave-btn"
               />
             </div>
@@ -503,10 +522,6 @@ async function leaveFederation() {
   padding-bottom: 24px;
 }
 
-.q-card-section {
-  padding: 14px 18px 18px;
-}
-
 .summary-layout {
   display: flex;
   align-items: center;
@@ -529,17 +544,19 @@ async function leaveFederation() {
 }
 
 .summary-title {
-  font-size: 1.45rem;
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-summary-title);
   font-weight: 700;
+  line-height: var(--vipr-line-height-tight);
+  letter-spacing: 0;
 }
 
 .summary-link {
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--vipr-text-secondary);
 }
 
 .summary-currency {
   margin-top: 6px;
-  font-size: 1rem;
 }
 
 .summary-modules {
@@ -574,7 +591,7 @@ async function leaveFederation() {
   display: grid;
   place-items: center;
   border-radius: 14px;
-  background: rgba(156, 39, 255, 0.12);
+  background: var(--vipr-detail-icon-bg);
   color: var(--q-primary);
   font-size: 1.35rem;
 }
@@ -584,7 +601,7 @@ async function leaveFederation() {
 }
 
 .gateway-title {
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--vipr-text-primary);
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.2;
@@ -594,8 +611,8 @@ async function leaveFederation() {
   min-width: 0;
   margin-top: 4px;
   overflow: hidden;
-  color: rgba(255, 255, 255, 0.58);
-  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', monospace;
+  color: var(--vipr-text-soft);
+  font-family: var(--vipr-font-family-mono);
   font-size: 0.84rem;
   letter-spacing: 0;
   line-height: 1.25;
