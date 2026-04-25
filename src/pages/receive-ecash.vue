@@ -154,8 +154,4 @@ function getQueryString(value: LocationQueryValue | LocationQueryValue[] | undef
   flex-direction: column;
   align-items: center;
 }
-
-.text-grey {
-  color: var(--vipr-text-grey);
-}
 </style>

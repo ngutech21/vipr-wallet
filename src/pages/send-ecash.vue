@@ -37,7 +37,7 @@ meta:
 
               <NumericKeypad :buttons="keypadButtons" class="q-mb-md" />
 
-              <div class="text-caption text-grey q-mb-lg" data-testid="send-ecash-max-amount">
+              <div class="vipr-caption q-mb-lg" data-testid="send-ecash-max-amount">
                 <template v-if="selectedFederation != null">
                   <div>Balance available: {{ maxOfflineAmount.toLocaleString() }} sats</div>
                   <div class="q-mt-xs">
@@ -70,10 +70,10 @@ meta:
             <q-card flat class="task-card vipr-flow-panel vipr-surface-card--strong q-mb-md">
               <q-card-section>
                 <div class="section-title">Exported ecash</div>
-                <div class="text-caption text-grey q-mt-xs">
+                <div class="vipr-caption q-mt-xs">
                   Share these notes with the recipient. Anyone with the notes can redeem them.
                 </div>
-                <div class="text-caption text-grey q-mt-sm">
+                <div class="vipr-caption q-mt-sm">
                   Amount: {{ exportedAmount.toLocaleString() }} sats
                 </div>
               </q-card-section>
@@ -377,9 +377,5 @@ function canRepresentExactMsats(targetMsats: number, noteCounts: Record<number, 
 .send-ecash-content {
   width: 100%;
   padding: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-6);
-}
-
-.text-grey {
-  color: var(--vipr-text-grey);
 }
 </style>

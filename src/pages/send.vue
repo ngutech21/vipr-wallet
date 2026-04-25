@@ -84,8 +84,8 @@
                   <q-icon name="search" size="md" color="grey-5" />
                 </div>
                 <div class="col">
-                  <div class="text-subtitle1 text-grey-4">Contacts appear as you type</div>
-                  <div class="text-caption text-grey-6">
+                  <div class="vipr-section-title">Contacts appear as you type</div>
+                  <div class="vipr-caption">
                     Use the field above to search by name or Lightning address.
                   </div>
                 </div>
@@ -103,10 +103,8 @@
                   <q-icon name="search_off" size="md" color="grey-5" />
                 </div>
                 <div class="col">
-                  <div class="text-subtitle1 text-grey-4">No matching contacts</div>
-                  <div class="text-caption text-grey-6">
-                    Try a different name or Lightning address.
-                  </div>
+                  <div class="vipr-section-title">No matching contacts</div>
+                  <div class="vipr-caption">Try a different name or Lightning address.</div>
                 </div>
               </q-card-section>
             </q-card>
@@ -122,7 +120,7 @@
                 <div class="col-auto">
                   <q-icon name="account_circle" size="md" color="grey-5" />
                 </div>
-                <div class="col text-subtitle1 text-grey-5">No Contacts</div>
+                <div class="col vipr-section-title">No Contacts</div>
               </q-card-section>
             </q-card>
           </div>
@@ -326,10 +324,6 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 
 .send-content {
   width: 100%;
-}
-
-.text-grey {
-  color: var(--vipr-text-grey);
 }
 
 .bg-dark {

@@ -51,6 +51,17 @@ body,
   --vipr-size-touch-min: 44px;
   --vipr-control-height-md: 48px;
   --vipr-control-height-lg: 54px;
+  --vipr-font-size-title: 1.9rem;
+  --vipr-font-size-section-title: 1.05rem;
+  --vipr-font-size-summary-title: 1.35rem;
+  --vipr-font-size-amount: 2.75rem;
+  --vipr-font-size-detail-amount: clamp(2.4rem, 6vw, 3rem);
+  --vipr-font-size-status-value: 1.55rem;
+  --vipr-font-size-body: 1rem;
+  --vipr-font-size-caption: 0.9rem;
+  --vipr-font-size-label: 0.78rem;
+  --vipr-line-height-tight: 1.1;
+  --vipr-line-height-body: 1.45;
   --vipr-gradient-primary: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96));
   --vipr-shadow-primary: 0 12px 28px rgba(128, 0, 255, 0.24);
   --vipr-shadow-primary-soft:
@@ -243,6 +254,95 @@ html[data-e2e='1'] *::after {
   max-width: var(--vipr-width-flow-panel);
 }
 
+.vipr-title,
+.success-title {
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-title);
+  font-weight: 700;
+  line-height: var(--vipr-line-height-tight);
+  letter-spacing: 0;
+}
+
+.vipr-section-title,
+.section-title {
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-section-title);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+.vipr-summary-title {
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-summary-title);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.vipr-amount,
+.success-amount {
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-amount);
+  font-weight: 700;
+  line-height: var(--vipr-line-height-tight);
+  letter-spacing: 0;
+}
+
+.vipr-body {
+  color: var(--vipr-text-secondary);
+  font-size: var(--vipr-font-size-body);
+  line-height: var(--vipr-line-height-body);
+  letter-spacing: 0;
+}
+
+.vipr-caption,
+.vipr-helper,
+.success-subtitle {
+  color: var(--vipr-text-muted);
+  font-size: var(--vipr-font-size-caption);
+  line-height: var(--vipr-line-height-body);
+  letter-spacing: 0;
+}
+
+.vipr-status-label,
+.status-label {
+  color: var(--vipr-text-subtle);
+  font-size: var(--vipr-font-size-label);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.vipr-status-value,
+.status-time {
+  color: var(--q-positive);
+  font-size: var(--vipr-font-size-status-value);
+  font-weight: 700;
+  line-height: var(--vipr-line-height-tight);
+  letter-spacing: 0;
+}
+
+.vipr-status-title,
+.status-title {
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-section-title);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+.vipr-status-message,
+.status-message,
+.status-copy,
+.status-helper {
+  color: var(--vipr-text-muted);
+  font-size: var(--vipr-font-size-caption);
+  line-height: var(--vipr-line-height-body);
+  letter-spacing: 0;
+}
+
 .vipr-topbar {
   display: flex;
   align-items: center;
@@ -312,11 +412,6 @@ html[data-e2e='1'] *::after {
   display: flex;
   flex-direction: column;
   gap: var(--vipr-space-3);
-}
-
-.section-title {
-  font-size: 1.05rem;
-  font-weight: 600;
 }
 
 .federation-list {
@@ -459,10 +554,6 @@ html[data-e2e='1'] *::after {
   border-color: var(--vipr-color-surface-border);
 }
 
-.federation-details-page .section-title {
-  color: rgba(255, 255, 255, 0.9);
-}
-
 .page-container {
   position: relative;
   min-height: 100vh;
@@ -516,20 +607,6 @@ html[data-e2e='1'] *::after {
 
 .success-icon {
   margin-bottom: var(--vipr-space-3);
-}
-
-.success-title {
-  font-size: 1.9rem;
-  font-weight: 700;
-}
-
-.success-amount {
-  font-size: 2.75rem;
-  font-weight: 700;
-}
-
-.success-subtitle {
-  color: #b3b3b3;
 }
 
 .success-card {
@@ -896,7 +973,7 @@ html[data-e2e='1'] *::after {
 }
 
 .transaction-content .amount-value {
-  font-size: clamp(2.4rem, 6vw, 3rem);
+  font-size: var(--vipr-font-size-detail-amount);
   line-height: 1.05;
   font-weight: 700;
   margin: 0;
@@ -909,7 +986,7 @@ html[data-e2e='1'] *::after {
 }
 
 .transaction-content .summary-title {
-  font-size: 1.35rem;
+  font-size: var(--vipr-font-size-summary-title);
   font-weight: 600;
   white-space: nowrap;
 }

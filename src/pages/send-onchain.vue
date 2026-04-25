@@ -61,11 +61,7 @@ meta:
               data-testid="send-onchain-uri-details"
             >
               <q-card-section class="q-py-sm">
-                <div
-                  v-for="detail in bitcoinUriDetails"
-                  :key="detail"
-                  class="text-caption text-grey-5 q-mb-xs"
-                >
+                <div v-for="detail in bitcoinUriDetails" :key="detail" class="vipr-caption q-mb-xs">
                   {{ detail }}
                 </div>
               </q-card-section>
@@ -83,20 +79,20 @@ meta:
 
             <div
               v-if="uriAmountHint"
-              class="text-caption text-grey q-mb-md"
+              class="vipr-caption q-mb-md"
               data-testid="send-onchain-uri-amount-hint"
             >
               {{ uriAmountHint }}
             </div>
 
-            <div class="text-caption text-grey q-mb-lg" data-testid="send-onchain-max-amount">
+            <div class="vipr-caption q-mb-lg" data-testid="send-onchain-max-amount">
               <template v-if="selectedFederation != null">
                 Maximum spendable after fee reserve: {{ maxSendAmount.toLocaleString() }} sats
               </template>
               <template v-else> Select a federation before sending Bitcoin on-chain </template>
             </div>
 
-            <div class="text-caption text-grey q-mb-lg">
+            <div class="vipr-caption q-mb-lg">
               A {{ ONCHAIN_FEE_RESERVE_SATS.toLocaleString() }} sat fee reserve is kept for network
               fees. Minimum on-chain send: {{ MIN_ONCHAIN_SEND_SATS.toLocaleString() }}
               sats.

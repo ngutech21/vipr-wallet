@@ -374,16 +374,8 @@ async function goBack() {
   text-align: center;
 }
 
-.status-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-}
-
 .status-copy {
   max-width: 480px;
-  color: var(--vipr-text-muted);
-  font-size: 0.92rem;
-  line-height: 1.45;
 }
 
 .confirmation-info {
@@ -391,18 +383,10 @@ async function goBack() {
   color: var(--vipr-text-secondary);
 }
 
-.status-helper {
-  color: var(--vipr-text-muted);
-}
-
 @media (max-width: 520px) {
   .receive-onchain-content {
     padding-right: 12px;
     padding-left: 12px;
-  }
-
-  .status-copy {
-    font-size: 0.88rem;
   }
 }
 </style>

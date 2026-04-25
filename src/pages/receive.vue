@@ -324,20 +324,8 @@ async function goBack() {
   text-align: center;
 }
 
-.status-label {
-  color: var(--vipr-text-subtle);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
 .status-time {
   margin-top: 2px;
-  color: var(--q-positive);
-  font-size: 1.55rem;
-  font-weight: 700;
-  line-height: 1.1;
 }
 
 .status-message {
@@ -346,8 +334,6 @@ async function goBack() {
   justify-content: center;
   gap: var(--vipr-space-2);
   min-width: 0;
-  color: var(--vipr-text-muted);
-  font-size: 0.9rem;
   text-align: center;
 }
 
@@ -363,10 +349,6 @@ async function goBack() {
   .receive-content {
     padding-right: 12px;
     padding-left: 12px;
-  }
-
-  .status-message {
-    font-size: 0.88rem;
   }
 
   .receive-actions {
