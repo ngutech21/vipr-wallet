@@ -207,6 +207,10 @@ body,
   --vipr-home-empty-action-height-mobile: var(--vipr-control-height-md);
   --vipr-home-empty-state-bottom-space: 120px;
   --vipr-home-transactions-bottom-space: 96px;
+  --vipr-send-contact-icon-color: var(--vipr-text-muted);
+  --vipr-send-contact-list-bg: var(--vipr-surface-card-bg);
+  --vipr-send-contact-list-border: var(--vipr-color-surface-border);
+  --vipr-send-contacts-hint-opacity: 0.92;
   --vipr-layout-footer-bg:
     linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 18px),
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.018)),

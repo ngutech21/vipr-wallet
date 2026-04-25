@@ -64,7 +64,7 @@
                   <q-avatar v-if="contact.picture">
                     <img :src="contact.picture" :alt="getContactDisplayName(contact)" />
                   </q-avatar>
-                  <q-icon v-else name="account_circle" size="md" color="grey-5" />
+                  <q-icon v-else name="account_circle" size="md" class="send-contact-icon" />
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>{{ getContactDisplayName(contact) }}</q-item-label>
@@ -81,7 +81,7 @@
             >
               <q-card-section class="row items-center q-col-gutter-sm">
                 <div class="col-auto">
-                  <q-icon name="search" size="md" color="grey-5" />
+                  <q-icon name="search" size="md" class="send-contact-icon" />
                 </div>
                 <div class="col">
                   <div class="vipr-section-title">Contacts appear as you type</div>
@@ -100,7 +100,7 @@
             >
               <q-card-section class="row items-center q-col-gutter-sm">
                 <div class="col-auto">
-                  <q-icon name="search_off" size="md" color="grey-5" />
+                  <q-icon name="search_off" size="md" class="send-contact-icon" />
                 </div>
                 <div class="col">
                   <div class="vipr-section-title">No matching contacts</div>
@@ -118,7 +118,7 @@
             >
               <q-card-section class="row items-center q-col-gutter-sm">
                 <div class="col-auto">
-                  <q-icon name="account_circle" size="md" color="grey-5" />
+                  <q-icon name="account_circle" size="md" class="send-contact-icon" />
                 </div>
                 <div class="col vipr-section-title">No Contacts</div>
               </q-card-section>
@@ -326,19 +326,19 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   width: 100%;
 }
 
-.bg-dark {
-  background-color: rgba(255, 255, 255, 0.03);
-}
-
 .rounded-contact-list {
   border-radius: var(--vipr-radius-card);
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.025));
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--vipr-send-contact-list-bg);
+  border: 1px solid var(--vipr-send-contact-list-border);
 }
 
 .rounded-contact-list :deep(.q-item__label--caption) {
   color: var(--vipr-text-muted);
+}
+
+.send-contact-icon {
+  color: var(--vipr-send-contact-icon-color);
 }
 
 .empty-contacts-card {
@@ -346,6 +346,6 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .contacts-hint-card {
-  opacity: 0.92;
+  opacity: var(--vipr-send-contacts-hint-opacity);
 }
 </style>
