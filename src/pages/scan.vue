@@ -205,8 +205,8 @@ function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingCont
 
 .scan-topbar {
   position: absolute;
-  top: calc(12px + env(safe-area-inset-top));
-  left: 16px;
+  top: calc(var(--vipr-space-3) + env(safe-area-inset-top));
+  left: var(--vipr-space-4);
   z-index: 10;
 }
 
@@ -222,11 +222,11 @@ function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingCont
 .scan-utility-card {
   position: absolute;
   left: 50%;
-  bottom: calc(18px + env(safe-area-inset-bottom));
+  bottom: calc(var(--vipr-space-4-5) + env(safe-area-inset-bottom));
   transform: translateX(-50%);
-  width: min(calc(100vw - 32px), 520px);
+  width: min(calc(100vw - var(--vipr-space-8)), 520px);
   z-index: 10;
-  padding: 14px 18px;
+  padding: var(--vipr-radius-control) var(--vipr-radius-button-lg);
   border-radius: var(--vipr-radius-card);
   background: var(--vipr-glass-panel-bg);
   border-color: var(--vipr-glass-panel-border);
@@ -234,7 +234,7 @@ function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingCont
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--vipr-space-4);
 }
 
 .scan-status {
@@ -246,7 +246,7 @@ function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingCont
 }
 
 .scan-status__text {
-  margin-top: 4px;
+  margin-top: var(--vipr-space-1);
   line-height: 1.35;
   font-weight: 500;
   max-width: 100%;
@@ -267,8 +267,8 @@ function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingCont
 
 @media (max-width: 599px) {
   .scan-utility-card {
-    padding: 12px 14px;
-    gap: 12px;
+    padding: var(--vipr-space-3) var(--vipr-radius-control);
+    gap: var(--vipr-space-3);
   }
 
   .scan-status__text {

@@ -431,7 +431,7 @@ onBeforeUnmount(() => {
 .welcome-orb--small {
   width: 180px;
   height: 180px;
-  top: 28px;
+  top: var(--vipr-space-7);
   left: 30px;
 }
 
@@ -439,7 +439,7 @@ onBeforeUnmount(() => {
   width: 110px;
   height: 110px;
   right: 34px;
-  bottom: 24px;
+  bottom: var(--vipr-space-6);
 }
 
 .custody-ring {
@@ -462,7 +462,7 @@ onBeforeUnmount(() => {
   width: 120px;
   height: 120px;
   background: var(--vipr-wizard-ring-bg);
-  border-width: 18px;
+  border-width: var(--vipr-space-4-5);
 }
 
 .federation-card {
@@ -483,7 +483,7 @@ onBeforeUnmount(() => {
 .federation-card--left {
   transform: rotate(-10deg);
   left: 10px;
-  bottom: 24px;
+  bottom: var(--vipr-space-6);
 }
 
 .federation-card--center {
@@ -493,7 +493,7 @@ onBeforeUnmount(() => {
 .federation-card--right {
   transform: rotate(10deg);
   right: 10px;
-  top: 32px;
+  top: var(--vipr-space-8);
 }
 
 .wizard-visual--done {

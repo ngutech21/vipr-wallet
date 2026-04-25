@@ -306,7 +306,7 @@ async function goBack() {
 }
 
 .entry-title {
-  margin-bottom: 16px;
+  margin-bottom: var(--vipr-space-4);
   font-size: 1.05rem;
   font-weight: 600;
 }
@@ -326,7 +326,7 @@ async function goBack() {
   flex-direction: column;
   align-items: center;
   gap: var(--vipr-space-2);
-  margin-top: 18px;
+  margin-top: var(--vipr-space-4-5);
   color: var(--vipr-text-primary);
   text-align: center;
 }
@@ -349,13 +349,13 @@ async function goBack() {
   max-width: 420px;
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: var(--vipr-space-5);
 }
 
 @media (max-width: 520px) {
   .receive-content {
-    padding-right: 12px;
-    padding-left: 12px;
+    padding-right: var(--vipr-space-4);
+    padding-left: var(--vipr-space-4);
   }
 
   .receive-actions {

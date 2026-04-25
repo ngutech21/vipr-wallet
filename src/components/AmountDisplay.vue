@@ -48,7 +48,7 @@ withDefaults(
   align-items: center;
   justify-content: center;
   gap: var(--vipr-space-2);
-  padding: 18px var(--vipr-space-5);
+  padding: var(--vipr-space-4-5) var(--vipr-space-5);
   border: 1px solid var(--vipr-control-panel-border);
   box-shadow: var(--vipr-control-panel-shadow);
 }

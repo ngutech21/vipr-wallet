@@ -209,7 +209,7 @@ const welcomeMessage = computed(() => props.federation.metadata?.welcome_message
 
 .preview-note {
   margin-top: var(--vipr-space-2);
-  padding: var(--vipr-space-3) 14px;
+  padding: var(--vipr-space-3) var(--vipr-radius-control);
   border-radius: var(--vipr-radius-sm);
   background: var(--vipr-surface-card-bg-hover);
   color: var(--vipr-text-secondary);
@@ -225,7 +225,7 @@ const welcomeMessage = computed(() => props.federation.metadata?.welcome_message
 
 .detail-accordion__body {
   padding: var(--vipr-space-4);
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--vipr-color-overlay-subtle);
 }
 
 .technical-details__body {

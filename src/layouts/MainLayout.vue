@@ -91,13 +91,13 @@ async function goToTab(name: RouteRecordName): Promise<void> {
 :deep(.footer-tabs) {
   width: min(100%, 700px);
   margin: 0 auto;
-  padding: 8px 12px 6px;
+  padding: var(--vipr-space-2) var(--vipr-space-3) 6px;
 }
 
 :deep(.footer-tabs .q-tab) {
   min-height: 56px;
   border: 1px solid transparent;
-  border-radius: 15px;
+  border-radius: var(--vipr-radius-control);
   margin: 0 6px;
   padding: 6px 10px;
   background: transparent !important;

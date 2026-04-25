@@ -119,12 +119,13 @@ Located in `src/stores/`:
 - Router import hint: import runtime APIs/composables from `vue-router` (e.g. `useRoute`, `useRouter`, `createRouter`) and keep generated route types/routes from `vue-router/auto-routes` only.
 - When wiring app navigation, prefer named routes such as `:to="{ name: '/federations/' }"` over string paths like `to="/federations/"` so route references stay type-safe and refactor-friendly.
 - Always register every Quasar icon name you add or change in templates in `src/boot/icon-map.ts`; otherwise the icon may render as raw text instead of a mapped symbol.
+- Vipr has a mandatory design system documented in `docs/design-system.md`. All new or changed UI must use the shared `vipr-*` classes and CSS tokens from `src/css/app.scss`; do not add ad hoc hardcoded colors, raw pixel radii, or Quasar layout/typography utility classes when an existing token or shared class covers the use case.
 
 ### Key Implementation Patterns
 
 - Pinia stores use localStorage for persistence via `@vueuse/core`
 - Fedimint wallet operations are async and handle federation switching
-- Components follow Quasar Material Design patterns
+- Components follow the Vipr design system on top of Quasar primitives
 - Error handling via custom error utilities
 - Transaction history and balance updates via reactive stores
 - PWA features with offline capability and caching strategies

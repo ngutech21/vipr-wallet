@@ -380,7 +380,7 @@ async function goBack() {
   flex-direction: column;
   align-items: center;
   gap: var(--vipr-space-3);
-  margin-top: 18px;
+  margin-top: var(--vipr-space-4-5);
   color: var(--vipr-text-primary);
   text-align: center;
 }
@@ -390,14 +390,14 @@ async function goBack() {
 }
 
 .confirmation-info {
-  margin-bottom: 6px;
+  margin-bottom: calc(var(--vipr-space-3) / 2);
   color: var(--vipr-text-secondary);
 }
 
 @media (max-width: 520px) {
   .receive-onchain-content {
-    padding-right: 12px;
-    padding-left: 12px;
+    padding-right: var(--vipr-space-4);
+    padding-left: var(--vipr-space-4);
   }
 }
 </style>

@@ -81,7 +81,7 @@ async function applyUpdate() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--vipr-space-4);
 }
 
 .pwa-update-banner__copy {
@@ -105,7 +105,7 @@ async function applyUpdate() {
   .pwa-update-banner__content {
     align-items: stretch;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--vipr-space-3);
   }
 
   .pwa-update-banner__button {

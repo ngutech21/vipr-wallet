@@ -74,8 +74,8 @@ onBeforeUnmount(() => {
 .responsive-qr {
   width: min(70vw, 320px);
   height: min(70vw, 320px);
-  background: white;
-  padding: 12px;
-  border-radius: 16px;
+  background: var(--vipr-qr-surface-bg);
+  padding: var(--vipr-space-3);
+  border-radius: var(--vipr-radius-md);
 }
 </style>

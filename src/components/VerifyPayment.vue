@@ -98,7 +98,7 @@ function onSlideAction({
 
 .payment-details-card {
   margin-bottom: var(--vipr-space-6);
-  padding: var(--vipr-space-1) 18px;
+  padding: var(--vipr-space-1) var(--vipr-space-4-5);
 }
 
 .payment-details-row {
@@ -174,7 +174,7 @@ function onSlideAction({
   top: 8px;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--vipr-radius-round);
   background: var(--vipr-action-slider-handle-bg);
   display: flex;
   align-items: center;

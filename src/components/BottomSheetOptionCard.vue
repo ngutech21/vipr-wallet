@@ -76,7 +76,7 @@ function onSelect() {
 
 .bottom-sheet-option-card__content {
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 24px;
+  grid-template-columns: var(--vipr-control-height-md) minmax(0, 1fr) var(--vipr-space-6);
   gap: var(--vipr-space-4);
   align-items: center;
   min-height: 112px;
@@ -87,7 +87,7 @@ function onSelect() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
+  width: var(--vipr-control-height-md);
 }
 
 .bottom-sheet-option-card__copy {

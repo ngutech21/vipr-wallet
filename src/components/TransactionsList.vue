@@ -286,10 +286,6 @@ defineExpose({
 </script>
 
 <style scoped>
-.transactions-list {
-  padding-bottom: 24px;
-}
-
 .transactions-list--home {
   max-width: 100%;
 }
@@ -305,7 +301,7 @@ defineExpose({
 }
 
 .transactions-card {
-  padding: 20px;
+  padding: var(--vipr-space-5);
 }
 
 .transactions-list--home .transactions-card {
@@ -317,18 +313,18 @@ defineExpose({
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: var(--vipr-space-3);
+  margin-bottom: var(--vipr-space-4);
 }
 
 .transactions-title {
-  color: white;
+  color: var(--vipr-text-primary);
   font-size: 1rem;
   font-weight: 600;
 }
 
 .transactions-subtitle {
-  margin-top: 4px;
+  margin-top: var(--vipr-space-1);
   color: var(--vipr-text-subtle);
   font-size: 0.875rem;
 }
@@ -342,11 +338,11 @@ defineExpose({
 .transactions-footer {
   display: flex;
   justify-content: center;
-  padding-top: 12px;
+  padding-top: var(--vipr-space-3);
 }
 
 .transactions-footer--history {
-  padding-top: 16px;
+  padding-top: var(--vipr-space-4);
 }
 
 .transactions-footer-btn {
@@ -355,8 +351,9 @@ defineExpose({
 
 .transactions-header-action {
   flex-shrink: 0;
-  border-radius: 14px;
-  padding: 6px 8px 6px 10px;
+  border-radius: var(--vipr-radius-control);
+  padding: calc(var(--vipr-space-3) / 2) var(--vipr-space-2) calc(var(--vipr-space-3) / 2)
+    calc(var(--vipr-space-5) / 2);
   transition:
     background-color 160ms ease,
     box-shadow 160ms ease;

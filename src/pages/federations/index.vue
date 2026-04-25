@@ -129,7 +129,7 @@ function returnToDiscovery() {
 
 .add-federation-fab {
   position: fixed;
-  right: max(24px, calc((100vw - 700px) / 2 + 24px));
+  right: max(var(--vipr-space-6), calc((100vw - 700px) / 2 + var(--vipr-space-6)));
   bottom: calc(120px + env(safe-area-inset-bottom));
   z-index: 1200;
 }

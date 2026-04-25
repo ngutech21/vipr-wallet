@@ -43,7 +43,8 @@ async function goBack() {
   display: flex;
   align-items: center;
   min-height: 44px;
-  padding: calc(12px + env(safe-area-inset-top)) 16px 4px;
+  padding: calc(var(--vipr-space-3) + env(safe-area-inset-top)) var(--vipr-space-4)
+    var(--vipr-space-1);
   width: 100%;
   max-width: 700px;
   margin: 0 auto;

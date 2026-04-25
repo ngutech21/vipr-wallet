@@ -35,7 +35,8 @@ defineOptions({
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
+  padding: calc(var(--vipr-space-6) + env(safe-area-inset-top)) var(--vipr-space-6)
+    calc(var(--vipr-space-6) + env(safe-area-inset-bottom));
 }
 
 .not-found-shell {
@@ -44,7 +45,7 @@ defineOptions({
 }
 
 .not-found-card {
-  padding: 40px 28px 32px;
+  padding: var(--vipr-space-10) var(--vipr-space-7) var(--vipr-space-8);
   text-align: center;
 }
 
@@ -53,7 +54,7 @@ defineOptions({
 }
 
 .not-found-code {
-  margin-top: 12px;
+  margin-top: var(--vipr-space-3);
   color: var(--vipr-text-primary);
   font-size: 7rem;
   line-height: 0.95;
@@ -62,26 +63,27 @@ defineOptions({
 }
 
 .not-found-title {
-  margin-top: 18px;
+  margin-top: var(--vipr-space-4-5);
 }
 
 .not-found-copy {
   max-width: 32rem;
-  margin: 16px auto 0;
+  margin: var(--vipr-space-4) auto 0;
 }
 
 .not-found-action {
-  margin-top: 28px;
+  margin-top: var(--vipr-space-7);
   min-width: min(100%, 260px);
 }
 
 @media (max-width: 599px) {
   .not-found-page {
-    padding: calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
+    padding: calc(var(--vipr-space-4) + env(safe-area-inset-top)) var(--vipr-space-4)
+      calc(var(--vipr-space-4) + env(safe-area-inset-bottom));
   }
 
   .not-found-card {
-    padding: 32px 20px 24px;
+    padding: var(--vipr-space-8) var(--vipr-space-5) var(--vipr-space-6);
   }
 
   .not-found-code {

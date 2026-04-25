@@ -903,7 +903,7 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 
 .contacts-summary {
   margin-top: var(--vipr-space-4);
-  min-height: 20px;
+  min-height: var(--vipr-space-5);
 }
 
 .settings-contact-pagination {
@@ -915,8 +915,8 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .empty-contact-avatar {
-  width: 32px;
-  height: 32px;
+  width: var(--vipr-space-8);
+  height: var(--vipr-space-8);
   border-radius: var(--vipr-radius-pill);
   background: var(--vipr-settings-empty-avatar-bg);
   border: 1px solid var(--vipr-settings-empty-avatar-border);
@@ -940,7 +940,7 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   position: absolute;
   left: 50%;
   bottom: 6px;
-  width: 16px;
+  width: var(--vipr-space-4);
   height: 8px;
   border-radius: var(--vipr-radius-pill) var(--vipr-radius-pill) var(--vipr-space-2)
     var(--vipr-space-2);

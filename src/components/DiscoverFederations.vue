@@ -302,7 +302,7 @@ function truncateFederationId(federationId: string): string {
 .logo {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: var(--vipr-radius-xs);
   overflow: hidden;
   border: 1px solid var(--vipr-color-surface-border);
 }
@@ -347,7 +347,7 @@ function truncateFederationId(federationId: string): string {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
+  padding: var(--vipr-space-8) var(--vipr-space-4);
 }
 
 .discover-empty-state {
@@ -361,16 +361,16 @@ function truncateFederationId(federationId: string): string {
 .discovery-footer {
   margin-top: var(--vipr-space-4);
   border-top: 1px solid var(--vipr-color-surface-border);
-  padding-top: 12px;
+  padding-top: var(--vipr-space-3);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--vipr-transaction-type-gap);
 }
 
 .discovery-status {
   display: flex;
   align-items: center;
-  min-height: 16px;
+  min-height: var(--vipr-space-4);
 }
 
 .discovery-spinner {
