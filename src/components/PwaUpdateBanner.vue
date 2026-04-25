@@ -2,13 +2,13 @@
   <q-banner
     v-if="showBanner"
     rounded
-    class="pwa-update-banner text-white q-mx-md q-mt-md"
+    class="pwa-update-banner vipr-surface-card vipr-surface-card--summary q-mx-md q-mt-md"
     data-testid="pwa-update-banner"
   >
     <div class="pwa-update-banner__content">
       <div class="pwa-update-banner__copy">
-        <div class="pwa-update-banner__title">Update available</div>
-        <div class="pwa-update-banner__status" data-testid="pwa-update-banner-status">
+        <div class="pwa-update-banner__title vipr-section-title">Update available</div>
+        <div class="pwa-update-banner__status vipr-caption" data-testid="pwa-update-banner-status">
           {{ statusText }}
         </div>
       </div>
@@ -75,12 +75,7 @@ async function applyUpdate() {
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
-  background:
-    radial-gradient(circle at top left, rgba(156, 39, 255, 0.14), transparent 42%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  border-radius: var(--vipr-radius-button-lg);
 }
 
 .pwa-update-banner__content {
@@ -94,16 +89,8 @@ async function applyUpdate() {
   min-width: 0;
 }
 
-.pwa-update-banner__title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
 .pwa-update-banner__status {
   margin-top: 3px;
-  color: rgba(255, 255, 255, 0.62);
-  font-size: 0.82rem;
   line-height: 1.35;
 }
 
