@@ -4,15 +4,15 @@
     data-testid="join-federation-selection"
     @close="emit('close')"
   >
-    <div class="selection-sheet q-pa-md">
-      <div class="selection-sheet__intro text-body2 text-grey-5">
+    <div class="vipr-selection-sheet">
+      <div class="vipr-selection-sheet__intro text-body2">
         Join a federation you already trust or browse community recommendations first.
       </div>
 
-      <div class="selection-sheet__options">
+      <div class="vipr-selection-sheet__options">
         <BottomSheetOptionCard
           title="Discover federations"
-          description="Browse federations recommended by Nostr users at bitcoinmints.com."
+          description="Browse federations recommended by Nostr users at observer.fedimint.org."
           icon="search"
           icon-color="primary"
           data-testid="join-discover-federation-card"
@@ -52,17 +52,3 @@ function onAdd() {
   emit('showAdd')
 }
 </script>
-
-<style scoped>
-.selection-sheet {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.selection-sheet__options {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-</style>

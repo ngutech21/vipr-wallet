@@ -1,6 +1,6 @@
 <template>
-  <div class="preview-step q-pa-md" data-testid="join-federation-preview-step">
-    <q-card flat class="preview-card q-mb-md">
+  <div class="vipr-flow-step preview-step" data-testid="join-federation-preview-step">
+    <q-card flat class="preview-card vipr-surface-card vipr-surface-card--strong">
       <q-card-section class="row items-center no-wrap">
         <q-avatar v-if="federation.metadata?.federation_icon_url" size="64px" class="q-mr-md">
           <q-img :src="federation.metadata.federation_icon_url" loading="eager" no-spinner />
@@ -42,14 +42,22 @@
       </q-card-section>
     </q-card>
 
-    <q-card v-if="importAmountSats != null" flat class="preview-card q-mb-md">
+    <q-card
+      v-if="importAmountSats != null"
+      flat
+      class="preview-card vipr-surface-card vipr-surface-card--strong"
+    >
       <q-card-section>
         <div class="text-subtitle1 text-weight-medium">Import amount</div>
         <div class="text-h5 q-mt-sm">{{ formatNumber(importAmountSats) }} sats</div>
       </q-card-section>
     </q-card>
 
-    <q-card v-if="moduleKinds.length > 0" flat class="preview-card q-mb-md">
+    <q-card
+      v-if="moduleKinds.length > 0"
+      flat
+      class="preview-card vipr-surface-card vipr-surface-card--strong"
+    >
       <q-card-section>
         <div class="text-subtitle1 text-weight-medium">Supported modules</div>
         <div class="row q-gutter-sm q-mt-sm">
@@ -67,7 +75,7 @@
     </q-card>
 
     <q-expansion-item
-      class="detail-accordion q-mb-md"
+      class="detail-accordion vipr-surface-card vipr-surface-card--subtle"
       expand-separator
       icon="groups"
       label="Guardians"
@@ -80,7 +88,7 @@
     </q-expansion-item>
 
     <q-expansion-item
-      class="detail-accordion"
+      class="detail-accordion vipr-surface-card vipr-surface-card--subtle"
       expand-separator
       icon="info"
       label="Federation details"
@@ -123,14 +131,11 @@ const welcomeMessage = computed(() => props.federation.metadata?.welcome_message
 
 <style scoped>
 .preview-step {
-  display: flex;
-  flex-direction: column;
+  gap: var(--vipr-space-3);
 }
 
 .preview-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
+  overflow: hidden;
 }
 
 .preview-id {
@@ -140,17 +145,14 @@ const welcomeMessage = computed(() => props.federation.metadata?.welcome_message
 }
 
 .preview-note {
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.82);
+  padding: var(--vipr-space-3) 14px;
+  border-radius: var(--vipr-radius-sm);
+  background: var(--vipr-surface-card-bg-hover);
+  color: var(--vipr-text-secondary);
 }
 
 .detail-accordion {
-  border-radius: 18px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .detail-accordion__body {

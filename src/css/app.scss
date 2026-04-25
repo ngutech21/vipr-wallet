@@ -71,6 +71,14 @@ body,
   --vipr-surface-card-bg-summary:
     radial-gradient(circle at top left, rgba(156, 39, 255, 0.14), transparent 42%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+  --vipr-modal-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.012)), #1f1f1f;
+  --vipr-modal-shadow: 0 -12px 40px rgba(0, 0, 0, 0.45);
+  --vipr-modal-separator: rgba(255, 255, 255, 0.12);
+  --vipr-modal-handle-bg: rgba(255, 255, 255, 0.28);
+  --vipr-option-card-bg: rgba(255, 255, 255, 0.04);
+  --vipr-option-card-bg-hover: rgba(255, 255, 255, 0.06);
+  --vipr-option-card-border-hover: rgba(156, 39, 176, 0.5);
   --vipr-result-bg-lightning:
     radial-gradient(circle at top left, rgba(128, 0, 255, 0.22), transparent 36%),
     linear-gradient(180deg, #171717 0%, #121212 100%);
@@ -259,6 +267,26 @@ html[data-e2e='1'] *::after {
 .vipr-surface-card--selected {
   background: var(--vipr-surface-card-bg-selected);
   border-color: var(--q-primary);
+}
+
+.vipr-selection-sheet,
+.vipr-flow-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vipr-space-4);
+  padding: var(--vipr-space-4);
+}
+
+.vipr-selection-sheet__intro,
+.vipr-flow-step__intro {
+  color: var(--vipr-text-muted);
+  line-height: 1.45;
+}
+
+.vipr-selection-sheet__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vipr-space-3);
 }
 
 .section-title {

@@ -1,11 +1,11 @@
 <template>
   <ModalCard title="Send" @close="emit('close')">
-    <div class="selection-sheet q-pa-md">
-      <div class="selection-sheet__intro text-body2 text-grey-5">
+    <div class="vipr-selection-sheet">
+      <div class="vipr-selection-sheet__intro text-body2">
         Choose how you want to send funds from your current federation balance.
       </div>
 
-      <div class="selection-sheet__options">
+      <div class="vipr-selection-sheet__options">
         <BottomSheetOptionCard
           title="Send On-chain"
           description="Withdraw Bitcoin to an on-chain address or Bitcoin QR code."
@@ -54,7 +54,7 @@ async function onSendLightning() {
 
 async function onSendOnchain() {
   emit('close')
-  await router.push({ path: '/send-onchain' })
+  await router.push({ name: '/send-onchain' })
 }
 
 async function onSendOffline() {
@@ -62,17 +62,3 @@ async function onSendOffline() {
   await router.push({ name: '/send-ecash' })
 }
 </script>
-
-<style scoped>
-.selection-sheet {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.selection-sheet__options {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-</style>

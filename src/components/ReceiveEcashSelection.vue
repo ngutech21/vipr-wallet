@@ -1,11 +1,11 @@
 <template>
   <ModalCard title="Receive ecash" @close="emit('close')">
-    <div class="selection-sheet q-pa-md">
-      <div class="selection-sheet__intro text-body2 text-grey-5">
+    <div class="vipr-selection-sheet">
+      <div class="vipr-selection-sheet__intro text-body2">
         Choose how you want to receive funds into your current federation.
       </div>
 
-      <div class="selection-sheet__options">
+      <div class="vipr-selection-sheet__options">
         <BottomSheetOptionCard
           title="Receive via On-chain"
           description="Generate a Bitcoin address to receive funds via an on-chain transaction."
@@ -62,17 +62,3 @@ async function onReceiveOffline() {
   await router.push({ name: '/receive-ecash' })
 }
 </script>
-
-<style scoped>
-.selection-sheet {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.selection-sheet__options {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-</style>

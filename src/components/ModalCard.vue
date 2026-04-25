@@ -99,13 +99,12 @@ function onDismissSwipe() {
   max-height: 92vh;
   margin: 0 auto !important;
   border-radius: var(--vipr-radius-lg) var(--vipr-radius-lg) 0 0;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)), #1f1f1f;
+  background: var(--vipr-modal-bg);
   color: var(--vipr-text-primary);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--vipr-modal-shadow);
 }
 
 :global(.q-dialog__inner--bottom:not(.q-dialog__inner--maximized) > .modal-card) {
@@ -118,9 +117,9 @@ function onDismissSwipe() {
 .modal-card__handle {
   width: 56px;
   height: 5px;
-  margin: 12px auto 4px;
+  margin: var(--vipr-space-3) auto var(--vipr-space-1);
   border-radius: var(--vipr-radius-pill);
-  background: rgba(255, 255, 255, 0.28);
+  background: var(--vipr-modal-handle-bg);
   flex: 0 0 auto;
 }
 
@@ -133,7 +132,7 @@ function onDismissSwipe() {
   grid-template-columns: 40px minmax(0, 1fr) 40px;
   align-items: center;
   gap: var(--vipr-space-3);
-  padding: var(--vipr-space-2) var(--vipr-space-5) 18px;
+  padding: var(--vipr-space-2) var(--vipr-space-5) var(--vipr-space-5);
   flex: 0 0 auto;
 }
 
@@ -161,7 +160,8 @@ function onDismissSwipe() {
 }
 
 .modal-card__separator {
-  opacity: 0.28;
+  background: var(--vipr-modal-separator);
+  opacity: 1;
 }
 
 .modal-card__body {
@@ -170,7 +170,8 @@ function onDismissSwipe() {
 }
 
 .modal-card__footer {
-  padding: 16px 20px calc(20px + env(safe-area-inset-bottom));
+  padding: var(--vipr-space-4) var(--vipr-space-5)
+    calc(var(--vipr-space-5) + env(safe-area-inset-bottom));
   gap: var(--vipr-space-3);
   justify-content: flex-end;
   flex-wrap: nowrap;

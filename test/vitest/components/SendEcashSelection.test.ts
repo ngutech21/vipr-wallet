@@ -86,7 +86,7 @@ describe('SendEcashSelection.vue', () => {
     await wrapper.get('[data-testid="send-onchain-card"]').trigger('click')
     await flushPromises()
 
-    expect(mockRouterPush).toHaveBeenCalledWith({ path: '/send-onchain' })
+    expect(mockRouterPush).toHaveBeenCalledWith({ name: '/send-onchain' })
     expect(wrapper.emitted('close')).toHaveLength(1)
   })
 })

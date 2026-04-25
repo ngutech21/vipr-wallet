@@ -1,8 +1,8 @@
 <template>
-  <div class="invite-step q-pa-md" data-testid="join-federation-invite-step">
-    <div class="invite-step__intro q-mb-lg">
+  <div class="vipr-flow-step" data-testid="join-federation-invite-step">
+    <div class="vipr-flow-step__intro">
       <div class="text-h6 text-weight-medium">Enter or scan an invite code</div>
-      <div class="text-body2 text-grey-5 q-mt-sm">
+      <div class="text-body2 q-mt-sm">
         Only join federations you already trust. You can paste an invite code or scan a QR code to
         review the federation before joining.
       </div>
