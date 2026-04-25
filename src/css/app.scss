@@ -159,6 +159,15 @@ body,
   --vipr-glass-panel-bg: rgba(24, 24, 24, 0.78);
   --vipr-glass-panel-border: var(--vipr-color-surface-border);
   --vipr-glass-panel-backdrop: blur(16px);
+  --vipr-layout-footer-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 18px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.018)),
+    rgba(15, 16, 22, 0.96);
+  --vipr-layout-footer-border: rgba(255, 255, 255, 0.012);
+  --vipr-layout-footer-shadow:
+    0 -6px 18px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.008);
+  --vipr-layout-footer-backdrop: blur(10px);
+  --vipr-layout-tab-active: #a970ff;
   --vipr-result-bg-lightning:
     radial-gradient(circle at top left, rgba(128, 0, 255, 0.22), transparent 36%),
     linear-gradient(180deg, #171717 0%, #121212 100%);
