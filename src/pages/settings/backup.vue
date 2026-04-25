@@ -20,7 +20,7 @@ meta:
       />
     </div>
 
-    <div class="backup-page__content q-px-md q-pb-xl">
+    <div class="backup-page__content">
       <div class="backup-intro-container vipr-page-panel">
         <div class="backup-intro-hero">
           <div class="backup-intro-hero__icon">
@@ -41,9 +41,9 @@ meta:
           </div>
         </div>
 
-        <div class="backup-warning-card vipr-warning-card q-mt-md">
+        <div class="backup-warning-card vipr-warning-card">
           <div class="backup-warning-card__title vipr-section-title">Before you continue</div>
-          <ul class="backup-warning-list q-mb-none">
+          <ul class="backup-warning-list">
             <li>Write the phrase down with pen and paper.</li>
             <li>Store it somewhere safe and private.</li>
             <li>Never share it with anyone.</li>
@@ -51,14 +51,14 @@ meta:
           </ul>
         </div>
 
-        <div class="backup-actions q-mt-lg">
+        <div class="backup-actions">
           <q-btn
             label="Show recovery phrase"
             color="primary"
             icon="visibility"
             no-caps
             unelevated
-            class="full-width q-mb-sm vipr-btn vipr-btn--primary-soft vipr-btn--md"
+            class="full-width backup-action-primary vipr-btn vipr-btn--primary-soft vipr-btn--md"
             @click="showRecoveryWords"
             data-testid="backup-intro-show-words-btn"
           />
@@ -97,26 +97,27 @@ async function goBack() {
 
 <style scoped>
 .backup-page__content {
-  max-width: 760px;
+  max-width: var(--vipr-backup-content-width);
   margin: 0 auto;
+  padding: var(--vipr-backup-content-padding);
 }
 
 .backup-intro-container {
-  max-width: 720px;
+  max-width: var(--vipr-backup-panel-width);
   margin: 0 auto;
-  padding: 20px;
+  padding: var(--vipr-backup-panel-padding);
 }
 
 .backup-intro-hero {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  gap: 16px;
+  grid-template-columns: var(--vipr-backup-hero-icon-size) minmax(0, 1fr);
+  gap: var(--vipr-backup-hero-gap);
   align-items: start;
 }
 
 .backup-intro-hero__icon {
-  width: 72px;
-  height: 72px;
+  width: var(--vipr-backup-hero-icon-size);
+  height: var(--vipr-backup-hero-icon-size);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -126,29 +127,31 @@ async function goBack() {
 }
 
 .backup-intro-hero__eyebrow {
-  margin-bottom: 6px;
+  margin-bottom: var(--vipr-backup-eyebrow-bottom-space);
 }
 
 .backup-intro-hero__title {
-  margin-bottom: 10px;
+  margin-bottom: var(--vipr-backup-title-bottom-space);
 }
 
 .backup-warning-card {
-  padding: 16px 18px;
+  margin-top: var(--vipr-backup-section-gap);
+  padding: var(--vipr-backup-card-padding);
   border-radius: var(--vipr-radius-card);
 }
 
 .backup-warning-card__title {
-  margin-bottom: 10px;
+  margin-bottom: var(--vipr-backup-card-title-bottom-space);
 }
 
 .backup-warning-list {
-  padding-left: 18px;
+  margin: 0;
+  padding-left: var(--vipr-backup-list-padding);
   color: var(--vipr-text-secondary);
 }
 
 .backup-warning-list li + li {
-  margin-top: 6px;
+  margin-top: var(--vipr-backup-list-item-gap);
 }
 
 .full-width {
@@ -160,10 +163,18 @@ async function goBack() {
   letter-spacing: 0;
 }
 
+.backup-actions {
+  margin-top: var(--vipr-backup-section-gap);
+}
+
+.backup-action-primary {
+  margin-bottom: var(--vipr-backup-action-gap);
+}
+
 @media (max-width: 599px) {
   .backup-intro-container {
-    padding: 18px;
-    border-radius: 28px;
+    padding: var(--vipr-backup-panel-padding-mobile);
+    border-radius: var(--vipr-backup-panel-radius-mobile);
   }
 
   .backup-intro-hero {
@@ -171,9 +182,9 @@ async function goBack() {
   }
 
   .backup-intro-hero__icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 20px;
+    width: var(--vipr-backup-hero-icon-size-mobile);
+    height: var(--vipr-backup-hero-icon-size-mobile);
+    border-radius: var(--vipr-backup-hero-icon-radius-mobile);
   }
 
   .backup-intro-hero__title {

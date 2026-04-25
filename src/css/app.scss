@@ -112,6 +112,26 @@ body,
   --vipr-dialog-field-border-hover: rgba(255, 255, 255, 0.15);
   --vipr-dialog-list-bg: var(--vipr-list-bg);
   --vipr-dialog-list-item-hover-bg: var(--vipr-row-hover-bg);
+  --vipr-notify-min-height: 60px;
+  --vipr-notify-max-width: min(92vw, 420px);
+  --vipr-notify-padding: 14px var(--vipr-space-4);
+  --vipr-notify-radius: var(--vipr-radius-button-lg);
+  --vipr-notify-border: var(--vipr-color-surface-border);
+  --vipr-notify-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+    rgba(18, 18, 18, 0.96);
+  --vipr-notify-shadow: 0 18px 40px rgba(0, 0, 0, 0.38);
+  --vipr-notify-backdrop-filter: var(--vipr-dialog-backdrop-filter);
+  --vipr-notify-accent-width: var(--vipr-space-1);
+  --vipr-notify-accent-bg: rgba(255, 255, 255, 0.2);
+  --vipr-notify-icon-size: 1.2rem;
+  --vipr-notify-icon-opacity: 0.95;
+  --vipr-notify-message-font-size: 0.98rem;
+  --vipr-notify-message-line-height: 1.4;
+  --vipr-notify-status-positive: #17d97a;
+  --vipr-notify-status-info: #4db8ff;
+  --vipr-notify-status-warning: #ffb648;
+  --vipr-notify-status-negative: #ff5d7d;
   --vipr-option-card-bg: rgba(255, 255, 255, 0.04);
   --vipr-option-card-bg-hover: rgba(255, 255, 255, 0.06);
   --vipr-option-card-border-hover: rgba(156, 39, 176, 0.5);
@@ -260,6 +280,26 @@ body,
   --vipr-wizard-install-step-bg: rgba(var(--q-primary-rgb), 0.18);
   --vipr-wizard-install-step-border: rgba(var(--q-primary-rgb), 0.32);
   --vipr-wizard-install-warning-padding: 10px var(--vipr-space-3);
+  --vipr-backup-content-width: var(--vipr-width-mobile-wide);
+  --vipr-backup-content-padding: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-8);
+  --vipr-backup-panel-width: 720px;
+  --vipr-backup-panel-padding: var(--vipr-space-5);
+  --vipr-backup-panel-padding-mobile: var(--vipr-row-padding-x);
+  --vipr-backup-panel-radius-mobile: 28px;
+  --vipr-backup-hero-icon-size: 72px;
+  --vipr-backup-hero-icon-size-mobile: 64px;
+  --vipr-backup-hero-icon-radius-mobile: var(--vipr-space-5);
+  --vipr-backup-hero-gap: var(--vipr-space-4);
+  --vipr-backup-eyebrow-bottom-space: 6px;
+  --vipr-backup-title-bottom-space: 10px;
+  --vipr-backup-card-padding: var(--vipr-space-4) var(--vipr-row-padding-x);
+  --vipr-backup-card-title-bottom-space: 10px;
+  --vipr-backup-card-copy-gap: 6px;
+  --vipr-backup-section-gap: var(--vipr-space-4);
+  --vipr-backup-action-gap: var(--vipr-space-2);
+  --vipr-backup-list-padding: var(--vipr-row-padding-x);
+  --vipr-backup-list-item-gap: 6px;
+  --vipr-backup-word-grid-gap-mobile: 10px;
   --vipr-layout-footer-bg:
     linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 18px),
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.018)),
@@ -1626,26 +1666,24 @@ html[data-e2e='1'] *::after {
 }
 
 .vipr-notify {
-  min-height: 60px;
-  max-width: min(92vw, 420px);
-  padding: 14px var(--vipr-space-4);
-  border-radius: var(--vipr-radius-button-lg);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
-    rgba(18, 18, 18, 0.96) !important;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.38);
-  color: white !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  min-height: var(--vipr-notify-min-height);
+  max-width: var(--vipr-notify-max-width);
+  padding: var(--vipr-notify-padding);
+  border-radius: var(--vipr-notify-radius);
+  border: 1px solid var(--vipr-notify-border);
+  background: var(--vipr-notify-bg) !important;
+  box-shadow: var(--vipr-notify-shadow);
+  color: var(--vipr-text-primary) !important;
+  backdrop-filter: var(--vipr-notify-backdrop-filter);
+  -webkit-backdrop-filter: var(--vipr-notify-backdrop-filter);
 
   &::before {
     content: '';
     position: absolute;
     inset: 0 auto 0 0;
-    width: var(--vipr-space-1);
-    border-radius: var(--vipr-radius-button-lg) 0 0 var(--vipr-radius-button-lg);
-    background: rgba(255, 255, 255, 0.2);
+    width: var(--vipr-notify-accent-width);
+    border-radius: var(--vipr-notify-radius) 0 0 var(--vipr-notify-radius);
+    background: var(--vipr-notify-accent-bg);
   }
 
   .q-notification__wrapper {
@@ -1654,29 +1692,29 @@ html[data-e2e='1'] *::after {
 
   .q-notification__icon {
     margin-right: var(--vipr-space-3);
-    font-size: 1.2rem;
-    opacity: 0.95;
+    font-size: var(--vipr-notify-icon-size);
+    opacity: var(--vipr-notify-icon-opacity);
   }
 
   .q-notification__message {
-    font-size: 0.98rem;
-    line-height: 1.4;
+    font-size: var(--vipr-notify-message-font-size);
+    line-height: var(--vipr-notify-message-line-height);
     font-weight: 500;
   }
 }
 
 .vipr-notify--positive::before {
-  background: #17d97a;
+  background: var(--vipr-notify-status-positive);
 }
 
 .vipr-notify--info::before {
-  background: #4db8ff;
+  background: var(--vipr-notify-status-info);
 }
 
 .vipr-notify--warning::before {
-  background: #ffb648;
+  background: var(--vipr-notify-status-warning);
 }
 
 .vipr-notify--negative::before {
-  background: #ff5d7d;
+  background: var(--vipr-notify-status-negative);
 }

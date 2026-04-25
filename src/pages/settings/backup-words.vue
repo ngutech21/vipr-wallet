@@ -20,13 +20,13 @@ meta:
       />
     </div>
 
-    <div class="backup-page__content q-px-md q-pb-xl">
+    <div class="backup-page__content">
       <div class="backup-words-container vipr-page-panel">
-        <div class="backup-warning-banner vipr-warning-card q-mb-md">
+        <div class="backup-warning-banner vipr-warning-card">
           Write this recovery phrase down in order and keep it somewhere safe.
         </div>
 
-        <div class="words-grid vipr-word-grid q-mb-lg">
+        <div class="words-grid vipr-word-grid">
           <q-card
             v-for="(word, index) in recoveryWords"
             :key="index"
@@ -44,7 +44,7 @@ meta:
           </q-card>
         </div>
 
-        <div class="backup-info-card vipr-info-card q-mb-lg">
+        <div class="backup-info-card vipr-info-card">
           <div class="backup-info-card__title vipr-section-title">Store this secret safely</div>
           <div class="backup-info-card__copy vipr-caption">
             This is your real wallet recovery phrase. Anyone with it can recover your wallet.
@@ -57,7 +57,7 @@ meta:
           icon="check_circle"
           no-caps
           unelevated
-          class="full-width q-mb-sm vipr-btn vipr-btn--primary-soft vipr-btn--md"
+          class="full-width backup-confirm-btn vipr-btn vipr-btn--primary-soft vipr-btn--md"
           @click="confirmBackup"
           data-testid="backup-words-confirm-btn"
         />
@@ -108,31 +108,38 @@ async function loadRecoveryWords() {
 
 <style scoped>
 .backup-page__content {
-  max-width: 760px;
+  max-width: var(--vipr-backup-content-width);
   margin: 0 auto;
+  padding: var(--vipr-backup-content-padding);
 }
 
 .backup-words-container {
-  max-width: 760px;
+  max-width: var(--vipr-backup-content-width);
   margin: 0 auto;
-  padding: 20px;
+  padding: var(--vipr-backup-panel-padding);
 }
 
 .backup-warning-banner {
-  padding: 14px 16px;
+  margin-bottom: var(--vipr-backup-section-gap);
+  padding: var(--vipr-backup-card-padding);
   border-radius: var(--vipr-radius-card);
   font-size: var(--vipr-font-size-body);
   font-weight: 600;
-  line-height: 1.4;
+  line-height: var(--vipr-line-height-body);
+}
+
+.words-grid {
+  margin-bottom: var(--vipr-backup-section-gap);
 }
 
 .backup-info-card {
-  padding: 16px 18px;
+  margin: var(--vipr-backup-section-gap) 0;
+  padding: var(--vipr-backup-card-padding);
   border-radius: var(--vipr-radius-card);
 }
 
 .backup-info-card__title {
-  margin-bottom: 6px;
+  margin-bottom: var(--vipr-backup-card-copy-gap);
 }
 
 .full-width {
@@ -144,16 +151,20 @@ async function loadRecoveryWords() {
   letter-spacing: 0;
 }
 
+.backup-confirm-btn {
+  margin-bottom: var(--vipr-backup-action-gap);
+}
+
 /* Responsive adjustments for smaller screens */
 @media (max-width: 599px) {
   .backup-words-container {
-    padding: 18px;
-    border-radius: 28px;
+    padding: var(--vipr-backup-panel-padding-mobile);
+    border-radius: var(--vipr-backup-panel-radius-mobile);
   }
 
   .backup-words-container .vipr-word-grid {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: var(--vipr-backup-word-grid-gap-mobile);
   }
 }
 </style>
