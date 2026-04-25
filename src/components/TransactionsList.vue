@@ -300,6 +300,10 @@ defineExpose({
   margin: 0 auto;
 }
 
+.transactions-list {
+  padding: 0 var(--vipr-space-4) var(--vipr-space-4);
+}
+
 .transactions-card {
   padding: 20px;
 }
