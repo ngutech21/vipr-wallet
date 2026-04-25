@@ -1134,13 +1134,11 @@ html[data-e2e='1'] *::after {
 }
 
 .transaction-item {
-  border-bottom: 1px solid var(--vipr-row-border);
-  border-radius: var(--vipr-radius-control);
-  margin-bottom: 2px;
+  border-bottom: 0;
+  border-radius: var(--vipr-space-0);
+  margin-bottom: var(--vipr-space-0);
   padding: 10px 0;
-  transition:
-    background-color 160ms ease,
-    box-shadow 160ms ease;
+  transition: background-color 160ms ease;
 }
 
 .transaction-item:hover {
@@ -1193,9 +1191,18 @@ html[data-e2e='1'] *::after {
 
 .transaction-list-container .transaction-item {
   position: relative;
-  border-bottom-color: var(--vipr-row-border);
-  margin: 0 calc(-1 * var(--vipr-space-2));
-  padding: 14px var(--vipr-space-2);
+  margin: var(--vipr-space-0);
+  padding: var(--vipr-row-padding-y) var(--vipr-space-0);
+}
+
+.transaction-list-container .transaction-item::after {
+  content: '';
+  position: absolute;
+  right: var(--vipr-space-0);
+  bottom: var(--vipr-space-0);
+  left: var(--vipr-space-0);
+  height: 1px;
+  background: var(--vipr-row-border);
 }
 
 .transaction-list-container .transaction-item:first-child {
@@ -1203,13 +1210,15 @@ html[data-e2e='1'] *::after {
 }
 
 .transaction-list-container .transaction-item:last-child {
-  border-bottom: 0;
   padding-bottom: 10px;
+}
+
+.transaction-list-container .transaction-item:last-child::after {
+  display: none;
 }
 
 .transaction-list-container .transaction-item:hover {
   background-color: var(--vipr-row-hover-bg);
-  box-shadow: var(--vipr-row-hover-shadow);
 }
 
 .transaction-list-container .transaction-item:active {
