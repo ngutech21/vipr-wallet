@@ -4,7 +4,7 @@
     class="install-panel"
     data-testid="startup-wizard-install-panel"
   >
-    <div class="install-panel__eyebrow">Recommended setup</div>
+    <div class="install-panel__eyebrow vipr-eyebrow">Recommended setup</div>
 
     <div class="install-panel__header">
       <div class="install-panel__icon">
@@ -12,18 +12,18 @@
       </div>
 
       <div class="install-panel__copy">
-        <div class="text-h4 text-weight-bold q-mb-sm">Add Vipr to your home screen</div>
-        <div class="install-panel__description">
+        <div class="install-panel__title vipr-title q-mb-sm">Add Vipr to your home screen</div>
+        <div class="install-panel__description vipr-caption">
           {{ installHintDescription }}
         </div>
       </div>
     </div>
 
-    <div v-if="needsNativeBrowser" class="install-panel__browser-note">
+    <div v-if="needsNativeBrowser" class="install-panel__browser-note vipr-warning-card">
       Open this page in {{ recommendedBrowserLabel }} to install Vipr from the correct browser.
     </div>
 
-    <div class="install-panel__steps-title">
+    <div class="install-panel__steps-title vipr-section-title">
       {{ installInstruction.title }}
     </div>
 
@@ -32,7 +32,7 @@
       <div class="install-step__text">{{ step }}</div>
     </div>
 
-    <div class="install-panel__footer text-caption">
+    <div class="install-panel__footer vipr-caption">
       Once Vipr is on your home screen, reopen it from the new icon for the cleanest full-screen
       experience.
     </div>
@@ -77,11 +77,6 @@ defineEmits<{
   align-items: center;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.76);
   background: rgba(var(--q-primary-rgb), 0.16);
   border: 1px solid rgba(var(--q-primary-rgb), 0.28);
 }
@@ -99,32 +94,19 @@ defineEmits<{
   height: 46px;
   flex-shrink: 0;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.06);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--vipr-row-icon-bg);
+  color: var(--vipr-text-primary);
+  border: 1px solid var(--vipr-color-surface-border);
 }
 
 .install-panel__copy {
   min-width: 0;
 }
 
-.install-panel__description {
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.74);
-}
-
 .install-panel__browser-note {
   padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(255, 179, 64, 0.08);
-  border: 1px solid rgba(255, 179, 64, 0.18);
-  color: #ffd18d;
+  border-radius: var(--vipr-radius-sm);
   font-size: 0.92rem;
-}
-
-.install-panel__steps-title {
-  font-weight: 700;
-  color: white;
 }
 
 .install-step {
@@ -132,7 +114,7 @@ defineEmits<{
   gap: 12px;
   align-items: flex-start;
   padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--vipr-color-surface-border);
 
   + .install-step {
     margin-top: 2px;
@@ -148,19 +130,14 @@ defineEmits<{
   border-radius: 999px;
   background: rgba(var(--q-primary-rgb), 0.18);
   border: 1px solid rgba(var(--q-primary-rgb), 0.32);
-  color: white;
+  color: var(--vipr-text-primary);
   font-size: 0.82rem;
   font-weight: 700;
 }
 
 .install-step__text {
   line-height: 1.45;
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.install-panel__footer {
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.58);
+  color: var(--vipr-text-primary);
 }
 
 .install-panel__actions {

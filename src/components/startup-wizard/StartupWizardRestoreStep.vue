@@ -1,5 +1,5 @@
 <template>
-  <div class="text-body2 q-mb-md">
+  <div class="vipr-caption q-mb-md">
     Enter your 12-word recovery phrase in order to restore your wallet.
   </div>
 
@@ -9,8 +9,10 @@
       :key="index"
       :model-value="localRestoreWords[index]"
       :label="`${index + 1}`"
-      outlined
+      filled
+      dark
       dense
+      class="vipr-input"
       autocomplete="off"
       autocapitalize="off"
       spellcheck="false"
@@ -25,8 +27,8 @@
       <q-btn
         label="Back"
         flat
-        color="grey-7"
-        class="full-width"
+        no-caps
+        class="full-width vipr-btn vipr-btn--secondary vipr-btn--lg"
         :disable="isRestoring"
         data-testid="startup-wizard-restore-back-btn"
         @click="$emit('back')"
@@ -36,7 +38,8 @@
       <q-btn
         label="Restore wallet"
         color="primary"
-        class="full-width"
+        no-caps
+        class="full-width vipr-btn vipr-btn--primary-soft vipr-btn--lg"
         :loading="isRestoring"
         :disable="isCreating || isRestoring"
         data-testid="startup-wizard-restore-submit-btn"

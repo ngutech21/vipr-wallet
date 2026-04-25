@@ -6,7 +6,7 @@ meta:
 <template>
   <q-page class="dark-gradient startup-wizard-page" data-testid="startup-wizard-page">
     <div class="wizard-shell">
-      <q-card flat class="wizard-card">
+      <q-card flat class="wizard-card vipr-page-panel">
         <q-card-section class="wizard-card__section">
           <div v-if="currentStep === 'install' && showInstallStep">
             <StartupWizardInstallStep
@@ -43,7 +43,7 @@ meta:
                 label="Create new wallet"
                 unelevated
                 no-caps
-                class="wizard-primary-btn"
+                class="wizard-primary-btn vipr-btn vipr-btn--primary-soft"
                 :disable="isCreating || isRestoring"
                 data-testid="startup-wizard-create-btn"
                 @click="startCreateFlow"
@@ -51,7 +51,7 @@ meta:
               <q-btn
                 flat
                 no-caps
-                class="wizard-secondary-btn"
+                class="wizard-secondary-btn vipr-btn vipr-btn--secondary"
                 :disable="isCreating || isRestoring"
                 data-testid="startup-wizard-restore-btn"
                 @click="startRestoreFlow"
@@ -94,7 +94,7 @@ meta:
               <q-btn
                 flat
                 no-caps
-                class="wizard-secondary-btn"
+                class="wizard-secondary-btn vipr-btn vipr-btn--secondary"
                 data-testid="startup-wizard-custody-back-btn"
                 @click="backToWelcome"
               >
@@ -104,7 +104,7 @@ meta:
                 label="Next"
                 unelevated
                 no-caps
-                class="wizard-primary-btn"
+                class="wizard-primary-btn vipr-btn vipr-btn--primary-soft"
                 data-testid="startup-wizard-custody-next-btn"
                 @click="goToFederationStep"
               />
@@ -144,7 +144,7 @@ meta:
               <q-btn
                 flat
                 no-caps
-                class="wizard-secondary-btn"
+                class="wizard-secondary-btn vipr-btn vipr-btn--secondary"
                 data-testid="startup-wizard-federation-back-btn"
                 @click="backToCustody"
               >
@@ -154,7 +154,7 @@ meta:
                 label="Next"
                 unelevated
                 no-caps
-                class="wizard-primary-btn"
+                class="wizard-primary-btn vipr-btn vipr-btn--primary-soft"
                 :loading="isCreating"
                 :disable="isRestoring"
                 data-testid="startup-wizard-federation-next-btn"
@@ -226,7 +226,7 @@ meta:
                 label="Get started"
                 unelevated
                 no-caps
-                class="wizard-primary-btn"
+                class="wizard-primary-btn vipr-btn vipr-btn--primary-soft"
                 data-testid="startup-wizard-done-btn"
                 @click="finishWizardAndEnterApp"
               />
@@ -310,15 +310,8 @@ onBeforeUnmount(() => {
 
 .wizard-card {
   width: 100%;
-  max-width: 560px;
-  border-radius: 32px;
-  color: white;
-  background:
-    radial-gradient(circle at top left, rgba(var(--q-primary-rgb), 0.2), transparent 34%),
-    radial-gradient(circle at 85% 12%, rgba(var(--q-primary-rgb), 0.1), transparent 20%),
-    linear-gradient(180deg, rgba(24, 24, 28, 0.98), rgba(15, 15, 18, 1));
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.44);
+  max-width: var(--vipr-width-flow-panel);
+  color: var(--vipr-text-primary);
 }
 
 .wizard-card__section {
@@ -347,25 +340,14 @@ onBeforeUnmount(() => {
 
 .wizard-kicker {
   margin-bottom: 8px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.62);
 }
 
 .wizard-title {
   margin: 0;
-  font-size: 2.2rem;
-  line-height: 1.1;
-  font-weight: 700;
 }
 
 .wizard-body {
   margin: 14px 0 0;
-  font-size: 1.18rem;
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.78);
 }
 
 .wizard-actions,
@@ -396,18 +378,11 @@ onBeforeUnmount(() => {
 .wizard-primary-btn {
   flex: 1 1 0;
   min-width: 0;
-  background: var(--vipr-gradient-primary) !important;
-  color: var(--vipr-text-primary) !important;
-  box-shadow: var(--vipr-shadow-primary-soft);
 }
 
 .wizard-secondary-btn {
   flex: 1 1 0;
   min-width: 0;
-  color: rgba(255, 255, 255, 0.92) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .wizard-actions--stack .wizard-primary-btn,
@@ -421,7 +396,7 @@ onBeforeUnmount(() => {
   padding: 0;
   border: 0;
   background: transparent;
-  color: rgba(255, 255, 255, 0.66);
+  color: var(--vipr-text-muted);
   font-size: 0.98rem;
   cursor: pointer;
 }
@@ -444,8 +419,8 @@ onBeforeUnmount(() => {
 .welcome-orb {
   position: absolute;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--vipr-surface-card-bg-subtle);
+  border: 1px solid var(--vipr-surface-card-border-subtle);
 }
 
 .welcome-orb--large {
@@ -497,12 +472,12 @@ onBeforeUnmount(() => {
   width: 180px;
   height: 120px;
   padding: 16px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--vipr-radius-card);
+  background: var(--vipr-control-panel-bg);
+  border: 1px solid var(--vipr-control-panel-border);
   text-align: center;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--vipr-text-primary);
 }
 
 .federation-card--left {
@@ -530,43 +505,6 @@ onBeforeUnmount(() => {
     radial-gradient(circle at 82% 76%, rgba(255, 255, 255, 0.34), transparent 8%);
 }
 
-.startup-wizard-page :deep(.words-grid .q-card),
-.startup-wizard-page :deep(.restore-grid .q-field__control) {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.08);
-  color: white;
-}
-
-.startup-wizard-page :deep(.restore-grid .q-field__label),
-.startup-wizard-page :deep(.restore-grid .q-field__native),
-.startup-wizard-page :deep(.restore-grid input) {
-  color: rgba(255, 255, 255, 0.92) !important;
-}
-
-.startup-wizard-page :deep(.restore-grid .q-field--outlined .q-field__control:before),
-.startup-wizard-page :deep(.restore-grid .q-field--outlined .q-field__control:after) {
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.startup-wizard-page :deep([data-testid='startup-wizard-backup-confirm-btn']),
-.startup-wizard-page :deep([data-testid='startup-wizard-restore-submit-btn']) {
-  min-height: 52px;
-  border-radius: var(--vipr-radius-button-lg);
-  background: var(--vipr-gradient-primary) !important;
-  color: var(--vipr-text-primary) !important;
-  box-shadow: var(--vipr-shadow-primary-soft);
-}
-
-.startup-wizard-page :deep([data-testid='startup-wizard-backup-back-btn']),
-.startup-wizard-page :deep([data-testid='startup-wizard-restore-back-btn']) {
-  min-height: 52px;
-  border-radius: var(--vipr-radius-button-lg);
-  color: rgba(255, 255, 255, 0.92) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
-}
-
 @media (max-width: 599px) {
   .startup-wizard-page {
     padding: calc(8px + env(safe-area-inset-top)) 8px 8px;
@@ -586,11 +524,11 @@ onBeforeUnmount(() => {
   }
 
   .wizard-title {
-    font-size: 1.9rem;
+    font-size: var(--vipr-font-size-title);
   }
 
   .wizard-body {
-    font-size: 1.05rem;
+    font-size: var(--vipr-font-size-section-title);
   }
 
   .wizard-actions,

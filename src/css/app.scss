@@ -52,6 +52,7 @@ body,
   --vipr-control-height-md: 48px;
   --vipr-control-height-lg: 54px;
   --vipr-font-size-title: 1.9rem;
+  --vipr-font-size-display: 2.2rem;
   --vipr-font-size-section-title: 1.05rem;
   --vipr-font-size-summary-title: 1.35rem;
   --vipr-font-size-amount: 2.75rem;
@@ -63,6 +64,8 @@ body,
   --vipr-font-size-label: 0.78rem;
   --vipr-font-size-keypad: 1.16rem;
   --vipr-font-size-icon-lg: 1.55rem;
+  --vipr-font-size-word: 1.1rem;
+  --vipr-font-family-mono: 'Courier New', monospace;
   --vipr-line-height-tight: 1.1;
   --vipr-line-height-body: 1.45;
   --vipr-gradient-primary: linear-gradient(135deg, rgba(162, 43, 255, 1), rgba(116, 0, 255, 0.96));
@@ -117,6 +120,16 @@ body,
   --vipr-control-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.024);
   --vipr-control-panel-bg-hover: var(--vipr-color-input-bg-hover);
   --vipr-control-panel-bg-active: rgba(255, 255, 255, 0.09);
+  --vipr-page-panel-bg:
+    radial-gradient(circle at top left, rgba(156, 39, 255, 0.16), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.018)),
+    var(--vipr-color-surface-base);
+  --vipr-page-panel-shadow: 0 26px 70px rgba(0, 0, 0, 0.44);
+  --vipr-warning-bg: rgba(255, 184, 77, 0.12);
+  --vipr-warning-border: rgba(255, 184, 77, 0.2);
+  --vipr-warning-text: rgba(255, 244, 224, 0.96);
+  --vipr-info-bg: rgba(82, 197, 255, 0.1);
+  --vipr-info-border: rgba(82, 197, 255, 0.16);
   --vipr-qr-surface-bg: #fff;
   --vipr-copy-field-bg: rgba(255, 255, 255, 0.045);
   --vipr-copy-field-border: rgba(255, 255, 255, 0.055);
@@ -273,6 +286,15 @@ html[data-e2e='1'] *::after {
   letter-spacing: 0;
 }
 
+.vipr-display-title,
+.wizard-title {
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-display);
+  font-weight: 700;
+  line-height: var(--vipr-line-height-tight);
+  letter-spacing: 0;
+}
+
 .vipr-section-title,
 .section-title {
   color: var(--vipr-text-primary);
@@ -306,6 +328,14 @@ html[data-e2e='1'] *::after {
   letter-spacing: 0;
 }
 
+.vipr-lede,
+.wizard-body {
+  color: var(--vipr-text-secondary);
+  font-size: 1.18rem;
+  line-height: 1.55;
+  letter-spacing: 0;
+}
+
 .vipr-caption,
 .vipr-helper,
 .success-subtitle {
@@ -313,6 +343,68 @@ html[data-e2e='1'] *::after {
   font-size: var(--vipr-font-size-caption);
   line-height: var(--vipr-line-height-body);
   letter-spacing: 0;
+}
+
+.vipr-eyebrow,
+.wizard-kicker {
+  color: var(--vipr-text-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.vipr-page-panel {
+  background: var(--vipr-page-panel-bg);
+  border: 1px solid var(--vipr-color-surface-border);
+  border-radius: var(--vipr-radius-xl);
+  box-shadow: var(--vipr-page-panel-shadow);
+}
+
+.vipr-warning-card {
+  background: var(--vipr-warning-bg);
+  border: 1px solid var(--vipr-warning-border);
+  color: var(--vipr-warning-text);
+}
+
+.vipr-info-card {
+  background: var(--vipr-info-bg);
+  border: 1px solid var(--vipr-info-border);
+  color: var(--vipr-text-secondary);
+}
+
+.vipr-word-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--vipr-space-3);
+}
+
+.vipr-word-card {
+  border-radius: var(--vipr-radius-card);
+  background: var(--vipr-control-panel-bg);
+  border-color: var(--vipr-control-panel-border);
+  box-shadow: var(--vipr-control-panel-shadow);
+}
+
+.vipr-word-card__section {
+  padding: 14px var(--vipr-space-4);
+}
+
+.vipr-word-card__number {
+  margin-bottom: 6px;
+  color: var(--vipr-text-subtle);
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.vipr-word-card__text {
+  color: var(--vipr-text-primary);
+  font-family: var(--vipr-font-family-mono);
+  font-size: var(--vipr-font-size-word);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  user-select: none;
 }
 
 .vipr-status-label,
