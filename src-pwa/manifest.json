@@ -49,25 +49,32 @@
   ],
   "screenshots": [
     {
-      "src": "/screenshots/Home-iphone.webp",
+      "src": "/screenshots/Home.webp",
       "form_factor": "narrow",
-      "sizes": "467x920",
+      "sizes": "1308x2710",
       "type": "image/webp",
       "label": "Home"
     },
     {
-      "src": "/screenshots/Receive-iphone.webp",
+      "src": "/screenshots/Receive-Lightning.webp",
       "form_factor": "narrow",
-      "sizes": "467x920",
+      "sizes": "1308x2710",
       "type": "image/webp",
       "label": "Receive Payment"
     },
     {
-      "src": "/screenshots/Federation-Details-iphone.webp",
+      "src": "/screenshots/Federation-Details.webp",
       "form_factor": "narrow",
-      "sizes": "467x920",
+      "sizes": "1308x2710",
       "type": "image/webp",
       "label": "Federation Details"
+    },
+    {
+      "src": "/screenshots/Settings.webp",
+      "form_factor": "narrow",
+      "sizes": "1308x2710",
+      "type": "image/webp",
+      "label": "Settings"
     }
   ]
 }
