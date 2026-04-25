@@ -186,6 +186,27 @@ body,
   --vipr-glass-panel-bg: rgba(24, 24, 24, 0.78);
   --vipr-glass-panel-border: var(--vipr-color-surface-border);
   --vipr-glass-panel-backdrop: blur(16px);
+  --vipr-home-hero-bg:
+    radial-gradient(circle at top left, rgba(156, 39, 255, 0.18), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+  --vipr-home-hero-border: var(--vipr-color-surface-border);
+  --vipr-home-hero-padding: 18px var(--vipr-space-5) var(--vipr-space-4);
+  --vipr-home-balance-font-size: clamp(2rem, 6vw, var(--vipr-font-size-amount));
+  --vipr-home-actions-width: min(calc(100vw - var(--vipr-space-8)), 420px);
+  --vipr-home-actions-width-mobile: min(calc(100vw - (var(--vipr-row-padding-y) * 2)), 420px);
+  --vipr-home-action-gap: var(--vipr-space-3);
+  --vipr-home-action-gap-mobile: 10px;
+  --vipr-home-action-button-width: 148px;
+  --vipr-home-action-icon-width: 62px;
+  --vipr-home-action-icon-width-mobile: 56px;
+  --vipr-home-action-height: 52px;
+  --vipr-home-action-height-mobile: 50px;
+  --vipr-home-action-icon-size: 1.35rem;
+  --vipr-home-empty-action-icon-size: 1.25rem;
+  --vipr-home-empty-action-width: min(100%, 230px);
+  --vipr-home-empty-action-height-mobile: var(--vipr-control-height-md);
+  --vipr-home-empty-state-bottom-space: 120px;
+  --vipr-home-transactions-bottom-space: 96px;
   --vipr-layout-footer-bg:
     linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 18px),
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.018)),
