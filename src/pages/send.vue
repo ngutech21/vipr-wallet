@@ -28,7 +28,7 @@
                 dark
                 type="text"
                 placeholder="Enter Lightning invoice, address or contact"
-                class="custom-input custom-input--single-line"
+                class="vipr-input vipr-input--single-line"
                 data-testid="send-invoice-input"
               >
                 <template #after>
@@ -154,7 +154,7 @@
                       dark
                       v-model="invoiceMemo"
                       label="Memo (optional)"
-                      class="custom-input"
+                      class="vipr-input"
                       data-testid="send-memo-input"
                     />
                   </div>
@@ -326,20 +326,6 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 
 .send-content {
   width: 100%;
-}
-
-.custom-input--single-line :deep(.q-field__native),
-.custom-input--single-line :deep(.q-field__input) {
-  white-space: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
-  text-overflow: ellipsis;
-  scrollbar-width: none;
-}
-
-.custom-input--single-line :deep(.q-field__input::-webkit-scrollbar),
-.custom-input--single-line :deep(.q-field__native::-webkit-scrollbar) {
-  display: none;
 }
 
 .text-grey {

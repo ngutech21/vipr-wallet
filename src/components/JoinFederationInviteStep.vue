@@ -17,6 +17,8 @@
       :rules="[(val) => !!val || 'Invitecode is required']"
       type="textarea"
       autogrow
+      dark
+      class="vipr-input"
       data-testid="invite-code-input"
     />
 

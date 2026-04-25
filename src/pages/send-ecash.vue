@@ -24,7 +24,7 @@ meta:
       <div class="send-ecash-content">
         <div class="flex flex-center full-width">
           <template v-if="exportedNotes === ''">
-            <div class="amount-entry-container q-pa-lg task-card">
+            <div class="vipr-flow-panel q-pa-lg task-card vipr-surface-card--strong">
               <div class="section-title q-mb-md text-center">Enter amount</div>
 
               <AmountDisplay
@@ -67,7 +67,7 @@ meta:
           </template>
 
           <template v-else>
-            <q-card flat class="task-card export-card q-mb-md">
+            <q-card flat class="task-card vipr-flow-panel vipr-surface-card--strong q-mb-md">
               <q-card-section>
                 <div class="section-title">Exported ecash</div>
                 <div class="text-caption text-grey q-mt-xs">
@@ -379,17 +379,7 @@ function canRepresentExactMsats(targetMsats: number, noteCounts: Record<number, 
   padding: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-6);
 }
 
-.amount-entry-container {
-  width: 100%;
-  max-width: var(--vipr-width-flow-panel);
-}
-
 .text-grey {
   color: var(--vipr-text-grey);
-}
-
-.export-card {
-  width: 100%;
-  max-width: var(--vipr-width-flow-panel);
 }
 </style>

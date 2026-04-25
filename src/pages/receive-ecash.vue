@@ -22,7 +22,7 @@ meta:
       </div>
 
       <div class="receive-ecash-content">
-        <q-card flat class="task-card receive-ecash-card q-mb-md">
+        <q-card flat class="task-card vipr-flow-panel vipr-surface-card--strong q-mb-md">
           <q-card-section>
             <div class="section-title q-mb-md">Paste ecash</div>
             <q-input
@@ -33,7 +33,7 @@ meta:
               dark
               type="textarea"
               placeholder="Paste ecash token here"
-              class="custom-input"
+              class="vipr-input"
               data-testid="receive-ecash-token-input"
             >
               <template #after>
@@ -55,7 +55,7 @@ meta:
           color="primary"
           no-caps
           unelevated
-          class="full-width vipr-btn vipr-btn--primary vipr-btn--lg receive-ecash-action-btn"
+          class="vipr-flow-panel vipr-btn vipr-btn--primary vipr-btn--lg"
           :loading="isProcessing"
           :disable="!ecashToken.trim() || isProcessing"
           @click="redeemEcash"
@@ -155,17 +155,7 @@ function getQueryString(value: LocationQueryValue | LocationQueryValue[] | undef
   align-items: center;
 }
 
-.receive-ecash-card {
-  width: 100%;
-  max-width: var(--vipr-width-flow-panel);
-}
-
 .text-grey {
   color: var(--vipr-text-grey);
-}
-
-.receive-ecash-action-btn {
-  width: 100%;
-  max-width: var(--vipr-width-flow-panel);
 }
 </style>

@@ -25,10 +25,7 @@ meta:
 
       <div class="receive-content">
         <div class="flex flex-center full-width">
-          <div
-            v-if="!qrData"
-            class="amount-entry-container q-pa-lg task-card vipr-surface-card--strong"
-          >
+          <div v-if="!qrData" class="vipr-flow-panel q-pa-lg task-card vipr-surface-card--strong">
             <AmountDisplay :value="formattedAmount" class="q-mb-lg" data-testid="amount-input" />
 
             <NumericKeypad :buttons="keypadButtons" class="q-mb-lg" />
@@ -299,11 +296,6 @@ async function goBack() {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.amount-entry-container {
-  width: 100%;
-  max-width: var(--vipr-width-flow-panel);
 }
 
 .entry-title {

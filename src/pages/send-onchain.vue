@@ -26,7 +26,7 @@ meta:
 
       <div class="send-onchain-content">
         <div class="flex flex-center full-width">
-          <div class="amount-entry-container q-pa-lg task-card">
+          <div class="vipr-flow-panel q-pa-lg task-card vipr-surface-card--strong">
             <div class="section-title q-mb-md text-center">Bitcoin destination</div>
 
             <q-input
@@ -37,7 +37,7 @@ meta:
               dark
               type="textarea"
               label="Bitcoin address or bitcoin: URI"
-              class="custom-input q-mb-md"
+              class="vipr-input q-mb-md"
               :error="addressError != null"
               :error-message="addressError ?? undefined"
               data-testid="send-onchain-target-input"
@@ -332,11 +332,6 @@ function safeParseBitcoinInput(input: string): {
 .send-onchain-content {
   width: 100%;
   padding: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-6);
-}
-
-.amount-entry-container {
-  width: 100%;
-  max-width: var(--vipr-width-flow-panel);
 }
 
 .task-card--secondary {

@@ -27,7 +27,7 @@ meta:
       <div class="receive-onchain-content">
         <div
           v-if="isGenerating"
-          class="amount-entry-container task-card vipr-surface-card--strong text-center q-pa-xl"
+          class="vipr-flow-panel task-card vipr-surface-card--strong text-center q-pa-xl"
         >
           <q-spinner color="primary" size="3em" />
           <div class="section-title q-mt-md">Generating Bitcoin address...</div>
@@ -360,11 +360,6 @@ async function goBack() {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.amount-entry-container {
-  width: 100%;
-  max-width: var(--vipr-width-flow-panel);
 }
 
 .receive-onchain-status {
