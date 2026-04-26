@@ -1,0 +1,248 @@
+<template>
+  <div class="send-federation-selector">
+    <button
+      type="button"
+      class="send-federation-selector__trigger vipr-surface-card vipr-surface-card--strong"
+      :disabled="federations.length === 0 || isSwitching"
+      data-testid="send-federation-selector-trigger"
+      @click="showSheet = true"
+    >
+      <FederationAvatar :federation="selectedFederation" />
+
+      <span class="send-federation-selector__summary">
+        <span class="send-federation-selector__title">
+          {{ selectedFederation?.title ?? 'No federation selected' }}
+        </span>
+        <span
+          class="send-federation-selector__balance"
+          data-testid="send-federation-active-balance"
+        >
+          {{ activeBalanceLabel }}
+        </span>
+      </span>
+
+      <q-spinner v-if="isSwitching" size="sm" color="primary" />
+      <q-icon v-else name="expand_more" class="send-federation-selector__chevron" />
+    </button>
+
+    <div
+      v-if="selectionError"
+      class="send-federation-selector__error"
+      data-testid="send-federation-selector-error"
+    >
+      {{ selectionError }}
+    </div>
+
+    <q-dialog
+      v-model="showSheet"
+      position="bottom"
+      transition-show="slide-up"
+      transition-hide="slide-down"
+    >
+      <ModalCard title="Select federation" @close="showSheet = false">
+        <div class="send-federation-sheet">
+          <button
+            v-for="federation in federations"
+            :key="federation.federationId"
+            type="button"
+            class="send-federation-sheet__item vipr-surface-card vipr-surface-card--list"
+            :class="{
+              'send-federation-sheet__item--active': isSelected(federation),
+            }"
+            :disabled="isSwitching"
+            :data-testid="`send-federation-option-${federation.federationId}`"
+            @click="selectFederation(federation)"
+          >
+            <FederationAvatar :federation="federation" />
+
+            <span class="send-federation-sheet__copy">
+              <span class="send-federation-sheet__title">{{ federation.title }}</span>
+              <span class="send-federation-sheet__subtitle">
+                {{ optionSubtitle(federation) }}
+              </span>
+            </span>
+
+            <q-spinner
+              v-if="switchingFederationId === federation.federationId"
+              size="sm"
+              color="primary"
+            />
+            <q-icon
+              v-else-if="isSelected(federation)"
+              name="check"
+              class="send-federation-sheet__status"
+              data-testid="send-federation-active-check"
+            />
+            <q-icon v-else name="chevron_right" class="send-federation-sheet__status" />
+          </button>
+        </div>
+      </ModalCard>
+    </q-dialog>
+  </div>
+</template>
+
+<script setup lang="ts">
+defineOptions({
+  name: 'SendFederationSelector',
+})
+
+import { computed, ref } from 'vue'
+import ModalCard from 'src/components/ModalCard.vue'
+import { useFederationStore } from 'src/stores/federation'
+import { useWalletStore } from 'src/stores/wallet'
+import type { Federation } from 'src/types/federation'
+import { getErrorMessage } from 'src/utils/error'
+import { logger } from 'src/services/logger'
+import FederationAvatar from './FederationAvatar.vue'
+
+const federationStore = useFederationStore()
+const walletStore = useWalletStore()
+
+const showSheet = ref(false)
+const switchingFederationId = ref<string | null>(null)
+const selectionError = ref('')
+
+const federations = computed(() => federationStore.federations)
+const selectedFederation = computed(() => federationStore.selectedFederation)
+const isSwitching = computed(() => switchingFederationId.value != null)
+const formattedBalance = computed(() => Math.floor(walletStore.balance).toLocaleString())
+const activeBalanceLabel = computed(() => {
+  if (selectedFederation.value == null) {
+    return 'Select a federation'
+  }
+
+  return `Available: ${formattedBalance.value} sats`
+})
+
+function isSelected(federation: Federation): boolean {
+  return federation.federationId === selectedFederation.value?.federationId
+}
+
+function optionSubtitle(federation: Federation): string {
+  if (isSelected(federation)) {
+    return `Active · ${formattedBalance.value} sats available`
+  }
+
+  if (switchingFederationId.value === federation.federationId) {
+    return 'Switching...'
+  }
+
+  return 'Select to view balance'
+}
+
+async function selectFederation(federation: Federation) {
+  if (isSelected(federation) || isSwitching.value) {
+    showSheet.value = false
+    return
+  }
+
+  selectionError.value = ''
+  switchingFederationId.value = federation.federationId
+
+  try {
+    await federationStore.selectFederation(federation)
+    showSheet.value = false
+  } catch (error) {
+    logger.error('Failed to switch send federation', error)
+    selectionError.value = `Failed to switch federation: ${getErrorMessage(error)}`
+  } finally {
+    switchingFederationId.value = null
+  }
+}
+</script>
+
+<style scoped>
+.send-federation-selector {
+  width: 100%;
+}
+
+.send-federation-selector__trigger {
+  width: 100%;
+  border: 1px solid var(--vipr-color-surface-border);
+  border-radius: var(--vipr-radius-button-lg);
+  padding: var(--vipr-space-3) var(--vipr-space-4);
+  color: var(--vipr-text-primary);
+  display: grid;
+  grid-template-columns: var(--vipr-control-height-md) minmax(0, 1fr) var(--vipr-space-6);
+  align-items: center;
+  gap: var(--vipr-space-3);
+  cursor: pointer;
+  text-align: left;
+}
+
+.send-federation-selector__trigger:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
+.send-federation-selector__summary,
+.send-federation-sheet__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vipr-space-1);
+}
+
+.send-federation-selector__title,
+.send-federation-sheet__title {
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-section-title);
+  font-weight: 700;
+  line-height: var(--vipr-line-height-tight);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.send-federation-selector__balance,
+.send-federation-sheet__subtitle {
+  color: var(--vipr-text-soft);
+  font-size: var(--vipr-font-size-label);
+  line-height: var(--vipr-line-height-body);
+}
+
+.send-federation-selector__chevron,
+.send-federation-sheet__status {
+  color: var(--vipr-text-secondary);
+  justify-self: end;
+}
+
+.send-federation-selector__error {
+  margin-top: var(--vipr-space-2);
+  color: var(--q-negative);
+  font-size: var(--vipr-font-size-label);
+  line-height: var(--vipr-line-height-body);
+  text-align: center;
+}
+
+.send-federation-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vipr-space-3);
+  padding: var(--vipr-space-4);
+}
+
+.send-federation-sheet__item {
+  width: 100%;
+  border: 1px solid var(--vipr-color-surface-border);
+  border-radius: var(--vipr-radius-button-lg);
+  padding: var(--vipr-space-4);
+  display: grid;
+  grid-template-columns: var(--vipr-control-height-md) minmax(0, 1fr) var(--vipr-space-6);
+  align-items: center;
+  gap: var(--vipr-space-3);
+  color: var(--vipr-text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.send-federation-sheet__item--active {
+  border-color: var(--q-primary);
+  background: var(--vipr-surface-card-bg-selected);
+}
+
+.send-federation-sheet__item:disabled {
+  cursor: progress;
+  opacity: 0.72;
+}
+</style>

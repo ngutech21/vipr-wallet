@@ -1,3 +1,8 @@
+<route lang="yaml">
+meta:
+  hideBottomNav: true
+</route>
+
 <template>
   <transition
     appear
@@ -16,34 +21,31 @@
         />
       </div>
       <div class="send-content">
+        <SendFederationSelector class="send-federation-control" />
+
         <!-- Payment input section -->
         <template v-if="!decodedInvoice">
-          <q-card flat class="task-card send-section-card">
-            <q-card-section>
-              <div class="section-title send-section-title">Send payment</div>
-              <q-input
-                v-model="lightningInvoice"
-                filled
+          <q-input
+            v-model="lightningInvoice"
+            filled
+            dense
+            dark
+            type="text"
+            placeholder="Enter Lightning invoice, address or contact"
+            class="vipr-input vipr-input--single-line send-invoice-input"
+            data-testid="send-invoice-input"
+          >
+            <template #after>
+              <q-btn
+                round
                 dense
-                dark
-                type="text"
-                placeholder="Enter Lightning invoice, address or contact"
-                class="vipr-input vipr-input--single-line"
-                data-testid="send-invoice-input"
-              >
-                <template #after>
-                  <q-btn
-                    round
-                    dense
-                    flat
-                    icon="qr_code_scanner"
-                    @click="openScanner"
-                    data-testid="send-open-scanner-btn"
-                  />
-                </template>
-              </q-input>
-            </q-card-section>
-          </q-card>
+                flat
+                icon="qr_code_scanner"
+                @click="openScanner"
+                data-testid="send-open-scanner-btn"
+              />
+            </template>
+          </q-input>
 
           <div class="send-contacts-block">
             <q-list
@@ -74,26 +76,7 @@
             </q-list>
 
             <q-card
-              v-else-if="hasSyncedContacts && !hasContactQuery"
-              flat
-              class="task-card empty-contacts-card contacts-hint-card"
-              data-testid="send-contacts-hint"
-            >
-              <q-card-section class="send-contact-hint">
-                <div class="send-contact-hint__icon">
-                  <q-icon name="search" size="md" class="send-contact-icon" />
-                </div>
-                <div class="send-contact-hint__body">
-                  <div class="vipr-section-title">Contacts appear as you type</div>
-                  <div class="vipr-caption">
-                    Use the field above to search by name or Lightning address.
-                  </div>
-                </div>
-              </q-card-section>
-            </q-card>
-
-            <q-card
-              v-else-if="hasSyncedContacts"
+              v-else-if="hasSyncedContacts && hasContactQuery"
               flat
               class="task-card empty-contacts-card contacts-hint-card"
               data-testid="send-no-contact-matches"
@@ -109,40 +92,26 @@
               </q-card-section>
             </q-card>
 
-            <q-card
-              v-else
-              flat
-              bordered
-              class="task-card empty-contacts-card"
-              data-testid="send-no-contacts"
-            >
-              <q-card-section class="send-contact-hint">
-                <div class="send-contact-hint__icon">
-                  <q-icon name="account_circle" size="md" class="send-contact-icon" />
-                </div>
-                <div class="send-contact-hint__body vipr-section-title">No Contacts</div>
-              </q-card-section>
-            </q-card>
+            <template v-else></template>
           </div>
 
           <!-- Amount input section (for lightning address) -->
           <q-slide-transition>
-            <q-card v-if="amountRequired" flat class="task-card send-section-card">
+            <q-card v-if="amountRequired" flat class="task-card send-section-card send-amount-card">
               <q-card-section>
-                <div class="section-title send-section-title">Payment details</div>
-
                 <div class="send-payment-details">
                   <div class="send-payment-details__field">
                     <AmountDisplay
                       :value="formattedInvoiceAmount"
                       label="Amount in sats"
-                      class="vipr-flow-spacer-md"
+                      class="send-amount-display"
+                      :error-message="amountError"
                       data-testid="send-amount-input"
                     />
                   </div>
                 </div>
 
-                <NumericKeypad :buttons="keypadButtons" class="vipr-flow-spacer-md" />
+                <NumericKeypad :buttons="keypadButtons" class="send-keypad" />
 
                 <div class="send-payment-details send-payment-details--spaced" v-if="lnAddress">
                   <div class="send-payment-details__field">
@@ -171,7 +140,7 @@
               class="send-action__button vipr-btn vipr-btn--primary vipr-btn--lg"
               size="lg"
               :loading="isProcessing"
-              :disable="isProcessing"
+              :disable="isContinueDisabled"
               @click="amountRequired ? createInvoice() : decodeInvoice()"
               data-testid="send-continue-btn"
               :data-busy="isProcessing ? 'true' : 'false'"
@@ -188,6 +157,7 @@
         <VerifyPayment
           v-else
           :decoded-invoice="decodedInvoice"
+          :balance-error-message="paymentBalanceError"
           @cancel="decodedInvoice = null"
           @pay="payInvoice"
         />
@@ -205,10 +175,14 @@ import { computed, ref, watch } from 'vue'
 import VerifyPayment from 'components/VerifyPayment.vue'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
+import SendFederationSelector from 'src/components/SendFederationSelector.vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useAppNotify } from 'src/composables/useAppNotify'
 import { useInvoiceDecoding } from 'src/composables/useInvoiceDecoding'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
 import { useNumericInput } from 'src/composables/useNumericInput'
+import { useFederationStore } from 'src/stores/federation'
+import { useWalletStore } from 'src/stores/wallet'
 import { useNostrStore } from 'src/stores/nostr'
 import type { SyncedNostrContact } from 'src/types/nostr'
 import { getNostrContactDisplayName, getNostrContactSubtitle } from 'src/utils/nostrContacts'
@@ -218,9 +192,14 @@ const lightningInvoice = ref('')
 const route = useRoute('/send')
 const router = useRouter()
 const nostrStore = useNostrStore()
+const federationStore = useFederationStore()
+const walletStore = useWalletStore()
+const notify = useAppNotify()
 const invoiceMemo = ref('')
 const { value: invoiceAmount, keypadButtons } = useNumericInput(0)
 const formattedInvoiceAmount = computed(() => invoiceAmount.value.toLocaleString())
+const activeBalanceSats = computed(() => Math.floor(walletStore.balance))
+const hasSelectedFederation = computed(() => federationStore.selectedFederation != null)
 
 // Use the invoice decoding composable
 const {
@@ -246,6 +225,45 @@ const suggestedContacts = computed(() => {
 const showFilteredContacts = computed(
   () => hasContactQuery.value && suggestedContacts.value.length > 0,
 )
+
+const amountError = computed(() => {
+  if (!amountRequired.value) {
+    return null
+  }
+
+  if (!hasSelectedFederation.value) {
+    return 'Select a federation before sending'
+  }
+
+  if (invoiceAmount.value <= 0) {
+    return null
+  }
+
+  if (invoiceAmount.value > activeBalanceSats.value) {
+    return `Amount must be ${activeBalanceSats.value.toLocaleString()} sats or less`
+  }
+
+  return null
+})
+
+const paymentBalanceError = computed(() => {
+  if (decodedInvoice.value == null) {
+    return null
+  }
+
+  if (!hasSelectedFederation.value) {
+    return 'Select a federation before paying'
+  }
+
+  const invoiceAmountSats = decodedInvoice.value.amount ?? 0
+  if (invoiceAmountSats > activeBalanceSats.value) {
+    return `Insufficient balance. Available: ${activeBalanceSats.value.toLocaleString()} sats`
+  }
+
+  return null
+})
+
+const isContinueDisabled = computed(() => isProcessing.value || amountError.value != null)
 
 // FIXME
 // Validate input before allowing to continue
@@ -284,6 +302,11 @@ async function openScanner() {
 }
 
 async function createInvoice() {
+  if (amountError.value != null) {
+    notify.error(amountError.value)
+    return
+  }
+
   await createInvoiceFromInput(lightningInvoice.value, invoiceAmount.value, invoiceMemo.value)
 }
 
@@ -293,6 +316,11 @@ async function selectContact(paymentTarget: string) {
 }
 
 async function payInvoice() {
+  if (paymentBalanceError.value != null) {
+    notify.error(paymentBalanceError.value)
+    return
+  }
+
   const amountInSats = decodedInvoice.value?.amount ?? 0
   const invoiceToPay = decodedInvoice.value?.invoice ?? lightningInvoice.value
 
@@ -328,13 +356,34 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   padding-left: var(--vipr-space-4);
 }
 
+.send-invoice-input,
 .send-section-card,
-.send-contacts-block {
-  margin-bottom: var(--vipr-space-4);
+.send-contacts-block,
+.send-federation-control {
+  margin-bottom: var(--vipr-space-3);
 }
 
-.send-section-title {
-  margin-bottom: var(--vipr-space-2);
+.send-amount-card :deep(.q-card__section) {
+  padding-top: var(--vipr-space-4);
+  padding-bottom: var(--vipr-space-4);
+}
+
+.send-amount-display :deep(.amount-display) {
+  min-height: 68px;
+  padding: var(--vipr-space-3) var(--vipr-space-4);
+  gap: var(--vipr-space-1);
+}
+
+.send-amount-display :deep(.amount-display__label) {
+  font-size: var(--vipr-font-size-label);
+}
+
+.send-amount-display :deep(.amount-display__value) {
+  font-size: 2rem;
+}
+
+.send-keypad {
+  margin-top: var(--vipr-space-2);
 }
 
 .send-contact-hint {
@@ -363,7 +412,7 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 }
 
 .send-action {
-  margin-top: var(--vipr-space-6);
+  margin-top: var(--vipr-space-4);
 }
 
 .send-action__button {
