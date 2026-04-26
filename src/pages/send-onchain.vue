@@ -29,8 +29,6 @@ meta:
           <div class="vipr-flow-panel vipr-flow-panel--padded task-card vipr-surface-card--strong">
             <SendFederationSelector class="send-onchain-federation-selector" />
 
-            <div class="section-title vipr-flow-title--center">Bitcoin destination</div>
-
             <q-input
               v-model="paymentTarget"
               filled
