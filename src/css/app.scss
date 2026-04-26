@@ -1244,7 +1244,10 @@ html[data-e2e='1'] *::after {
 .vipr-input .q-field__control::after,
 .custom-input .q-field__control::before,
 .custom-input .q-field__control::after {
+  display: none;
   border: 0;
+  height: 0;
+  opacity: 0;
 }
 
 .vipr-input:not(.q-field--disabled):hover .q-field__control,

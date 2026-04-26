@@ -27,7 +27,7 @@ meta:
             <div
               class="vipr-flow-panel vipr-flow-panel--padded task-card vipr-surface-card--strong"
             >
-              <div class="section-title vipr-flow-title--center">Enter amount</div>
+              <SendFederationSelector class="send-ecash-federation-selector" />
 
               <AmountDisplay
                 :value="formattedAmount"
@@ -39,14 +39,12 @@ meta:
 
               <NumericKeypad :buttons="keypadButtons" class="vipr-flow-spacer-md" />
 
-              <div class="vipr-caption vipr-flow-spacer-lg" data-testid="send-ecash-max-amount">
-                <template v-if="selectedFederation != null">
-                  <div>Balance available: {{ maxOfflineAmount.toLocaleString() }} sats</div>
-                  <div class="send-ecash-denomination-note">
-                    Exact offline amounts depend on your current note denominations.
-                  </div>
-                </template>
-                <template v-else> Select a federation before exporting offline ecash </template>
+              <div
+                v-if="selectedFederation != null"
+                class="vipr-caption vipr-flow-spacer-lg send-ecash-denomination-note"
+                data-testid="send-ecash-denomination-note"
+              >
+                Exact offline amounts depend on your current note denominations.
               </div>
 
               <q-btn
@@ -135,6 +133,7 @@ import { useShare } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
 import AnimatedEcashQr from 'src/components/AnimatedEcashQr.vue'
+import SendFederationSelector from 'src/components/SendFederationSelector.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
 import { useNumericInput } from 'src/composables/useNumericInput'
@@ -384,7 +383,10 @@ function canRepresentExactMsats(targetMsats: number, noteCounts: Record<number, 
   padding: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-6);
 }
 
-.send-ecash-denomination-note,
+.send-ecash-federation-selector {
+  margin-bottom: var(--vipr-space-5);
+}
+
 .send-ecash-export-copy {
   margin-top: var(--vipr-space-1);
 }

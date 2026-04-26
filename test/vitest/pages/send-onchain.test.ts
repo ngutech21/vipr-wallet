@@ -63,7 +63,9 @@ vi.mock('quasar', async (importOriginal) => {
 
 vi.mock('src/stores/federation', () => ({
   useFederationStore: () => ({
+    federations: [{ federationId: 'fed-1', title: 'Fed 1', inviteCode: 'fed11test', modules: [] }],
     selectedFederation: { federationId: 'fed-1', title: 'Fed 1' },
+    selectFederation: vi.fn(),
   }),
 }))
 
@@ -110,6 +112,18 @@ describe('SendOnchainPage', () => {
             template: '<div><slot /></div>',
           },
           'q-spinner-dots': true,
+          'q-spinner': true,
+          'q-dialog': {
+            template: '<div><slot /></div>',
+          },
+          ModalCard: {
+            template: '<div><slot /></div>',
+          },
+          FederationAvatar: true,
+          'q-img': true,
+          'q-icon': {
+            template: '<span><slot /></span>',
+          },
           'q-btn': qBtnStub,
           'q-input': qInputStub,
         },
@@ -145,8 +159,9 @@ describe('SendOnchainPage', () => {
     wrapper = createWrapper()
     await flushPromises()
 
+    expect(wrapper.text()).toContain(`Available: ${walletStoreState.balance.toLocaleString()} sats`)
     expect(wrapper.text()).toContain(
-      `Maximum spendable after fee reserve: ${(500_000 - ONCHAIN_FEE_RESERVE_SATS).toLocaleString()} sats`,
+      `Maximum spendable now: ${(500_000 - ONCHAIN_FEE_RESERVE_SATS).toLocaleString()} sats`,
     )
     wrapper.unmount()
   })

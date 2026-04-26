@@ -27,9 +27,18 @@
       </div>
     </div>
 
+    <div
+      v-if="balanceErrorMessage"
+      class="payment-balance-error"
+      data-testid="verify-payment-balance-error"
+    >
+      {{ balanceErrorMessage }}
+    </div>
+
     <div class="payment-slider-container">
       <q-slide-item
-        @left="$emit('pay')"
+        v-if="!paymentDisabled"
+        @left="onPayRequested"
         @action="onSlideAction"
         left-color="transparent"
         class="no-border payment-slider"
@@ -48,6 +57,22 @@
           <div class="slider-text vipr-section-title">Slide to Pay</div>
         </div>
       </q-slide-item>
+
+      <button
+        v-else
+        type="button"
+        class="payment-slider payment-slider--disabled"
+        disabled
+        aria-disabled="true"
+        data-testid="verify-payment-slider-disabled"
+      >
+        <div class="payment-slider-content">
+          <div class="slider-handle slider-handle--disabled">
+            <q-icon name="bolt" color="white" size="20px" />
+          </div>
+          <div class="slider-text vipr-section-title">Insufficient balance</div>
+        </div>
+      </button>
     </div>
   </div>
 </template>
@@ -58,9 +83,10 @@ import type { Bolt11Invoice } from 'src/types/lightning'
 
 const props = defineProps<{
   decodedInvoice: Bolt11Invoice
+  balanceErrorMessage?: string | null
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   cancel: []
   pay: []
 }>()
@@ -70,6 +96,17 @@ const formatExpiry = computed(() => {
   const date = new Date((props.decodedInvoice.timestamp + props.decodedInvoice.expiry) * 1000)
   return date.toLocaleString()
 })
+const paymentDisabled = computed(
+  () => props.balanceErrorMessage != null && props.balanceErrorMessage !== '',
+)
+
+function onPayRequested() {
+  if (paymentDisabled.value) {
+    return
+  }
+
+  emit('pay')
+}
 
 function onSlideAction({
   side,
@@ -99,6 +136,18 @@ function onSlideAction({
 .payment-details-card {
   margin-bottom: var(--vipr-space-6);
   padding: var(--vipr-space-1) var(--vipr-space-4-5);
+}
+
+.payment-balance-error {
+  margin-bottom: var(--vipr-space-4);
+  padding: var(--vipr-space-3) var(--vipr-space-4);
+  border-radius: var(--vipr-radius-control);
+  border: 1px solid var(--q-negative);
+  color: var(--q-negative);
+  background: var(--vipr-color-surface-soft);
+  font-size: var(--vipr-font-size-label);
+  line-height: var(--vipr-line-height-body);
+  text-align: center;
 }
 
 .payment-details-row {
@@ -139,10 +188,17 @@ function onSlideAction({
 }
 
 .payment-slider {
+  width: 100%;
   height: 56px;
   background: var(--vipr-action-slider-bg);
   border: 1px solid var(--vipr-action-slider-border);
   border-radius: var(--vipr-radius-pill);
+}
+
+.payment-slider--disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  box-shadow: none;
 }
 
 .payment-slider :deep(.q-slide-item__left .q-icon) {
@@ -182,6 +238,11 @@ function onSlideAction({
   box-shadow: var(--vipr-shadow-primary-subtle);
   border: 1px solid var(--vipr-color-surface-border);
   z-index: 2;
+}
+
+.slider-handle--disabled {
+  background: var(--vipr-color-surface-raised);
+  box-shadow: none;
 }
 
 .slider-text {

@@ -27,7 +27,7 @@ meta:
       <div class="send-onchain-content">
         <div class="vipr-flow-center">
           <div class="vipr-flow-panel vipr-flow-panel--padded task-card vipr-surface-card--strong">
-            <div class="section-title vipr-flow-title--center">Bitcoin destination</div>
+            <SendFederationSelector class="send-onchain-federation-selector" />
 
             <q-input
               v-model="paymentTarget"
@@ -90,16 +90,9 @@ meta:
             </div>
 
             <div class="vipr-caption vipr-flow-spacer-lg" data-testid="send-onchain-max-amount">
-              <template v-if="selectedFederation != null">
-                Maximum spendable after fee reserve: {{ maxSendAmount.toLocaleString() }} sats
-              </template>
-              <template v-else> Select a federation before sending Bitcoin on-chain </template>
-            </div>
-
-            <div class="vipr-caption vipr-flow-spacer-lg">
               A {{ ONCHAIN_FEE_RESERVE_SATS.toLocaleString() }} sat fee reserve is kept for network
-              fees. Minimum on-chain send: {{ MIN_ONCHAIN_SEND_SATS.toLocaleString() }}
-              sats.
+              fees. Minimum on-chain send: {{ MIN_ONCHAIN_SEND_SATS.toLocaleString() }} sats.
+              Maximum spendable now: {{ maxSendAmount.toLocaleString() }} sats.
             </div>
 
             <q-btn
@@ -135,6 +128,7 @@ import { Loading } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
+import SendFederationSelector from 'src/components/SendFederationSelector.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useNumericInput } from 'src/composables/useNumericInput'
 import { logger } from 'src/services/logger'
@@ -332,6 +326,10 @@ function safeParseBitcoinInput(input: string): {
 .send-onchain-content {
   width: 100%;
   padding: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-6);
+}
+
+.send-onchain-federation-selector {
+  margin-bottom: var(--vipr-space-4);
 }
 
 .task-card--secondary {
