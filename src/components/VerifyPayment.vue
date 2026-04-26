@@ -37,7 +37,7 @@
 
     <div class="payment-slider-container">
       <q-slide-item
-        :disable="paymentDisabled"
+        v-if="!paymentDisabled"
         @left="onPayRequested"
         @action="onSlideAction"
         left-color="transparent"
@@ -57,6 +57,22 @@
           <div class="slider-text vipr-section-title">Slide to Pay</div>
         </div>
       </q-slide-item>
+
+      <button
+        v-else
+        type="button"
+        class="payment-slider payment-slider--disabled"
+        disabled
+        aria-disabled="true"
+        data-testid="verify-payment-slider-disabled"
+      >
+        <div class="payment-slider-content">
+          <div class="slider-handle slider-handle--disabled">
+            <q-icon name="bolt" color="white" size="20px" />
+          </div>
+          <div class="slider-text vipr-section-title">Insufficient balance</div>
+        </div>
+      </button>
     </div>
   </div>
 </template>
@@ -172,10 +188,17 @@ function onSlideAction({
 }
 
 .payment-slider {
+  width: 100%;
   height: 56px;
   background: var(--vipr-action-slider-bg);
   border: 1px solid var(--vipr-action-slider-border);
   border-radius: var(--vipr-radius-pill);
+}
+
+.payment-slider--disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  box-shadow: none;
 }
 
 .payment-slider :deep(.q-slide-item__left .q-icon) {
@@ -215,6 +238,11 @@ function onSlideAction({
   box-shadow: var(--vipr-shadow-primary-subtle);
   border: 1px solid var(--vipr-color-surface-border);
   z-index: 2;
+}
+
+.slider-handle--disabled {
+  background: var(--vipr-color-surface-raised);
+  box-shadow: none;
 }
 
 .slider-text {
