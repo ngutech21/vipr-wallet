@@ -118,4 +118,26 @@ describe('SendFederationSelector', () => {
 
     wrapper.unmount()
   })
+
+  it('allows reselecting the active federation so the store can reopen a closed wallet', async () => {
+    wrapper = createWrapper()
+    const federationStore = useFederationStore()
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    vi.mocked(federationStore.selectFederation).mockResolvedValue(undefined)
+
+    await wrapper.get('[data-testid="send-federation-selector-trigger"]').trigger('click')
+    await wrapper.get('[data-testid="send-federation-option-fed-1"]').trigger('click')
+    await flushPromises()
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(federationStore.selectFederation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        federationId: 'fed-1',
+        title: 'E-Cash Club',
+      }),
+    )
+
+    wrapper.unmount()
+  })
 })

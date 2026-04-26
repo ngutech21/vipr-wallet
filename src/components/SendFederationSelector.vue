@@ -131,8 +131,7 @@ function optionSubtitle(federation: Federation): string {
 }
 
 async function selectFederation(federation: Federation) {
-  if (isSelected(federation) || isSwitching.value) {
-    showSheet.value = false
+  if (isSwitching.value) {
     return
   }
 
