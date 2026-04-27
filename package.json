@@ -38,7 +38,7 @@
     "bech32": "^2.0.0",
     "consola": "^3.4.2",
     "js-confetti": "^0.13.1",
-    "qrcode.vue": "^3.8.1",
+    "qrcode.vue": "^3.9.0",
     "qrloop": "^1.4.1",
     "quasar": "^2.19.3",
     "register-service-worker": "^1.7.2",
