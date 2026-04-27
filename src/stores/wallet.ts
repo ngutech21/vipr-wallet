@@ -24,6 +24,7 @@ import type {
 } from 'src/types/federation'
 import { logger } from 'src/services/logger'
 import { fedimintClient } from 'src/services/fedimint-client'
+import { a } from 'vue-router/dist/index-D_VEAp3P.js'
 
 const WALLET_OPEN_TIMEOUT_MS = 15_000
 const FEDERATION_JOIN_TIMEOUT_MS = 20_000
