@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
-import { reactive } from 'vue'
+import { isProxy, reactive } from 'vue'
 import type {
   EcashTransaction,
   LightningTransaction,
@@ -279,6 +279,7 @@ describe('TransactionsList.vue', () => {
         visibleOnly: true,
       },
     )
+    expect(isProxy(mockGetTransactionsPage.mock.calls[1]?.[1])).toBe(false)
     expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(3)
     expect(wrapper.find('[data-testid="transactions-show-more-btn"]').exists()).toBe(false)
   })

@@ -97,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
@@ -132,7 +132,7 @@ const transactions = ref<Transactions[]>([])
 const isInitialLoading = ref(false)
 const isLoadingMore = ref(false)
 const hasMore = ref(false)
-const nextCursor = ref<OperationKey | null>(null)
+const nextCursor = shallowRef<OperationKey | null>(null)
 const emptyTransactionsTestId = 'transactions-empty-state'
 let activeLoadRequestId = 0
 
