@@ -212,6 +212,13 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
         query: { invoice: action.invoice },
       })
       .catch((error) => logger.error('Failed to navigate to send page', error))
+  } else if (action.type === 'handle-lnurl') {
+    await router
+      .push({
+        name: '/lnurl',
+        query: { value: action.lnurl },
+      })
+      .catch((error) => logger.error('Failed to navigate to LNURL page', error))
   } else if (action.type === 'choose-bip21-payment') {
     scannerPaused.value = true
     pendingBip21Payment.value = action

@@ -66,24 +66,24 @@ describe('classifyScannedPayment', () => {
     })
   })
 
-  it('classifies raw LNURL pay codes as lightning payments', () => {
+  it('classifies raw LNURL codes for LNURL handling', () => {
     expect(classifyScannedPayment('lnurl1dp68gurn8ghj7m')).toEqual({
-      type: 'send-lightning',
-      invoice: 'lnurl1dp68gurn8ghj7m',
+      type: 'handle-lnurl',
+      lnurl: 'lnurl1dp68gurn8ghj7m',
     })
   })
 
-  it('classifies lightning-prefixed LNURL pay codes as lightning payments', () => {
+  it('classifies lightning-prefixed LNURL codes for LNURL handling', () => {
     expect(classifyScannedPayment('lightning:lnurl1dp68gurn8ghj7m')).toEqual({
-      type: 'send-lightning',
-      invoice: 'lnurl1dp68gurn8ghj7m',
+      type: 'handle-lnurl',
+      lnurl: 'lnurl1dp68gurn8ghj7m',
     })
   })
 
-  it('classifies web-lightning-prefixed LNURL pay codes as lightning payments', () => {
+  it('classifies web-lightning-prefixed LNURL codes for LNURL handling', () => {
     expect(classifyScannedPayment('web+lightning:lnurl1dp68gurn8ghj7m')).toEqual({
-      type: 'send-lightning',
-      invoice: 'lnurl1dp68gurn8ghj7m',
+      type: 'handle-lnurl',
+      lnurl: 'lnurl1dp68gurn8ghj7m',
     })
   })
 

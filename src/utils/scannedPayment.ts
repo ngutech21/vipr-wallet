@@ -20,6 +20,10 @@ export type ScannedPaymentAction =
       invoice: string
     }
   | {
+      type: 'handle-lnurl'
+      lnurl: string
+    }
+  | {
       type: 'receive-ecash'
       token: string
     }
@@ -60,6 +64,15 @@ export function classifyScannedPayment(rawValue: string): ScannedPaymentAction {
     }
   }
 
+  const lightningValue = stripLightningUriPrefix(normalizedValue)
+
+  if (lightningValue.startsWith('lnurl1')) {
+    return {
+      type: 'handle-lnurl',
+      lnurl: lightningValue,
+    }
+  }
+
   if (
     normalizedValue.startsWith('ln') ||
     normalizedValue.includes('@') ||
@@ -68,7 +81,7 @@ export function classifyScannedPayment(rawValue: string): ScannedPaymentAction {
   ) {
     return {
       type: 'send-lightning',
-      invoice: stripLightningUriPrefix(normalizedValue),
+      invoice: lightningValue,
     }
   }
 

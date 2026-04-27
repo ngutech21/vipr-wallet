@@ -94,15 +94,15 @@ describe('ScanPage detection flow', () => {
     ['raw LNURL', 'lnurl1dp68gurn8ghj7m'],
     ['lightning-prefixed LNURL', 'lightning:lnurl1dp68gurn8ghj7m'],
     ['web-lightning-prefixed LNURL', 'web+lightning:lnurl1dp68gurn8ghj7m'],
-  ])('routes %s scans to send page', async (_label, rawValue) => {
+  ])('routes %s scans to the LNURL page', async (_label, rawValue) => {
     wrapper = createWrapper()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (wrapper.vm as any).onDetect([{ rawValue }])
     await flushPromises()
 
     expect(mockRouterPush).toHaveBeenCalledWith({
-      name: '/send',
-      query: { invoice: 'lnurl1dp68gurn8ghj7m' },
+      name: '/lnurl',
+      query: { value: 'lnurl1dp68gurn8ghj7m' },
     })
     wrapper.unmount()
   })
