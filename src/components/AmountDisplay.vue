@@ -12,7 +12,12 @@
       <div class="amount-display__value">{{ value }}</div>
     </div>
 
-    <div v-if="errorMessage" class="amount-display__error">
+    <div
+      v-if="errorMessage || reserveErrorSpace"
+      class="amount-display__error"
+      :class="{ 'amount-display__error--empty': !errorMessage }"
+      :aria-hidden="!errorMessage"
+    >
       {{ errorMessage }}
     </div>
   </div>
@@ -24,11 +29,13 @@ withDefaults(
     value: string
     label?: string
     errorMessage?: string | null
+    reserveErrorSpace?: boolean
     dataTestid?: string
   }>(),
   {
     label: 'Amount (sats)',
     errorMessage: null,
+    reserveErrorSpace: false,
     dataTestid: '',
   },
 )
@@ -80,9 +87,14 @@ withDefaults(
 
 .amount-display__error {
   margin-top: var(--vipr-space-2);
+  min-height: calc(var(--vipr-font-size-label) * var(--vipr-line-height-body));
   color: var(--q-negative);
   font-size: var(--vipr-font-size-label);
   line-height: var(--vipr-line-height-body);
   text-align: center;
+}
+
+.amount-display__error--empty {
+  visibility: hidden;
 }
 </style>

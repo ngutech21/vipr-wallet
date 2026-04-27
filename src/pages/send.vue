@@ -106,6 +106,7 @@ meta:
                       label="Amount in sats"
                       class="send-amount-display"
                       :error-message="amountError"
+                      reserve-error-space
                       data-testid="send-amount-input"
                     />
                   </div>
