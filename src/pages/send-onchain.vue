@@ -263,6 +263,12 @@ watch(
 
     if (parsed.data?.amountSats != null) {
       setValue(parsed.data.amountSats)
+      return
+    }
+
+    const queryAmount = getQueryNumber(route.query.amount)
+    if (queryAmount != null) {
+      setValue(queryAmount)
     }
   },
   { immediate: true },
@@ -304,7 +310,20 @@ async function submitOnchainPayment() {
 }
 
 async function openScanner() {
-  await router.push({ name: '/scan' })
+  const query: Record<string, string> = {
+    returnTo: 'send-onchain',
+  }
+
+  const target = paymentTarget.value.trim()
+  if (target !== '') {
+    query.target = target
+  }
+
+  if (amount.value > 0) {
+    query.amount = amount.value.toString()
+  }
+
+  await router.push({ name: '/scan', query })
 }
 
 async function goBack() {
@@ -326,6 +345,21 @@ function safeParseBitcoinInput(input: string): {
       error: input.trim() === '' ? null : getErrorMessage(error),
     }
   }
+}
+
+function getQueryString(value: unknown): string | null {
+  const firstValue = Array.isArray(value) ? value[0] : value
+  return typeof firstValue === 'string' ? firstValue : null
+}
+
+function getQueryNumber(value: unknown): number | null {
+  const rawValue = getQueryString(value)
+  if (rawValue == null) {
+    return null
+  }
+
+  const parsed = Number.parseInt(rawValue, 10)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
 }
 </script>
 

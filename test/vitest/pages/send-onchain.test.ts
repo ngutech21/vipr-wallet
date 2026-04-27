@@ -85,7 +85,7 @@ vi.mock('src/composables/useNumericInput', () => ({
 }))
 
 describe('SendOnchainPage', () => {
-  type RouteState = { query: { target?: string | string[] } }
+  type RouteState = { query: { target?: string | string[]; amount?: string } }
 
   let routeState: RouteState
   let wrapper: VueWrapper
@@ -194,6 +194,29 @@ describe('SendOnchainPage', () => {
       message: 'Submitting on-chain transfer...',
     })
     expect(mockLoadingHide).toHaveBeenCalledTimes(1)
+    wrapper.unmount()
+  })
+
+  it('passes the onchain draft to the scanner return context', async () => {
+    amountRef.value = 21_000
+
+    wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper
+      .get('[data-testid="send-onchain-target-input"] textarea')
+      .setValue('3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).openScanner()
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      name: '/scan',
+      query: {
+        returnTo: 'send-onchain',
+        target: '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy',
+        amount: '21000',
+      },
+    })
     wrapper.unmount()
   })
 

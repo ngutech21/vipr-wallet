@@ -82,7 +82,7 @@ meta:
         flat
         color="white"
         icon="arrow_back"
-        :to="{ name: '/' }"
+        @click="goBack"
         class="scan-topbar__back vipr-topbar__back"
         data-testid="scan-back-btn"
       />
@@ -116,7 +116,7 @@ defineOptions({
 
 import { QrcodeStream, type DetectedBarcode, type EmittedError } from 'vue-qrcode-reader'
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AddFederation from 'src/components/AddFederation.vue'
 import BottomSheetOptionCard from 'src/components/BottomSheetOptionCard.vue'
 import ModalCard from 'src/components/ModalCard.vue'
@@ -127,6 +127,7 @@ import { useFormatters } from 'src/utils/formatter'
 
 const detectedContent = ref<string | null>('')
 const router = useRouter()
+const route = useRoute('/scan')
 const torchActive = ref(false)
 const hasTorch = ref(false)
 const showAddFederation = ref(false)
@@ -180,6 +181,10 @@ function onCameraOn(capabilities: unknown) {
 async function onAddFederationClose() {
   showAddFederation.value = false
   await router.push({ name: '/' })
+}
+
+async function goBack() {
+  await router.push(getReturnTarget())
 }
 
 function onAddFederationHide() {
@@ -297,6 +302,43 @@ function onBip21ChoiceHide() {
 function onError(error: EmittedError) {
   logger.error('Camera error occurred', error)
   notify.error(error.message)
+}
+
+function getReturnTarget(): Parameters<typeof router.push>[0] {
+  const returnTo = getQueryString(route.query.returnTo)
+
+  if (returnTo === 'send') {
+    const query: Record<string, string> = {
+      restoreDraft: '1',
+    }
+    copyQueryParam(query, 'invoice')
+    copyQueryParam(query, 'amount')
+    copyQueryParam(query, 'memo')
+
+    return { name: '/send', query }
+  }
+
+  if (returnTo === 'send-onchain') {
+    const query: Record<string, string> = {}
+    copyQueryParam(query, 'target')
+    copyQueryParam(query, 'amount')
+
+    return { name: '/send-onchain', query }
+  }
+
+  return { name: '/' }
+}
+
+function copyQueryParam(target: Record<string, string>, key: string) {
+  const value = getQueryString(route.query[key])
+  if (value != null && value !== '') {
+    target[key] = value
+  }
+}
+
+function getQueryString(value: unknown): string | null {
+  const firstValue = Array.isArray(value) ? value[0] : value
+  return typeof firstValue === 'string' ? firstValue : null
 }
 
 function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingContext2D) {

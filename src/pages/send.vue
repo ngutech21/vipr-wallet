@@ -15,7 +15,7 @@ meta:
           flat
           round
           icon="arrow_back"
-          :to="{ name: '/' }"
+          @click="goBack"
           class="vipr-topbar__back send-topbar__back"
           data-testid="send-back-btn"
         />
@@ -142,7 +142,7 @@ meta:
           <!-- Action button -->
           <div class="send-action">
             <q-btn
-              :label="amountRequired ? 'Create Invoice' : 'Continue'"
+              :label="amountRequired ? 'Review payment' : 'Continue'"
               color="primary"
               no-caps
               unelevated
@@ -314,7 +314,10 @@ watch(
       } else {
         lightningInvoice.value = invoiceValue
       }
-      await decodeInvoice()
+      restoreSendDraftFromQuery()
+      if (getQueryString(route.query.restoreDraft) !== '1') {
+        await decodeInvoice()
+      }
     }
   },
   { immediate: true },
@@ -325,7 +328,10 @@ async function decodeInvoice() {
 }
 
 async function openScanner() {
-  await router.push({ name: '/scan' })
+  await router.push({
+    name: '/scan',
+    query: buildScanReturnQuery(),
+  })
 }
 
 async function createInvoice() {
@@ -359,6 +365,64 @@ async function payInvoice() {
       query: { amount: result.amountSats, fee: result.fee },
     })
   }
+}
+
+async function goBack() {
+  if (decodedInvoice.value != null) {
+    decodedInvoice.value = null
+    return
+  }
+
+  await router.push({ name: '/' })
+}
+
+function buildScanReturnQuery() {
+  const query: Record<string, string> = {
+    returnTo: 'send',
+  }
+
+  const invoice = lightningInvoice.value.trim()
+  if (invoice !== '') {
+    query.invoice = invoice
+  }
+
+  if (invoiceAmount.value > 0) {
+    query.amount = invoiceAmount.value.toString()
+  }
+
+  const memo = invoiceMemo.value.trim()
+  if (memo !== '') {
+    query.memo = memo
+  }
+
+  return query
+}
+
+function restoreSendDraftFromQuery() {
+  const amount = getQueryNumber(route.query.amount)
+  if (amount != null) {
+    invoiceAmount.value = amount
+  }
+
+  const memo = getQueryString(route.query.memo)
+  if (memo != null) {
+    invoiceMemo.value = memo
+  }
+}
+
+function getQueryString(value: unknown): string | null {
+  const firstValue = Array.isArray(value) ? value[0] : value
+  return typeof firstValue === 'string' ? firstValue : null
+}
+
+function getQueryNumber(value: unknown): number | null {
+  const rawValue = getQueryString(value)
+  if (rawValue == null) {
+    return null
+  }
+
+  const parsed = Number.parseInt(rawValue, 10)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
 }
 
 function getContactDisplayName(contact: SyncedNostrContact): string {

@@ -4,11 +4,13 @@ import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import ScanPage from 'src/pages/scan.vue'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
+const mockUseRoute = vi.hoisted(() => vi.fn())
 const mockNotifyCreate = vi.hoisted(() => vi.fn())
 const mockLoggerError = vi.hoisted(() => vi.fn())
 const mockLoggerScannerDebug = vi.hoisted(() => vi.fn())
 
 vi.mock('vue-router', () => ({
+  useRoute: (...args: unknown[]) => mockUseRoute(...args),
   useRouter: () => ({
     push: mockRouterPush,
   }),
@@ -41,7 +43,18 @@ vi.mock('vue-qrcode-reader', () => ({
 }))
 
 describe('ScanPage detection flow', () => {
+  type RouteState = {
+    query: {
+      returnTo?: string
+      invoice?: string
+      amount?: string
+      memo?: string
+      target?: string
+    }
+  }
+
   let wrapper: VueWrapper
+  let routeState: RouteState
 
   function createWrapper() {
     return mount(ScanPage, {
@@ -61,6 +74,10 @@ describe('ScanPage detection flow', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    routeState = {
+      query: {},
+    }
+    mockUseRoute.mockImplementation(() => routeState)
     mockRouterPush.mockResolvedValue(undefined)
   })
 
@@ -73,6 +90,31 @@ describe('ScanPage detection flow', () => {
     expect(mockRouterPush).toHaveBeenCalledWith({
       name: '/send',
       query: { invoice: 'lnbc123' },
+    })
+    wrapper.unmount()
+  })
+
+  it('returns to the send draft when scanner was opened from send', async () => {
+    routeState.query = {
+      returnTo: 'send',
+      invoice: 'alice@example.com',
+      amount: '42',
+      memo: 'Dinner',
+    }
+
+    wrapper = createWrapper()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).goBack()
+    await flushPromises()
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      name: '/send',
+      query: {
+        restoreDraft: '1',
+        invoice: 'alice@example.com',
+        amount: '42',
+        memo: 'Dinner',
+      },
     })
     wrapper.unmount()
   })

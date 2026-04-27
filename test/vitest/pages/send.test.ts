@@ -95,7 +95,9 @@ vi.mock('src/stores/wallet', () => ({
 
 describe('SendPage query invoice handling', () => {
   type QueryInvoice = string | string[] | undefined
-  type RouteState = { query: { invoice?: QueryInvoice } }
+  type RouteState = {
+    query: { invoice?: QueryInvoice; amount?: string; memo?: string; restoreDraft?: string }
+  }
 
   let routeState: RouteState
   let wrapper: VueWrapper
@@ -272,6 +274,81 @@ describe('SendPage query invoice handling', () => {
 
     expect(wrapper.find('[data-testid="send-amount-input"]').exists()).toBe(true)
     expect(mockCreateInvoiceFromInput).toHaveBeenCalledWith('', 42, '')
+    wrapper.unmount()
+  })
+
+  it('returns from payment verification to the send input before leaving the flow', async () => {
+    mockDecodedInvoiceRef.value = {
+      invoice: 'lnbc1decodedinvoice',
+      amount: 123,
+      description: 'test',
+      paymentHash: 'hash',
+      timestamp: 0,
+      expiry: 60,
+    }
+
+    wrapper = createWrapper()
+    await flushPromises()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).goBack()
+    await flushPromises()
+
+    expect(mockDecodedInvoiceRef.value).toBe(null)
+    expect(mockRouterPush).not.toHaveBeenCalledWith({ name: '/' })
+    wrapper.unmount()
+  })
+
+  it('passes the send draft to the scanner return context', async () => {
+    mockAmountRequiredRef.value = true
+    mockAmountRef.value = 42
+
+    wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.get('[data-testid="send-invoice-input"]').setValue('alice@example.com')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(wrapper.vm as any).invoiceMemo = 'Dinner'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).openScanner()
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      name: '/scan',
+      query: {
+        returnTo: 'send',
+        invoice: 'alice@example.com',
+        amount: '42',
+        memo: 'Dinner',
+      },
+    })
+    wrapper.unmount()
+  })
+
+  it('restores send amount and memo from scanner return query', async () => {
+    routeState.query.invoice = 'alice@example.com'
+    routeState.query.amount = '42'
+    routeState.query.memo = 'Dinner'
+
+    wrapper = createWrapper()
+    await flushPromises()
+
+    expect(mockDecodeInvoiceFromComposable).toHaveBeenCalledWith('alice@example.com')
+    expect(mockAmountRef.value).toBe(42)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((wrapper.vm as any).invoiceMemo).toBe('Dinner')
+    wrapper.unmount()
+  })
+
+  it('does not decode a pasted invoice when returning from scanner to a send draft', async () => {
+    routeState.query.invoice = 'lnbc1pastedinvoice'
+    routeState.query.restoreDraft = '1'
+
+    wrapper = createWrapper()
+    await flushPromises()
+
+    expect(mockDecodeInvoiceFromComposable).not.toHaveBeenCalled()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((wrapper.vm as any).lightningInvoice).toBe('lnbc1pastedinvoice')
     wrapper.unmount()
   })
 
