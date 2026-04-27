@@ -5,7 +5,7 @@ meta:
 
 <template>
   <q-page class="scan-page full-height dark-gradient" data-testid="scan-page">
-    <q-dialog v-model="showAddFederation" position="bottom">
+    <q-dialog v-model="showAddFederation" position="bottom" @hide="onAddFederationHide">
       <AddFederation @close="onAddFederationClose" :initial-invite-code="detectedContent" />
     </q-dialog>
 
@@ -179,6 +179,10 @@ function onCameraOn(capabilities: unknown) {
 async function onAddFederationClose() {
   showAddFederation.value = false
   await router.push({ name: '/' })
+}
+
+function onAddFederationHide() {
+  scannerPaused.value = false
 }
 
 async function onDetect(detectedCodes: DetectedBarcode[]) {

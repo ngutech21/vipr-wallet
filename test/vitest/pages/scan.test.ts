@@ -119,6 +119,25 @@ describe('ScanPage detection flow', () => {
     wrapper.unmount()
   })
 
+  it('resumes scanning when the federation dialog is dismissed', async () => {
+    wrapper = createWrapper()
+    const scanPage = wrapper.vm as unknown as {
+      onDetect: (codes: Array<{ rawValue: string }>) => Promise<void>
+      onAddFederationHide: () => void
+      scannerPaused: boolean
+    }
+
+    await scanPage.onDetect([{ rawValue: 'fed1abc' }])
+    await flushPromises()
+
+    expect(scanPage.scannerPaused).toBe(true)
+
+    scanPage.onAddFederationHide()
+
+    expect(scanPage.scannerPaused).toBe(false)
+    wrapper.unmount()
+  })
+
   it('routes unknown scans to receive ecash page for oob parsing', async () => {
     wrapper = createWrapper()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
