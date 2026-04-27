@@ -32,7 +32,7 @@ describe('SendFederationSelector', () => {
     template: '<div v-bind="$attrs"><slot /></div>',
   }
 
-  function createWrapper() {
+  function createWrapper(props: { selectable?: boolean } = {}) {
     const activeFederation = createFederation()
     const otherFederation = createFederation({
       title: 'Bitcoin Jungle',
@@ -54,6 +54,7 @@ describe('SendFederationSelector', () => {
     })
 
     return mount(SendFederationSelector, {
+      props,
       global: {
         plugins: [pinia],
         stubs: {
@@ -137,6 +138,24 @@ describe('SendFederationSelector', () => {
         title: 'E-Cash Club',
       }),
     )
+
+    wrapper.unmount()
+  })
+
+  it('keeps the active federation visible without opening the sheet when selection is disabled', async () => {
+    wrapper = createWrapper({ selectable: false })
+    const federationStore = useFederationStore()
+
+    await wrapper.get('[data-testid="send-federation-selector-trigger"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('E-Cash Club')
+    expect(
+      wrapper.get('[data-testid="send-federation-selector-trigger"]').attributes('disabled'),
+    ).toBe('')
+    expect(wrapper.find('[data-testid="send-federation-option-fed-1"]').exists()).toBe(false)
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(federationStore.selectFederation).not.toHaveBeenCalled()
 
     wrapper.unmount()
   })

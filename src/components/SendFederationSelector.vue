@@ -3,7 +3,8 @@
     <button
       type="button"
       class="send-federation-selector__trigger vipr-surface-card vipr-surface-card--strong"
-      :disabled="federations.length === 0 || isSwitching"
+      :class="{ 'send-federation-selector__trigger--readonly': !props.selectable }"
+      :disabled="isTriggerDisabled"
       data-testid="send-federation-selector-trigger"
       @click="showSheet = true"
     >
@@ -22,7 +23,11 @@
       </span>
 
       <q-spinner v-if="isSwitching" size="sm" color="primary" />
-      <q-icon v-else name="expand_more" class="send-federation-selector__chevron" />
+      <q-icon
+        v-else-if="props.selectable"
+        name="expand_more"
+        class="send-federation-selector__chevron"
+      />
     </button>
 
     <div
@@ -95,6 +100,15 @@ import { getErrorMessage } from 'src/utils/error'
 import { logger } from 'src/services/logger'
 import FederationAvatar from './FederationAvatar.vue'
 
+const props = withDefaults(
+  defineProps<{
+    selectable?: boolean
+  }>(),
+  {
+    selectable: true,
+  },
+)
+
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
 
@@ -105,6 +119,9 @@ const selectionError = ref('')
 const federations = computed(() => federationStore.federations)
 const selectedFederation = computed(() => federationStore.selectedFederation)
 const isSwitching = computed(() => switchingFederationId.value != null)
+const isTriggerDisabled = computed(
+  () => federations.value.length === 0 || isSwitching.value || !props.selectable,
+)
 const formattedBalance = computed(() => Math.floor(walletStore.balance).toLocaleString())
 const activeBalanceLabel = computed(() => {
   if (selectedFederation.value == null) {
@@ -172,6 +189,10 @@ async function selectFederation(federation: Federation) {
 .send-federation-selector__trigger:disabled {
   cursor: default;
   opacity: 0.72;
+}
+
+.send-federation-selector__trigger--readonly:disabled {
+  opacity: 1;
 }
 
 .send-federation-selector__summary,

@@ -21,7 +21,7 @@ meta:
         />
       </div>
       <div class="send-content">
-        <SendFederationSelector class="send-federation-control" />
+        <SendFederationSelector class="send-federation-control" :selectable="!decodedInvoice" />
 
         <!-- Payment input section -->
         <template v-if="!decodedInvoice">
