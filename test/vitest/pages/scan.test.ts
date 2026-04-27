@@ -165,7 +165,7 @@ describe('ScanPage detection flow', () => {
   it('asks for a payment method when bitcoin URI scans include a lightning invoice', async () => {
     wrapper = createWrapper()
     const target =
-      'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021&lightning=lnbc210u'
+      'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00000021&label=Lunch&message=For%20lunch%20Tuesday&lightning=lnbc210u'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (wrapper.vm as any).onDetect([{ rawValue: target }])
     await flushPromises()
@@ -175,6 +175,12 @@ describe('ScanPage detection flow', () => {
     expect((wrapper.vm as any).showBip21PaymentChoice).toBe(true)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect((wrapper.vm as any).scannerPaused).toBe(true)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((wrapper.vm as any).bip21PaymentDetails).toEqual([
+      { label: 'Amount', value: '21 sats' },
+      { label: 'Label', value: 'Lunch' },
+      { label: 'Message', value: 'For lunch Tuesday' },
+    ])
     wrapper.unmount()
   })
 

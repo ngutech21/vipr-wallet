@@ -22,6 +22,21 @@ meta:
             This Bitcoin QR code supports both Lightning and on-chain payment.
           </div>
 
+          <div
+            v-if="bip21PaymentDetails.length > 0"
+            class="scan-bip21-summary"
+            data-testid="scan-bip21-summary"
+          >
+            <div
+              v-for="detail in bip21PaymentDetails"
+              :key="detail.label"
+              class="scan-bip21-summary__row"
+            >
+              <div class="scan-bip21-summary__label">{{ detail.label }}</div>
+              <div class="scan-bip21-summary__value">{{ detail.value }}</div>
+            </div>
+          </div>
+
           <div class="vipr-selection-sheet__options">
             <BottomSheetOptionCard
               title="Pay with Lightning"
@@ -100,7 +115,7 @@ defineOptions({
 })
 
 import { QrcodeStream, type DetectedBarcode, type EmittedError } from 'vue-qrcode-reader'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AddFederation from 'src/components/AddFederation.vue'
 import BottomSheetOptionCard from 'src/components/BottomSheetOptionCard.vue'
@@ -108,6 +123,7 @@ import ModalCard from 'src/components/ModalCard.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { logger } from 'src/services/logger'
 import { classifyScannedPayment, type ScannedPaymentAction } from 'src/utils/scannedPayment'
+import { useFormatters } from 'src/utils/formatter'
 
 const detectedContent = ref<string | null>('')
 const router = useRouter()
@@ -121,6 +137,39 @@ const pendingBip21Payment = ref<Extract<
   { type: 'choose-bip21-payment' }
 > | null>(null)
 const notify = useAppNotify()
+const { formatNumber } = useFormatters()
+
+const bip21PaymentDetails = computed(() => {
+  const details: Array<{ label: string; value: string }> = []
+  const payment = pendingBip21Payment.value
+
+  if (payment == null) {
+    return details
+  }
+
+  if (payment.onchain.amountSats != null) {
+    details.push({
+      label: 'Amount',
+      value: `${formatNumber(payment.onchain.amountSats)} sats`,
+    })
+  }
+
+  if (payment.onchain.label != null) {
+    details.push({
+      label: 'Label',
+      value: payment.onchain.label,
+    })
+  }
+
+  if (payment.onchain.message != null) {
+    details.push({
+      label: 'Message',
+      value: payment.onchain.message,
+    })
+  }
+
+  return details
+})
 
 function onCameraOn(capabilities: unknown) {
   logger.scanner.debug('Camera capabilities detected', { capabilities })
@@ -336,6 +385,37 @@ function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingCont
 
 .scan-utility-card__toggle {
   flex: 0 0 auto;
+}
+
+.scan-bip21-summary {
+  display: grid;
+  gap: var(--vipr-space-2);
+  margin-bottom: var(--vipr-space-4);
+  padding: var(--vipr-space-4);
+  border: 1px solid var(--vipr-color-surface-border);
+  border-radius: var(--vipr-radius-button-lg);
+  background: var(--vipr-surface-card-bg-subtle);
+}
+
+.scan-bip21-summary__row {
+  display: grid;
+  grid-template-columns: minmax(72px, auto) minmax(0, 1fr);
+  gap: var(--vipr-space-3);
+  align-items: start;
+}
+
+.scan-bip21-summary__label {
+  color: var(--vipr-text-soft);
+  font-size: var(--vipr-font-size-label);
+  line-height: var(--vipr-line-height-tight);
+}
+
+.scan-bip21-summary__value {
+  min-width: 0;
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-body);
+  line-height: var(--vipr-line-height-body);
+  overflow-wrap: anywhere;
 }
 
 ::v-deep(.qrcode-stream) {
