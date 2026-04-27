@@ -187,36 +187,73 @@ meta:
           </q-card-section>
         </q-card>
 
-        <!-- Vetted Gateways Card -->
-        <div class="vipr-section-title federation-section-title" v-if="hasVettedGateways">
+        <div class="vipr-section-title federation-section-title" v-if="showWalletGateways">
           Gateways
         </div>
-        <q-card
-          flat
-          class="federation-card vipr-surface-card vipr-surface-card--subtle"
-          v-if="hasVettedGateways"
-        >
-          <q-card-section class="gateways-section">
-            <div class="gateway-list">
-              <div v-for="(gateway, index) in vettedGateways" :key="gateway" class="gateway-row">
-                <div class="gateway-icon">
-                  <q-icon name="router" />
+        <div class="federation-gateways" v-if="showWalletGateways">
+          <div v-if="walletGatewayError" class="wallet-gateway-error">
+            {{ walletGatewayError }}
+          </div>
+          <div v-else-if="isLoadingWalletGateways" class="wallet-gateway-status">
+            Loading gateways...
+          </div>
+          <div v-else-if="displayedWalletGateways.length > 0" class="wallet-gateway-list">
+            <div
+              v-for="(gateway, index) in displayedWalletGateways"
+              :key="gateway.id"
+              class="wallet-gateway-row"
+            >
+              <div class="wallet-gateway-header">
+                <div class="wallet-gateway-heading">
+                  <div class="gateway-title">
+                    {{ gateway.alias || `Gateway ${index + 1}` }}
+                  </div>
+                  <div class="gateway-id" :title="gateway.id">{{ gateway.id }}</div>
                 </div>
-                <div class="gateway-body">
-                  <div class="gateway-title">Gateway {{ index + 1 }}</div>
-                  <div class="gateway-id" :title="gateway">{{ gateway }}</div>
+                <q-btn
+                  v-if="gateway.ambossUrl"
+                  dense
+                  flat
+                  round
+                  icon="open_in_new"
+                  class="wallet-gateway-link"
+                  :href="gateway.ambossUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Open node on Amboss"
+                />
+              </div>
+
+              <div class="wallet-gateway-details">
+                <div class="wallet-gateway-detail" v-if="gateway.api">
+                  <span class="wallet-gateway-detail__label">API</span>
+                  <span class="wallet-gateway-detail__value" :title="gateway.api">
+                    {{ gateway.api }}
+                  </span>
                 </div>
-                <q-chip
-                  size="sm"
-                  icon="verified"
-                  class="gateway-badge vipr-chip vipr-chip--positive"
-                >
-                  Vetted
-                </q-chip>
+                <div class="wallet-gateway-detail" v-if="gateway.nodePubKey">
+                  <span class="wallet-gateway-detail__label">Node</span>
+                  <span class="wallet-gateway-detail__value" :title="gateway.nodePubKey">
+                    {{ gateway.nodePubKey }}
+                  </span>
+                </div>
+                <div class="wallet-gateway-detail">
+                  <span class="wallet-gateway-detail__label">Base fee</span>
+                  <span class="wallet-gateway-detail__value">
+                    {{ formatGatewayFee(gateway.baseMsat, 'msat') }}
+                  </span>
+                </div>
+                <div class="wallet-gateway-detail">
+                  <span class="wallet-gateway-detail__label">Proportional</span>
+                  <span class="wallet-gateway-detail__value">
+                    {{ formatGatewayFee(gateway.proportionalMillionths, 'ppm') }}
+                  </span>
+                </div>
               </div>
             </div>
-          </q-card-section>
-        </q-card>
+          </div>
+          <div v-else class="wallet-gateway-status">No gateways returned.</div>
+        </div>
 
         <div class="vipr-section-title federation-section-title" v-if="hasMessages">Messages</div>
         <q-card
@@ -375,6 +412,32 @@ const confirmLeave = ref(false)
 const spendableUtxos = ref<FederationUtxo[]>([])
 const isLoadingUtxos = ref(false)
 const utxoError = ref<string | null>(null)
+const walletGateways = ref<unknown[]>([])
+const isLoadingWalletGateways = ref(false)
+const hasLoadedWalletGateways = ref(false)
+const walletGatewayError = ref<string | null>(null)
+
+type WalletGatewayInfoRecord = {
+  api?: unknown
+  fees?: unknown
+  gateway_id?: unknown
+  lightning_alias?: unknown
+  node_pub_key?: unknown
+}
+
+type WalletGatewayRecord = {
+  info?: WalletGatewayInfoRecord
+}
+
+type DisplayedWalletGateway = {
+  id: string
+  api: string | null
+  alias: string | null
+  nodePubKey: string | null
+  baseMsat: number | null
+  proportionalMillionths: number | null
+  ambossUrl: string | null
+}
 
 const federation = computed(() => {
   return federationStore.federations.find((f) => f.federationId === route.params.id)
@@ -410,26 +473,17 @@ const hasMessages = computed(() => {
   )
 })
 
-const hasVettedGateways = computed(() => {
+const showWalletGateways = computed(() => {
   return (
-    federation.value?.metadata?.vetted_gateways != null &&
-    federation.value.metadata.vetted_gateways.length > 0
+    hasLoadedWalletGateways.value ||
+    isLoadingWalletGateways.value ||
+    walletGatewayError.value != null ||
+    walletGateways.value.length > 0
   )
 })
 
-const vettedGateways = computed(() => {
-  if (federation.value?.metadata?.vetted_gateways == null) return []
-
-  if (typeof federation.value.metadata.vetted_gateways === 'string') {
-    try {
-      return JSON.parse(federation.value.metadata.vetted_gateways) as string[]
-    } catch (error) {
-      logger.error('Failed to parse vetted_gateways JSON', error)
-      return []
-    }
-  }
-
-  return federation.value.metadata.vetted_gateways
+const displayedWalletGateways = computed(() => {
+  return walletGateways.value.map((gateway, index) => parseWalletGateway(gateway, index))
 })
 
 function formatDate(timestamp: string) {
@@ -439,6 +493,45 @@ function formatDate(timestamp: string) {
     logger.error('Failed to parse metadata date', e)
     return timestamp
   }
+}
+
+function parseWalletGateway(gateway: unknown, index: number): DisplayedWalletGateway {
+  const record = gateway as WalletGatewayRecord
+  const info = record.info ?? {}
+  const gatewayId = readString(info.gateway_id)
+  const nodePubKey = readString(info.node_pub_key)
+
+  return {
+    id: gatewayId ?? nodePubKey ?? `gateway-${index}`,
+    api: readString(info.api),
+    alias: readString(info.lightning_alias),
+    nodePubKey,
+    baseMsat: readGatewayBaseFeeMsat(info.fees),
+    proportionalMillionths: readGatewayProportionalMillionths(info.fees),
+    ambossUrl: nodePubKey != null ? `https://amboss.space/node/${nodePubKey}` : null,
+  }
+}
+
+function readString(value: unknown): string | null {
+  return typeof value === 'string' && value.length > 0 ? value : null
+}
+
+function readNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function readGatewayBaseFeeMsat(fees: unknown): number | null {
+  const feeRecord = fees as { base_msat?: unknown; base?: { msats?: unknown } }
+  return readNumber(feeRecord?.base_msat) ?? readNumber(feeRecord?.base?.msats)
+}
+
+function readGatewayProportionalMillionths(fees: unknown): number | null {
+  const feeRecord = fees as { proportional_millionths?: unknown; parts_per_million?: unknown }
+  return readNumber(feeRecord?.proportional_millionths) ?? readNumber(feeRecord?.parts_per_million)
+}
+
+function formatGatewayFee(value: number | null, unit: string): string {
+  return value == null ? 'Unknown' : `${formatNumber(value)} ${unit}`
 }
 
 async function copyInviteCode() {
@@ -477,29 +570,57 @@ watch(
   async () => {
     const currentFederation = federation.value
     spendableUtxos.value = []
+    walletGateways.value = []
     utxoError.value = null
+    walletGatewayError.value = null
+    hasLoadedWalletGateways.value = false
 
     if (currentFederation == null) {
       return
     }
 
     isLoadingUtxos.value = true
+    isLoadingWalletGateways.value = true
 
     try {
       if (federationStore.selectedFederationId !== currentFederation.federationId) {
         await federationStore.selectFederation(currentFederation)
       }
 
-      spendableUtxos.value = await walletStore.getSpendableUtxos()
+      const [utxos, gateways] = await Promise.all([
+        walletStore.getSpendableUtxos(),
+        loadWalletGateways(),
+      ])
+      spendableUtxos.value = utxos
+      walletGateways.value = gateways
     } catch (error) {
       logger.error('Failed to load federation UTXOs', error)
       utxoError.value = 'Failed to load spendable UTXOs.'
     } finally {
       isLoadingUtxos.value = false
+      isLoadingWalletGateways.value = false
+      hasLoadedWalletGateways.value = true
     }
   },
   { immediate: true },
 )
+
+async function loadWalletGateways(): Promise<unknown[]> {
+  const wallet = walletStore.wallet
+  if (wallet == null) {
+    walletGatewayError.value = 'Wallet is not open.'
+    return []
+  }
+
+  try {
+    await wallet.lightning.updateGatewayCache()
+    return await wallet.lightning.listGateways()
+  } catch (error) {
+    logger.error('Failed to load wallet gateways', error)
+    walletGatewayError.value = 'Failed to load wallet gateways.'
+    return []
+  }
+}
 
 async function leaveFederation() {
   if (federation.value == null) return
@@ -580,38 +701,8 @@ async function leaveFederation() {
   margin: 0;
 }
 
-.gateways-section {
-  padding: var(--vipr-federation-detail-gateways-padding);
-}
-
-.gateway-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--vipr-federation-detail-gateway-list-gap);
-}
-
-.gateway-row {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--vipr-federation-detail-gateway-row-gap);
-  padding: var(--vipr-federation-detail-gateway-row-padding);
-}
-
-.gateway-icon {
-  width: var(--vipr-federation-detail-gateway-icon-size);
-  height: var(--vipr-federation-detail-gateway-icon-size);
-  display: grid;
-  place-items: center;
-  border-radius: var(--vipr-federation-detail-gateway-icon-radius);
-  background: var(--vipr-detail-icon-bg);
-  color: var(--q-primary);
-  font-size: var(--vipr-federation-detail-gateway-icon-font-size);
-}
-
-.gateway-body {
-  min-width: 0;
+.federation-gateways {
+  margin-bottom: var(--vipr-federation-detail-card-gap);
 }
 
 .gateway-title {
@@ -623,7 +714,7 @@ async function leaveFederation() {
 
 .gateway-id {
   min-width: 0;
-  margin-top: var(--vipr-federation-detail-gateway-id-top-space);
+  margin-top: var(--vipr-space-1);
   overflow: hidden;
   color: var(--vipr-text-soft);
   font-family: var(--vipr-font-family-mono);
@@ -634,8 +725,79 @@ async function leaveFederation() {
   white-space: nowrap;
 }
 
-.gateway-badge {
-  margin: 0;
+.wallet-gateway-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vipr-space-2);
+}
+
+.wallet-gateway-row {
+  min-width: 0;
+  padding: var(--vipr-space-4);
+  border: 1px solid var(--vipr-color-surface-border);
+  border-radius: var(--vipr-radius-card);
+  background: var(--vipr-color-surface-soft);
+}
+
+.wallet-gateway-header {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--vipr-space-2);
+}
+
+.wallet-gateway-heading {
+  min-width: 0;
+}
+
+.wallet-gateway-link {
+  color: var(--vipr-text-secondary);
+}
+
+.wallet-gateway-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vipr-space-2);
+  margin-top: var(--vipr-space-4);
+}
+
+.wallet-gateway-detail {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--vipr-space-2);
+}
+
+.wallet-gateway-detail__label {
+  color: var(--vipr-text-soft);
+  font-size: var(--vipr-font-size-label);
+  font-weight: 600;
+  line-height: var(--vipr-line-height-tight);
+}
+
+.wallet-gateway-detail__value {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--vipr-text-secondary);
+  font-family: var(--vipr-font-family-mono);
+  font-size: var(--vipr-font-size-label);
+  line-height: var(--vipr-line-height-body);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wallet-gateway-status {
+  color: var(--vipr-text-muted);
+  font-size: var(--vipr-font-size-body);
+  line-height: var(--vipr-line-height-body);
+}
+
+.wallet-gateway-error {
+  color: var(--q-negative);
+  font-size: var(--vipr-font-size-body);
+  line-height: var(--vipr-line-height-body);
 }
 
 .federation-message-copy {
@@ -666,24 +828,6 @@ async function leaveFederation() {
 
   .summary-title {
     font-size: var(--vipr-federation-detail-title-font-size-mobile);
-  }
-
-  .gateways-section {
-    padding: var(--vipr-federation-detail-gateways-padding-mobile);
-  }
-
-  .gateway-row {
-    grid-template-columns:
-      var(--vipr-federation-detail-gateway-icon-size-mobile) minmax(0, 1fr)
-      auto;
-    gap: var(--vipr-federation-detail-gateway-row-gap-mobile);
-  }
-
-  .gateway-icon {
-    width: var(--vipr-federation-detail-gateway-icon-size-mobile);
-    height: var(--vipr-federation-detail-gateway-icon-size-mobile);
-    border-radius: var(--vipr-federation-detail-gateway-icon-radius-mobile);
-    font-size: var(--vipr-federation-detail-gateway-icon-font-size-mobile);
   }
 
   .gateway-id {
