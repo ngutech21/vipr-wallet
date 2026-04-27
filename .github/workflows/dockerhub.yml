@@ -76,9 +76,11 @@ jobs:
         id: date
         run: echo "date=$(date -u '+%F-%T')" >> "$GITHUB_OUTPUT"
 
-      - name: Get full SHA
+      - name: Get commit SHAs
         id: sha
-        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "short_sha=$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Read package version
         id: version
@@ -96,7 +98,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            COMMITHASH=${{ steps.sha.outputs.sha }}
+            COMMITHASH=${{ steps.sha.outputs.short_sha }}
             BUILDTIME=${{ steps.date.outputs.date }}
             APP_VERSION=${{ steps.version.outputs.version }}
           tags: |
