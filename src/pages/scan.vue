@@ -5,8 +5,59 @@ meta:
 
 <template>
   <q-page class="scan-page full-height dark-gradient" data-testid="scan-page">
-    <q-dialog v-model="showAddFederation" position="bottom">
+    <q-dialog v-model="showAddFederation" position="bottom" @hide="onAddFederationHide">
       <AddFederation @close="onAddFederationClose" :initial-invite-code="detectedContent" />
+    </q-dialog>
+
+    <q-dialog
+      v-model="showBip21PaymentChoice"
+      position="bottom"
+      transition-show="slide-up"
+      transition-hide="slide-down"
+      @hide="onBip21ChoiceHide"
+    >
+      <ModalCard title="Choose payment method" @close="showBip21PaymentChoice = false">
+        <div class="vipr-selection-sheet">
+          <div class="vipr-selection-sheet__intro">
+            This Bitcoin QR code supports both Lightning and on-chain payment.
+          </div>
+
+          <div
+            v-if="bip21PaymentDetails.length > 0"
+            class="scan-bip21-summary"
+            data-testid="scan-bip21-summary"
+          >
+            <div
+              v-for="detail in bip21PaymentDetails"
+              :key="detail.label"
+              class="scan-bip21-summary__row"
+            >
+              <div class="scan-bip21-summary__label">{{ detail.label }}</div>
+              <div class="scan-bip21-summary__value">{{ detail.value }}</div>
+            </div>
+          </div>
+
+          <div class="vipr-selection-sheet__options">
+            <BottomSheetOptionCard
+              title="Pay with Lightning"
+              description="Use the Lightning invoice from this QR code."
+              icon="flash_on"
+              icon-color="warning"
+              data-testid="scan-bip21-lightning-card"
+              @select="payBip21WithLightning"
+            />
+
+            <BottomSheetOptionCard
+              title="Pay on-chain"
+              description="Use the Bitcoin address and amount from this QR code."
+              icon="currency_bitcoin"
+              icon-color="orange"
+              data-testid="scan-bip21-onchain-card"
+              @select="payBip21Onchain"
+            />
+          </div>
+        </div>
+      </ModalCard>
     </q-dialog>
 
     <div class="camera-container">
@@ -15,6 +66,7 @@ meta:
         @camera-on="onCameraOn"
         @error="onError"
         :track="paintOutline"
+        :paused="scannerPaused"
         :torch="torchActive"
         :formats="['qr_code']"
       />
@@ -63,32 +115,74 @@ defineOptions({
 })
 
 import { QrcodeStream, type DetectedBarcode, type EmittedError } from 'vue-qrcode-reader'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AddFederation from 'src/components/AddFederation.vue'
+import BottomSheetOptionCard from 'src/components/BottomSheetOptionCard.vue'
+import ModalCard from 'src/components/ModalCard.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { logger } from 'src/services/logger'
-import { isBitcoinAddress } from 'src/utils/bitcoinUri'
+import { classifyScannedPayment, type ScannedPaymentAction } from 'src/utils/scannedPayment'
+import { useFormatters } from 'src/utils/formatter'
 
 const detectedContent = ref<string | null>('')
 const router = useRouter()
 const torchActive = ref(false)
 const hasTorch = ref(false)
 const showAddFederation = ref(false)
+const showBip21PaymentChoice = ref(false)
+const scannerPaused = ref(false)
+const pendingBip21Payment = ref<Extract<
+  ScannedPaymentAction,
+  { type: 'choose-bip21-payment' }
+> | null>(null)
 const notify = useAppNotify()
+const { formatNumber } = useFormatters()
+
+const bip21PaymentDetails = computed(() => {
+  const details: Array<{ label: string; value: string }> = []
+  const payment = pendingBip21Payment.value
+
+  if (payment == null) {
+    return details
+  }
+
+  if (payment.onchain.amountSats != null) {
+    details.push({
+      label: 'Amount',
+      value: `${formatNumber(payment.onchain.amountSats)} sats`,
+    })
+  }
+
+  if (payment.onchain.label != null) {
+    details.push({
+      label: 'Label',
+      value: payment.onchain.label,
+    })
+  }
+
+  if (payment.onchain.message != null) {
+    details.push({
+      label: 'Message',
+      value: payment.onchain.message,
+    })
+  }
+
+  return details
+})
 
 function onCameraOn(capabilities: unknown) {
   logger.scanner.debug('Camera capabilities detected', { capabilities })
   hasTorch.value = (capabilities as { torch?: boolean }).torch ?? false
 }
 
-function stripLightningPrefix(value: string): string {
-  return value.startsWith('lightning:') ? value.substring('lightning:'.length) : value
-}
-
 async function onAddFederationClose() {
   showAddFederation.value = false
   await router.push({ name: '/' })
+}
+
+function onAddFederationHide() {
+  scannerPaused.value = false
 }
 
 async function onDetect(detectedCodes: DetectedBarcode[]) {
@@ -99,38 +193,83 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
   logger.scanner.debug('Code detected', { rawValue: code.rawValue })
   detectedContent.value = code.rawValue
 
-  const rawValue = code.rawValue.trim()
-  const cleanCode = rawValue.toLocaleLowerCase()
+  const action = classifyScannedPayment(code.rawValue)
 
-  if (cleanCode.startsWith('fed')) {
+  if (action.type === 'add-federation') {
+    scannerPaused.value = true
     showAddFederation.value = true
-  } else if (cleanCode.startsWith('bitcoin:') || isBitcoinAddress(rawValue)) {
+  } else if (action.type === 'send-onchain') {
     await router
       .push({
         path: '/send-onchain',
-        query: { target: rawValue },
+        query: { target: action.target },
       })
       .catch((error) => logger.error('Failed to navigate to onchain send page', error))
-  } else if (
-    cleanCode.startsWith('ln') ||
-    cleanCode.includes('@') ||
-    cleanCode.startsWith('lightning:')
-  ) {
-    const invoice = stripLightningPrefix(cleanCode)
+  } else if (action.type === 'send-lightning') {
     await router
       .push({
         name: '/send',
-        query: { invoice },
+        query: { invoice: action.invoice },
       })
       .catch((error) => logger.error('Failed to navigate to send page', error))
+  } else if (action.type === 'handle-lnurl') {
+    await router
+      .push({
+        name: '/lnurl',
+        query: { value: action.lnurl },
+      })
+      .catch((error) => logger.error('Failed to navigate to LNURL page', error))
+  } else if (action.type === 'choose-bip21-payment') {
+    scannerPaused.value = true
+    pendingBip21Payment.value = action
+    showBip21PaymentChoice.value = true
   } else {
     await router
       .push({
         name: '/receive-ecash',
-        query: { token: rawValue },
+        query: { token: action.token },
       })
       .catch((error) => logger.error('Failed to navigate to receive ecash page', error))
   }
+}
+
+async function payBip21WithLightning() {
+  const payment = pendingBip21Payment.value
+  if (payment == null) {
+    return
+  }
+
+  showBip21PaymentChoice.value = false
+  await router
+    .push({
+      name: '/send',
+      query: { invoice: payment.lightningInvoice },
+    })
+    .catch((error) => logger.error('Failed to navigate to send page', error))
+}
+
+async function payBip21Onchain() {
+  const payment = pendingBip21Payment.value
+  if (payment == null) {
+    return
+  }
+
+  showBip21PaymentChoice.value = false
+  await router
+    .push({
+      path: '/send-onchain',
+      query: { target: payment.bitcoinUri },
+    })
+    .catch((error) => logger.error('Failed to navigate to onchain send page', error))
+}
+
+function onBip21ChoiceHide() {
+  if (pendingBip21Payment.value == null) {
+    return
+  }
+
+  pendingBip21Payment.value = null
+  scannerPaused.value = false
 }
 
 function onError(error: EmittedError) {
@@ -257,6 +396,37 @@ function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingCont
 
 .scan-utility-card__toggle {
   flex: 0 0 auto;
+}
+
+.scan-bip21-summary {
+  display: grid;
+  gap: var(--vipr-space-2);
+  margin-bottom: var(--vipr-space-4);
+  padding: var(--vipr-space-4);
+  border: 1px solid var(--vipr-color-surface-border);
+  border-radius: var(--vipr-radius-button-lg);
+  background: var(--vipr-surface-card-bg-subtle);
+}
+
+.scan-bip21-summary__row {
+  display: grid;
+  grid-template-columns: minmax(72px, auto) minmax(0, 1fr);
+  gap: var(--vipr-space-3);
+  align-items: start;
+}
+
+.scan-bip21-summary__label {
+  color: var(--vipr-text-soft);
+  font-size: var(--vipr-font-size-label);
+  line-height: var(--vipr-line-height-tight);
+}
+
+.scan-bip21-summary__value {
+  min-width: 0;
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-body);
+  line-height: var(--vipr-line-height-body);
+  overflow-wrap: anywhere;
 }
 
 ::v-deep(.qrcode-stream) {

@@ -35,6 +35,17 @@ meta:
               data-testid="amount-input"
             />
 
+            <q-input
+              v-model="invoiceMemo"
+              filled
+              dark
+              label="Memo"
+              placeholder="Optional description"
+              maxlength="160"
+              class="vipr-input receive-memo-input vipr-flow-spacer-md"
+              data-testid="receive-memo-input"
+            />
+
             <NumericKeypad :buttons="keypadButtons" class="vipr-flow-spacer-lg" />
 
             <q-btn
@@ -171,6 +182,7 @@ const { createInvoice, waitForInvoicePayment } = useLightningPayment()
 // Use the numeric input composable
 const { value: amount, keypadButtons } = useNumericInput(0)
 const formattedAmount = computed(() => amount.value.toLocaleString())
+const invoiceMemo = ref('')
 
 let countdownInterval: ReturnType<typeof setInterval> | null = null
 
@@ -255,7 +267,7 @@ async function onRequest() {
   startCountdownTimer()
 
   try {
-    const invoiceResult = await createInvoice(amount.value, 'minting ecash', lnExpiry)
+    const invoiceResult = await createInvoice(amount.value, invoiceMemo.value.trim(), lnExpiry)
 
     if (
       invoiceResult.success &&
@@ -317,6 +329,10 @@ async function goBack() {
 
 .heading-text {
   margin-bottom: 10px;
+}
+
+.receive-memo-input {
+  width: 100%;
 }
 
 .receive-status {

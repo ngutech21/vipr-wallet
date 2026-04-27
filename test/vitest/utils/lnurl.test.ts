@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { Decoded } from 'bech32'
-import { requestInvoice } from 'src/utils/lnurl'
+import { requestInvoice, resolveLnurl, submitLnurlWithdrawInvoice } from 'src/utils/lnurl'
 
 // Mock bech32 module at the top level
 vi.mock('bech32', () => ({
@@ -123,6 +123,9 @@ describe('lnurl.ts', () => {
           contents: JSON.stringify({
             tag: 'withdrawRequest',
             callback: 'https://example.com/callback',
+            k1: 'withdraw-secret',
+            minWithdrawable: 1000,
+            maxWithdrawable: 100000,
           }),
         }),
       })
@@ -199,8 +202,7 @@ describe('lnurl.ts', () => {
 
       // Check that the second fetch was called with the correct amount in millisatoshis
       const secondFetchCall = fetchMock.mock.calls[1]
-      // URL is encoded, so check for encoded version of amount=5000000
-      expect(secondFetchCall?.[0]).toContain('amount%3D5000000') // 5000 sat * 1000 = 5000000 msat
+      expect(secondFetchCall?.[0]).toContain('amount=5000000') // 5000 sat * 1000 = 5000000 msat
     })
 
     it('should throw error when callback returns error', async () => {
@@ -234,6 +236,93 @@ describe('lnurl.ts', () => {
       await expect(requestInvoice(mockLnurl, 1000)).rejects.toThrow(
         'Invoice error: Amount too high',
       )
+    })
+  })
+
+  describe('resolveLnurl', () => {
+    it('should resolve withdraw request params', async () => {
+      const mockLnurl = 'lnurl1withdraw'
+      const { bech32 } = await import('bech32')
+      vi.mocked(bech32.decode).mockReturnValue(createDecodedLnurl([1, 2, 3]))
+      vi.mocked(bech32.fromWords).mockReturnValue(
+        Array.from('https://example.com/withdraw', (c) => c.charCodeAt(0)),
+      )
+
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: () => ({
+          contents: JSON.stringify({
+            tag: 'withdrawRequest',
+            callback: 'https://example.com/callback',
+            k1: 'withdraw-secret',
+            defaultDescription: 'ATM withdrawal',
+            minWithdrawable: 1000,
+            maxWithdrawable: 100000,
+          }),
+        }),
+      })
+
+      await expect(resolveLnurl(mockLnurl)).resolves.toEqual({
+        tag: 'withdrawRequest',
+        callback: 'https://example.com/callback',
+        k1: 'withdraw-secret',
+        defaultDescription: 'ATM withdrawal',
+        minWithdrawable: 1000,
+        maxWithdrawable: 100000,
+      })
+    })
+  })
+
+  describe('submitLnurlWithdrawInvoice', () => {
+    it('should submit a local invoice to the withdraw callback', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: () => ({
+          contents: JSON.stringify({ status: 'OK' }),
+        }),
+      })
+
+      await submitLnurlWithdrawInvoice(
+        {
+          tag: 'withdrawRequest',
+          callback: 'https://example.com/callback',
+          k1: 'withdraw-secret',
+          defaultDescription: 'ATM withdrawal',
+          minWithdrawable: 1000,
+          maxWithdrawable: 100000,
+        },
+        'lnbc100n1test',
+      )
+
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(fetchMock.mock.calls[0]?.[0]).toContain('k1=withdraw-secret')
+      expect(fetchMock.mock.calls[0]?.[0]).toContain('pr=lnbc100n1test')
+    })
+
+    it('should throw callback errors from withdraw requests', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: () => ({
+          contents: JSON.stringify({
+            status: 'ERROR',
+            reason: 'Invoice already used',
+          }),
+        }),
+      })
+
+      await expect(
+        submitLnurlWithdrawInvoice(
+          {
+            tag: 'withdrawRequest',
+            callback: 'https://example.com/callback',
+            k1: 'withdraw-secret',
+            defaultDescription: 'ATM withdrawal',
+            minWithdrawable: 1000,
+            maxWithdrawable: 100000,
+          },
+          'lnbc100n1test',
+        ),
+      ).rejects.toThrow('LNURL withdraw error: Invoice already used')
     })
   })
 })

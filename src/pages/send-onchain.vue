@@ -149,6 +149,7 @@ const walletStore = useWalletStore()
 const notify = useAppNotify()
 
 const paymentTarget = ref('')
+const prefilledBitcoinUri = ref<ParsedBitcoinInput | null>(null)
 const isProcessing = ref(false)
 const { value: amount, keypadButtons, setValue } = useNumericInput(0)
 const formattedAmount = computed(() => amount.value.toLocaleString())
@@ -229,7 +230,10 @@ const uriAmountHint = computed(() => {
 
 const bitcoinUriDetails = computed(() => {
   const details: string[] = []
-  const data = parsedTarget.value.data
+  const data =
+    prefilledBitcoinUri.value?.address === paymentTarget.value
+      ? prefilledBitcoinUri.value
+      : parsedTarget.value.data
 
   if (data?.label != null) {
     details.push(`Label: ${data.label}`)
@@ -251,9 +255,12 @@ watch(
       return
     }
 
-    paymentTarget.value = target
-
     const parsed = safeParseBitcoinInput(target)
+    prefilledBitcoinUri.value = target.trim().toLowerCase().startsWith('bitcoin:')
+      ? parsed.data
+      : null
+    paymentTarget.value = parsed.data?.address ?? target
+
     if (parsed.data?.amountSats != null) {
       setValue(parsed.data.amountSats)
     }

@@ -65,6 +65,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/lnurl': RouteRecordInfo<
+      '/lnurl',
+      '/lnurl',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/receive': RouteRecordInfo<
       '/receive',
       '/receive',
@@ -217,6 +224,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/federations/index.vue': {
       routes:
         | '/federations/'
+      views:
+        | never
+    }
+    'src/pages/lnurl.vue': {
+      routes:
+        | '/lnurl'
       views:
         | never
     }

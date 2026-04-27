@@ -20,6 +20,18 @@ describe('bitcoinUri utils', () => {
     })
   })
 
+  it('parses bitcoin URIs with a lightning fallback invoice', () => {
+    expect(
+      parseBitcoinUri(
+        'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00001&lightning=LNBC10U1P3PJ257',
+      ),
+    ).toEqual({
+      address: 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080',
+      amountSats: 1_000,
+      lightning: 'LNBC10U1P3PJ257',
+    })
+  })
+
   it('accepts raw bitcoin addresses as payment input', () => {
     expect(parseBitcoinInput('3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy')).toEqual({
       address: '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy',

@@ -8,6 +8,7 @@ export type ParsedBitcoinInput = {
   amountSats?: number
   label?: string
   message?: string
+  lightning?: string
 }
 
 export function parseBitcoinInput(input: string): ParsedBitcoinInput {
@@ -50,6 +51,7 @@ export function parseBitcoinUri(uri: string): ParsedBitcoinInput {
   const amountParam = query.get('amount')
   const label = normalizeOptionalField(query.get('label'))
   const message = normalizeOptionalField(query.get('message'))
+  const lightning = normalizeOptionalField(query.get('lightning'))
   const parsedInput: ParsedBitcoinInput = {
     address,
   }
@@ -64,6 +66,10 @@ export function parseBitcoinUri(uri: string): ParsedBitcoinInput {
 
   if (message != null) {
     parsedInput.message = message
+  }
+
+  if (lightning != null) {
+    parsedInput.lightning = lightning
   }
 
   return parsedInput

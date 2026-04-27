@@ -112,13 +112,28 @@ describe('ReceivePage timer lifecycle', () => {
     await (wrapper.vm as any).onRequest()
     await flushPromises()
 
-    expect(mockCreateInvoice).toHaveBeenCalledWith(100, 'minting ecash', 3540)
+    expect(mockCreateInvoice).toHaveBeenCalledWith(100, '', 3540)
     expect(mockWaitForInvoicePayment).toHaveBeenCalledWith('op-1', 3540000)
     expect(mockRouterPush).toHaveBeenCalledWith({
       name: '/received-lightning',
       query: { amount: '100' },
     })
     expect(clearIntervalSpy).toHaveBeenCalled()
+  })
+
+  it('uses the optional memo when creating an invoice', async () => {
+    mockCreateInvoice.mockResolvedValue({
+      success: false,
+    })
+
+    wrapper = createWrapper()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(wrapper.vm as any).invoiceMemo = '  invoice memo  '
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).onRequest()
+    await flushPromises()
+
+    expect(mockCreateInvoice).toHaveBeenCalledWith(100, 'invoice memo', 3540)
   })
 
   it('clears countdown timer when invoice creation fails', async () => {
