@@ -3,9 +3,14 @@ import { Loading } from 'quasar'
 import { useLightningStore } from 'src/stores/lightning'
 import { LightningAddress } from '@getalby/lightning-tools'
 import { useAppNotify } from 'src/composables/useAppNotify'
-import { requestInvoice } from 'src/utils/lnurl'
+import { requestInvoice, resolveLnurl, type LnurlPayParams } from 'src/utils/lnurl'
 import { getErrorMessage } from 'src/utils/error'
 import type { Bolt11Invoice } from 'src/types/lightning'
+
+export type LnurlPayLimits = {
+  minSendableMsats: number
+  maxSendableMsats: number
+}
 
 export interface InvoiceDecodingResult {
   decodedInvoice: Bolt11Invoice | null
@@ -19,11 +24,13 @@ export function useInvoiceDecoding() {
   const isProcessing = ref(false)
   const amountRequired = ref(false)
   const lnAddress = ref<LightningAddress | null>(null)
+  const lnurlPayLimits = ref<LnurlPayLimits | null>(null)
   const decodedInvoice = ref<Bolt11Invoice | null>(null)
 
-  function resetLightningAddressState() {
+  function resetAmountRequestState() {
     amountRequired.value = false
     lnAddress.value = null
+    lnurlPayLimits.value = null
   }
 
   /**
@@ -34,8 +41,7 @@ export function useInvoiceDecoding() {
   async function decodeInvoice(invoice: string): Promise<Bolt11Invoice | null> {
     isProcessing.value = true
     decodedInvoice.value = null
-    amountRequired.value = false
-    lnAddress.value = null
+    resetAmountRequestState()
 
     try {
       // Lightning address (e.g., user@domain.com)
@@ -46,12 +52,13 @@ export function useInvoiceDecoding() {
         try {
           await lnAddress.value.fetchWithProxy()
           if (lnAddress.value.lnurlpData == null) {
-            resetLightningAddressState()
+            resetAmountRequestState()
             notify.error('Invalid lightning address')
             return null
           }
+          lnurlPayLimits.value = readLightningAddressLimits(lnAddress.value.lnurlpData)
         } catch (error) {
-          resetLightningAddressState()
+          resetAmountRequestState()
           notify.error(`Failed to fetch lightning address: ${getErrorMessage(error)}`)
           return null
         }
@@ -61,7 +68,20 @@ export function useInvoiceDecoding() {
 
       // LNURL
       if (invoice.toLowerCase().startsWith('lnurl1')) {
-        amountRequired.value = true
+        try {
+          const params = await resolveLnurl(invoice)
+          if (params.tag !== 'payRequest') {
+            notify.error('LNURL is not a payment request')
+            return null
+          }
+
+          amountRequired.value = true
+          lnurlPayLimits.value = readLnurlPayParamsLimits(params)
+        } catch (error) {
+          resetAmountRequestState()
+          notify.error(`Failed to load LNURL payment request: ${getErrorMessage(error)}`)
+          return null
+        }
         return null // Amount is required, no invoice yet
       }
 
@@ -98,8 +118,14 @@ export function useInvoiceDecoding() {
       // If we have a lightning address
       if (lnAddress.value != null) {
         if (lnAddress.value.lnurlpData == null) {
-          resetLightningAddressState()
+          resetAmountRequestState()
           notify.error('Lightning address could not be loaded. Please try again.')
+          return null
+        }
+
+        const amountError = getLnurlAmountError(amountSats, lnurlPayLimits.value)
+        if (amountError != null) {
+          notify.error(amountError)
           return null
         }
 
@@ -113,6 +139,12 @@ export function useInvoiceDecoding() {
         }
       } else {
         // LNURL
+        const amountError = getLnurlAmountError(amountSats, lnurlPayLimits.value)
+        if (amountError != null) {
+          notify.error(amountError)
+          return null
+        }
+
         invoiceString = await requestInvoice(input, amountSats)
       }
 
@@ -135,8 +167,92 @@ export function useInvoiceDecoding() {
     isProcessing,
     amountRequired,
     lnAddress,
+    lnurlPayLimits,
     decodedInvoice,
     decodeInvoice,
     createInvoiceFromInput,
   }
+}
+
+export function getLnurlAmountError(
+  amountSats: number,
+  limits: LnurlPayLimits | null,
+): string | null {
+  if (limits == null) {
+    return null
+  }
+
+  const minSats = Math.ceil(limits.minSendableMsats / 1_000)
+  const maxSats = Math.floor(limits.maxSendableMsats / 1_000)
+
+  if (!Number.isFinite(minSats) || !Number.isFinite(maxSats) || minSats > maxSats) {
+    return 'Invalid LNURL amount limits'
+  }
+
+  if (amountSats < minSats) {
+    return `Amount must be at least ${minSats.toLocaleString()} sats`
+  }
+
+  if (amountSats > maxSats) {
+    return `Amount must be ${maxSats.toLocaleString()} sats or less`
+  }
+
+  return null
+}
+
+function readLnurlPayParamsLimits(params: LnurlPayParams): LnurlPayLimits | null {
+  if (params.minSendable == null || params.maxSendable == null) {
+    return null
+  }
+
+  return normalizeLnurlLimits(params.minSendable, params.maxSendable)
+}
+
+function readLightningAddressLimits(lnurlpData: unknown): LnurlPayLimits | null {
+  if (lnurlpData == null || typeof lnurlpData !== 'object') {
+    return null
+  }
+
+  const record = lnurlpData as Record<string, unknown>
+  const rawData =
+    record.rawData != null && typeof record.rawData === 'object'
+      ? (record.rawData as Record<string, unknown>)
+      : null
+  const min = readNumber(record.min ?? rawData?.minSendable)
+  const max = readNumber(record.max ?? rawData?.maxSendable)
+
+  if (min == null || max == null) {
+    return null
+  }
+
+  return normalizeLnurlLimits(min, max)
+}
+
+function normalizeLnurlLimits(minSendableMsats: number, maxSendableMsats: number) {
+  if (
+    !Number.isFinite(minSendableMsats) ||
+    !Number.isFinite(maxSendableMsats) ||
+    minSendableMsats <= 0 ||
+    maxSendableMsats <= 0
+  ) {
+    return null
+  }
+
+  return {
+    minSendableMsats,
+    maxSendableMsats,
+  }
+}
+
+function readNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value
+  }
+
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : null
+  }
+
+  return null
 }

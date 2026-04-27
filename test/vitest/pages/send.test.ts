@@ -18,6 +18,10 @@ const mockDecodedInvoiceRef = vi.hoisted(() => ({
 }))
 const mockAmountRequiredRef = vi.hoisted(() => ({ value: false, __v_isRef: true }))
 const mockAmountRef = vi.hoisted(() => ({ value: 0, __v_isRef: true }))
+const mockLnurlPayLimitsRef = vi.hoisted(() => ({
+  value: null as { minSendableMsats: number; maxSendableMsats: number } | null,
+  __v_isRef: true,
+}))
 const mockNostrStore = vi.hoisted(() => ({
   contacts: [] as Array<{
     pubkey: string
@@ -45,6 +49,7 @@ vi.mock('src/composables/useInvoiceDecoding', () => ({
     isProcessing: ref(false),
     amountRequired: mockAmountRequiredRef,
     lnAddress: ref(''),
+    lnurlPayLimits: mockLnurlPayLimitsRef,
     decodedInvoice: mockDecodedInvoiceRef,
     decodeInvoice: mockDecodeInvoiceFromComposable,
     createInvoiceFromInput: mockCreateInvoiceFromInput,
@@ -157,6 +162,7 @@ describe('SendPage query invoice handling', () => {
     mockPayInvoiceFromComposable.mockResolvedValue({ success: true, amountSats: 1, fee: 0 })
     mockDecodedInvoiceRef.value = null
     mockAmountRequiredRef.value = false
+    mockLnurlPayLimitsRef.value = null
     mockAmountRef.value = 0
     walletStoreState.balance = 500_000
     mockNostrStore.contacts = []
@@ -281,6 +287,58 @@ describe('SendPage query invoice handling', () => {
     await flushPromises()
 
     expect(wrapper.text()).toContain('Amount must be 500,000 sats or less')
+    expect(mockCreateInvoiceFromInput).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('shows a compact LNURL amount limit hint', async () => {
+    mockAmountRequiredRef.value = true
+    mockLnurlPayLimitsRef.value = {
+      minSendableMsats: 10_000,
+      maxSendableMsats: 39_000,
+    }
+
+    wrapper = createWrapper()
+    await flushPromises()
+
+    expect(wrapper.get('[data-testid="send-lnurl-limit-hint"]').text()).toBe('Limit: 10 - 39 sats')
+    wrapper.unmount()
+  })
+
+  it('blocks LNURL invoice creation below the advertised minimum amount', async () => {
+    mockAmountRequiredRef.value = true
+    mockAmountRef.value = 9
+    mockLnurlPayLimitsRef.value = {
+      minSendableMsats: 10_000,
+      maxSendableMsats: 39_000,
+    }
+
+    wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.get('[data-testid="send-continue-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Amount must be at least 10 sats')
+    expect(mockCreateInvoiceFromInput).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('blocks LNURL invoice creation above the advertised maximum amount', async () => {
+    mockAmountRequiredRef.value = true
+    mockAmountRef.value = 40
+    mockLnurlPayLimitsRef.value = {
+      minSendableMsats: 10_000,
+      maxSendableMsats: 39_000,
+    }
+
+    wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.get('[data-testid="send-continue-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Amount must be 39 sats or less')
     expect(mockCreateInvoiceFromInput).not.toHaveBeenCalled()
     wrapper.unmount()
   })

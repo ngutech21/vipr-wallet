@@ -105,10 +105,18 @@ meta:
                       :value="formattedInvoiceAmount"
                       label="Amount in sats"
                       class="send-amount-display"
+                      :class="{ 'send-amount-display--with-limit': lnurlAmountHint }"
                       :error-message="amountError"
                       reserve-error-space
                       data-testid="send-amount-input"
                     />
+                    <div
+                      v-if="lnurlAmountHint"
+                      class="vipr-caption send-lnurl-limit-hint"
+                      data-testid="send-lnurl-limit-hint"
+                    >
+                      {{ lnurlAmountHint }}
+                    </div>
                   </div>
                 </div>
 
@@ -207,6 +215,7 @@ const {
   isProcessing,
   amountRequired,
   lnAddress,
+  lnurlPayLimits,
   decodedInvoice,
   decodeInvoice: decodeInvoiceFromComposable,
   createInvoiceFromInput,
@@ -240,6 +249,11 @@ const amountError = computed(() => {
     return null
   }
 
+  const lnurlError = getLnurlAmountError(invoiceAmount.value)
+  if (lnurlError != null) {
+    return lnurlError
+  }
+
   if (invoiceAmount.value > activeBalanceSats.value) {
     return `Amount must be ${activeBalanceSats.value.toLocaleString()} sats or less`
   }
@@ -265,6 +279,18 @@ const paymentBalanceError = computed(() => {
 })
 
 const isContinueDisabled = computed(() => isProcessing.value || amountError.value != null)
+const lnurlAmountHint = computed(() => {
+  const limits = getLnurlLimitSats()
+  if (limits == null) {
+    return ''
+  }
+
+  if (limits.minSats === limits.maxSats) {
+    return `Limit: ${limits.minSats.toLocaleString()} sats`
+  }
+
+  return `Limit: ${limits.minSats.toLocaleString()} - ${limits.maxSats.toLocaleString()} sats`
+})
 
 // FIXME
 // Validate input before allowing to continue
@@ -342,6 +368,42 @@ function getContactDisplayName(contact: SyncedNostrContact): string {
 function getContactSubtitle(contact: SyncedNostrContact): string {
   return getNostrContactSubtitle(contact)
 }
+
+function getLnurlAmountError(amountSats: number): string | null {
+  const limits = getLnurlLimitSats()
+  if (limits == null) {
+    return null
+  }
+
+  if (amountSats < limits.minSats) {
+    return `Amount must be at least ${limits.minSats.toLocaleString()} sats`
+  }
+
+  if (amountSats > limits.maxSats) {
+    return `Amount must be ${limits.maxSats.toLocaleString()} sats or less`
+  }
+
+  return null
+}
+
+function getLnurlLimitSats(): { minSats: number; maxSats: number } | null {
+  const limits = lnurlPayLimits.value
+  if (limits == null) {
+    return null
+  }
+
+  const minSats = Math.ceil(limits.minSendableMsats / 1_000)
+  const maxSats = Math.floor(limits.maxSendableMsats / 1_000)
+
+  if (!Number.isFinite(minSats) || !Number.isFinite(maxSats) || minSats > maxSats) {
+    return null
+  }
+
+  return {
+    minSats,
+    maxSats,
+  }
+}
 </script>
 
 <style scoped>
@@ -383,8 +445,25 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
   font-size: 2rem;
 }
 
+.send-amount-display--with-limit :deep(.amount-display__error) {
+  min-height: calc(var(--vipr-font-size-caption) * var(--vipr-line-height-body));
+  margin-top: var(--vipr-space-1);
+  font-size: var(--vipr-font-size-caption);
+}
+
 .send-keypad {
   margin-top: var(--vipr-space-2);
+}
+
+.send-lnurl-limit-hint {
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: var(--vipr-space-1);
+  color: var(--vipr-text-soft);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .send-contact-hint {
