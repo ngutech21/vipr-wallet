@@ -30,7 +30,7 @@ Learn more about the project at [vipr.cash](https://vipr.cash)
 
 <div align="center">
   <img src="./public/screenshots/Home.webp" alt="Dashboard" width="30%" />
-  <img src="./public/screenshots/Federation-Details.webp" alt="Federation Details" width="30%" />
+  <img src="./public/screenshots/Settings.webp" alt="Federation Details" width="30%" />
   <img src="./public/screenshots/Receive-Lightning.webp" alt="Receive Payment" width="30%" />
 </div>
 
