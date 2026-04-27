@@ -154,27 +154,19 @@
             <q-card-section class="settings-panel">
               <div class="contacts-section">
                 <div class="settings-section-title">Sync Contacts</div>
-                <q-btn-toggle
-                  v-model="contactSourceType"
-                  unelevated
-                  toggle-color="primary"
-                  :options="contactSourceOptions"
-                  class="settings-action-full contacts-source-toggle settings-block"
-                  data-testid="settings-contact-source-toggle"
-                />
-
                 <q-input
                   v-model="contactSourceValue"
                   filled
                   dark
-                  :label="contactSourceLabel"
-                  :placeholder="contactSourcePlaceholder"
+                  label="Nostr identifier"
+                  placeholder="user@domain.com or npub1..."
                   class="vipr-input relay-input"
                   data-testid="settings-contact-source-input"
                 />
 
                 <div class="settings-caption settings-muted settings-caption--spaced">
-                  {{ contactSourceHint }}
+                  Enter a NIP-05 identifier or npub for the account whose follows should be
+                  imported.
                 </div>
 
                 <div class="contacts-actions">
@@ -259,13 +251,6 @@
                     <q-item-section>
                       <q-item-label>{{ getContactDisplayName(contact) }}</q-item-label>
                       <q-item-label caption>{{ getContactSubtitle(contact) }}</q-item-label>
-                    </q-item-section>
-                    <q-item-section side>
-                      <q-chip
-                        dense
-                        outline
-                        :label="contact.lud16 ? 'Lightning Address' : 'LNURL'"
-                      />
                     </q-item-section>
                   </q-item>
                 </q-list>
@@ -446,7 +431,7 @@ import { usePwaUpdateStore } from 'src/stores/pwa-update'
 import { logger } from 'src/services/logger'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { NostrContactSourceType, SyncedNostrContact } from 'src/types/nostr'
+import type { SyncedNostrContact } from 'src/types/nostr'
 import { getNostrContactDisplayName, getNostrContactSubtitle } from 'src/utils/nostrContacts'
 import {
   getConnectorConfig,
@@ -492,11 +477,6 @@ const lastSyncedLabel = computed(() => {
 })
 const visibleContacts = computed(() => syncedContacts.value.slice(0, visibleContactCount.value))
 const hasMoreContacts = computed(() => visibleContactCount.value < syncedContacts.value.length)
-const contactSourceOptions = [
-  { label: 'NIP-05', value: 'nip05' },
-  { label: 'npub', value: 'npub' },
-]
-
 function updateConnectedProvider() {
   const config = getConnectorConfig()
   connectedProvider.value = config?.connectorName ?? ''
@@ -627,7 +607,6 @@ async function applyUpdate() {
 // Nostr settings
 const relays = ref(nostrStore.relays)
 const newRelay = ref('')
-const contactSourceType = ref<NostrContactSourceType>(nostrStore.contactSource.sourceType)
 const contactSourceValue = ref(nostrStore.contactSource.sourceValue)
 
 // Watch for store changes to keep local refs in sync
@@ -642,7 +621,6 @@ watch(
 watch(
   () => nostrStore.contactSource,
   (newSource) => {
-    contactSourceType.value = newSource.sourceType
     contactSourceValue.value = newSource.sourceValue
   },
   { deep: true },
@@ -654,20 +632,6 @@ watch(syncedContacts, () => {
 
 const isValidRelayUrl = computed(() => {
   return newRelay.value !== '' && newRelay.value.startsWith('wss://')
-})
-
-const contactSourceLabel = computed(() => {
-  return contactSourceType.value === 'nip05' ? 'NIP-05 Identifier' : 'npub'
-})
-
-const contactSourcePlaceholder = computed(() => {
-  return contactSourceType.value === 'nip05' ? 'user@domain.com' : 'npub1...'
-})
-
-const contactSourceHint = computed(() => {
-  return contactSourceType.value === 'nip05'
-    ? 'Enter a NIP-05 identifier like user@domain.com.'
-    : 'Enter the npub for the account whose follows should be imported.'
 })
 
 async function addNewRelay() {
@@ -691,7 +655,7 @@ async function resetRelays() {
 }
 
 async function syncContacts() {
-  nostrStore.setContactSource(contactSourceType.value, contactSourceValue.value)
+  nostrStore.setContactSource(contactSourceValue.value)
 
   if (await nostrStore.syncContacts()) {
     notify.success(`Imported ${nostrStore.contacts.length} contacts`)

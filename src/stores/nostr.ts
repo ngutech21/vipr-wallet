@@ -170,9 +170,9 @@ export const useNostrStore = defineStore('nostr', {
       this.pubkey = pubkey
     },
 
-    setContactSource(sourceType: NostrContactSourceType, sourceValue: string) {
+    setContactSource(sourceValue: string) {
       this.contactSource = {
-        sourceType,
+        sourceType: inferContactSourceType(sourceValue),
         sourceValue,
         resolvedPubkey: null,
       }
@@ -209,11 +209,13 @@ export const useNostrStore = defineStore('nostr', {
         return false
       }
 
-      if (!isValidContactSource(this.contactSource.sourceType, sourceValue)) {
+      const sourceType = inferContactSourceType(sourceValue)
+
+      if (!isValidContactSource(sourceType, sourceValue)) {
         this.syncStatus = 'error'
         this.contactSyncMeta = {
           ...this.contactSyncMeta,
-          lastSyncError: getInvalidContactSourceMessage(this.contactSource.sourceType),
+          lastSyncError: getInvalidContactSourceMessage(),
         }
         return false
       }
@@ -257,7 +259,7 @@ export const useNostrStore = defineStore('nostr', {
           .sort(compareSyncedContacts)
 
         this.contactSource = {
-          sourceType: this.contactSource.sourceType,
+          sourceType,
           sourceValue,
           resolvedPubkey: sourceUser.pubkey,
         }
@@ -269,7 +271,7 @@ export const useNostrStore = defineStore('nostr', {
         this.syncStatus = 'success'
 
         logger.nostr.info('Synced Nostr contacts', {
-          sourceType: this.contactSource.sourceType,
+          sourceType,
           count: contacts.length,
         })
 
@@ -1016,10 +1018,21 @@ function isValidContactSource(sourceType: NostrContactSourceType, sourceValue: s
   }
 }
 
-function getInvalidContactSourceMessage(sourceType: NostrContactSourceType): string {
-  return sourceType === 'nip05'
-    ? 'Enter a valid NIP-05 identifier like user@domain.com.'
-    : 'Enter a valid npub identifier.'
+function inferContactSourceType(sourceValue: string): NostrContactSourceType {
+  try {
+    const decoded = nip19.decode(sourceValue)
+    if (decoded.type === 'npub') {
+      return 'npub'
+    }
+  } catch {
+    // Fall through to NIP-05 validation for non-npub identifiers.
+  }
+
+  return 'nip05'
+}
+
+function getInvalidContactSourceMessage(): string {
+  return 'Enter a valid NIP-05 identifier like user@domain.com or a valid npub identifier.'
 }
 
 function getLatestProfileEvents(profileEvents: Set<NDKEvent>): Map<string, NDKEvent> {

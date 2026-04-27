@@ -311,7 +311,7 @@ describe('SettingsPage updates', () => {
     await wrapper.find('[data-testid="settings-sync-contacts-btn"]').trigger('click')
     await flushPromises()
 
-    expect(nostrStoreMock.setContactSource).toHaveBeenCalledWith('npub', 'npub1example')
+    expect(nostrStoreMock.setContactSource).toHaveBeenCalledWith('npub1example')
     expect(nostrStoreMock.syncContacts).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).toContain('Alice')
     expect(wrapper.text()).toContain('1 imported contacts')
@@ -320,11 +320,11 @@ describe('SettingsPage updates', () => {
   it('shows sync errors and clears imported contacts', async () => {
     nostrStoreMock.contactSyncMeta = {
       lastSyncedAt: null,
-      lastSyncError: 'Invalid npub identifier.',
+      lastSyncError: 'Enter a valid Nostr identifier.',
     }
 
     const wrapper = createWrapper()
-    expect(wrapper.text()).toContain('Invalid npub identifier.')
+    expect(wrapper.text()).toContain('Enter a valid Nostr identifier.')
 
     await wrapper.find('[data-testid="settings-clear-contacts-btn"]').trigger('click')
     await flushPromises()

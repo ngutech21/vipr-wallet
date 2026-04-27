@@ -686,7 +686,7 @@ describe('nostr store discovery queue', () => {
       fetchUser,
       fetchEvents,
     } as unknown as NonNullable<typeof nostr.ndk>
-    nostr.setContactSource('nip05', 'alice@example.com')
+    nostr.setContactSource('alice@example.com')
 
     await expect(nostr.syncContacts()).resolves.toBe(true)
 
@@ -743,7 +743,7 @@ describe('nostr store discovery queue', () => {
         paymentTarget: 'stale@getalby.com',
       },
     ]
-    nostr.setContactSource('npub', SOURCE_NPUB)
+    nostr.setContactSource(SOURCE_NPUB)
 
     await expect(nostr.syncContacts()).resolves.toBe(true)
     expect(fetchUser).toHaveBeenCalledWith(SOURCE_NPUB)
@@ -773,7 +773,7 @@ describe('nostr store discovery queue', () => {
     nostr.ndk = {
       fetchUser: vi.fn().mockRejectedValue(new Error('Relay timeout')),
     } as unknown as NonNullable<typeof nostr.ndk>
-    nostr.setContactSource('nip05', 'alice@example.com')
+    nostr.setContactSource('alice@example.com')
 
     await expect(nostr.syncContacts()).resolves.toBe(false)
 
