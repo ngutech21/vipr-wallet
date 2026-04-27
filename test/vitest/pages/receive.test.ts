@@ -10,6 +10,11 @@ const mockRequestProvider = vi.hoisted(() => vi.fn())
 const mockLoadingShow = vi.hoisted(() => vi.fn())
 const mockLoadingHide = vi.hoisted(() => vi.fn())
 const mockNotifyCreate = vi.hoisted(() => vi.fn())
+const federationStoreState = vi.hoisted(
+  (): { selectedFederation: { federationId: string } | undefined } => ({
+    selectedFederation: { federationId: 'fed-1' },
+  }),
+)
 
 vi.mock('vue-router', () => ({
   useRouter: () => ({
@@ -19,7 +24,9 @@ vi.mock('vue-router', () => ({
 
 vi.mock('src/stores/federation', () => ({
   useFederationStore: () => ({
-    selectedFederation: { federationId: 'fed-1' },
+    get selectedFederation() {
+      return federationStoreState.selectedFederation
+    },
   }),
 }))
 
@@ -91,6 +98,7 @@ describe('ReceivePage timer lifecycle', () => {
     vi.clearAllMocks()
     vi.useFakeTimers()
     mockAmountRef.value = 100
+    federationStoreState.selectedFederation = { federationId: 'fed-1' }
   })
 
   afterEach(() => {
@@ -134,6 +142,24 @@ describe('ReceivePage timer lifecycle', () => {
     await flushPromises()
 
     expect(mockCreateInvoice).toHaveBeenCalledWith(100, 'invoice memo', 3540)
+  })
+
+  it('does not create an invoice when no federation is selected', async () => {
+    federationStoreState.selectedFederation = undefined
+
+    wrapper = createWrapper()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).onRequest()
+    await flushPromises()
+
+    expect(mockCreateInvoice).not.toHaveBeenCalled()
+    expect(mockWaitForInvoicePayment).not.toHaveBeenCalled()
+    expect(mockNotifyCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        color: 'negative',
+        message: 'Select a federation before creating an invoice',
+      }),
+    )
   })
 
   it('clears countdown timer when invoice creation fails', async () => {

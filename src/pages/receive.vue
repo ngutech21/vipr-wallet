@@ -54,7 +54,7 @@ meta:
               no-caps
               unelevated
               class="vipr-flow-action vipr-btn vipr-btn--primary vipr-btn--lg"
-              :disable="amount <= 0 || isCreatingInvoice"
+              :disable="!canCreateInvoice"
               @click="onRequest"
               icon="bolt"
               :loading="isCreatingInvoice"
@@ -183,6 +183,10 @@ const { createInvoice, waitForInvoicePayment } = useLightningPayment()
 const { value: amount, keypadButtons } = useNumericInput(0)
 const formattedAmount = computed(() => amount.value.toLocaleString())
 const invoiceMemo = ref('')
+const selectedFederation = computed(() => federationStore.selectedFederation)
+const canCreateInvoice = computed(() => {
+  return amount.value > 0 && !isCreatingInvoice.value && selectedFederation.value != null
+})
 
 let countdownInterval: ReturnType<typeof setInterval> | null = null
 
@@ -255,8 +259,9 @@ async function shareQrcode() {
 }
 
 async function onRequest() {
-  if (federationStore.selectedFederation === null) {
+  if (selectedFederation.value == null) {
     logger.error('No federation selected')
+    notify.error('Select a federation before creating an invoice')
     return
   }
 
