@@ -63,11 +63,12 @@ export function classifyScannedPayment(rawValue: string): ScannedPaymentAction {
   if (
     normalizedValue.startsWith('ln') ||
     normalizedValue.includes('@') ||
-    normalizedValue.startsWith('lightning:')
+    normalizedValue.startsWith('lightning:') ||
+    normalizedValue.startsWith('web+lightning:')
   ) {
     return {
       type: 'send-lightning',
-      invoice: stripLightningPrefix(normalizedValue),
+      invoice: stripLightningUriPrefix(normalizedValue),
     }
   }
 
@@ -77,8 +78,16 @@ export function classifyScannedPayment(rawValue: string): ScannedPaymentAction {
   }
 }
 
-function stripLightningPrefix(value: string): string {
-  return value.startsWith('lightning:') ? value.substring('lightning:'.length) : value
+function stripLightningUriPrefix(value: string): string {
+  if (value.startsWith('web+lightning:')) {
+    return value.substring('web+lightning:'.length)
+  }
+
+  if (value.startsWith('lightning:')) {
+    return value.substring('lightning:'.length)
+  }
+
+  return value
 }
 
 function tryParseBitcoinInput(value: string): ParsedBitcoinInput | null {

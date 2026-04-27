@@ -59,6 +59,34 @@ describe('classifyScannedPayment', () => {
     })
   })
 
+  it('classifies web lightning invoices and strips the web lightning URI prefix', () => {
+    expect(classifyScannedPayment('web+lightning:lnbc123')).toEqual({
+      type: 'send-lightning',
+      invoice: 'lnbc123',
+    })
+  })
+
+  it('classifies raw LNURL pay codes as lightning payments', () => {
+    expect(classifyScannedPayment('lnurl1dp68gurn8ghj7m')).toEqual({
+      type: 'send-lightning',
+      invoice: 'lnurl1dp68gurn8ghj7m',
+    })
+  })
+
+  it('classifies lightning-prefixed LNURL pay codes as lightning payments', () => {
+    expect(classifyScannedPayment('lightning:lnurl1dp68gurn8ghj7m')).toEqual({
+      type: 'send-lightning',
+      invoice: 'lnurl1dp68gurn8ghj7m',
+    })
+  })
+
+  it('classifies web-lightning-prefixed LNURL pay codes as lightning payments', () => {
+    expect(classifyScannedPayment('web+lightning:lnurl1dp68gurn8ghj7m')).toEqual({
+      type: 'send-lightning',
+      invoice: 'lnurl1dp68gurn8ghj7m',
+    })
+  })
+
   it('classifies lightning addresses case-insensitively', () => {
     expect(classifyScannedPayment('User@Example.com')).toEqual({
       type: 'send-lightning',
