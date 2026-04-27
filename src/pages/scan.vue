@@ -132,6 +132,7 @@ const hasTorch = ref(false)
 const showAddFederation = ref(false)
 const showBip21PaymentChoice = ref(false)
 const scannerPaused = ref(false)
+const routingInProgress = ref(false)
 const pendingBip21Payment = ref<Extract<
   ScannedPaymentAction,
   { type: 'choose-bip21-payment' }
@@ -186,6 +187,10 @@ function onAddFederationHide() {
 }
 
 async function onDetect(detectedCodes: DetectedBarcode[]) {
+  if (scannerPaused.value || routingInProgress.value) {
+    return
+  }
+
   // Process only the first detected code
   const code = detectedCodes[0]
   if (code == null) return
@@ -199,37 +204,54 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
     scannerPaused.value = true
     showAddFederation.value = true
   } else if (action.type === 'send-onchain') {
-    await router
-      .push({
+    await navigateFromScan(
+      {
         path: '/send-onchain',
         query: { target: action.target },
-      })
-      .catch((error) => logger.error('Failed to navigate to onchain send page', error))
+      },
+      'Failed to navigate to onchain send page',
+    )
   } else if (action.type === 'send-lightning') {
-    await router
-      .push({
+    await navigateFromScan(
+      {
         name: '/send',
         query: { invoice: action.invoice },
-      })
-      .catch((error) => logger.error('Failed to navigate to send page', error))
+      },
+      'Failed to navigate to send page',
+    )
   } else if (action.type === 'handle-lnurl') {
-    await router
-      .push({
+    await navigateFromScan(
+      {
         name: '/lnurl',
         query: { value: action.lnurl },
-      })
-      .catch((error) => logger.error('Failed to navigate to LNURL page', error))
+      },
+      'Failed to navigate to LNURL page',
+    )
   } else if (action.type === 'choose-bip21-payment') {
     scannerPaused.value = true
     pendingBip21Payment.value = action
     showBip21PaymentChoice.value = true
   } else {
-    await router
-      .push({
+    await navigateFromScan(
+      {
         name: '/receive-ecash',
         query: { token: action.token },
-      })
-      .catch((error) => logger.error('Failed to navigate to receive ecash page', error))
+      },
+      'Failed to navigate to receive ecash page',
+    )
+  }
+}
+
+async function navigateFromScan(target: Parameters<typeof router.push>[0], failureMessage: string) {
+  routingInProgress.value = true
+  scannerPaused.value = true
+
+  try {
+    await router.push(target)
+  } catch (error) {
+    logger.error(failureMessage, error)
+    routingInProgress.value = false
+    scannerPaused.value = false
   }
 }
 

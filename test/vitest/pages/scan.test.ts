@@ -77,6 +77,35 @@ describe('ScanPage detection flow', () => {
     wrapper.unmount()
   })
 
+  it('ignores duplicate detections while navigation is still in progress', async () => {
+    let resolveNavigation: (() => void) | undefined
+    mockRouterPush.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveNavigation = resolve
+        }),
+    )
+
+    wrapper = createWrapper()
+    const scanPage = wrapper.vm as unknown as {
+      onDetect: (codes: Array<{ rawValue: string }>) => Promise<void>
+    }
+
+    const firstDetection = scanPage.onDetect([{ rawValue: 'lightning:lnbc123' }])
+    await Promise.resolve()
+    await scanPage.onDetect([{ rawValue: 'lightning:lnbc123' }])
+
+    expect(mockRouterPush).toHaveBeenCalledTimes(1)
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      name: '/send',
+      query: { invoice: 'lnbc123' },
+    })
+
+    resolveNavigation?.()
+    await firstDetection
+    wrapper.unmount()
+  })
+
   it('routes lightning address scans to send page', async () => {
     wrapper = createWrapper()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
