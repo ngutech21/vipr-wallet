@@ -97,45 +97,47 @@
               </q-list>
 
               <!-- Add new relay -->
-              <div class="settings-inline-grid settings-inline-grid--center">
-                <div class="settings-inline-grid__main">
-                  <q-input
-                    v-model="newRelay"
-                    label="Add relay URL"
-                    filled
-                    dark
-                    dense
-                    placeholder="Must start with wss://"
-                    class="vipr-input relay-input"
-                    data-testid="settings-new-relay-input"
-                  />
+              <div class="settings-relay-actions">
+                <div class="settings-inline-grid settings-inline-grid--center">
+                  <div class="settings-inline-grid__main">
+                    <q-input
+                      v-model="newRelay"
+                      label="Add relay URL"
+                      filled
+                      dark
+                      dense
+                      placeholder="Must start with wss://"
+                      class="vipr-input relay-input"
+                      data-testid="settings-new-relay-input"
+                    />
+                  </div>
+                  <div class="settings-inline-grid__side">
+                    <q-btn
+                      label="Add"
+                      icon="add"
+                      color="primary"
+                      no-caps
+                      unelevated
+                      class="settings-action-full"
+                      :disable="!isValidRelayUrl"
+                      @click="addNewRelay"
+                      data-testid="settings-add-relay-btn"
+                    />
+                  </div>
                 </div>
-                <div class="settings-inline-grid__side">
-                  <q-btn
-                    label="Add"
-                    icon="add"
-                    color="primary"
-                    no-caps
-                    unelevated
-                    class="settings-action-full"
-                    :disable="!isValidRelayUrl"
-                    @click="addNewRelay"
-                    data-testid="settings-add-relay-btn"
-                  />
-                </div>
-              </div>
 
-              <div class="settings-block">
-                <q-btn
-                  label="Reset to Defaults"
-                  outline
-                  no-caps
-                  color="secondary"
-                  icon="settings_backup_restore"
-                  class="settings-action-btn settings-action-btn--secondary"
-                  @click="resetRelays"
-                  data-testid="settings-reset-relays-btn"
-                />
+                <div class="settings-relay-reset">
+                  <q-btn
+                    label="Reset to Defaults"
+                    outline
+                    no-caps
+                    color="secondary"
+                    icon="settings_backup_restore"
+                    class="settings-action-btn settings-action-btn--secondary"
+                    @click="resetRelays"
+                    data-testid="settings-reset-relays-btn"
+                  />
+                </div>
               </div>
             </q-card-section>
           </q-card>
@@ -788,6 +790,17 @@ function getContactSubtitle(contact: SyncedNostrContact): string {
 
 .settings-list--spaced {
   margin-top: var(--vipr-space-4);
+}
+
+.settings-relay-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vipr-space-3);
+  margin-bottom: var(--vipr-space-4);
+}
+
+.settings-relay-reset {
+  display: flex;
 }
 
 .settings-warning,
