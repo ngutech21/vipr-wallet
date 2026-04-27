@@ -152,6 +152,9 @@ describe('SendOnchainPage', () => {
 
     expect(mockSetValue).toHaveBeenCalledWith(21_000)
     expect(amountRef.value).toBe(21_000)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((wrapper.vm as any).paymentTarget).toBe('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080')
+    expect(wrapper.text()).toContain('Label: Vipr')
     wrapper.unmount()
   })
 

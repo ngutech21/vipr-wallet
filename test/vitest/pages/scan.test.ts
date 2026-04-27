@@ -48,6 +48,8 @@ describe('ScanPage detection flow', () => {
       global: {
         stubs: {
           AddFederation: true,
+          BottomSheetOptionCard: true,
+          ModalCard: true,
           'q-page': true,
           'q-dialog': true,
           'q-btn': true,
@@ -134,6 +136,59 @@ describe('ScanPage detection flow', () => {
       'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021&label=alice@example.com'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (wrapper.vm as any).onDetect([{ rawValue: target }])
+    await flushPromises()
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      path: '/send-onchain',
+      query: { target },
+    })
+    wrapper.unmount()
+  })
+
+  it('asks for a payment method when bitcoin URI scans include a lightning invoice', async () => {
+    wrapper = createWrapper()
+    const target =
+      'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021&lightning=lnbc210u'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).onDetect([{ rawValue: target }])
+    await flushPromises()
+
+    expect(mockRouterPush).not.toHaveBeenCalled()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((wrapper.vm as any).showBip21PaymentChoice).toBe(true)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((wrapper.vm as any).scannerPaused).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('routes selected BIP21 lightning payments to the send page', async () => {
+    wrapper = createWrapper()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).onDetect([
+      {
+        rawValue:
+          'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021&lightning=lnbc210u',
+      },
+    ])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).payBip21WithLightning()
+    await flushPromises()
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      name: '/send',
+      query: { invoice: 'lnbc210u' },
+    })
+    wrapper.unmount()
+  })
+
+  it('routes selected BIP21 onchain payments to the onchain send page', async () => {
+    wrapper = createWrapper()
+    const target =
+      'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021&lightning=lnbc210u'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).onDetect([{ rawValue: target }])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).payBip21Onchain()
     await flushPromises()
 
     expect(mockRouterPush).toHaveBeenCalledWith({
