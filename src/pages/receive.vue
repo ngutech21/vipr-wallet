@@ -305,6 +305,13 @@ async function copyToClipboard() {
 }
 
 async function goBack() {
+  if (qrData.value !== '') {
+    qrData.value = ''
+    isWaiting.value = false
+    clearCountdownTimer()
+    return
+  }
+
   await new Promise((resolve) => {
     setTimeout(resolve, 500)
   }) // delay to allow the animation to play

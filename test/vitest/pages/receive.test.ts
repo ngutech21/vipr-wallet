@@ -229,4 +229,31 @@ describe('ReceivePage timer lifecycle', () => {
     expect(mockLoadingHide).toHaveBeenCalledTimes(1)
     expect(mockNotifyCreate).toHaveBeenCalledTimes(1)
   })
+
+  it('returns from invoice display to amount entry before leaving receive flow', async () => {
+    const clearIntervalSpy = vi.spyOn(global, 'clearInterval')
+    mockCreateInvoice.mockResolvedValue({
+      success: true,
+      invoice: 'lnbc123',
+      operationId: 'op-1',
+    })
+    mockWaitForInvoicePayment.mockResolvedValue({ success: false })
+
+    wrapper = createWrapper()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).onRequest()
+    await flushPromises()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((wrapper.vm as any).qrData).toBe('lnbc123')
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).goBack()
+    await flushPromises()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((wrapper.vm as any).qrData).toBe('')
+    expect(mockRouterPush).not.toHaveBeenCalledWith({ name: '/' })
+    expect(clearIntervalSpy).toHaveBeenCalled()
+  })
 })
