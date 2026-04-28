@@ -44,8 +44,8 @@ importers:
         specifier: ^0.13.1
         version: 0.13.1
       qrcode.vue:
-        specifier: ^3.8.1
-        version: 3.8.1(vue@3.5.33(typescript@6.0.3))
+        specifier: ^3.9.0
+        version: 3.9.0(vue@3.5.33(typescript@6.0.3))
       qrloop:
         specifier: ^1.4.1
         version: 1.4.1
@@ -4310,8 +4310,8 @@ packages:
   qrcode-generator@1.4.4:
     resolution: {integrity: sha512-HM7yY8O2ilqhmULxGMpcHSF1EhJJ9yBj8gvDEuZ6M+KGJ0YY2hKpnXvRD+hZPLrDVck3ExIGhmPtSdcjC+guuw==}
 
-  qrcode.vue@3.8.1:
-    resolution: {integrity: sha512-kJORXcI5Uml5GtzcfFkchpljFgaXKQB/3ZUt+Hwnw7Y1F7FiA01U2yyO5Vscwv3bVxPkm/KLKXUOXsHbTsYrTw==}
+  qrcode.vue@3.9.0:
+    resolution: {integrity: sha512-AxkgdNXd6R6N1rJcSKna3GfMz3cMpLZo95CLuF/3227nNY32iACBtyqRr6mJc3SW7w628Iy0vgnLWYqxHqgRLw==}
     peerDependencies:
       vue: ^3.0.0
 
@@ -10211,7 +10211,7 @@ snapshots:
 
   qrcode-generator@1.4.4: {}
 
-  qrcode.vue@3.8.1(vue@3.5.33(typescript@6.0.3)):
+  qrcode.vue@3.9.0(vue@3.5.33(typescript@6.0.3)):
     dependencies:
       vue: 3.5.33(typescript@6.0.3)
 
