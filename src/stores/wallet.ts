@@ -257,10 +257,29 @@ export const useWalletStore = defineStore('wallet', {
       this.needsMnemonicBackup = false
     },
 
-    inspectEcash(_tokens: string): Promise<EcashInspection> {
-      return Promise.reject(
-        new Error('eCash inspection is not supported by the current Fedimint SDK yet'),
-      )
+    async inspectEcash(tokens: string): Promise<EcashInspection> {
+      const parsed = await fedimintClient.parseOobNotes(tokens)
+      const federationStore = useFederationStore()
+      const federationId = parsed.federation_id?.trim() ?? ''
+      if (federationId === '') {
+        throw new Error('Ecash notes do not include a federation id')
+      }
+      const matchedFederation =
+        federationStore.federations.find(
+          (federation) => federation.federationId === federationId,
+        ) ?? null
+      const trimmedInviteCode = parsed.invite_code?.trim() ?? ''
+      const inviteCode = trimmedInviteCode !== '' ? trimmedInviteCode : null
+      const amountMsats = parsed.total_amount
+
+      return {
+        amountMsats,
+        amountSats: Math.floor(amountMsats / 1_000),
+        parsed,
+        matchedFederation,
+        inviteCode,
+        requiresJoin: matchedFederation == null,
+      }
     },
 
     async redeemEcash(tokens: string): Promise<MSats | undefined> {

@@ -4,7 +4,9 @@ import { defineComponent } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import ReceiveEcashPage from 'src/pages/receive-ecash.vue'
-import { useWalletStore } from 'src/stores/wallet'
+import { useFederationStore } from 'src/stores/federation'
+import { useWalletStore, type EcashInspection } from 'src/stores/wallet'
+import type { Federation } from 'src/types/federation'
 
 type RouteState = {
   query: Record<string, string>
@@ -54,6 +56,42 @@ const qBtnStub = defineComponent({
   template: '<button @click="$emit(\'click\')">{{ label }}<slot /></button>',
 })
 
+const modalCardStub = defineComponent({
+  name: 'ModalCard',
+  emits: ['close'],
+  template: '<div data-testid="modal-card-stub"><slot /><slot name="footer" /></div>',
+})
+
+const joinFederationPreviewStepStub = defineComponent({
+  name: 'JoinFederationPreviewStep',
+  props: {
+    federation: {
+      type: Object,
+      required: true,
+    },
+    importAmountSats: {
+      type: Number,
+      default: null,
+    },
+  },
+  template:
+    '<div data-testid="join-federation-preview-step" :data-import-amount-sats="importAmountSats">{{ federation.title }}</div>',
+})
+
+const joinedFederation: Federation = {
+  federationId: 'fed-1',
+  title: 'Joined Federation',
+  inviteCode: 'fed11joined',
+  modules: [],
+}
+
+const newFederation: Federation = {
+  federationId: 'fed-2',
+  title: 'New Federation',
+  inviteCode: 'fed12new',
+  modules: [],
+}
+
 describe('ReceiveEcashPage', () => {
   let wrapper: VueWrapper
 
@@ -70,9 +108,12 @@ describe('ReceiveEcashPage', () => {
           'q-toolbar-title': passthrough,
           'q-card': passthrough,
           'q-card-section': passthrough,
+          'q-dialog': passthrough,
           'q-btn': qBtnStub,
           'q-input': passthrough,
           'q-spinner-dots': passthrough,
+          ModalCard: modalCardStub,
+          JoinFederationPreviewStep: joinFederationPreviewStepStub,
         },
       },
     })
@@ -92,6 +133,30 @@ describe('ReceiveEcashPage', () => {
     await (wrapper.vm as unknown as { redeemEcash: () => Promise<void> }).redeemEcash()
   }
 
+  function createInspection(overrides: Partial<EcashInspection> = {}): EcashInspection {
+    return {
+      amountMsats: 12_000,
+      amountSats: 12,
+      parsed: {
+        total_amount: 12_000,
+        federation_id_prefix: 'fed1',
+        federation_id: joinedFederation.federationId,
+        invite_code: joinedFederation.inviteCode,
+        note_counts: { '1000': 12 },
+      },
+      matchedFederation: joinedFederation,
+      inviteCode: joinedFederation.inviteCode,
+      requiresJoin: false,
+      ...overrides,
+    }
+  }
+
+  function joinFederationInStore(federation: Federation = joinedFederation) {
+    const federationStore = useFederationStore()
+    federationStore.federations = [federation]
+    federationStore.selectedFederationId = federation.federationId
+  }
+
   it('prefills token from route query when provided', async () => {
     routeState.query = { token: 'cashuAquery' }
     wrapper = createWrapper()
@@ -104,7 +169,9 @@ describe('ReceiveEcashPage', () => {
   it('redeems ecash and navigates with the redeemed amount', async () => {
     wrapper = createWrapper()
     const walletStore = useWalletStore()
+    joinFederationInStore()
 
+    vi.spyOn(walletStore, 'inspectEcash').mockResolvedValue(createInspection())
     const redeemEcashSpy = vi.spyOn(walletStore, 'redeemEcash').mockResolvedValue(12_000)
     setEcashToken('notes-1')
 
@@ -121,7 +188,9 @@ describe('ReceiveEcashPage', () => {
   it('does not navigate when redeem returns zero amount', async () => {
     wrapper = createWrapper()
     const walletStore = useWalletStore()
+    joinFederationInStore()
 
+    vi.spyOn(walletStore, 'inspectEcash').mockResolvedValue(createInspection())
     vi.spyOn(walletStore, 'redeemEcash').mockResolvedValue(0)
     setEcashToken('notes-1')
 
@@ -134,7 +203,9 @@ describe('ReceiveEcashPage', () => {
   it('shows a clean error when redeem fails', async () => {
     wrapper = createWrapper()
     const walletStore = useWalletStore()
+    joinFederationInStore()
 
+    vi.spyOn(walletStore, 'inspectEcash').mockResolvedValue(createInspection())
     vi.spyOn(walletStore, 'redeemEcash').mockRejectedValue(new Error('invalid notes'))
     setEcashToken('bad-notes')
 
@@ -148,6 +219,86 @@ describe('ReceiveEcashPage', () => {
       }),
     )
 
+    wrapper.unmount()
+  })
+
+  it('warns when the current SDK cannot inspect unknown federation ecash', async () => {
+    wrapper = createWrapper()
+    const walletStore = useWalletStore()
+
+    vi.spyOn(walletStore, 'inspectEcash').mockRejectedValue(
+      new TypeError('this.director.parseOobNotes is not a function'),
+    )
+    const redeemEcashSpy = vi.spyOn(walletStore, 'redeemEcash').mockResolvedValue(12_000)
+    setEcashToken('unknown-fed-notes')
+
+    await redeemEcash()
+    await flushPromises()
+
+    expect(redeemEcashSpy).not.toHaveBeenCalled()
+    expect(mockNotify).toHaveBeenCalledWith(
+      expect.objectContaining({
+        color: 'warning',
+        message:
+          'Ecash from federations you have not joined yet cannot be imported with the current Fedimint SDK. Join the federation first, then try again.',
+      }),
+    )
+
+    wrapper.unmount()
+  })
+
+  it('prompts to join the notes federation before redeeming ecash from a new federation', async () => {
+    wrapper = createWrapper()
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+
+    vi.spyOn(walletStore, 'inspectEcash').mockResolvedValue(
+      createInspection({
+        parsed: {
+          total_amount: 21_000,
+          federation_id_prefix: 'fed2',
+          federation_id: newFederation.federationId,
+          invite_code: newFederation.inviteCode,
+          note_counts: { '1000': 21 },
+        },
+        amountMsats: 21_000,
+        amountSats: 21,
+        matchedFederation: null,
+        inviteCode: newFederation.inviteCode,
+        requiresJoin: true,
+      }),
+    )
+    vi.spyOn(walletStore, 'previewFederation').mockResolvedValue(newFederation)
+    const redeemEcashSpy = vi.spyOn(walletStore, 'redeemEcash').mockResolvedValue(21_000)
+    const selectFederationSpy = vi
+      .spyOn(federationStore, 'selectFederation')
+      .mockImplementation((federation) => {
+        federationStore.selectedFederationId = federation?.federationId ?? null
+        return Promise.resolve()
+      })
+
+    setEcashToken('new-fed-notes')
+
+    await redeemEcash()
+    await flushPromises()
+
+    expect(wrapper.get('[data-testid="join-federation-preview-step"]').attributes()).toMatchObject({
+      'data-import-amount-sats': '21',
+    })
+    expect(redeemEcashSpy).not.toHaveBeenCalled()
+
+    await (
+      wrapper.vm as unknown as { joinFederationAndRedeem: () => Promise<void> }
+    ).joinFederationAndRedeem()
+    await flushPromises()
+
+    expect(federationStore.federations).toContainEqual(newFederation)
+    expect(selectFederationSpy).toHaveBeenCalledWith(newFederation)
+    expect(redeemEcashSpy).toHaveBeenCalledWith('new-fed-notes')
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      name: '/received-lightning',
+      query: { amount: 21 },
+    })
     wrapper.unmount()
   })
 })

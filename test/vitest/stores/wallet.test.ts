@@ -14,6 +14,7 @@ const fedimintClientMock = vi.hoisted(() => ({
   clearAllWallets: vi.fn<() => Promise<void>>(),
   listWallets: vi.fn<() => Promise<string[]>>(),
   previewFederation: vi.fn(),
+  parseOobNotes: vi.fn(),
   reset: vi.fn(),
 }))
 
@@ -121,6 +122,13 @@ describe('wallet store', () => {
       'lima',
     ])
     fedimintClientMock.setMnemonic.mockResolvedValue()
+    fedimintClientMock.parseOobNotes.mockResolvedValue({
+      total_amount: 12_000,
+      federation_id_prefix: 'fed1',
+      federation_id: 'fed-1',
+      invite_code: 'fed11testinvite',
+      note_counts: { '1000': 12 },
+    })
   })
 
   it('opens the selected federation wallet via deterministic wallet name', async () => {
@@ -247,12 +255,29 @@ describe('wallet store', () => {
     expect(walletStore.needsMnemonicBackup).toBe(false)
   })
 
-  it('throws a descriptive error when ecash inspection is attempted', async () => {
+  it('inspects ecash notes and matches an already joined federation', async () => {
     const walletStore = useWalletStore()
-    await expect(walletStore.inspectEcash('notes-1')).rejects.toThrow(
-      'eCash inspection is not supported by the current Fedimint SDK yet',
-    )
-    expect(fedimintClientMock.init).not.toHaveBeenCalled()
+    const federationStore = useFederationStore()
+    const federation = createFederation()
+    federationStore.federations = [federation]
+
+    const inspection = await walletStore.inspectEcash('notes-1')
+
+    expect(fedimintClientMock.parseOobNotes).toHaveBeenCalledWith('notes-1')
+    expect(inspection).toEqual({
+      amountMsats: 12_000,
+      amountSats: 12,
+      parsed: {
+        total_amount: 12_000,
+        federation_id_prefix: 'fed1',
+        federation_id: 'fed-1',
+        invite_code: 'fed11testinvite',
+        note_counts: { '1000': 12 },
+      },
+      matchedFederation: federation,
+      inviteCode: 'fed11testinvite',
+      requiresJoin: false,
+    })
   })
 
   it('redeems ecash only through reissueExternalNotes on the open wallet', async () => {
