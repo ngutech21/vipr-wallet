@@ -24,6 +24,13 @@ meta:
       </div>
 
       <div class="receive-content">
+        <SendFederationSelector
+          class="receive-federation-selector"
+          :class="{ 'receive-federation-selector--qr': qrData !== '' }"
+          :selectable="qrData === ''"
+          test-id-prefix="receive-federation"
+        />
+
         <div class="vipr-flow-center">
           <div
             v-if="!qrData"
@@ -162,6 +169,7 @@ import { useWalletStore } from 'src/stores/wallet'
 import { logger } from 'src/services/logger'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
+import SendFederationSelector from 'src/components/SendFederationSelector.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
 import { useNumericInput } from 'src/composables/useNumericInput'
@@ -374,6 +382,16 @@ async function goBack() {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.receive-federation-selector {
+  width: 100%;
+  max-width: var(--vipr-width-flow-panel);
+  margin-bottom: var(--vipr-space-3);
+}
+
+.receive-federation-selector--qr {
+  max-width: 600px;
 }
 
 .entry-title {

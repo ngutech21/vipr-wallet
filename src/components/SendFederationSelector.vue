@@ -5,7 +5,7 @@
       class="send-federation-selector__trigger vipr-surface-card vipr-surface-card--strong"
       :class="{ 'send-federation-selector__trigger--readonly': !props.selectable }"
       :disabled="isTriggerDisabled"
-      data-testid="send-federation-selector-trigger"
+      :data-testid="`${props.testIdPrefix}-selector-trigger`"
       @click="showSheet = true"
     >
       <FederationAvatar :federation="selectedFederation" />
@@ -16,7 +16,7 @@
         </span>
         <span
           class="send-federation-selector__balance"
-          data-testid="send-federation-active-balance"
+          :data-testid="`${props.testIdPrefix}-active-balance`"
         >
           {{ activeBalanceLabel }}
         </span>
@@ -33,7 +33,7 @@
     <div
       v-if="selectionError"
       class="send-federation-selector__error"
-      data-testid="send-federation-selector-error"
+      :data-testid="`${props.testIdPrefix}-selector-error`"
     >
       {{ selectionError }}
     </div>
@@ -55,7 +55,7 @@
               'send-federation-sheet__item--active': isSelected(federation),
             }"
             :disabled="isSwitching"
-            :data-testid="`send-federation-option-${federation.federationId}`"
+            :data-testid="`${props.testIdPrefix}-option-${federation.federationId}`"
             @click="selectFederation(federation)"
           >
             <FederationAvatar :federation="federation" />
@@ -76,7 +76,7 @@
               v-else-if="isSelected(federation)"
               name="check"
               class="send-federation-sheet__status"
-              data-testid="send-federation-active-check"
+              :data-testid="`${props.testIdPrefix}-active-check`"
             />
             <q-icon v-else name="chevron_right" class="send-federation-sheet__status" />
           </button>
@@ -103,9 +103,11 @@ import FederationAvatar from './FederationAvatar.vue'
 const props = withDefaults(
   defineProps<{
     selectable?: boolean
+    testIdPrefix?: string
   }>(),
   {
     selectable: true,
+    testIdPrefix: 'send-federation',
   },
 )
 

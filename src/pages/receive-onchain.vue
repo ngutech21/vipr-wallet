@@ -25,8 +25,29 @@ meta:
       </div>
 
       <div class="receive-onchain-content">
+        <SendFederationSelector
+          class="receive-onchain-federation-selector"
+          :class="{ 'receive-onchain-federation-selector--qr': bitcoinAddress !== '' }"
+          :selectable="canSelectFederation"
+          test-id-prefix="receive-onchain-federation"
+        />
+
+        <div v-if="!bitcoinAddress && !isGenerating" class="receive-onchain-start vipr-flow-panel">
+          <q-btn
+            label="Create Bitcoin address"
+            color="primary"
+            no-caps
+            unelevated
+            class="vipr-flow-action vipr-btn vipr-btn--primary vipr-btn--lg"
+            :disable="!canGenerateAddress"
+            @click="generateAddress"
+            data-testid="receive-onchain-generate-address-btn"
+            :data-busy="isGenerating ? 'true' : 'false'"
+          />
+        </div>
+
         <div
-          v-if="isGenerating"
+          v-else-if="isGenerating"
           class="receive-onchain-generating vipr-flow-panel task-card vipr-surface-card--strong"
         >
           <q-spinner color="primary" size="3em" />
@@ -112,11 +133,12 @@ defineOptions({
   name: 'ReceiveOnchainPage',
 })
 
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useShare } from '@vueuse/core'
 import QrcodeVue from 'qrcode.vue'
 import type { WalletDepositState } from '@fedimint/core'
+import SendFederationSelector from 'src/components/SendFederationSelector.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useFederationStore } from 'src/stores/federation'
 import { logger } from 'src/services/logger'
@@ -137,6 +159,10 @@ const { share, isSupported } = useShare()
 const notify = useAppNotify()
 
 let depositPollTimeout: ReturnType<typeof setTimeout> | null = null
+
+const selectedFederation = computed(() => federationStore.selectedFederation)
+const canSelectFederation = computed(() => bitcoinAddress.value === '' && !isGenerating.value)
+const canGenerateAddress = computed(() => selectedFederation.value != null && !isGenerating.value)
 
 const depositStatusText = computed(() => {
   if (depositState.value === null || depositState.value === 'WaitingForTransaction') {
@@ -180,10 +206,6 @@ const confirmationInfo = computed(() => {
   }
 
   return ''
-})
-
-onMounted(async () => {
-  await generateAddress()
 })
 
 onUnmounted(() => {
@@ -293,7 +315,7 @@ function startDepositPolling() {
 }
 
 async function generateAddress() {
-  if (federationStore.selectedFederation == null) {
+  if (selectedFederation.value == null) {
     logger.error('No federation selected')
     notify.error('No federation selected')
     return
@@ -367,6 +389,25 @@ async function goBack() {
 .receive-onchain-generating {
   padding: var(--vipr-space-8);
   text-align: center;
+}
+
+.receive-onchain-federation-selector,
+.receive-onchain-start {
+  width: 100%;
+  max-width: var(--vipr-width-flow-panel);
+}
+
+.receive-onchain-federation-selector {
+  margin-bottom: var(--vipr-space-3);
+}
+
+.receive-onchain-federation-selector--qr {
+  max-width: 600px;
+}
+
+.receive-onchain-start {
+  display: flex;
+  justify-content: center;
 }
 
 .receive-onchain-generating__title {
