@@ -35,7 +35,8 @@ export default defineConfig((ctx) => {
     boot: ['e2e-mode', 'fedimint', 'icon-map'],
 
     htmlVariables: {
-      viewport: 'width=device-width, initial-scale=1.0, viewport-fit=cover',
+      viewport:
+        'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover',
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#css
