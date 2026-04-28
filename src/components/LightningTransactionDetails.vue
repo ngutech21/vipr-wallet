@@ -24,11 +24,11 @@
             </span>
 
             <q-badge
-              :color="getStatusColor(transaction.outcome)"
+              :color="getStatusColor(displayOutcome)"
               class="status-badge"
-              v-if="transaction.outcome"
+              v-if="displayOutcome"
             >
-              {{ formatOutcome(transaction.outcome) }}
+              {{ formatOutcome(displayOutcome) }}
             </q-badge>
           </div>
         </div>
@@ -124,6 +124,14 @@ const amountInSats = computed(() => {
 
 const federationTitle = computed(() => {
   return federationStore.selectedFederation?.title ?? 'Unknown Federation'
+})
+
+const displayOutcome = computed(() => {
+  if (props.transaction.outcome != null) {
+    return props.transaction.outcome
+  }
+
+  return props.transaction.type === 'receive' ? 'pending' : ''
 })
 
 onMounted(() => {

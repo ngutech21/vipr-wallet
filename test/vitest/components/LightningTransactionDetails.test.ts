@@ -158,6 +158,27 @@ describe('LightningTransactionDetails.vue', () => {
       expect(wrapper.text()).toContain('Pending')
     })
 
+    it('should show pending for receive transactions without an outcome', () => {
+      const { outcome: _removed, ...transactionWithoutOutcome } = createMockTransaction({
+        type: 'receive',
+      })
+      const transaction = transactionWithoutOutcome as LightningTransaction
+      wrapper = createWrapper(transaction)
+
+      expect(wrapper.text()).toContain('Pending')
+    })
+
+    it('should not show a fallback pending status for send transactions without an outcome', () => {
+      const { outcome: _removed, ...transactionWithoutOutcome } = createMockTransaction({
+        type: 'send',
+      })
+      const transaction = transactionWithoutOutcome as LightningTransaction
+      wrapper = createWrapper(transaction)
+
+      expect(wrapper.find('.status-badge').exists()).toBe(false)
+      expect(wrapper.text()).not.toContain('Pending')
+    })
+
     it('should show negative color for error status', () => {
       const transaction = createMockTransaction({ outcome: 'unexpected_error' })
       wrapper = createWrapper(transaction)
