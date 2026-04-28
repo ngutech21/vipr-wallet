@@ -16,6 +16,7 @@ const mockApplyUpdate = vi.hoisted(() => vi.fn())
 const mockCanApplyOnRoute = vi.hoisted(() => vi.fn())
 const mockNotifyCreate = vi.hoisted(() => vi.fn())
 const mockDialogCreate = vi.hoisted(() => vi.fn(() => ({ onOk: vi.fn() })))
+const mockAppLockIsBiometricAvailable = vi.hoisted(() => vi.fn())
 
 const mockPwaUpdateStore = vi.hoisted(() => ({
   state: 'idle',
@@ -73,6 +74,18 @@ const onboardingStoreMock = vi.hoisted(() => ({
   $reset: vi.fn(),
 }))
 
+const appLockStoreMock = vi.hoisted(() => ({
+  isPinConfigured: false,
+  isBiometricEnabled: false,
+  isBiometricAvailable: mockAppLockIsBiometricAvailable,
+  setPin: vi.fn(),
+  verifyPin: vi.fn(),
+  removePin: vi.fn(),
+  clearAll: vi.fn(),
+  enableBiometric: vi.fn(),
+  disableBiometric: vi.fn(),
+}))
+
 vi.mock('vue-router', () => ({
   useRoute: () => mockRoute,
   useRouter: () => ({
@@ -98,6 +111,10 @@ vi.mock('src/stores/nostr', () => ({
 
 vi.mock('src/stores/onboarding', () => ({
   useOnboardingStore: () => onboardingStoreMock,
+}))
+
+vi.mock('src/stores/app-lock', () => ({
+  useAppLockStore: () => appLockStoreMock,
 }))
 
 vi.mock('@getalby/bitcoin-connect', () => ({
@@ -144,6 +161,10 @@ const SlotStub = {
   template: '<div><slot /></div>',
 }
 
+const AppLockPinEntryStub = {
+  template: '<div data-testid="settings-app-lock-pin-dialog-stub"></div>',
+}
+
 describe('SettingsPage updates', () => {
   function createWrapper() {
     return mount(SettingsPage, {
@@ -157,6 +178,7 @@ describe('SettingsPage updates', () => {
           'q-expansion-item': SlotStub,
           'q-card': SlotStub,
           'q-card-section': SlotStub,
+          'q-dialog': SlotStub,
           'q-list': SlotStub,
           'q-item': SlotStub,
           'q-item-section': SlotStub,
@@ -167,6 +189,7 @@ describe('SettingsPage updates', () => {
           'q-btn': QBtnStub,
           'q-avatar': SlotStub,
           'q-chip': SlotStub,
+          AppLockPinEntry: AppLockPinEntryStub,
         },
       },
     })
@@ -183,7 +206,10 @@ describe('SettingsPage updates', () => {
     mockCheckForUpdatesManual.mockResolvedValue('up-to-date')
     mockApplyUpdate.mockResolvedValue('applied')
     mockRouterReplace.mockResolvedValue(undefined)
+    mockAppLockIsBiometricAvailable.mockResolvedValue(false)
     mockPwaUpdateStore.$reset = vi.fn()
+    appLockStoreMock.isPinConfigured = false
+    appLockStoreMock.isBiometricEnabled = false
     nostrStoreMock.contactSource = {
       sourceType: 'nip05',
       sourceValue: '',

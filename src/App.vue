@@ -2,6 +2,7 @@
 import { RouterView } from 'vue-router'
 import { computed } from 'vue'
 import MainLayout from 'src/layouts/MainLayout.vue'
+import AppLockOverlay from 'src/components/AppLockOverlay.vue'
 import { useAppStore } from 'src/stores/app'
 
 const appStore = useAppStore()
@@ -24,6 +25,7 @@ const appReadyAttribute = computed(() => (appStore.isReady ? 'true' : 'false'))
         :key="`plain:${String(route.name)}:${route.fullPath}`"
       />
     </RouterView>
+    <AppLockOverlay />
   </div>
 </template>
 
