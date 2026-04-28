@@ -33,7 +33,7 @@ describe('LightningTransactionDetails.vue', () => {
   const mockNotify = vi.fn()
   Notify.create = mockNotify
 
-  const createWrapper = (transaction: LightningTransaction): VueWrapper => {
+  const createWrapper = (transaction: LightningTransaction, wallet: unknown = null): VueWrapper => {
     pinia = createTestingPinia({
       initialState: {
         federation: {
@@ -43,6 +43,9 @@ describe('LightningTransactionDetails.vue', () => {
           },
         },
         lightning: {},
+        wallet: {
+          wallet,
+        },
       },
       stubActions: false,
       createSpy: vi.fn,
@@ -194,6 +197,61 @@ describe('LightningTransactionDetails.vue', () => {
 
       expect(wrapper.text()).toContain('Gateway')
       expect(wrapper.text()).toContain('gateway.example.com')
+    })
+
+    it('should display gateway alias when it matches the wallet gateway cache', async () => {
+      const updateGatewayCache = vi.fn().mockResolvedValue(undefined)
+      const listGateways = vi.fn().mockResolvedValue([
+        {
+          info: {
+            gateway_id: 'gateway-id-1',
+            lightning_alias: 'Fedi us-east-1 [fedi.xyz]',
+          },
+        },
+      ])
+      const transaction = createMockTransaction({ gateway: 'gateway-id-1' })
+
+      wrapper = createWrapper(transaction, {
+        lightning: {
+          updateGatewayCache,
+          listGateways,
+        },
+      })
+      await flushPromises()
+
+      expect(updateGatewayCache).not.toHaveBeenCalled()
+      expect(listGateways).toHaveBeenCalledTimes(1)
+      expect(wrapper.text()).toContain('Fedi us-east-1 [fedi.xyz]')
+      expect(wrapper.text()).not.toContain('gateway-id-1')
+    })
+
+    it('should refresh the gateway cache when the gateway alias is not found locally', async () => {
+      const updateGatewayCache = vi.fn().mockResolvedValue(undefined)
+      const listGateways = vi
+        .fn()
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([
+          {
+            info: {
+              gateway_id: 'gateway-id-1',
+              lightning_alias: 'Fedi us-east-1 [fedi.xyz]',
+            },
+          },
+        ])
+      const transaction = createMockTransaction({ gateway: 'gateway-id-1' })
+
+      wrapper = createWrapper(transaction, {
+        lightning: {
+          updateGatewayCache,
+          listGateways,
+        },
+      })
+      await flushPromises()
+
+      expect(listGateways).toHaveBeenCalledTimes(2)
+      expect(updateGatewayCache).toHaveBeenCalledTimes(1)
+      expect(wrapper.text()).toContain('Fedi us-east-1 [fedi.xyz]')
+      expect(wrapper.text()).not.toContain('gateway-id-1')
     })
 
     it('should display transaction ID', () => {

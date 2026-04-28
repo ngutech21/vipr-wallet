@@ -47,7 +47,7 @@
         </div>
         <div class="detail-row detail-row--separated">
           <div class="label">Gateway</div>
-          <div class="value">{{ transaction.gateway }}</div>
+          <div class="value" :title="transaction.gateway">{{ gatewayDisplayName }}</div>
         </div>
         <div
           v-if="transaction.type === 'send' && transaction.fee"
@@ -95,6 +95,7 @@ import { date } from 'quasar'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useFederationStore } from 'src/stores/federation'
 import { useLightningStore } from 'src/stores/lightning'
+import { useWalletStore } from 'src/stores/wallet'
 import type { LightningTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
 
@@ -106,8 +107,10 @@ const props = defineProps<Props>()
 
 const federationStore = useFederationStore()
 const lightningStore = useLightningStore()
+const walletStore = useWalletStore()
 const notify = useAppNotify()
 const amountInFiat = ref<string>('0.00')
+const gatewayDisplayName = ref(props.transaction.gateway)
 
 const amountInSats = computed(() => {
   try {
@@ -123,7 +126,16 @@ const federationTitle = computed(() => {
   return federationStore.selectedFederation?.title ?? 'Unknown Federation'
 })
 
-onMounted(async () => {
+onMounted(() => {
+  refreshFiatAmount().catch((error: unknown) => {
+    logger.error('Unexpected error while refreshing Lightning transaction fiat amount', error)
+  })
+  resolveGatewayDisplayName().catch((error: unknown) => {
+    logger.warn('Unexpected error while resolving Lightning gateway display name', error)
+  })
+})
+
+async function refreshFiatAmount() {
   try {
     const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
     const fiatValue = await lightningStore.satsToFiat(invoice.amount)
@@ -132,7 +144,56 @@ onMounted(async () => {
     logger.error('Failed to convert amount to fiat', error)
     amountInFiat.value = '0.00'
   }
-})
+}
+
+async function resolveGatewayDisplayName() {
+  const wallet = walletStore.wallet
+  if (wallet == null || props.transaction.gateway === '') {
+    return
+  }
+
+  try {
+    const existingGateways = await wallet.lightning.listGateways()
+    let alias = findGatewayAlias(existingGateways, props.transaction.gateway)
+
+    if (alias == null) {
+      await wallet.lightning.updateGatewayCache()
+      alias = findGatewayAlias(await wallet.lightning.listGateways(), props.transaction.gateway)
+    }
+
+    if (alias != null) {
+      gatewayDisplayName.value = alias
+    }
+  } catch (error) {
+    logger.warn('Failed to resolve Lightning gateway display name', error)
+  }
+}
+
+function findGatewayAlias(gateways: unknown[], gatewayId: string): string | null {
+  const matchedGateway = gateways.find(
+    (gateway) => readGatewayInfo(gateway).gatewayId === gatewayId,
+  )
+  return readGatewayInfo(matchedGateway).alias
+}
+
+function readGatewayInfo(gateway: unknown): { alias: string | null; gatewayId: string | null } {
+  const record = gateway as {
+    info?: {
+      gateway_id?: unknown
+      lightning_alias?: unknown
+    }
+  }
+  const info = record?.info
+
+  return {
+    alias: readNonEmptyString(info?.lightning_alias),
+    gatewayId: readNonEmptyString(info?.gateway_id),
+  }
+}
+
+function readNonEmptyString(value: unknown): string | null {
+  return typeof value === 'string' && value.length > 0 ? value : null
+}
 
 function formatDate(timestamp: number): string {
   return date.formatDate(timestamp, 'MMMM D, YYYY - h:mm A')
