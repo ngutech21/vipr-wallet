@@ -71,7 +71,17 @@ meta:
               flat
               class="task-card vipr-flow-panel vipr-surface-card--strong send-ecash-export-card"
             >
-              <q-card-section>
+              <q-btn
+                flat
+                round
+                icon="close"
+                aria-label="Go to home"
+                class="send-ecash-export-close"
+                @click="goHome"
+                data-testid="send-ecash-close-btn"
+              />
+
+              <q-card-section class="send-ecash-export-header">
                 <div class="section-title">Exported ecash</div>
                 <div class="vipr-caption send-ecash-export-copy">
                   Share these notes with the recipient. Anyone with the notes can redeem them.
@@ -102,16 +112,6 @@ meta:
                   label="Share"
                   @click="shareNotes"
                   data-testid="send-ecash-share-btn"
-                />
-                <q-space />
-                <q-btn
-                  flat
-                  color="primary"
-                  label="Go to home"
-                  no-caps
-                  class="vipr-btn vipr-btn--secondary vipr-btn--lg"
-                  @click="goHome"
-                  data-testid="send-ecash-go-home-btn"
                 />
               </q-card-actions>
             </q-card>
@@ -396,7 +396,21 @@ function canRepresentExactMsats(targetMsats: number, noteCounts: Record<number, 
 }
 
 .send-ecash-export-card {
+  position: relative;
   margin-bottom: var(--vipr-space-4);
+}
+
+.send-ecash-export-header {
+  padding-right: calc(var(--vipr-space-8) + var(--vipr-size-touch-min));
+}
+
+.send-ecash-export-close {
+  position: absolute;
+  top: var(--vipr-space-4);
+  right: var(--vipr-space-4);
+  z-index: 1;
+  background: var(--vipr-color-surface-soft);
+  border: 1px solid var(--vipr-color-surface-soft-border);
 }
 
 .send-ecash-qr-section {

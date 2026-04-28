@@ -242,7 +242,7 @@ describe('SendEcashPage.vue', () => {
     await wrapper.get('[data-testid="receive-keypad-btn-5"]').trigger('click')
     await wrapper.get('[data-testid="send-ecash-create-btn"]').trigger('click')
     await flushPromises()
-    await wrapper.get('[data-testid="send-ecash-go-home-btn"]').trigger('click')
+    await wrapper.get('[data-testid="send-ecash-close-btn"]').trigger('click')
 
     expect(mockRouterPush).toHaveBeenCalledWith({ name: '/' })
   })
