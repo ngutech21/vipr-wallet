@@ -201,7 +201,7 @@ meta:
             <div
               v-for="(gateway, index) in displayedWalletGateways"
               :key="gateway.id"
-              class="wallet-gateway-row"
+              class="wallet-gateway-row vipr-surface-card vipr-surface-card--subtle"
             >
               <div class="wallet-gateway-header">
                 <div class="wallet-gateway-heading">
@@ -734,9 +734,6 @@ async function leaveFederation() {
 .wallet-gateway-row {
   min-width: 0;
   padding: var(--vipr-space-4);
-  border: 1px solid var(--vipr-color-surface-border);
-  border-radius: var(--vipr-radius-card);
-  background: var(--vipr-color-surface-soft);
 }
 
 .wallet-gateway-header {
