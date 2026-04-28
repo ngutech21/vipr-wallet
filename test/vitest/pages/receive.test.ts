@@ -4,7 +4,9 @@ import ReceivePage from 'src/pages/receive.vue'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockCreateInvoice = vi.hoisted(() => vi.fn())
-const mockWaitForInvoicePayment = vi.hoisted(() => vi.fn())
+const mockSubscribeLnReceive = vi.hoisted(() => vi.fn())
+const mockUnsubscribeLnReceive = vi.hoisted(() => vi.fn())
+const mockUpdateBalance = vi.hoisted(() => vi.fn())
 const mockAmountRef = vi.hoisted(() => ({ value: 100, __v_isRef: true }))
 const mockRequestProvider = vi.hoisted(() => vi.fn())
 const mockLoadingShow = vi.hoisted(() => vi.fn())
@@ -13,6 +15,15 @@ const mockNotifyCreate = vi.hoisted(() => vi.fn())
 const federationStoreState = vi.hoisted(
   (): { selectedFederation: { federationId: string } | undefined } => ({
     selectedFederation: { federationId: 'fed-1' },
+  }),
+)
+const receiveSubscription = vi.hoisted(
+  (): {
+    onSuccess: ((state: unknown) => void) | undefined
+    onError: ((error: string) => void) | undefined
+  } => ({
+    onSuccess: undefined,
+    onError: undefined,
   }),
 )
 
@@ -33,7 +44,17 @@ vi.mock('src/stores/federation', () => ({
 vi.mock('src/composables/useLightningPayment', () => ({
   useLightningPayment: () => ({
     createInvoice: mockCreateInvoice,
-    waitForInvoicePayment: mockWaitForInvoicePayment,
+  }),
+}))
+
+vi.mock('src/stores/wallet', () => ({
+  useWalletStore: () => ({
+    wallet: {
+      lightning: {
+        subscribeLnReceive: mockSubscribeLnReceive,
+      },
+    },
+    updateBalance: mockUpdateBalance,
   }),
 }))
 
@@ -99,6 +120,14 @@ describe('ReceivePage timer lifecycle', () => {
     vi.useFakeTimers()
     mockAmountRef.value = 100
     federationStoreState.selectedFederation = { federationId: 'fed-1' }
+    receiveSubscription.onSuccess = undefined
+    receiveSubscription.onError = undefined
+    mockSubscribeLnReceive.mockImplementation((_operationId, onSuccess, onError) => {
+      receiveSubscription.onSuccess = onSuccess
+      receiveSubscription.onError = onError
+      return mockUnsubscribeLnReceive
+    })
+    mockUpdateBalance.mockResolvedValue(undefined)
   })
 
   afterEach(() => {
@@ -106,14 +135,13 @@ describe('ReceivePage timer lifecycle', () => {
     vi.useRealTimers()
   })
 
-  it('clears countdown timer after successful payment flow', async () => {
+  it('subscribes for payment after invoice creation and navigates when claimed', async () => {
     const clearIntervalSpy = vi.spyOn(global, 'clearInterval')
     mockCreateInvoice.mockResolvedValue({
       success: true,
       invoice: 'lnbc123',
       operationId: 'op-1',
     })
-    mockWaitForInvoicePayment.mockResolvedValue({ success: true })
 
     wrapper = createWrapper()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -121,7 +149,18 @@ describe('ReceivePage timer lifecycle', () => {
     await flushPromises()
 
     expect(mockCreateInvoice).toHaveBeenCalledWith(100, '', 3540)
-    expect(mockWaitForInvoicePayment).toHaveBeenCalledWith('op-1', 3540000)
+    expect(mockSubscribeLnReceive).toHaveBeenCalledWith(
+      'op-1',
+      expect.any(Function),
+      expect.any(Function),
+    )
+    expect(mockRouterPush).not.toHaveBeenCalled()
+
+    receiveSubscription.onSuccess?.('claimed')
+    await flushPromises()
+
+    expect(mockUnsubscribeLnReceive).toHaveBeenCalled()
+    expect(mockUpdateBalance).toHaveBeenCalledTimes(1)
     expect(mockRouterPush).toHaveBeenCalledWith({
       name: '/received-lightning',
       query: { amount: '100' },
@@ -153,7 +192,7 @@ describe('ReceivePage timer lifecycle', () => {
     await flushPromises()
 
     expect(mockCreateInvoice).not.toHaveBeenCalled()
-    expect(mockWaitForInvoicePayment).not.toHaveBeenCalled()
+    expect(mockSubscribeLnReceive).not.toHaveBeenCalled()
     expect(mockNotifyCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         color: 'negative',
@@ -162,8 +201,7 @@ describe('ReceivePage timer lifecycle', () => {
     )
   })
 
-  it('clears countdown timer when invoice creation fails', async () => {
-    const clearIntervalSpy = vi.spyOn(global, 'clearInterval')
+  it('does not subscribe for payment when invoice creation fails', async () => {
     mockCreateInvoice.mockResolvedValue({ success: false })
 
     wrapper = createWrapper()
@@ -171,34 +209,28 @@ describe('ReceivePage timer lifecycle', () => {
     await (wrapper.vm as any).onRequest()
     await flushPromises()
 
-    expect(mockWaitForInvoicePayment).not.toHaveBeenCalled()
+    expect(mockSubscribeLnReceive).not.toHaveBeenCalled()
     expect(mockRouterPush).not.toHaveBeenCalled()
-    expect(clearIntervalSpy).toHaveBeenCalled()
   })
 
-  it('clears countdown timer on unmount while request is still pending', async () => {
+  it('clears countdown timer and subscription on unmount while invoice is waiting', async () => {
     const clearIntervalSpy = vi.spyOn(global, 'clearInterval')
-    let resolveCreateInvoice: ((value: { success: boolean }) => void) | undefined
-
-    mockCreateInvoice.mockImplementation(
-      () =>
-        new Promise<{ success: boolean }>((resolve) => {
-          resolveCreateInvoice = resolve
-        }),
-    )
+    mockCreateInvoice.mockResolvedValue({
+      success: true,
+      invoice: 'lnbc123',
+      operationId: 'op-1',
+    })
 
     wrapper = createWrapper()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const requestPromise = (wrapper.vm as any).onRequest()
-    await Promise.resolve()
+    await (wrapper.vm as any).onRequest()
+    await flushPromises()
 
     const clearCallsBeforeUnmount = clearIntervalSpy.mock.calls.length
     wrapper.unmount()
 
     expect(clearIntervalSpy.mock.calls.length).toBeGreaterThan(clearCallsBeforeUnmount)
-
-    resolveCreateInvoice?.({ success: false })
-    await requestPromise
+    expect(mockUnsubscribeLnReceive).toHaveBeenCalled()
   })
 
   it('always hides loading when bitcoin provider lookup fails', async () => {
@@ -237,7 +269,6 @@ describe('ReceivePage timer lifecycle', () => {
       invoice: 'lnbc123',
       operationId: 'op-1',
     })
-    mockWaitForInvoicePayment.mockResolvedValue({ success: false })
 
     wrapper = createWrapper()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -255,5 +286,14 @@ describe('ReceivePage timer lifecycle', () => {
     expect((wrapper.vm as any).qrData).toBe('')
     expect(mockRouterPush).not.toHaveBeenCalledWith({ name: '/' })
     expect(clearIntervalSpy).toHaveBeenCalled()
+    expect(mockUnsubscribeLnReceive).toHaveBeenCalled()
+
+    receiveSubscription.onSuccess?.('claimed')
+    await flushPromises()
+
+    expect(mockRouterPush).not.toHaveBeenCalledWith({
+      name: '/received-lightning',
+      query: { amount: '100' },
+    })
   })
 })

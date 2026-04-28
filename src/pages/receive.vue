@@ -158,6 +158,7 @@ import { useRouter } from 'vue-router'
 import { useShare } from '@vueuse/core'
 import { init, requestProvider } from '@getalby/bitcoin-connect'
 import { useFederationStore } from 'src/stores/federation'
+import { useWalletStore } from 'src/stores/wallet'
 import { logger } from 'src/services/logger'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
@@ -174,10 +175,11 @@ const isWaiting = ref(false)
 const { share, isSupported } = useShare()
 const isCreatingInvoice = ref(false)
 const federationStore = useFederationStore()
+const walletStore = useWalletStore()
 const notify = useAppNotify()
 
 // Use the lightning payment composable
-const { createInvoice, waitForInvoicePayment } = useLightningPayment()
+const { createInvoice } = useLightningPayment()
 
 // Use the numeric input composable
 const { value: amount, keypadButtons } = useNumericInput(0)
@@ -189,6 +191,8 @@ const canCreateInvoice = computed(() => {
 })
 
 let countdownInterval: ReturnType<typeof setInterval> | null = null
+let unsubscribeReceiveWait: (() => void) | null = null
+let activeReceiveOperationId: string | null = null
 
 function clearCountdownTimer() {
   if (countdownInterval != null) {
@@ -222,7 +226,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  clearCountdownTimer()
+  cleanupInvoiceWait()
 })
 
 async function payWithBitcoinConnect() {
@@ -269,9 +273,9 @@ async function onRequest() {
     return
   }
   isCreatingInvoice.value = true
-  startCountdownTimer()
 
   try {
+    cleanupInvoiceWait()
     const invoiceResult = await createInvoice(amount.value, invoiceMemo.value.trim(), lnExpiry)
 
     if (
@@ -281,23 +285,67 @@ async function onRequest() {
       invoiceResult.operationId != null &&
       invoiceResult.operationId !== ''
     ) {
+      const invoiceAmount = amount.value
       qrData.value = invoiceResult.invoice
       isWaiting.value = true
-
-      const waitResult = await waitForInvoicePayment(invoiceResult.operationId, lnExpiry * 1_000)
-
-      if (waitResult.success) {
-        await router.push({
-          name: '/received-lightning',
-          query: { amount: amount.value.toString() },
-        })
-      }
+      activeReceiveOperationId = invoiceResult.operationId
+      startCountdownTimer()
+      subscribeToInvoicePayment(invoiceResult.operationId, invoiceAmount)
     }
   } finally {
-    isWaiting.value = false
     isCreatingInvoice.value = false
-    clearCountdownTimer()
   }
+}
+
+function subscribeToInvoicePayment(operationId: string, invoiceAmount: number) {
+  unsubscribeReceiveWait =
+    walletStore.wallet?.lightning.subscribeLnReceive(
+      operationId,
+      (state) => {
+        if (state !== 'claimed' || activeReceiveOperationId !== operationId) {
+          return
+        }
+
+        handleInvoicePaid(operationId, invoiceAmount).catch((error: unknown) => {
+          logger.error('Failed to handle received Lightning payment', error)
+        })
+      },
+      (error) => {
+        if (activeReceiveOperationId !== operationId) {
+          return
+        }
+
+        cleanupInvoiceWait()
+        notify.error(`Error receiving payment: ${getErrorMessage(error)}`)
+      },
+    ) ?? null
+}
+
+async function handleInvoicePaid(operationId: string, invoiceAmount: number) {
+  if (activeReceiveOperationId !== operationId) {
+    return
+  }
+
+  logger.logTransaction('Lightning payment received successfully')
+  cleanupInvoiceWait()
+  await walletStore.updateBalance()
+
+  if (qrData.value === '') {
+    return
+  }
+
+  await router.push({
+    name: '/received-lightning',
+    query: { amount: invoiceAmount.toString() },
+  })
+}
+
+function cleanupInvoiceWait() {
+  unsubscribeReceiveWait?.()
+  unsubscribeReceiveWait = null
+  activeReceiveOperationId = null
+  isWaiting.value = false
+  clearCountdownTimer()
 }
 
 async function copyToClipboard() {
@@ -306,9 +354,8 @@ async function copyToClipboard() {
 
 async function goBack() {
   if (qrData.value !== '') {
+    cleanupInvoiceWait()
     qrData.value = ''
-    isWaiting.value = false
-    clearCountdownTimer()
     return
   }
 
