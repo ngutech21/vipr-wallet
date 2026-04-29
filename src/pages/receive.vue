@@ -125,7 +125,6 @@ defineOptions({
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { Loading } from 'quasar'
 import { useRouter } from 'vue-router'
-import { useShare } from '@vueuse/core'
 import { init, requestProvider } from '@getalby/bitcoin-connect'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
@@ -135,6 +134,7 @@ import CopyableQrCard from 'src/components/CopyableQrCard.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
+import { useCopyShare } from 'src/composables/useCopyShare'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
 import { useNumericInput } from 'src/composables/useNumericInput'
 import { getErrorMessage } from 'src/utils/error'
@@ -144,7 +144,6 @@ const router = useRouter()
 const lnExpiry = 60 * 59 // 59 minutes
 const countdown = ref(lnExpiry)
 const isWaiting = ref(false)
-const { share, isSupported } = useShare()
 const isCreatingInvoice = ref(false)
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
@@ -155,6 +154,12 @@ const { createInvoice } = useLightningPayment()
 
 // Use the numeric input composable
 const { value: amount, keypadButtons } = useNumericInput(0)
+const { copyToClipboard, shareValue: shareInvoice } = useCopyShare({
+  value: qrData,
+  copySuccessMessage: null,
+  shareTitle: computed(() => `Lightning Invoice for ${amount.value} sats`),
+  shareUnavailableMessage: 'Invoice copied. Share is not available in this browser.',
+})
 const formattedAmount = computed(() => amount.value.toLocaleString())
 const invoiceMemo = ref('')
 const selectedFederation = computed(() => federationStore.selectedFederation)
@@ -222,16 +227,7 @@ async function payWithBitcoinConnect() {
 
 async function shareQrcode() {
   logger.ui.debug('Sharing Lightning invoice')
-  if (!isSupported.value) {
-    await navigator.clipboard.writeText(qrData.value)
-    notify.info('Invoice copied. Share is not available in this browser.')
-    return
-  }
-
-  await share({
-    title: `Lightning Invoice for ${amount.value} sats`,
-    text: qrData.value,
-  })
+  await shareInvoice()
 }
 
 async function onRequest() {
@@ -318,10 +314,6 @@ function cleanupInvoiceWait() {
   activeReceiveOperationId = null
   isWaiting.value = false
   clearCountdownTimer()
-}
-
-async function copyToClipboard() {
-  await navigator.clipboard.writeText(qrData.value)
 }
 
 async function goBack() {

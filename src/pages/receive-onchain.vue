@@ -100,11 +100,11 @@ defineOptions({
 
 import { computed, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useShare } from '@vueuse/core'
 import type { WalletDepositState } from '@fedimint/core'
 import CopyableQrCard from 'src/components/CopyableQrCard.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
+import { useCopyShare } from 'src/composables/useCopyShare'
 import { useFederationStore } from 'src/stores/federation'
 import { logger } from 'src/services/logger'
 import { useWalletStore } from 'src/stores/wallet'
@@ -120,8 +120,15 @@ const hasCompletedDeposit = ref(false)
 const walletStore = useWalletStore()
 const federationStore = useFederationStore()
 const router = useRouter()
-const { share, isSupported } = useShare()
 const notify = useAppNotify()
+const { copyToClipboard, shareValue: shareBitcoinAddress } = useCopyShare({
+  value: bitcoinAddress,
+  copySuccessMessage: 'Address copied to clipboard',
+  copySuccessOptions: { timeout: 1000 },
+  shareTitle: 'Bitcoin address',
+  shareUnavailableMessage: 'Address copied. Share is not available in this browser.',
+  onCopyError: (error) => logger.error('Failed to copy onchain address to clipboard', error),
+})
 
 let depositPollTimeout: ReturnType<typeof setTimeout> | null = null
 
@@ -312,27 +319,9 @@ async function generateAddress() {
   }
 }
 
-async function copyToClipboard() {
-  try {
-    await navigator.clipboard.writeText(bitcoinAddress.value)
-    notify.success('Address copied to clipboard', { timeout: 1000 })
-  } catch (error) {
-    logger.error('Failed to copy onchain address to clipboard', error)
-  }
-}
-
 async function shareAddress() {
   logger.ui.debug('Sharing Bitcoin address')
-  if (!isSupported.value) {
-    await navigator.clipboard.writeText(bitcoinAddress.value)
-    notify.info('Address copied. Share is not available in this browser.')
-    return
-  }
-
-  await share({
-    title: 'Bitcoin address',
-    text: bitcoinAddress.value,
-  })
+  await shareBitcoinAddress()
 }
 
 async function goBack() {

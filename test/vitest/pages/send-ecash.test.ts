@@ -212,7 +212,7 @@ describe('SendEcashPage.vue', () => {
     expect(clipboardWriteText).toHaveBeenCalledWith('cashuAoffline123')
     expect(mockNotify).toHaveBeenCalledWith(
       expect.objectContaining({
-        type: 'positive',
+        color: 'positive',
         message: 'Ecash copied to clipboard',
       }),
     )

@@ -106,7 +106,7 @@ meta:
                   data-testid="send-ecash-copy-btn"
                 />
                 <q-btn
-                  v-if="isSupported"
+                  v-if="isShareSupported"
                   flat
                   icon="share"
                   label="Share"
@@ -129,12 +129,12 @@ defineOptions({
 
 import { computed, ref, watch } from 'vue'
 import { Loading } from 'quasar'
-import { useShare } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
 import AnimatedEcashQr from 'src/components/AnimatedEcashQr.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
+import { useCopyShare } from 'src/composables/useCopyShare'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
 import { useNumericInput } from 'src/composables/useNumericInput'
 import { useFederationStore } from 'src/stores/federation'
@@ -144,7 +144,6 @@ import { getErrorMessage } from 'src/utils/error'
 const router = useRouter()
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
-const { share, isSupported } = useShare()
 const notify = useAppNotify()
 
 const { value: amount, keypadButtons, clear } = useNumericInput(0)
@@ -153,6 +152,17 @@ const exportedNotes = ref('')
 const exportedAmount = ref(0)
 const isProcessing = ref(false)
 const offlineNoteCounts = ref<Record<number, number> | null>(null)
+const {
+  copyToClipboard: copyNotesToClipboard,
+  shareValue: shareExportedNotes,
+  isShareSupported,
+} = useCopyShare({
+  value: exportedNotes,
+  copySuccessMessage: 'Ecash copied to clipboard',
+  copyErrorMessage: (error) => `Failed to copy ecash: ${getErrorMessage(error)}`,
+  shareTitle: computed(() => `Ecash for ${exportedAmount.value} sats`),
+  shareUnavailableMessage: 'Ecash copied. Share is not available in this browser.',
+})
 
 const selectedFederation = computed(() => federationStore.selectedFederation)
 
@@ -261,25 +271,11 @@ async function goBack() {
 }
 
 async function copyNotes() {
-  try {
-    await navigator.clipboard.writeText(exportedNotes.value)
-    notify.notify({
-      type: 'positive',
-      message: 'Ecash copied to clipboard',
-    })
-  } catch (error) {
-    notify.notify({
-      type: 'negative',
-      message: `Failed to copy ecash: ${getErrorMessage(error)}`,
-    })
-  }
+  await copyNotesToClipboard()
 }
 
 async function shareNotes() {
-  await share({
-    title: `Ecash for ${exportedAmount.value} sats`,
-    text: exportedNotes.value,
-  })
+  await shareExportedNotes()
 }
 
 async function goHome() {

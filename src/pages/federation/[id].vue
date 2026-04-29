@@ -357,8 +357,7 @@ defineOptions({
 
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useShare } from '@vueuse/core'
-import { useAppNotify } from 'src/composables/useAppNotify'
+import { useCopyShare } from 'src/composables/useCopyShare'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import FederationGuardians from 'src/components/FederationGuardians.vue'
@@ -371,8 +370,6 @@ import { logger } from 'src/services/logger'
 const { formatNumber } = useFormatters()
 const route = useRoute('/federation/[id]')
 const router = useRouter()
-const notify = useAppNotify()
-const { share, isSupported } = useShare()
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
 const confirmLeave = ref(false)
@@ -415,6 +412,14 @@ const inviteCode = computed(() => {
   return metadataInviteCode != null && metadataInviteCode !== ''
     ? metadataInviteCode
     : (federation.value?.inviteCode ?? '')
+})
+const { copyToClipboard: copyInviteToClipboard, shareValue: shareFederationInvite } = useCopyShare({
+  value: inviteCode,
+  copySuccessMessage: 'Invite link copied to clipboard',
+  copySuccessOptions: { timeout: 1000 },
+  shareTitle: computed(() => `${federation.value?.title ?? 'Federation'} invite`),
+  shareUnavailableMessage: 'Invite copied. Share is not available in this browser.',
+  onCopyError: (error) => logger.error('Failed to copy federation invite code', error),
 })
 
 const observerUrl = computed(() => {
@@ -506,12 +511,7 @@ async function copyInviteCode() {
     return
   }
 
-  try {
-    await navigator.clipboard.writeText(inviteCode.value)
-    notify.success('Invite link copied to clipboard', { timeout: 1000 })
-  } catch (error) {
-    logger.error('Failed to copy federation invite code', error)
-  }
+  await copyInviteToClipboard()
 }
 
 async function shareInviteCode() {
@@ -520,16 +520,7 @@ async function shareInviteCode() {
   }
 
   logger.ui.debug('Sharing federation invite code')
-  if (!isSupported.value) {
-    await navigator.clipboard.writeText(inviteCode.value)
-    notify.info('Invite copied. Share is not available in this browser.')
-    return
-  }
-
-  await share({
-    title: `${federation.value?.title ?? 'Federation'} invite`,
-    text: inviteCode.value,
-  })
+  await shareFederationInvite()
 }
 
 watch(
