@@ -36,7 +36,7 @@ Playwright is configured in `playwright.config.ts` (tests live under `test/e2e`)
 - `pnpm test:unit:ui` - Run tests with Vitest UI
 - `nix develop --accept-flake-config --command pnpm test:e2e` - Run end to end tests using playwright in nix dev shell
 - After any updates (code, config, or dependencies), run tests and ensure they pass before finalizing changes.
-- For UI verification/debugging tasks, use the `playwright` skill workflow and Playwright MCP tooling (`browser_snapshot` first, then interactions/assertions).
+- For UI verification/debugging tasks, use the Codex Playwright/Browser plugin and Playwright MCP tooling first (`browser_snapshot` first, then interactions/assertions). Use Playwright via CLI only as a fallback when the plugin is unavailable, cannot reach the target, or when running the committed E2E suite itself.
 
 ### Local Federation UI Testing
 
@@ -141,7 +141,7 @@ Located in `src/stores/`:
 #### Playwright MCP Server for E2E Testing
 
 - Use the Playwright MCP server for end-to-end testing and browser automation
-- For any UI testing request (layout, rendering, interaction regressions, visual checks), prefer the `playwright` skill as the default approach.
+- For any UI testing request (layout, rendering, interaction regressions, visual checks), prefer the Codex Playwright/Browser plugin as the default approach. Use Playwright via CLI only as a fallback when the plugin is unavailable, cannot reach the target, or when running the committed E2E suite itself.
 - Available tools include:
   - `browser_navigate` - Navigate to URLs
   - `browser_snapshot` - Take accessibility snapshots (preferred over screenshots)

@@ -33,4 +33,18 @@ describe('AmountDisplay', () => {
     expect(error.attributes('aria-hidden')).toBe('false')
     expect(error.text()).toBe('Amount must be 39 sats or less')
   })
+
+  it('can show an error border without rendering error text', () => {
+    const wrapper = mount(AmountDisplay, {
+      props: {
+        value: '441',
+        label: 'Amount in sats',
+        errorMessage: 'Amount must be 39 sats or less',
+        showErrorText: false,
+      },
+    })
+
+    expect(wrapper.get('.amount-display').classes()).toContain('amount-display--error')
+    expect(wrapper.find('.amount-display__error').exists()).toBe(false)
+  })
 })

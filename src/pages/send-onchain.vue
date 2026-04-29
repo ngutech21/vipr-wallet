@@ -20,11 +20,11 @@ meta:
         @back="goBack"
       />
 
-      <div class="send-onchain-content">
+      <div class="send-onchain-content vipr-flow-content">
+        <FederationSelector class="send-onchain-federation-selector" />
+
         <div class="vipr-flow-center">
           <div class="vipr-flow-panel vipr-flow-panel--padded task-card vipr-surface-card--strong">
-            <FederationSelector class="send-onchain-federation-selector" />
-
             <q-input
               v-model="paymentTarget"
               filled
@@ -38,15 +38,29 @@ meta:
               :error-message="addressError ?? undefined"
               data-testid="send-onchain-target-input"
             >
-              <template #after>
-                <q-btn
-                  round
-                  dense
-                  flat
-                  icon="qr_code_scanner"
-                  @click="openScanner"
-                  data-testid="send-onchain-open-scanner-btn"
-                />
+              <template #append>
+                <div class="vipr-input-actions">
+                  <q-btn
+                    round
+                    dense
+                    flat
+                    icon="content_paste"
+                    aria-label="Paste Bitcoin address"
+                    class="vipr-input-action"
+                    @click="pastePaymentTarget"
+                    data-testid="send-onchain-paste-target-btn"
+                  />
+                  <q-btn
+                    round
+                    dense
+                    flat
+                    icon="qr_code_scanner"
+                    aria-label="Scan Bitcoin address"
+                    class="vipr-input-action"
+                    @click="openScanner"
+                    data-testid="send-onchain-open-scanner-btn"
+                  />
+                </div>
               </template>
             </q-input>
 
@@ -67,15 +81,15 @@ meta:
               </q-card-section>
             </q-card>
 
-            <AmountDisplay
+            <AmountEntryGroup
               :value="formattedAmount"
+              :buttons="keypadButtons"
               label="Amount (sats)"
-              class="vipr-flow-spacer-md"
               :error-message="amountError"
-              data-testid="send-onchain-amount-input"
+              amount-test-id="send-onchain-amount-input"
+              meta-test-id="send-onchain-amount-meta"
+              class="vipr-flow-spacer-md"
             />
-
-            <NumericKeypad class="vipr-flow-spacer-md" :buttons="keypadButtons" />
 
             <div
               v-if="uriAmountHint"
@@ -84,30 +98,32 @@ meta:
             >
               {{ uriAmountHint }}
             </div>
-
-            <div class="vipr-caption vipr-flow-spacer-lg" data-testid="send-onchain-max-amount">
-              A {{ ONCHAIN_FEE_RESERVE_SATS.toLocaleString() }} sat fee reserve is kept for network
-              fees. Minimum on-chain send: {{ MIN_ONCHAIN_SEND_SATS.toLocaleString() }} sats.
-              Maximum spendable now: {{ maxSendAmount.toLocaleString() }} sats.
-            </div>
-
-            <q-btn
-              label="Send Bitcoin"
-              color="primary"
-              no-caps
-              unelevated
-              class="vipr-flow-action vipr-btn vipr-btn--primary vipr-btn--lg"
-              :loading="isProcessing"
-              :disable="!canSendOnchain"
-              @click="submitOnchainPayment"
-              data-testid="send-onchain-submit-btn"
-              :data-busy="isProcessing ? 'true' : 'false'"
-            >
-              <template #loading>
-                <q-spinner-dots color="white" />
-              </template>
-            </q-btn>
           </div>
+        </div>
+
+        <div class="vipr-flow-bottom-action">
+          <div class="vipr-flow-bottom-hint" data-testid="send-onchain-max-amount">
+            A {{ ONCHAIN_FEE_RESERVE_SATS.toLocaleString() }} sat fee reserve is kept for network
+            fees. Minimum on-chain send: {{ MIN_ONCHAIN_SEND_SATS.toLocaleString() }} sats. Maximum
+            spendable now: {{ maxSendAmount.toLocaleString() }} sats.
+          </div>
+          <q-btn
+            label="Send Bitcoin"
+            icon="arrow_upward"
+            color="primary"
+            no-caps
+            unelevated
+            class="vipr-flow-action vipr-btn vipr-btn--primary vipr-btn--lg"
+            :loading="isProcessing"
+            :disable="!canSendOnchain"
+            @click="submitOnchainPayment"
+            data-testid="send-onchain-submit-btn"
+            :data-busy="isProcessing ? 'true' : 'false'"
+          >
+            <template #loading>
+              <q-spinner-dots color="white" />
+            </template>
+          </q-btn>
         </div>
       </div>
     </q-page>
@@ -122,8 +138,7 @@ defineOptions({
 import { computed, ref, watch } from 'vue'
 import { Loading } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
-import AmountDisplay from 'src/components/AmountDisplay.vue'
-import NumericKeypad from 'src/components/NumericKeypad.vue'
+import AmountEntryGroup from 'src/components/AmountEntryGroup.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
 import ViprTopbar from 'src/components/ViprTopbar.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
@@ -306,6 +321,14 @@ async function submitOnchainPayment() {
   }
 }
 
+async function pastePaymentTarget() {
+  try {
+    paymentTarget.value = await navigator.clipboard.readText()
+  } catch (error) {
+    notify.error(`Unable to access clipboard ${getErrorMessage(error)}`)
+  }
+}
+
 async function openScanner() {
   const query: Record<string, string> = {
     returnTo: 'send-onchain',
@@ -361,12 +384,9 @@ function getQueryNumber(value: unknown): number | null {
 </script>
 
 <style scoped>
-.send-onchain-content {
-  width: 100%;
-  padding: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-6);
-}
-
 .send-onchain-federation-selector {
+  width: 100%;
+  max-width: var(--vipr-width-flow-panel);
   margin-bottom: var(--vipr-space-4);
 }
 

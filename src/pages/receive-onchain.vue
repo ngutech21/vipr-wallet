@@ -20,7 +20,7 @@ meta:
         @back="goBack"
       />
 
-      <div class="receive-onchain-content">
+      <div class="receive-onchain-content vipr-flow-content">
         <FederationSelector
           class="receive-onchain-federation-selector"
           :class="{ 'receive-onchain-federation-selector--qr': bitcoinAddress !== '' }"
@@ -28,9 +28,16 @@ meta:
           test-id-prefix="receive-onchain-federation"
         />
 
-        <div v-if="!bitcoinAddress && !isGenerating" class="receive-onchain-start vipr-flow-panel">
+        <div
+          v-if="!bitcoinAddress && !isGenerating"
+          class="receive-onchain-start vipr-flow-bottom-action"
+        >
+          <div class="vipr-flow-bottom-hint">
+            Creates a Bitcoin deposit address for this federation.
+          </div>
           <q-btn
             label="Create Bitcoin address"
+            icon="currency_bitcoin"
             color="primary"
             no-caps
             unelevated
@@ -328,22 +335,12 @@ async function goBack() {
 </script>
 
 <style scoped>
-.receive-onchain-content {
-  box-sizing: border-box;
-  width: 100%;
-  padding: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-6);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 .receive-onchain-generating {
   padding: var(--vipr-space-8);
   text-align: center;
 }
 
-.receive-onchain-federation-selector,
-.receive-onchain-start {
+.receive-onchain-federation-selector {
   width: 100%;
   max-width: var(--vipr-width-flow-panel);
 }
@@ -354,11 +351,6 @@ async function goBack() {
 
 .receive-onchain-federation-selector--qr {
   max-width: 600px;
-}
-
-.receive-onchain-start {
-  display: flex;
-  justify-content: center;
 }
 
 .receive-onchain-generating__title {

@@ -17,52 +17,29 @@ meta:
         @back="goBack"
       />
 
-      <div class="send-ecash-content">
-        <div class="vipr-flow-center">
-          <template v-if="exportedNotes === ''">
+      <div class="send-ecash-content vipr-flow-content">
+        <template v-if="exportedNotes === ''">
+          <FederationSelector class="send-ecash-federation-selector" />
+
+          <div class="vipr-flow-center">
             <div
               class="vipr-flow-panel vipr-flow-panel--padded task-card vipr-surface-card--strong"
             >
-              <FederationSelector class="send-ecash-federation-selector" />
-
-              <AmountDisplay
+              <AmountEntryGroup
                 :value="formattedAmount"
+                :buttons="keypadButtons"
                 label="Amount (sats)"
-                class="vipr-flow-spacer-lg"
                 :error-message="amountError"
-                data-testid="send-ecash-amount-input"
+                amount-test-id="send-ecash-amount-input"
+                meta-test-id="send-ecash-amount-meta"
+                class="vipr-flow-spacer-lg"
               />
-
-              <NumericKeypad :buttons="keypadButtons" class="vipr-flow-spacer-md" />
-
-              <div
-                v-if="selectedFederation != null"
-                class="vipr-caption vipr-flow-spacer-lg send-ecash-denomination-note"
-                data-testid="send-ecash-denomination-note"
-              >
-                Exact offline amounts depend on your current note denominations.
-              </div>
-
-              <q-btn
-                label="Export ecash"
-                color="primary"
-                no-caps
-                unelevated
-                class="vipr-flow-action vipr-btn vipr-btn--primary vipr-btn--lg"
-                :loading="isProcessing"
-                :disable="!canCreateOfflineEcash"
-                @click="createOfflineEcash"
-                data-testid="send-ecash-create-btn"
-                :data-busy="isProcessing ? 'true' : 'false'"
-              >
-                <template #loading>
-                  <q-spinner-dots color="white" />
-                </template>
-              </q-btn>
             </div>
-          </template>
+          </div>
+        </template>
 
-          <template v-else>
+        <template v-else>
+          <div class="vipr-flow-center">
             <q-card
               flat
               class="task-card vipr-flow-panel vipr-surface-card--strong send-ecash-export-card"
@@ -111,7 +88,34 @@ meta:
                 />
               </q-card-actions>
             </q-card>
-          </template>
+          </div>
+        </template>
+
+        <div v-if="exportedNotes === ''" class="vipr-flow-bottom-action">
+          <div
+            v-if="selectedFederation != null"
+            class="vipr-flow-bottom-hint"
+            data-testid="send-ecash-denomination-note"
+          >
+            Exact offline amounts depend on your current note denominations.
+          </div>
+          <q-btn
+            label="Export ecash"
+            icon="arrow_upward"
+            color="primary"
+            no-caps
+            unelevated
+            class="vipr-flow-action vipr-btn vipr-btn--primary vipr-btn--lg"
+            :loading="isProcessing"
+            :disable="!canCreateOfflineEcash"
+            @click="createOfflineEcash"
+            data-testid="send-ecash-create-btn"
+            :data-busy="isProcessing ? 'true' : 'false'"
+          >
+            <template #loading>
+              <q-spinner-dots color="white" />
+            </template>
+          </q-btn>
         </div>
       </div>
     </q-page>
@@ -126,13 +130,12 @@ defineOptions({
 import { computed, ref, watch } from 'vue'
 import { Loading } from 'quasar'
 import { useRouter } from 'vue-router'
-import AmountDisplay from 'src/components/AmountDisplay.vue'
+import AmountEntryGroup from 'src/components/AmountEntryGroup.vue'
 import AnimatedEcashQr from 'src/components/AnimatedEcashQr.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
 import ViprTopbar from 'src/components/ViprTopbar.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useCopyShare } from 'src/composables/useCopyShare'
-import NumericKeypad from 'src/components/NumericKeypad.vue'
 import { useNumericInput } from 'src/composables/useNumericInput'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
@@ -371,12 +374,9 @@ function canRepresentExactMsats(targetMsats: number, noteCounts: Record<number, 
 </script>
 
 <style scoped>
-.send-ecash-content {
-  width: 100%;
-  padding: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-6);
-}
-
 .send-ecash-federation-selector {
+  width: 100%;
+  max-width: var(--vipr-width-flow-panel);
   margin-bottom: var(--vipr-space-5);
 }
 

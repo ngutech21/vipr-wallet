@@ -539,6 +539,38 @@ html[data-e2e='1'] *::after {
   justify-content: center;
 }
 
+.vipr-flow-content {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  min-height: calc(
+    100dvh - var(--vipr-size-touch-min) - var(--vipr-space-4) - env(safe-area-inset-top)
+  );
+  flex-direction: column;
+  align-items: center;
+  padding: var(--vipr-space-0) var(--vipr-space-4)
+    calc(var(--vipr-space-6) + env(safe-area-inset-bottom));
+}
+
+.vipr-flow-bottom-action {
+  width: 100%;
+  max-width: var(--vipr-width-flow-panel);
+  margin-top: auto;
+  padding-top: var(--vipr-space-5);
+}
+
+.vipr-flow-bottom-hint {
+  margin-bottom: var(--vipr-space-4);
+  color: var(--vipr-text-muted);
+  font-size: var(--vipr-font-size-caption);
+  line-height: var(--vipr-line-height-body);
+}
+
+.vipr-flow-bottom-action > .q-btn,
+.vipr-flow-bottom-action > .vipr-btn {
+  width: 100%;
+}
+
 .vipr-flow-spacer-sm {
   margin-bottom: var(--vipr-space-2);
 }
@@ -1300,11 +1332,27 @@ html[data-e2e='1'] *::after {
 }
 
 .vipr-input .q-field__after .q-btn,
-.custom-input .q-field__after .q-btn {
+.vipr-input .q-field__append .q-btn,
+.custom-input .q-field__after .q-btn,
+.custom-input .q-field__append .q-btn {
   width: var(--vipr-size-touch-min);
   min-width: var(--vipr-size-touch-min);
   height: var(--vipr-size-touch-min);
   color: var(--vipr-text-secondary);
+}
+
+.vipr-input-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vipr-space-1);
+}
+
+.vipr-input-action {
+  color: var(--vipr-text-secondary);
+}
+
+.vipr-input-action:hover {
+  color: var(--vipr-text-primary);
 }
 
 .vipr-input--single-line .q-field__native,

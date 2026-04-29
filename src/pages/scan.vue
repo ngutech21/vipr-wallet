@@ -326,6 +326,13 @@ function getReturnTarget(): Parameters<typeof router.push>[0] {
     return { name: '/send-onchain', query }
   }
 
+  if (returnTo === 'receive-ecash') {
+    const query: Record<string, string> = {}
+    copyQueryParam(query, 'token')
+
+    return { name: '/receive-ecash', query }
+  }
+
   return { name: '/' }
 }
 

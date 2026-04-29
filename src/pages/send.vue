@@ -16,7 +16,7 @@ meta:
         button-test-id="send-back-btn"
         @back="goBack"
       />
-      <div class="send-content">
+      <div class="send-content vipr-flow-content">
         <FederationSelector class="send-federation-control" :selectable="!decodedInvoice" />
 
         <!-- Payment input section -->
@@ -31,15 +31,29 @@ meta:
             class="vipr-input vipr-input--single-line send-invoice-input"
             data-testid="send-invoice-input"
           >
-            <template #after>
-              <q-btn
-                round
-                dense
-                flat
-                icon="qr_code_scanner"
-                @click="openScanner"
-                data-testid="send-open-scanner-btn"
-              />
+            <template #append>
+              <div class="vipr-input-actions">
+                <q-btn
+                  round
+                  dense
+                  flat
+                  icon="content_paste"
+                  aria-label="Paste payment request"
+                  class="vipr-input-action"
+                  @click="pastePaymentRequest"
+                  data-testid="send-paste-input-btn"
+                />
+                <q-btn
+                  round
+                  dense
+                  flat
+                  icon="qr_code_scanner"
+                  aria-label="Scan payment request"
+                  class="vipr-input-action"
+                  @click="openScanner"
+                  data-testid="send-open-scanner-btn"
+                />
+              </div>
             </template>
           </q-input>
 
@@ -93,52 +107,43 @@ meta:
 
           <!-- Amount input section (for lightning address) -->
           <q-slide-transition>
-            <q-card v-if="amountRequired" flat class="task-card send-section-card send-amount-card">
-              <q-card-section>
-                <div class="send-payment-details">
-                  <div class="send-payment-details__field">
-                    <AmountDisplay
-                      :value="formattedInvoiceAmount"
-                      label="Amount in sats"
-                      class="send-amount-display"
-                      :class="{ 'send-amount-display--with-limit': lnurlAmountHint }"
-                      :error-message="amountError"
-                      reserve-error-space
-                      data-testid="send-amount-input"
-                    />
-                    <div
-                      v-if="lnurlAmountHint"
-                      class="vipr-caption send-lnurl-limit-hint"
-                      data-testid="send-lnurl-limit-hint"
-                    >
-                      {{ lnurlAmountHint }}
-                    </div>
-                  </div>
-                </div>
-
-                <NumericKeypad :buttons="keypadButtons" class="send-keypad" />
-
-                <div class="send-payment-details send-payment-details--spaced" v-if="lnAddress">
-                  <div class="send-payment-details__field">
-                    <q-input
-                      filled
-                      dense
-                      dark
-                      v-model="invoiceMemo"
-                      label="Memo (optional)"
-                      class="vipr-input"
-                      data-testid="send-memo-input"
-                    />
-                  </div>
-                </div>
-              </q-card-section>
-            </q-card>
+            <AmountEntryGroup
+              v-if="amountRequired"
+              :value="formattedInvoiceAmount"
+              :buttons="keypadButtons"
+              label="Amount in sats"
+              :error-message="amountError"
+              :meta-text="lnurlAmountHint"
+              amount-test-id="send-amount-input"
+              meta-test-id="send-lnurl-limit-hint"
+              amount-class="send-amount-display"
+              class="send-amount-entry"
+            >
+              <q-input
+                v-if="lnAddress"
+                v-model="invoiceMemo"
+                filled
+                dense
+                dark
+                label="Memo (optional)"
+                class="vipr-input"
+                data-testid="send-memo-input"
+              />
+            </AmountEntryGroup>
           </q-slide-transition>
 
           <!-- Action button -->
           <div class="send-action">
+            <div class="vipr-flow-bottom-hint">
+              {{
+                amountRequired
+                  ? 'Review the payment details before sending.'
+                  : 'Enter a Lightning invoice, address, or contact.'
+              }}
+            </div>
             <q-btn
               :label="amountRequired ? 'Review payment' : 'Continue'"
+              :icon="amountRequired ? 'bolt' : 'arrow_forward'"
               color="primary"
               no-caps
               unelevated
@@ -178,8 +183,7 @@ defineOptions({
 
 import { computed, ref, watch } from 'vue'
 import VerifyPayment from 'components/VerifyPayment.vue'
-import AmountDisplay from 'src/components/AmountDisplay.vue'
-import NumericKeypad from 'src/components/NumericKeypad.vue'
+import AmountEntryGroup from 'src/components/AmountEntryGroup.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
 import ViprTopbar from 'src/components/ViprTopbar.vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -191,6 +195,7 @@ import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import { useNostrStore } from 'src/stores/nostr'
 import type { SyncedNostrContact } from 'src/types/nostr'
+import { getErrorMessage } from 'src/utils/error'
 import { getNostrContactDisplayName, getNostrContactSubtitle } from 'src/utils/nostrContacts'
 
 const lightningInvoice = ref('')
@@ -322,6 +327,19 @@ watch(
 
 async function decodeInvoice() {
   await decodeInvoiceFromComposable(lightningInvoice.value)
+}
+
+async function pastePaymentRequest() {
+  try {
+    const text = await navigator.clipboard.readText()
+    lightningInvoice.value = text
+
+    if (text.trim() !== '') {
+      await decodeInvoice()
+    }
+  } catch (error) {
+    notify.error(`Unable to access clipboard ${getErrorMessage(error)}`)
+  }
 }
 
 async function openScanner() {
@@ -474,22 +492,20 @@ function getLnurlLimitSats(): { minSats: number; maxSats: number } | null {
   border-radius: var(--vipr-radius-md);
 }
 
-.send-content {
+.send-invoice-input,
+.send-amount-entry,
+.send-contacts-block,
+.send-federation-control,
+.send-action {
   width: 100%;
-  padding-right: var(--vipr-space-4);
-  padding-left: var(--vipr-space-4);
+  max-width: var(--vipr-width-flow-panel);
 }
 
 .send-invoice-input,
-.send-section-card,
+.send-amount-entry,
 .send-contacts-block,
 .send-federation-control {
   margin-bottom: var(--vipr-space-3);
-}
-
-.send-amount-card :deep(.q-card__section) {
-  padding-top: var(--vipr-space-4);
-  padding-bottom: var(--vipr-space-4);
 }
 
 .send-amount-display :deep(.amount-display) {
@@ -504,27 +520,6 @@ function getLnurlLimitSats(): { minSats: number; maxSats: number } | null {
 
 .send-amount-display :deep(.amount-display__value) {
   font-size: 2rem;
-}
-
-.send-amount-display--with-limit :deep(.amount-display__error) {
-  min-height: calc(var(--vipr-font-size-caption) * var(--vipr-line-height-body));
-  margin-top: var(--vipr-space-1);
-  font-size: var(--vipr-font-size-caption);
-}
-
-.send-keypad {
-  margin-top: var(--vipr-space-2);
-}
-
-.send-lnurl-limit-hint {
-  width: 100%;
-  margin-top: 0;
-  margin-bottom: var(--vipr-space-1);
-  color: var(--vipr-text-soft);
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .send-contact-hint {
@@ -542,18 +537,9 @@ function getLnurlLimitSats(): { minSats: number; maxSats: number } | null {
   flex: 1 1 auto;
 }
 
-.send-payment-details {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--vipr-space-4);
-}
-
-.send-payment-details--spaced {
-  margin-top: var(--vipr-space-4);
-}
-
 .send-action {
-  margin-top: var(--vipr-space-4);
+  margin-top: auto;
+  padding-top: var(--vipr-space-5);
 }
 
 .send-action__button {

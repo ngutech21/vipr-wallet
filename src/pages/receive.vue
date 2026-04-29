@@ -19,7 +19,7 @@ meta:
         @back="goBack"
       />
 
-      <div class="receive-content">
+      <div class="receive-content vipr-flow-content">
         <FederationSelector
           class="receive-federation-selector"
           :class="{ 'receive-federation-selector--qr': qrData !== '' }"
@@ -32,43 +32,46 @@ meta:
             v-if="!qrData"
             class="vipr-flow-panel vipr-flow-panel--padded task-card vipr-surface-card--strong"
           >
-            <AmountDisplay
+            <AmountEntryGroup
               :value="formattedAmount"
+              :buttons="keypadButtons"
+              amount-test-id="amount-input"
+              :reserve-meta-space="false"
               class="vipr-flow-spacer-lg"
-              data-testid="amount-input"
-            />
-
-            <q-input
-              v-model="invoiceMemo"
-              filled
-              dark
-              label="Memo"
-              placeholder="Optional description"
-              maxlength="160"
-              class="vipr-input receive-memo-input vipr-flow-spacer-md"
-              data-testid="receive-memo-input"
-            />
-
-            <NumericKeypad :buttons="keypadButtons" class="vipr-flow-spacer-lg" />
-
-            <q-btn
-              label="Create Invoice"
-              color="primary"
-              no-caps
-              unelevated
-              class="vipr-flow-action vipr-btn vipr-btn--primary vipr-btn--lg"
-              :disable="!canCreateInvoice"
-              @click="onRequest"
-              icon="bolt"
-              :loading="isCreatingInvoice"
-              data-testid="receive-create-invoice-btn"
-              :data-busy="isCreatingInvoice ? 'true' : 'false'"
             >
-              <template #loading>
-                <q-spinner-dots color="white" />
-              </template>
-            </q-btn>
+              <q-input
+                v-model="invoiceMemo"
+                filled
+                dark
+                label="Memo (optional)"
+                placeholder="Optional description"
+                maxlength="160"
+                class="vipr-input receive-memo-input"
+                data-testid="receive-memo-input"
+              />
+            </AmountEntryGroup>
           </div>
+        </div>
+
+        <div v-if="!qrData" class="vipr-flow-bottom-action">
+          <div class="vipr-flow-bottom-hint">Creates a Lightning invoice for this federation.</div>
+          <q-btn
+            label="Create Invoice"
+            color="primary"
+            no-caps
+            unelevated
+            class="vipr-flow-action vipr-btn vipr-btn--primary vipr-btn--lg"
+            :disable="!canCreateInvoice"
+            @click="onRequest"
+            icon="bolt"
+            :loading="isCreatingInvoice"
+            data-testid="receive-create-invoice-btn"
+            :data-busy="isCreatingInvoice ? 'true' : 'false'"
+          >
+            <template #loading>
+              <q-spinner-dots color="white" />
+            </template>
+          </q-btn>
         </div>
 
         <CopyableQrCard
@@ -95,9 +98,8 @@ meta:
           </div>
         </div>
 
-        <div class="receive-actions">
+        <div v-if="qrData" class="receive-actions">
           <q-btn
-            v-if="qrData"
             label="Pay with Bitcoin wallet"
             color="primary"
             no-caps
@@ -125,9 +127,8 @@ import { init, requestProvider } from '@getalby/bitcoin-connect'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import { logger } from 'src/services/logger'
-import AmountDisplay from 'src/components/AmountDisplay.vue'
+import AmountEntryGroup from 'src/components/AmountEntryGroup.vue'
 import CopyableQrCard from 'src/components/CopyableQrCard.vue'
-import NumericKeypad from 'src/components/NumericKeypad.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
 import ViprTopbar from 'src/components/ViprTopbar.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
@@ -328,15 +329,6 @@ async function goBack() {
 </script>
 
 <style scoped>
-.receive-content {
-  box-sizing: border-box;
-  width: 100%;
-  padding: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-6);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 .receive-federation-selector {
   width: 100%;
   max-width: var(--vipr-width-flow-panel);
@@ -395,7 +387,8 @@ async function goBack() {
   max-width: 420px;
   display: flex;
   justify-content: center;
-  margin-top: var(--vipr-space-5);
+  margin-top: auto;
+  padding-top: var(--vipr-space-5);
 }
 
 @media (max-width: 520px) {

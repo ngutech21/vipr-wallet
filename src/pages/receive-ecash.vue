@@ -46,10 +46,9 @@ meta:
         :back-to="{ name: '/' }"
       />
 
-      <div class="receive-ecash-content">
+      <div class="receive-ecash-content vipr-flow-content">
         <q-card flat class="task-card vipr-flow-panel vipr-surface-card--strong receive-ecash-card">
           <q-card-section>
-            <div class="section-title receive-ecash-title">Paste ecash</div>
             <q-input
               v-model="ecashToken"
               filled
@@ -61,36 +60,56 @@ meta:
               class="vipr-input"
               data-testid="receive-ecash-token-input"
             >
-              <template #after>
-                <q-btn
-                  round
-                  dense
-                  flat
-                  icon="content_paste"
-                  @click="pasteFromClipboard"
-                  data-testid="receive-ecash-paste-btn"
-                />
+              <template #append>
+                <div class="vipr-input-actions">
+                  <q-btn
+                    round
+                    dense
+                    flat
+                    icon="content_paste"
+                    aria-label="Paste ecash token"
+                    class="vipr-input-action"
+                    @click="pasteFromClipboard"
+                    data-testid="receive-ecash-paste-btn"
+                  />
+                  <q-btn
+                    round
+                    dense
+                    flat
+                    icon="qr_code_scanner"
+                    aria-label="Scan ecash token"
+                    class="vipr-input-action"
+                    @click="openScanner"
+                    data-testid="receive-ecash-open-scanner-btn"
+                  />
+                </div>
               </template>
             </q-input>
           </q-card-section>
         </q-card>
 
-        <q-btn
-          label="Receive ecash"
-          color="primary"
-          no-caps
-          unelevated
-          class="vipr-flow-panel vipr-btn vipr-btn--primary vipr-btn--lg"
-          :loading="isProcessing"
-          :disable="!ecashToken.trim() || isProcessing"
-          @click="redeemEcash"
-          data-testid="receive-ecash-submit-btn"
-          :data-busy="isProcessing ? 'true' : 'false'"
-        >
-          <template #loading>
-            <q-spinner-dots color="white" />
-          </template>
-        </q-btn>
+        <div class="vipr-flow-bottom-action">
+          <div class="vipr-flow-bottom-hint">
+            Redeem offline ecash into the selected federation.
+          </div>
+          <q-btn
+            label="Receive ecash"
+            icon="arrow_downward"
+            color="primary"
+            no-caps
+            unelevated
+            class="vipr-flow-action vipr-btn vipr-btn--primary vipr-btn--lg"
+            :loading="isProcessing"
+            :disable="!ecashToken.trim() || isProcessing"
+            @click="redeemEcash"
+            data-testid="receive-ecash-submit-btn"
+            :data-busy="isProcessing ? 'true' : 'false'"
+          >
+            <template #loading>
+              <q-spinner-dots color="white" />
+            </template>
+          </q-btn>
+        </div>
       </div>
     </q-page>
   </transition>
@@ -155,6 +174,19 @@ async function pasteFromClipboard() {
       message: `Unable to access clipboard ${getErrorMessage(error)}`,
     })
   }
+}
+
+async function openScanner() {
+  const query: Record<string, string> = {
+    returnTo: 'receive-ecash',
+  }
+
+  const token = ecashToken.value.trim()
+  if (token !== '') {
+    query.token = token
+  }
+
+  await router.push({ name: '/scan', query })
 }
 
 async function redeemEcash() {
@@ -291,14 +323,6 @@ function getQueryString(value: LocationQueryValue | LocationQueryValue[] | undef
 </script>
 
 <style scoped>
-.receive-ecash-content {
-  width: 100%;
-  padding: var(--vipr-space-0) var(--vipr-space-4) var(--vipr-space-6);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 .receive-ecash-card {
   margin-bottom: var(--vipr-space-4);
 }

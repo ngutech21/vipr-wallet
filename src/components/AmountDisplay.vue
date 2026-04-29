@@ -13,7 +13,7 @@
     </div>
 
     <div
-      v-if="errorMessage || reserveErrorSpace"
+      v-if="showErrorText && (errorMessage || reserveErrorSpace)"
       class="amount-display__error"
       :class="{ 'amount-display__error--empty': !errorMessage }"
       :aria-hidden="!errorMessage"
@@ -30,12 +30,14 @@ withDefaults(
     label?: string
     errorMessage?: string | null
     reserveErrorSpace?: boolean
+    showErrorText?: boolean
     dataTestid?: string
   }>(),
   {
     label: 'Amount (sats)',
     errorMessage: null,
     reserveErrorSpace: false,
+    showErrorText: true,
     dataTestid: '',
   },
 )
