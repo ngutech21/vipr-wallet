@@ -4,95 +4,86 @@ meta:
 </route>
 
 <template>
-  <q-page class="page-container page-container--onchain" data-testid="sent-onchain-page">
-    <div class="content-container">
-      <q-btn
-        flat
-        round
-        color="white"
-        icon="close"
-        class="success-close-btn"
-        @click="goHome"
-        data-testid="sent-onchain-close-btn"
-      />
+  <SuccessResultLayout
+    page-class="page-container--onchain"
+    page-test-id="sent-onchain-page"
+    close-test-id="sent-onchain-close-btn"
+    title-test-id="sent-onchain-title"
+    amount-test-id="sent-onchain-amount-text"
+    :title="statusTitle"
+    :amount-text="`${formatNumber(displayAmount)} sats`"
+    :subtitle="statusMessage"
+    :icon="statusIcon"
+    :icon-color="statusColor"
+    @close="goHome"
+  >
+    <template #summary>
+      <q-card flat class="success-card">
+        <q-card-section class="summary-row">
+          <span class="summary-label">Status</span>
+          <q-badge
+            :color="statusColor"
+            text-color="black"
+            class="status-badge"
+            data-testid="sent-onchain-status-text"
+          >
+            {{ statusText }}
+          </q-badge>
+        </q-card-section>
 
-      <div class="success-shell">
-        <div class="success-icon">
-          <q-icon :name="statusIcon" size="3.5em" :color="statusColor" />
-        </div>
-        <div class="success-title" data-testid="sent-onchain-title">{{ statusTitle }}</div>
-        <div class="success-amount" data-testid="sent-onchain-amount-text">
-          {{ formatNumber(displayAmount) }} sats
-        </div>
-        <div v-if="statusMessage" class="success-subtitle">
-          {{ statusMessage }}
-        </div>
+        <q-separator dark inset />
 
-        <q-card flat class="success-card">
-          <q-card-section class="summary-row">
-            <span class="summary-label">Status</span>
-            <q-badge
-              :color="statusColor"
-              text-color="black"
-              class="status-badge"
-              data-testid="sent-onchain-status-text"
-            >
-              {{ statusText }}
-            </q-badge>
-          </q-card-section>
+        <q-card-section class="summary-row">
+          <span class="summary-label">Amount</span>
+          <span class="summary-value">{{ formatNumber(displayAmount) }} sats</span>
+        </q-card-section>
 
+        <q-separator dark inset />
+
+        <q-card-section class="summary-row summary-row--top">
+          <span class="summary-label">Destination</span>
+          <span class="summary-value summary-address" data-testid="sent-onchain-address-text">
+            {{ displayAddress }}
+          </span>
+        </q-card-section>
+
+        <template v-if="feeInSats > 0">
           <q-separator dark inset />
 
           <q-card-section class="summary-row">
-            <span class="summary-label">Amount</span>
-            <span class="summary-value">{{ formatNumber(displayAmount) }} sats</span>
-          </q-card-section>
-
-          <q-separator dark inset />
-
-          <q-card-section class="summary-row summary-row--top">
-            <span class="summary-label">Destination</span>
-            <span class="summary-value summary-address" data-testid="sent-onchain-address-text">
-              {{ displayAddress }}
+            <span class="summary-label">Recorded fee</span>
+            <span class="summary-value" data-testid="sent-onchain-fee-text">
+              {{ formatNumber(feeInSats) }} sats
             </span>
           </q-card-section>
+        </template>
+      </q-card>
+    </template>
 
-          <template v-if="feeInSats > 0">
-            <q-separator dark inset />
-
-            <q-card-section class="summary-row">
-              <span class="summary-label">Recorded fee</span>
-              <span class="summary-value" data-testid="sent-onchain-fee-text">
-                {{ formatNumber(feeInSats) }} sats
-              </span>
-            </q-card-section>
-          </template>
-        </q-card>
-
-        <div class="success-actions">
-          <q-btn
-            color="primary"
-            no-caps
-            unelevated
-            class="success-action-btn vipr-btn vipr-btn--primary vipr-btn--lg"
-            label="Back to home"
-            @click="goHome"
-            data-testid="sent-onchain-back-home-btn"
-          />
-          <q-btn
-            v-if="transaction != null"
-            flat
-            color="white"
-            no-caps
-            class="success-secondary-btn vipr-btn vipr-btn--secondary vipr-btn--lg"
-            label="View details"
-            @click="viewTransaction"
-            data-testid="sent-onchain-view-details-btn"
-          />
-        </div>
+    <template #actions>
+      <div class="success-actions">
+        <q-btn
+          color="primary"
+          no-caps
+          unelevated
+          class="success-action-btn vipr-btn vipr-btn--primary vipr-btn--lg"
+          label="Back to home"
+          data-testid="sent-onchain-back-home-btn"
+          @click="goHome"
+        />
+        <q-btn
+          v-if="transaction != null"
+          flat
+          color="white"
+          no-caps
+          class="success-secondary-btn vipr-btn vipr-btn--secondary vipr-btn--lg"
+          label="View details"
+          data-testid="sent-onchain-view-details-btn"
+          @click="viewTransaction"
+        />
       </div>
-    </div>
-  </q-page>
+    </template>
+  </SuccessResultLayout>
 </template>
 
 <script setup lang="ts">
@@ -103,6 +94,7 @@ defineOptions({
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { WalletTransaction } from '@fedimint/core'
+import SuccessResultLayout from 'src/components/SuccessResultLayout.vue'
 import { logger } from 'src/services/logger'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFormatters } from 'src/utils/formatter'
