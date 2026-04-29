@@ -11,20 +11,22 @@
 
 Vipr Wallet is a modern Progressive Web App (PWA) that serves as an ecash wallet for Fedimint. It runs seamlessly on both mobile and desktop devices, enabling private and instant lightning transactions wherever you are.
 
-# ⚠️ Disclaimer
+## ⚠️ Disclaimer
 
 This software is experimental and comes with risks:
 **DO NOT USE** with significant amounts of ecash or in production environments
 
 By using this wallet, you acknowledge and accept these risks.
 
-The productive released version of the wallet is available at
+## Use Vipr
+
+The production release of the wallet is available at
 [app.vipr.cash](https://app.vipr.cash).
 
 For development and testing, [beta.vipr.cash](https://beta.vipr.cash) always
 tracks the current `master` branch.
 
-Learn more about the project at [vipr.cash](https://vipr.cash)
+Learn more about the project at [vipr.cash](https://vipr.cash).
 
 ## 📱 App Screenshots
 
@@ -36,27 +38,43 @@ Learn more about the project at [vipr.cash](https://vipr.cash)
 
 ## ✨ Features
 
-### General
+Vipr is a Fedimint ecash wallet for private, instant payments across Lightning,
+on-chain Bitcoin, and federation-based ecash.
 
-- [x] lightning send
-- [x] receive tokens by paying a lightning invoice
-- [x] pay lightning invoice using nostr wallet connect
-- [x] lnurl-p support
-- [x] lightning address support
-- [x] pay to Nostr contacts
-- [x] export ecash
-- [x] import ecash
-- [x] backup wallet
-- [x] restore wallet
-- [x] pay onchain
-- [x] receive onchain
+|     | Feature area        | What Vipr offers                                                                     |
+| --- | ------------------- | ------------------------------------------------------------------------------------ |
+| ⚡  | Lightning           | Send invoices, scan QR codes, pay Lightning addresses, and use LNURL-pay             |
+| 📥  | Receive             | Create Lightning invoices with memo, QR code, copy/share actions, and payment status |
+| 🪙  | Ecash               | Import and export ecash tokens                                                       |
+| ₿   | On-chain Bitcoin    | Send and receive on-chain payments through supported federations                     |
+| 🏛️  | Federations         | Join multiple federations, switch between them, and inspect federation details       |
+| 🔎  | Discovery           | Discover public federations through Nostr recommendations                            |
+| 👥  | Contacts            | Sync Nostr contacts from NIP-05 or npub and pay contacts by name                     |
+| 🔐  | Recovery & security | Back up and restore the wallet, protect the app with PIN and Face ID / Touch ID      |
+| 📱  | PWA                 | Installable web app with update handling and Docker-based self-hosting               |
 
-### Federations
+### Federation Details
 
-- [x] join multiple federations
-- [x] Discover federations using nostr
-- [ ] show guardian health
-- [x] show nostr votes for federation
+Vipr helps users understand the federations they join:
+
+- Guardian and module overview
+- Federation invite sharing
+- Balance and invoice limits
+- Gateway and fee information
+- Federation UTXOs
+- Fedimint Observer links
+- Terms of Service and federation messages
+
+### Supported Standards
+
+Vipr supports common Bitcoin and Lightning payment standards:
+
+| Standard          | Support                                      |
+| ----------------- | -------------------------------------------- |
+| BOLT11            | Send and receive Lightning invoices          |
+| BIP21             | Read Bitcoin payment URIs for on-chain sends |
+| Lightning Address | Pay human-readable Lightning addresses       |
+| LNURL-pay         | Pay LNURL payment requests                   |
 
 ## 🐳 Deployment
 
