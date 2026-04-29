@@ -86,8 +86,8 @@ describe('SendEcashPage.vue', () => {
             },
             template: '<div data-testid="send-ecash-animated-qr-stub" :data-notes="notes" />',
           },
-          SendFederationSelector: {
-            template: '<div data-testid="send-federation-selector-stub" />',
+          FederationSelector: {
+            template: '<div data-testid="federation-selector-stub" />',
           },
           'q-btn': {
             props: {
@@ -164,7 +164,7 @@ describe('SendEcashPage.vue', () => {
   it('shows the federation selector without duplicating the available balance copy', () => {
     wrapper = createWrapper()
 
-    expect(wrapper.find('[data-testid="send-federation-selector-stub"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="federation-selector-stub"]').exists()).toBe(true)
     expect(wrapper.text()).not.toContain('Balance available')
     expect(wrapper.get('[data-testid="send-ecash-denomination-note"]').text()).toBe(
       'Exact offline amounts depend on your current note denominations.',

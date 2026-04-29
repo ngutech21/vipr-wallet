@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import { createTestingPinia, type TestingPinia } from '@pinia/testing'
-import SendFederationSelector from 'src/components/SendFederationSelector.vue'
+import FederationSelector from 'src/components/FederationSelector.vue'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import type { Federation } from 'src/types/federation'
@@ -14,7 +14,7 @@ const createFederation = (overrides: Partial<Federation> = {}): Federation => ({
   ...overrides,
 })
 
-describe('SendFederationSelector', () => {
+describe('FederationSelector', () => {
   let wrapper: VueWrapper
   let pinia: TestingPinia
 
@@ -53,7 +53,7 @@ describe('SendFederationSelector', () => {
       createSpy: vi.fn,
     })
 
-    return mount(SendFederationSelector, {
+    return mount(FederationSelector, {
       props,
       global: {
         plugins: [pinia],
@@ -76,7 +76,7 @@ describe('SendFederationSelector', () => {
     wrapper = createWrapper()
 
     expect(wrapper.text()).toContain('E-Cash Club')
-    expect(wrapper.get('[data-testid="send-federation-active-balance"]').text()).toBe(
+    expect(wrapper.get('[data-testid="federation-active-balance"]').text()).toBe(
       'Available: 66 sats',
     )
 
@@ -86,7 +86,7 @@ describe('SendFederationSelector', () => {
   it('lists the active balance and hides inactive federation balances in the sheet', async () => {
     wrapper = createWrapper()
 
-    await wrapper.get('[data-testid="send-federation-selector-trigger"]').trigger('click')
+    await wrapper.get('[data-testid="federation-selector-trigger"]').trigger('click')
     await flushPromises()
 
     expect(wrapper.text()).toContain('Active · 66 sats available')
@@ -105,8 +105,8 @@ describe('SendFederationSelector', () => {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     vi.mocked(federationStore.selectFederation).mockResolvedValue(undefined)
 
-    await wrapper.get('[data-testid="send-federation-selector-trigger"]').trigger('click')
-    await wrapper.get('[data-testid="send-federation-option-fed-2"]').trigger('click')
+    await wrapper.get('[data-testid="federation-selector-trigger"]').trigger('click')
+    await wrapper.get('[data-testid="federation-option-fed-2"]').trigger('click')
     await flushPromises()
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -127,8 +127,8 @@ describe('SendFederationSelector', () => {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     vi.mocked(federationStore.selectFederation).mockResolvedValue(undefined)
 
-    await wrapper.get('[data-testid="send-federation-selector-trigger"]').trigger('click')
-    await wrapper.get('[data-testid="send-federation-option-fed-1"]').trigger('click')
+    await wrapper.get('[data-testid="federation-selector-trigger"]').trigger('click')
+    await wrapper.get('[data-testid="federation-option-fed-1"]').trigger('click')
     await flushPromises()
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -146,14 +146,14 @@ describe('SendFederationSelector', () => {
     wrapper = createWrapper({ selectable: false })
     const federationStore = useFederationStore()
 
-    await wrapper.get('[data-testid="send-federation-selector-trigger"]').trigger('click')
+    await wrapper.get('[data-testid="federation-selector-trigger"]').trigger('click')
     await flushPromises()
 
     expect(wrapper.text()).toContain('E-Cash Club')
-    expect(
-      wrapper.get('[data-testid="send-federation-selector-trigger"]').attributes('disabled'),
-    ).toBe('')
-    expect(wrapper.find('[data-testid="send-federation-option-fed-1"]').exists()).toBe(false)
+    expect(wrapper.get('[data-testid="federation-selector-trigger"]').attributes('disabled')).toBe(
+      '',
+    )
+    expect(wrapper.find('[data-testid="federation-option-fed-1"]').exists()).toBe(false)
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(federationStore.selectFederation).not.toHaveBeenCalled()
 

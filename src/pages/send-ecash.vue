@@ -27,7 +27,7 @@ meta:
             <div
               class="vipr-flow-panel vipr-flow-panel--padded task-card vipr-surface-card--strong"
             >
-              <SendFederationSelector class="send-ecash-federation-selector" />
+              <FederationSelector class="send-ecash-federation-selector" />
 
               <AmountDisplay
                 :value="formattedAmount"
@@ -133,7 +133,7 @@ import { useShare } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
 import AnimatedEcashQr from 'src/components/AnimatedEcashQr.vue'
-import SendFederationSelector from 'src/components/SendFederationSelector.vue'
+import FederationSelector from 'src/components/FederationSelector.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
 import { useNumericInput } from 'src/composables/useNumericInput'

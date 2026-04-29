@@ -24,7 +24,7 @@ meta:
       </div>
 
       <div class="receive-content">
-        <SendFederationSelector
+        <FederationSelector
           class="receive-federation-selector"
           :class="{ 'receive-federation-selector--qr': qrData !== '' }"
           :selectable="qrData === ''"
@@ -169,7 +169,7 @@ import { useWalletStore } from 'src/stores/wallet'
 import { logger } from 'src/services/logger'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
-import SendFederationSelector from 'src/components/SendFederationSelector.vue'
+import FederationSelector from 'src/components/FederationSelector.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
 import { useNumericInput } from 'src/composables/useNumericInput'

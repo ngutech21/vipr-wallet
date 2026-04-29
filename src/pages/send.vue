@@ -21,7 +21,7 @@ meta:
         />
       </div>
       <div class="send-content">
-        <SendFederationSelector class="send-federation-control" :selectable="!decodedInvoice" />
+        <FederationSelector class="send-federation-control" :selectable="!decodedInvoice" />
 
         <!-- Payment input section -->
         <template v-if="!decodedInvoice">
@@ -184,7 +184,7 @@ import { computed, ref, watch } from 'vue'
 import VerifyPayment from 'components/VerifyPayment.vue'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
-import SendFederationSelector from 'src/components/SendFederationSelector.vue'
+import FederationSelector from 'src/components/FederationSelector.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useInvoiceDecoding } from 'src/composables/useInvoiceDecoding'

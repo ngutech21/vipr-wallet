@@ -27,7 +27,7 @@ meta:
       <div class="send-onchain-content">
         <div class="vipr-flow-center">
           <div class="vipr-flow-panel vipr-flow-panel--padded task-card vipr-surface-card--strong">
-            <SendFederationSelector class="send-onchain-federation-selector" />
+            <FederationSelector class="send-onchain-federation-selector" />
 
             <q-input
               v-model="paymentTarget"
@@ -128,7 +128,7 @@ import { Loading } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
-import SendFederationSelector from 'src/components/SendFederationSelector.vue'
+import FederationSelector from 'src/components/FederationSelector.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useNumericInput } from 'src/composables/useNumericInput'
 import { logger } from 'src/services/logger'

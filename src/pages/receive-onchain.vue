@@ -25,7 +25,7 @@ meta:
       </div>
 
       <div class="receive-onchain-content">
-        <SendFederationSelector
+        <FederationSelector
           class="receive-onchain-federation-selector"
           :class="{ 'receive-onchain-federation-selector--qr': bitcoinAddress !== '' }"
           :selectable="canSelectFederation"
@@ -138,7 +138,7 @@ import { useRouter } from 'vue-router'
 import { useShare } from '@vueuse/core'
 import QrcodeVue from 'qrcode.vue'
 import type { WalletDepositState } from '@fedimint/core'
-import SendFederationSelector from 'src/components/SendFederationSelector.vue'
+import FederationSelector from 'src/components/FederationSelector.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useFederationStore } from 'src/stores/federation'
 import { logger } from 'src/services/logger'

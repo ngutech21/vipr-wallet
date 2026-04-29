@@ -1,21 +1,21 @@
 <template>
-  <div class="send-federation-selector">
+  <div class="federation-selector">
     <button
       type="button"
-      class="send-federation-selector__trigger vipr-surface-card vipr-surface-card--strong"
-      :class="{ 'send-federation-selector__trigger--readonly': !props.selectable }"
+      class="federation-selector__trigger vipr-surface-card vipr-surface-card--strong"
+      :class="{ 'federation-selector__trigger--readonly': !props.selectable }"
       :disabled="isTriggerDisabled"
       :data-testid="`${props.testIdPrefix}-selector-trigger`"
       @click="showSheet = true"
     >
       <FederationAvatar :federation="selectedFederation" />
 
-      <span class="send-federation-selector__summary">
-        <span class="send-federation-selector__title">
+      <span class="federation-selector__summary">
+        <span class="federation-selector__title">
           {{ selectedFederation?.title ?? 'No federation selected' }}
         </span>
         <span
-          class="send-federation-selector__balance"
+          class="federation-selector__balance"
           :data-testid="`${props.testIdPrefix}-active-balance`"
         >
           {{ activeBalanceLabel }}
@@ -26,13 +26,13 @@
       <q-icon
         v-else-if="props.selectable"
         name="expand_more"
-        class="send-federation-selector__chevron"
+        class="federation-selector__chevron"
       />
     </button>
 
     <div
       v-if="selectionError"
-      class="send-federation-selector__error"
+      class="federation-selector__error"
       :data-testid="`${props.testIdPrefix}-selector-error`"
     >
       {{ selectionError }}
@@ -45,14 +45,14 @@
       transition-hide="slide-down"
     >
       <ModalCard title="Select federation" @close="showSheet = false">
-        <div class="send-federation-sheet">
+        <div class="federation-selector-sheet">
           <button
             v-for="federation in federations"
             :key="federation.federationId"
             type="button"
-            class="send-federation-sheet__item vipr-surface-card vipr-surface-card--list"
+            class="federation-selector-sheet__item vipr-surface-card vipr-surface-card--list"
             :class="{
-              'send-federation-sheet__item--active': isSelected(federation),
+              'federation-selector-sheet__item--active': isSelected(federation),
             }"
             :disabled="isSwitching"
             :data-testid="`${props.testIdPrefix}-option-${federation.federationId}`"
@@ -60,9 +60,9 @@
           >
             <FederationAvatar :federation="federation" />
 
-            <span class="send-federation-sheet__copy">
-              <span class="send-federation-sheet__title">{{ federation.title }}</span>
-              <span class="send-federation-sheet__subtitle">
+            <span class="federation-selector-sheet__copy">
+              <span class="federation-selector-sheet__title">{{ federation.title }}</span>
+              <span class="federation-selector-sheet__subtitle">
                 {{ optionSubtitle(federation) }}
               </span>
             </span>
@@ -75,10 +75,10 @@
             <q-icon
               v-else-if="isSelected(federation)"
               name="check"
-              class="send-federation-sheet__status"
+              class="federation-selector-sheet__status"
               :data-testid="`${props.testIdPrefix}-active-check`"
             />
-            <q-icon v-else name="chevron_right" class="send-federation-sheet__status" />
+            <q-icon v-else name="chevron_right" class="federation-selector-sheet__status" />
           </button>
         </div>
       </ModalCard>
@@ -88,7 +88,7 @@
 
 <script setup lang="ts">
 defineOptions({
-  name: 'SendFederationSelector',
+  name: 'FederationSelector',
 })
 
 import { computed, ref } from 'vue'
@@ -107,7 +107,7 @@ const props = withDefaults(
   }>(),
   {
     selectable: true,
-    testIdPrefix: 'send-federation',
+    testIdPrefix: 'federation',
   },
 )
 
@@ -161,7 +161,7 @@ async function selectFederation(federation: Federation) {
     await federationStore.selectFederation(federation)
     showSheet.value = false
   } catch (error) {
-    logger.error('Failed to switch send federation', error)
+    logger.error('Failed to switch federation', error)
     selectionError.value = `Failed to switch federation: ${getErrorMessage(error)}`
   } finally {
     switchingFederationId.value = null
@@ -170,11 +170,11 @@ async function selectFederation(federation: Federation) {
 </script>
 
 <style scoped>
-.send-federation-selector {
+.federation-selector {
   width: 100%;
 }
 
-.send-federation-selector__trigger {
+.federation-selector__trigger {
   width: 100%;
   border: 1px solid var(--vipr-color-surface-border);
   border-radius: var(--vipr-radius-button-lg);
@@ -188,25 +188,25 @@ async function selectFederation(federation: Federation) {
   text-align: left;
 }
 
-.send-federation-selector__trigger:disabled {
+.federation-selector__trigger:disabled {
   cursor: default;
   opacity: 0.72;
 }
 
-.send-federation-selector__trigger--readonly:disabled {
+.federation-selector__trigger--readonly:disabled {
   opacity: 1;
 }
 
-.send-federation-selector__summary,
-.send-federation-sheet__copy {
+.federation-selector__summary,
+.federation-selector-sheet__copy {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--vipr-space-1);
 }
 
-.send-federation-selector__title,
-.send-federation-sheet__title {
+.federation-selector__title,
+.federation-selector-sheet__title {
   color: var(--vipr-text-primary);
   font-size: var(--vipr-font-size-section-title);
   font-weight: 700;
@@ -216,20 +216,20 @@ async function selectFederation(federation: Federation) {
   white-space: nowrap;
 }
 
-.send-federation-selector__balance,
-.send-federation-sheet__subtitle {
+.federation-selector__balance,
+.federation-selector-sheet__subtitle {
   color: var(--vipr-text-soft);
   font-size: var(--vipr-font-size-label);
   line-height: var(--vipr-line-height-body);
 }
 
-.send-federation-selector__chevron,
-.send-federation-sheet__status {
+.federation-selector__chevron,
+.federation-selector-sheet__status {
   color: var(--vipr-text-secondary);
   justify-self: end;
 }
 
-.send-federation-selector__error {
+.federation-selector__error {
   margin-top: var(--vipr-space-2);
   color: var(--q-negative);
   font-size: var(--vipr-font-size-label);
@@ -237,14 +237,14 @@ async function selectFederation(federation: Federation) {
   text-align: center;
 }
 
-.send-federation-sheet {
+.federation-selector-sheet {
   display: flex;
   flex-direction: column;
   gap: var(--vipr-space-3);
   padding: var(--vipr-space-4);
 }
 
-.send-federation-sheet__item {
+.federation-selector-sheet__item {
   width: 100%;
   border: 1px solid var(--vipr-color-surface-border);
   border-radius: var(--vipr-radius-button-lg);
@@ -258,12 +258,12 @@ async function selectFederation(federation: Federation) {
   cursor: pointer;
 }
 
-.send-federation-sheet__item--active {
+.federation-selector-sheet__item--active {
   border-color: var(--q-primary);
   background: var(--vipr-surface-card-bg-selected);
 }
 
-.send-federation-sheet__item:disabled {
+.federation-selector-sheet__item:disabled {
   cursor: progress;
   opacity: 0.72;
 }
