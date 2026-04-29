@@ -51,6 +51,7 @@
             pnpm24
             nodejs_24.pkgs.typescript
             mkcert
+            nettools
             fontconfig
             fontconfig.bin
             pkgs.playwright-driver.browsers
@@ -83,9 +84,9 @@
               cd certs
               mkcert -install >/dev/null 2>&1
               
-              # Detect all local IPs
+              # Detect all local IPs.
               echo "Detecting local IP addresses..."
-              LOCAL_IPS=$(ifconfig | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}' | tr '\n' ' ')
+              LOCAL_IPS=$(${pkgs.nettools}/bin/ifconfig | awk '/inet / && $2 != "127.0.0.1" { print $2 }' | tr '\n' ' ')
               echo "Found local IPs: $LOCAL_IPS"
               
               # Generate certificates with localhost and all detected IPs
