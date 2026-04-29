@@ -1,31 +1,26 @@
 <template>
-  <q-expansion-item
-    class="settings-section settings-section--danger"
+  <SettingsSection
+    variant="danger"
     icon="warning"
     label="Reset"
     caption="Clear local data"
-    header-class="settings-header danger-header"
     expand-icon-class="text-negative"
   >
-    <q-card>
-      <q-card-section class="settings-panel settings-panel--danger">
-        <div class="settings-copy-block settings-block">
-          Deleting all data will remove your wallet connections, federations and all settings. This
-          cannot be undone.
-        </div>
-        <q-btn
-          label="Delete ALL Data"
-          color="negative"
-          icon="delete"
-          no-caps
-          unelevated
-          @click="deleteData"
-          class="settings-action-full"
-          data-testid="settings-delete-data-btn"
-        />
-      </q-card-section>
-    </q-card>
-  </q-expansion-item>
+    <div class="settings-copy-block settings-block">
+      Deleting all data will remove your wallet connections, federations and all settings. This
+      cannot be undone.
+    </div>
+    <q-btn
+      label="Delete ALL Data"
+      color="negative"
+      icon="delete"
+      no-caps
+      unelevated
+      @click="deleteData"
+      class="settings-action-full"
+      data-testid="settings-delete-data-btn"
+    />
+  </SettingsSection>
 </template>
 
 <script setup lang="ts">
@@ -35,6 +30,7 @@ defineOptions({
 
 import { Dialog } from 'quasar'
 import { useRouter } from 'vue-router'
+import SettingsSection from 'src/components/settings/SettingsSection.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { logger } from 'src/services/logger'
 import { useAppLockStore } from 'src/stores/app-lock'

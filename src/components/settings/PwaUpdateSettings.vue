@@ -1,38 +1,27 @@
 <template>
-  <q-expansion-item
-    class="settings-section settings-section--secondary"
-    icon="update"
-    label="Updates"
-    caption="Check for updates"
-    header-class="settings-header"
-    expand-icon-class="text-primary"
-  >
-    <q-card>
-      <q-card-section class="settings-panel settings-panel--secondary">
-        <div class="settings-copy-block settings-block">
-          <BuildInfo />
-        </div>
+  <SettingsSection variant="secondary" icon="update" label="Updates" caption="Check for updates">
+    <div class="settings-copy-block settings-block">
+      <BuildInfo />
+    </div>
 
-        <div>
-          <q-btn
-            :label="updateButtonLabel"
-            :icon="updateButtonIcon"
-            color="primary"
-            no-caps
-            unelevated
-            @click="handleUpdateAction"
-            class="settings-action-full"
-            data-testid="settings-check-updates-btn"
-            :loading="isUpdateActionRunning"
-            :disable="isUpdateActionRunning"
-          />
-          <div v-if="showApplyRestrictionHint" class="settings-warning">
-            Update is ready. Open Home or Settings to apply safely.
-          </div>
-        </div>
-      </q-card-section>
-    </q-card>
-  </q-expansion-item>
+    <div>
+      <q-btn
+        :label="updateButtonLabel"
+        :icon="updateButtonIcon"
+        color="primary"
+        no-caps
+        unelevated
+        @click="handleUpdateAction"
+        class="settings-action-full"
+        data-testid="settings-check-updates-btn"
+        :loading="isUpdateActionRunning"
+        :disable="isUpdateActionRunning"
+      />
+      <div v-if="showApplyRestrictionHint" class="settings-warning">
+        Update is ready. Open Home or Settings to apply safely.
+      </div>
+    </div>
+  </SettingsSection>
 </template>
 
 <script setup lang="ts">
@@ -43,6 +32,7 @@ defineOptions({
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import BuildInfo from 'src/components/BuildInfo.vue'
+import SettingsSection from 'src/components/settings/SettingsSection.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { usePwaUpdateStore } from 'src/stores/pwa-update'
 

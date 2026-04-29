@@ -1,88 +1,82 @@
 <template>
-  <q-expansion-item
-    class="settings-section settings-section--secondary"
+  <SettingsSection
+    variant="secondary"
     icon="lock"
     label="App Lock"
     caption="PIN and Face ID"
-    header-class="settings-header"
-    expand-icon-class="text-primary"
     data-testid="settings-app-lock-section"
   >
-    <q-card>
-      <q-card-section class="settings-panel settings-panel--secondary">
-        <div class="settings-copy-block settings-block" data-testid="settings-app-lock-copy">
-          Protect Vipr on this device with a local PIN. Face ID / Touch ID can be enabled after a
-          PIN is set.
-        </div>
+    <div class="settings-copy-block settings-block" data-testid="settings-app-lock-copy">
+      Protect Vipr on this device with a local PIN. Face ID / Touch ID can be enabled after a PIN is
+      set.
+    </div>
 
-        <div class="settings-app-lock-status">
-          <div class="settings-subtitle">{{ appLockStatusLabel }}</div>
-          <div class="settings-caption settings-muted">
-            Vipr locks on app start and after 30 seconds in the background.
-          </div>
-        </div>
+    <div class="settings-app-lock-status">
+      <div class="settings-subtitle">{{ appLockStatusLabel }}</div>
+      <div class="settings-caption settings-muted">
+        Vipr locks on app start and after 30 seconds in the background.
+      </div>
+    </div>
 
-        <div class="settings-app-lock-actions">
-          <q-btn
-            v-if="!isAppLockPinConfigured"
-            label="Set PIN"
-            icon="lock"
-            color="primary"
-            no-caps
-            unelevated
-            class="settings-action-full"
-            @click="openSetupPin"
-            data-testid="settings-app-lock-set-pin-btn"
-          />
+    <div class="settings-app-lock-actions">
+      <q-btn
+        v-if="!isAppLockPinConfigured"
+        label="Set PIN"
+        icon="lock"
+        color="primary"
+        no-caps
+        unelevated
+        class="settings-action-full"
+        @click="openSetupPin"
+        data-testid="settings-app-lock-set-pin-btn"
+      />
 
-          <template v-else>
-            <q-btn
-              label="Change PIN"
-              icon="lock"
-              color="primary"
-              no-caps
-              unelevated
-              class="settings-action-full"
-              @click="openChangePin"
-              data-testid="settings-app-lock-change-pin-btn"
-            />
-            <q-btn
-              label="Remove PIN"
-              icon="delete"
-              outline
-              no-caps
-              color="secondary"
-              class="settings-action-full"
-              @click="openRemovePin"
-              data-testid="settings-app-lock-remove-pin-btn"
-            />
-          </template>
+      <template v-else>
+        <q-btn
+          label="Change PIN"
+          icon="lock"
+          color="primary"
+          no-caps
+          unelevated
+          class="settings-action-full"
+          @click="openChangePin"
+          data-testid="settings-app-lock-change-pin-btn"
+        />
+        <q-btn
+          label="Remove PIN"
+          icon="delete"
+          outline
+          no-caps
+          color="secondary"
+          class="settings-action-full"
+          @click="openRemovePin"
+          data-testid="settings-app-lock-remove-pin-btn"
+        />
+      </template>
 
-          <q-btn
-            :label="biometricButtonLabel"
-            icon="fingerprint"
-            :color="isBiometricEnabled ? 'secondary' : 'primary'"
-            :outline="isBiometricEnabled"
-            no-caps
-            unelevated
-            class="settings-action-full"
-            :disable="!isAppLockPinConfigured || biometricBusy || !biometricAvailable"
-            :loading="biometricBusy"
-            @click="toggleBiometric"
-            data-testid="settings-app-lock-biometric-btn"
-          />
+      <q-btn
+        :label="biometricButtonLabel"
+        icon="fingerprint"
+        :color="isBiometricEnabled ? 'secondary' : 'primary'"
+        :outline="isBiometricEnabled"
+        no-caps
+        unelevated
+        class="settings-action-full"
+        :disable="!isAppLockPinConfigured || biometricBusy || !biometricAvailable"
+        :loading="biometricBusy"
+        @click="toggleBiometric"
+        data-testid="settings-app-lock-biometric-btn"
+      />
 
-          <div
-            v-if="!biometricAvailable"
-            class="settings-warning"
-            data-testid="settings-app-lock-biometric-unavailable"
-          >
-            Face ID / Touch ID is not available in this browser.
-          </div>
-        </div>
-      </q-card-section>
-    </q-card>
-  </q-expansion-item>
+      <div
+        v-if="!biometricAvailable"
+        class="settings-warning"
+        data-testid="settings-app-lock-biometric-unavailable"
+      >
+        Face ID / Touch ID is not available in this browser.
+      </div>
+    </div>
+  </SettingsSection>
 
   <q-dialog v-model="isAccessDialogOpen" persistent>
     <q-card class="settings-access-dialog">
@@ -120,6 +114,7 @@ defineOptions({
 
 import { computed, onMounted, ref } from 'vue'
 import AppLockPinEntry from 'src/components/AppLockPinEntry.vue'
+import SettingsSection from 'src/components/settings/SettingsSection.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { logger } from 'src/services/logger'
 import { useAppLockStore } from 'src/stores/app-lock'
