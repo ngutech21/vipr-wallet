@@ -77,7 +77,7 @@
             # Create certs directory if it doesn't exist
             mkdir -p certs
             
-            Generate certificates if they don't exist
+            # Generate certificates if they don't exist
             if [ ! -f "certs/localhost-key.pem" ] || [ ! -f "certs/localhost.pem" ]; then
               echo "Generating TLS certificates for localhost..."
               cd certs
