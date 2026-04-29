@@ -1,5 +1,56 @@
 # Changelog
 
+## [0.2.0](https://github.com/ngutech21/vipr-wallet/compare/v0.1.0...v0.2.0) (2026-04-29)
+
+
+### Features
+
+* add compact timestamp option for transaction items and update formatting logic ([4862dd2](https://github.com/ngutech21/vipr-wallet/commit/4862dd2b3d8d72e7212eab0864417d1fdc7cfa62))
+* add error message space reservation to AmountDisplay component ([33e019e](https://github.com/ngutech21/vipr-wallet/commit/33e019efa6101e73443aaedeffb7a3bc7bbb86a2))
+* add LNURL payment limits handling and UI hints in send page ([bbd9e1d](https://github.com/ngutech21/vipr-wallet/commit/bbd9e1d26f3f12f44a04d285c1d0ac0d7c7f678d))
+* add step to mark release PR as tagged after deployment ([af45d2d](https://github.com/ngutech21/vipr-wallet/commit/af45d2d25942309681360ff4dee160d6505412b7))
+* enhance LightningTransactionDetails to display gateway alias ([26f1b67](https://github.com/ngutech21/vipr-wallet/commit/26f1b67a9803e2b66349633ad93354d2a23fc12b))
+* implement app lock functionality with PIN and biometric support ([#391](https://github.com/ngutech21/vipr-wallet/issues/391)) ([032791b](https://github.com/ngutech21/vipr-wallet/commit/032791bf5168325149d1f32726955967fd03e898))
+* implement federation join prompt and ecash inspection logic ([21f5eec](https://github.com/ngutech21/vipr-wallet/commit/21f5eec4c896a1cbe077fd22d99dd3435bbf843f))
+* implement wallet gateways display in FederationDetailsPage ([c26d4a3](https://github.com/ngutech21/vipr-wallet/commit/c26d4a364a2a041cdf59a63e4687e8bc04c4cc34)), closes [#374](https://github.com/ngutech21/vipr-wallet/issues/374)
+* integrate FederationSelector in receive pages ([78bbe7a](https://github.com/ngutech21/vipr-wallet/commit/78bbe7a31f188a7d15d5e6d63e125bd2b73807e9))
+* refactor footer navigation to use click events for routing ([b8612e8](https://github.com/ngutech21/vipr-wallet/commit/b8612e8f7117db8b2cdca0750f63717c58a627e9))
+* replace home button with close button in SendEcashPage ([3a2d7c4](https://github.com/ngutech21/vipr-wallet/commit/3a2d7c4d1d06e8df6b628431cd3bd8fd224ff9d9))
+* Show federation balance when sending bitcoin ([#386](https://github.com/ngutech21/vipr-wallet/issues/386)) ([ad535c1](https://github.com/ngutech21/vipr-wallet/commit/ad535c1d8699a34cf49ebbc974acf5c4a8e8a1e0))
+* support Lightning and on-chain payments in BIP21 ([#387](https://github.com/ngutech21/vipr-wallet/issues/387)) ([538d874](https://github.com/ngutech21/vipr-wallet/commit/538d87488a6602cf53317924fef659b5523a887a))
+
+
+### Bug Fixes
+
+* add handling for navigation in progress to prevent duplicate detections ([2a84c1a](https://github.com/ngutech21/vipr-wallet/commit/2a84c1a66c8f6ea821374f277a0731a21b41f4ba))
+* enhance app lock overlay with PIN toggle and biometric unlock improvements ([a2fcf9a](https://github.com/ngutech21/vipr-wallet/commit/a2fcf9a951b8aa9310ef66e2283d7e9c8743e3d5))
+* enhance navigation and query handling for scan and send pages ([f974acf](https://github.com/ngutech21/vipr-wallet/commit/f974acfdaa585be63d254ac1e80238a37dfbcdad))
+* enhance QR code display in receive page ([f5f8bb4](https://github.com/ngutech21/vipr-wallet/commit/f5f8bb4eed671c1a06dbc8f2190f5f89259d3c0f))
+* enhance relay settings UI with improved layout ([5635a53](https://github.com/ngutech21/vipr-wallet/commit/5635a53022faa8a0de02d3f932c2980699878175))
+* enhance SendFederationSelector with selectable prop and update tests ([4a0dd88](https://github.com/ngutech21/vipr-wallet/commit/4a0dd888150b72989addb24648b5e00adbc3f9c8))
+* ensure invoice creation is disabled when no federation is selected ([423d4de](https://github.com/ngutech21/vipr-wallet/commit/423d4de06670c36ea7aaf6237970b54b34acf40e))
+* implement invoice payment subscription and cleanup logic in ReceivePage ([d0467e9](https://github.com/ngutech21/vipr-wallet/commit/d0467e9112a39af89bda5dcf7abe1aa18e2f986c))
+* improve version reading from package.json in production release workflow ([003d35c](https://github.com/ngutech21/vipr-wallet/commit/003d35ccc1615636910dc55bdaa3171f26b0e9dc))
+* mock @getalby/lightning-tools in test setup to prevent real requests ([a8554d1](https://github.com/ngutech21/vipr-wallet/commit/a8554d10a40c70a17ee5d532e166523066cc123f))
+* move ARG and ENV declarations to the top of the Dockerfile for clarity ([2dac546](https://github.com/ngutech21/vipr-wallet/commit/2dac546f62a273855acfbd84065bd35bc229bff2))
+* navigate back from tx detail to tx list ([2c3470c](https://github.com/ngutech21/vipr-wallet/commit/2c3470c4b449ba97f96536366d49ff3268d29709))
+* replace address and invoice display with readonly input fields for better accessibility ([7985a38](https://github.com/ngutech21/vipr-wallet/commit/7985a384b0ecdde3f1f5229593ca1ebf2e9833f7))
+* reset QR data and countdown timer when navigating back from invoice display ([7a79f9c](https://github.com/ngutech21/vipr-wallet/commit/7a79f9c8b221c4413a62f7ea4d65163100ee5846))
+* show badge pending for lightning receive tx ([c92131a](https://github.com/ngutech21/vipr-wallet/commit/c92131a7090a78e231f17b08091769c1e5817fea))
+* show more doesn't throw error anymore in tx list ([2269adb](https://github.com/ngutech21/vipr-wallet/commit/2269adb9b9c43d23493ed70170722287b1bc4249))
+* tls cert export in flake.nix ([2ec2df3](https://github.com/ngutech21/vipr-wallet/commit/2ec2df3dbeb96729b79ee12541d6ecc35ed27df0))
+* update BuildInfo component to format build time for better readability ([bfb2c75](https://github.com/ngutech21/vipr-wallet/commit/bfb2c7565f9d76e364b65ae17c96daaa63bc108e))
+* update button styles in StartupWizardBackupStep and adjust margin in SettingsPage ([d710753](https://github.com/ngutech21/vipr-wallet/commit/d710753b99861537670c99981e6ad1eadc64fae4))
+* update dev:e2e command for improved environment variable handling ([18c1d58](https://github.com/ngutech21/vipr-wallet/commit/18c1d58a1c986368f377a8fdb33b1591240f35f6))
+* update federation details button styles for improved visibility and interaction ([4aca0fa](https://github.com/ngutech21/vipr-wallet/commit/4aca0fa14d948179e582b88837f89617ae583b24))
+* update flake.lock and flake.nix for nixpkgs version and add nettools dependency ([8edb55e](https://github.com/ngutech21/vipr-wallet/commit/8edb55e15ac96df5e0c1468bc548e13b6ca4959f))
+* update GitHub Actions to capture short commit SHA ([3b53a97](https://github.com/ngutech21/vipr-wallet/commit/3b53a9787322e21f0d9a3a304220b25d0ffa53f6))
+* update guardian count label and improve invite code section layout ([065e207](https://github.com/ngutech21/vipr-wallet/commit/065e20718ae90f00d61715ddd5b7893d2ba7b5bb))
+* update viewport meta tag for improved responsiveness and add touch-action for better mobile interaction ([4d0b180](https://github.com/ngutech21/vipr-wallet/commit/4d0b1800b0a00919197cc109a63b224563961a4d))
+* update wallet gateway row styling for improved UI consistency ([9e3c7b7](https://github.com/ngutech21/vipr-wallet/commit/9e3c7b7b4001cee91426fc4b51fd6aefb0168e48))
+* update workflow name for clarity on deployment process ([685236e](https://github.com/ngutech21/vipr-wallet/commit/685236e636d594d9793d58fda43ba92e48158c12))
+* use simple tags without component in release-please ([2513463](https://github.com/ngutech21/vipr-wallet/commit/25134635042ad3a1be49eea2aff8de97744580c2))
+
 ## [0.1.0](https://github.com/ngutech21/vipr-wallet/compare/vipr-v0.0.1...vipr-v0.1.0) (2026-04-23)
 
 
