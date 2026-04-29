@@ -13,16 +13,12 @@ meta:
       class="dark-gradient vipr-mobile-page receive-onchain-page"
       data-testid="receive-onchain-page"
     >
-      <div class="vipr-topbar receive-onchain-topbar">
-        <q-btn
-          flat
-          round
-          icon="arrow_back"
-          @click="goBack"
-          class="vipr-topbar__back receive-onchain-topbar__back"
-          data-testid="receive-onchain-back-btn"
-        />
-      </div>
+      <ViprTopbar
+        topbar-class="receive-onchain-topbar"
+        button-class="receive-onchain-topbar__back"
+        button-test-id="receive-onchain-back-btn"
+        @back="goBack"
+      />
 
       <div class="receive-onchain-content">
         <FederationSelector
@@ -103,6 +99,7 @@ import { useRouter } from 'vue-router'
 import type { WalletDepositState } from '@fedimint/core'
 import CopyableQrCard from 'src/components/CopyableQrCard.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
+import ViprTopbar from 'src/components/ViprTopbar.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useCopyShare } from 'src/composables/useCopyShare'
 import { useFederationStore } from 'src/stores/federation'

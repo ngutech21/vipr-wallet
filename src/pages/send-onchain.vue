@@ -13,16 +13,12 @@ meta:
       class="dark-gradient vipr-mobile-page send-onchain-page"
       data-testid="send-onchain-page"
     >
-      <div class="vipr-topbar send-onchain-topbar">
-        <q-btn
-          flat
-          round
-          icon="arrow_back"
-          @click="goBack"
-          class="vipr-topbar__back send-onchain-topbar__back"
-          data-testid="send-onchain-back-btn"
-        />
-      </div>
+      <ViprTopbar
+        topbar-class="send-onchain-topbar"
+        button-class="send-onchain-topbar__back"
+        button-test-id="send-onchain-back-btn"
+        @back="goBack"
+      />
 
       <div class="send-onchain-content">
         <div class="vipr-flow-center">
@@ -129,6 +125,7 @@ import { useRoute, useRouter } from 'vue-router'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
+import ViprTopbar from 'src/components/ViprTopbar.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useNumericInput } from 'src/composables/useNumericInput'
 import { logger } from 'src/services/logger'

@@ -10,13 +10,13 @@ meta:
     leave-active-class="animated slideOutLeft"
   >
     <q-page class="transactions-page dark-gradient" data-testid="transactions-page">
-      <div
+      <ViprTopbar
         v-touch-swipe.right.mouse="goBack"
-        class="transactions-topbar"
+        topbar-class="transactions-topbar"
+        button-test-id="transactions-back-btn"
         data-testid="transactions-swipe-zone"
-      >
-        <q-btn flat round icon="arrow_back" @click="goBack" data-testid="transactions-back-btn" />
-      </div>
+        @back="goBack"
+      />
 
       <TransactionsList mode="history" />
     </q-page>
@@ -30,6 +30,7 @@ defineOptions({
 
 import { useRouter } from 'vue-router'
 import TransactionsList from 'src/components/TransactionsList.vue'
+import ViprTopbar from 'src/components/ViprTopbar.vue'
 
 const router = useRouter()
 
@@ -40,11 +41,6 @@ async function goBack() {
 
 <style scoped>
 .transactions-topbar {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  padding: calc(var(--vipr-space-3) + env(safe-area-inset-top)) var(--vipr-space-4)
-    var(--vipr-space-1);
   width: 100%;
   max-width: 700px;
   margin: 0 auto;

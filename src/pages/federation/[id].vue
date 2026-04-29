@@ -11,16 +11,12 @@ meta:
     mode="out-in"
   >
     <q-page class="vipr-mobile-page federation-details-page">
-      <div class="vipr-topbar federation-details-topbar">
-        <q-btn
-          flat
-          round
-          icon="arrow_back"
-          :to="{ name: '/federations/' }"
-          class="vipr-topbar__back federation-details-topbar__back"
-          data-testid="federation-details-back-btn"
-        />
-      </div>
+      <ViprTopbar
+        topbar-class="federation-details-topbar"
+        button-class="federation-details-topbar__back"
+        button-test-id="federation-details-back-btn"
+        :back-to="{ name: '/federations/' }"
+      />
 
       <div class="federation-details-content">
         <FederationSummaryCard :federation="federation" :observer-url="observerUrl" />
@@ -72,6 +68,7 @@ import FederationMessagesCard from 'src/components/federation/FederationMessages
 import FederationMetadataCard from 'src/components/federation/FederationMetadataCard.vue'
 import FederationSummaryCard from 'src/components/federation/FederationSummaryCard.vue'
 import LeaveFederationCard from 'src/components/federation/LeaveFederationCard.vue'
+import ViprTopbar from 'src/components/ViprTopbar.vue'
 import type { FederationUtxo } from 'src/types/federation'
 import FederationUtxos from 'src/components/FederationUtxos.vue'
 import { logger } from 'src/services/logger'

@@ -39,16 +39,12 @@ meta:
         </ModalCard>
       </q-dialog>
 
-      <div class="vipr-topbar receive-ecash-topbar">
-        <q-btn
-          flat
-          round
-          icon="arrow_back"
-          :to="{ name: '/' }"
-          class="vipr-topbar__back receive-ecash-topbar__back"
-          data-testid="receive-ecash-back-btn"
-        />
-      </div>
+      <ViprTopbar
+        topbar-class="receive-ecash-topbar"
+        button-class="receive-ecash-topbar__back"
+        button-test-id="receive-ecash-back-btn"
+        :back-to="{ name: '/' }"
+      />
 
       <div class="receive-ecash-content">
         <q-card flat class="task-card vipr-flow-panel vipr-surface-card--strong receive-ecash-card">
@@ -114,6 +110,7 @@ import { useAppNotify } from 'src/composables/useAppNotify'
 import { getErrorMessage } from 'src/utils/error'
 import ModalCard from 'src/components/ModalCard.vue'
 import JoinFederationPreviewStep from 'src/components/JoinFederationPreviewStep.vue'
+import ViprTopbar from 'src/components/ViprTopbar.vue'
 import type { Federation } from 'src/types/federation'
 
 type PendingEcashImport = {

@@ -10,16 +10,12 @@ meta:
     leave-active-class="animated slideOutLeft"
   >
     <q-page class="dark-gradient vipr-mobile-page send-page">
-      <div class="vipr-topbar send-topbar">
-        <q-btn
-          flat
-          round
-          icon="arrow_back"
-          @click="goBack"
-          class="vipr-topbar__back send-topbar__back"
-          data-testid="send-back-btn"
-        />
-      </div>
+      <ViprTopbar
+        topbar-class="send-topbar"
+        button-class="send-topbar__back"
+        button-test-id="send-back-btn"
+        @back="goBack"
+      />
       <div class="send-content">
         <FederationSelector class="send-federation-control" :selectable="!decodedInvoice" />
 
@@ -185,6 +181,7 @@ import VerifyPayment from 'components/VerifyPayment.vue'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
+import ViprTopbar from 'src/components/ViprTopbar.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useInvoiceDecoding } from 'src/composables/useInvoiceDecoding'

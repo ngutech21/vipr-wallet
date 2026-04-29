@@ -8,17 +8,15 @@ meta:
     class="backup-page dark-gradient vipr-mobile-page vipr-mobile-page--wide"
     data-testid="backup-intro-page"
   >
-    <div class="vipr-topbar vipr-topbar--comfortable backup-topbar">
-      <q-btn
-        flat
-        round
-        color="white"
-        icon="arrow_back"
-        class="vipr-topbar__back vipr-topbar__back--bleed backup-topbar__back"
-        @click="goBack"
-        data-testid="backup-intro-back-btn"
-      />
-    </div>
+    <ViprTopbar
+      comfortable
+      bleed
+      button-color="white"
+      topbar-class="backup-topbar"
+      button-class="backup-topbar__back"
+      button-test-id="backup-intro-back-btn"
+      @back="goBack"
+    />
 
     <div class="backup-page__content">
       <div class="backup-intro-container vipr-page-panel">
@@ -83,6 +81,7 @@ defineOptions({
 })
 
 import { useRouter } from 'vue-router'
+import ViprTopbar from 'src/components/ViprTopbar.vue'
 
 const router = useRouter()
 

@@ -10,16 +10,12 @@ meta:
     leave-active-class="animated slideOutLeft"
   >
     <q-page class="dark-gradient vipr-mobile-page send-ecash-page">
-      <div class="vipr-topbar send-ecash-topbar">
-        <q-btn
-          flat
-          round
-          icon="arrow_back"
-          @click="goBack"
-          class="vipr-topbar__back send-ecash-topbar__back"
-          data-testid="send-ecash-back-btn"
-        />
-      </div>
+      <ViprTopbar
+        topbar-class="send-ecash-topbar"
+        button-class="send-ecash-topbar__back"
+        button-test-id="send-ecash-back-btn"
+        @back="goBack"
+      />
 
       <div class="send-ecash-content">
         <div class="vipr-flow-center">
@@ -133,6 +129,7 @@ import { useRouter } from 'vue-router'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
 import AnimatedEcashQr from 'src/components/AnimatedEcashQr.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
+import ViprTopbar from 'src/components/ViprTopbar.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useCopyShare } from 'src/composables/useCopyShare'
 import NumericKeypad from 'src/components/NumericKeypad.vue'

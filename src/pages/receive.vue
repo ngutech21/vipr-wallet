@@ -12,16 +12,12 @@ meta:
     <!-- Only render layout if not leaving -->
 
     <q-page class="dark-gradient vipr-mobile-page receive-page" data-testid="receive-page">
-      <div class="vipr-topbar receive-topbar">
-        <q-btn
-          flat
-          round
-          icon="arrow_back"
-          @click="goBack"
-          class="vipr-topbar__back receive-topbar__back"
-          data-testid="receive-back-btn"
-        />
-      </div>
+      <ViprTopbar
+        topbar-class="receive-topbar"
+        button-class="receive-topbar__back"
+        button-test-id="receive-back-btn"
+        @back="goBack"
+      />
 
       <div class="receive-content">
         <FederationSelector
@@ -133,6 +129,7 @@ import AmountDisplay from 'src/components/AmountDisplay.vue'
 import CopyableQrCard from 'src/components/CopyableQrCard.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
+import ViprTopbar from 'src/components/ViprTopbar.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useCopyShare } from 'src/composables/useCopyShare'
 import { useLightningPayment } from 'src/composables/useLightningPayment'

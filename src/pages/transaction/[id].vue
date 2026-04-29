@@ -11,21 +11,16 @@ meta:
     mode="out-in"
   >
     <q-page class="vipr-mobile-page transaction-details-page">
-      <div
+      <ViprTopbar
         v-touch-swipe.right.mouse="navigateBack"
-        class="vipr-topbar transaction-details-topbar"
+        bleed
+        button-color="white"
+        topbar-class="transaction-details-topbar"
+        button-class="transaction-details-topbar__back"
+        button-test-id="transaction-details-back-btn"
         data-testid="transaction-details-swipe-zone"
-      >
-        <q-btn
-          flat
-          round
-          color="white"
-          icon="arrow_back"
-          class="vipr-topbar__back vipr-topbar__back--bleed transaction-details-topbar__back"
-          @click="navigateBack"
-          data-testid="transaction-details-back-btn"
-        />
-      </div>
+        @back="navigateBack"
+      />
 
       <!-- Loading state -->
       <div v-if="loading" class="transaction-state">
@@ -77,6 +72,7 @@ import type { Transactions } from '@fedimint/core'
 import LightningTransactionDetails from 'src/components/LightningTransactionDetails.vue'
 import EcashTransactionDetails from 'src/components/EcashTransactionDetails.vue'
 import WalletTransactionDetails from 'src/components/WalletTransactionDetails.vue'
+import ViprTopbar from 'src/components/ViprTopbar.vue'
 import { logger } from 'src/services/logger'
 
 const route = useRoute('/transaction/[id]')

@@ -10,16 +10,7 @@ meta:
     leave-active-class="animated slideOutLeft"
   >
     <q-page class="dark-gradient vipr-mobile-page lnurl-page" data-testid="lnurl-page">
-      <div class="vipr-topbar lnurl-topbar">
-        <q-btn
-          flat
-          round
-          icon="arrow_back"
-          @click="goBack"
-          class="vipr-topbar__back"
-          data-testid="lnurl-back-btn"
-        />
-      </div>
+      <ViprTopbar topbar-class="lnurl-topbar" button-test-id="lnurl-back-btn" @back="goBack" />
 
       <div class="lnurl-content">
         <div class="vipr-flow-center">
@@ -118,6 +109,7 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
+import ViprTopbar from 'src/components/ViprTopbar.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
 import { useNumericInput } from 'src/composables/useNumericInput'
