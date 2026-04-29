@@ -13,7 +13,7 @@
     "format:check": "prettier --check \"**/*.{js,ts,vue,scss,html,md,json}\"",
     "test": "pnpm run test:unit:ci",
     "dev": "BROWSER=none  quasar dev -m pwa",
-    "dev:e2e": "BROWSER=none quasar dev -m pwa --port 9303",
+    "dev:e2e": "unset HTTPS_KEY HTTPS_CERT; VITE_E2E_MODE=1 BROWSER=none quasar dev -m pwa --port 9303",
     "build": "quasar build -m pwa",
     "build:docker": "docker build -t vipr-wallet .",
     "postinstall": "quasar prepare",
