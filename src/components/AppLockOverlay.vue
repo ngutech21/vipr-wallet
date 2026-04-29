@@ -8,12 +8,10 @@
     data-testid="app-lock-overlay"
   >
     <div class="app-lock-overlay__panel vipr-flow-panel vipr-flow-panel--padded">
-      <div v-if="showBiometricAction" class="app-lock-overlay__biometric">
+      <div v-if="showBiometricAction && !showPinUnlock" class="app-lock-overlay__biometric">
         <q-icon name="fingerprint" class="app-lock-overlay__biometric-icon" />
         <div class="app-lock-overlay__title">Vipr is locked</div>
-        <div class="app-lock-overlay__subtitle">
-          Unlock with Face ID / Touch ID or use your PIN.
-        </div>
+        <div class="app-lock-overlay__subtitle">Unlock with Face ID / Touch ID.</div>
         <q-btn
           label="Unlock with Face ID / Touch ID"
           icon="fingerprint"
@@ -26,9 +24,20 @@
           @click="unlockWithBiometric"
           data-testid="app-lock-biometric-unlock-btn"
         />
+
+        <q-btn
+          label="Enter PIN"
+          flat
+          no-caps
+          class="app-lock-overlay__pin-toggle"
+          :disable="biometricUnlocking"
+          @click="showPinUnlock = true"
+          data-testid="app-lock-show-pin-btn"
+        />
       </div>
 
       <AppLockPinEntry
+        v-if="showPinUnlock"
         mode="verify"
         title="Enter PIN"
         subtitle="Use your PIN to unlock Vipr."
@@ -51,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import AppLockPinEntry from 'src/components/AppLockPinEntry.vue'
 import { useAppLockStore } from 'src/stores/app-lock'
@@ -60,6 +69,7 @@ const appLockStore = useAppLockStore()
 const biometricUnlocking = ref(false)
 const biometricError = ref('')
 const showBiometricAction = computed(() => appLockStore.isBiometricEnabled)
+const showPinUnlock = ref(!showBiometricAction.value)
 
 function handleVisibilityChange(): void {
   if (typeof document === 'undefined') {
@@ -83,7 +93,7 @@ async function unlockWithBiometric(): Promise<void> {
   biometricUnlocking.value = false
 
   if (!ok) {
-    biometricError.value = 'Face ID / Touch ID did not unlock Vipr. Use your PIN instead.'
+    biometricError.value = 'Face ID / Touch ID did not unlock Vipr. Enter your PIN instead.'
   }
 }
 
@@ -96,6 +106,18 @@ onMounted(() => {
     document.addEventListener('visibilitychange', handleVisibilityChange)
   }
 })
+
+watch(
+  () => appLockStore.shouldShowLock,
+  (shouldShowLock) => {
+    if (!shouldShowLock) {
+      return
+    }
+
+    showPinUnlock.value = !showBiometricAction.value
+    biometricError.value = ''
+  },
+)
 
 onBeforeUnmount(() => {
   if (typeof document !== 'undefined') {
@@ -161,6 +183,12 @@ onBeforeUnmount(() => {
 .app-lock-overlay__biometric-btn {
   width: 100%;
   margin-top: var(--vipr-space-5);
+}
+
+.app-lock-overlay__pin-toggle {
+  margin-top: var(--vipr-space-3);
+  color: var(--vipr-text-secondary);
+  font-size: var(--vipr-font-size-body-sm);
 }
 
 .app-lock-overlay__error {

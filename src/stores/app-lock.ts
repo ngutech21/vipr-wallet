@@ -303,6 +303,7 @@ export const useAppLockStore = defineStore('app-lock', {
               {
                 type: 'public-key',
                 id: toArrayBuffer(base64UrlToBytes(this.biometricCredentialId)),
+                transports: ['internal'],
               },
             ],
             userVerification: 'required',
