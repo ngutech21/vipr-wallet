@@ -57,52 +57,17 @@ meta:
         </div>
 
         <template v-else>
-          <div class="vipr-qr-card-shell">
-            <q-card
-              v-if="bitcoinAddress"
-              flat
-              class="task-card vipr-surface-card--strong vipr-qr-card"
-            >
-              <q-card-section class="vipr-qr-container">
-                <div class="vipr-qr-surface">
-                  <qrcode-vue
-                    :value="bitcoinAddress"
-                    level="M"
-                    render-as="svg"
-                    :size="0"
-                    class="vipr-qr-code"
-                  />
-                </div>
-              </q-card-section>
-              <q-separator class="vipr-copy-separator" />
-              <q-card-section class="vipr-copy-section">
-                <div class="vipr-copy-row">
-                  <input
-                    class="vipr-copy-value"
-                    :title="bitcoinAddress"
-                    :value="bitcoinAddress"
-                    readonly
-                    data-testid="receive-onchain-address-input"
-                    aria-label="Bitcoin address"
-                  />
-                  <q-btn
-                    icon="content_copy"
-                    flat
-                    round
-                    @click="copyToClipboard"
-                    data-testid="receive-onchain-copy-btn"
-                  />
-                  <q-btn
-                    icon="share"
-                    flat
-                    round
-                    @click="shareAddress"
-                    data-testid="receive-onchain-share-btn"
-                  />
-                </div>
-              </q-card-section>
-            </q-card>
-          </div>
+          <CopyableQrCard
+            v-if="bitcoinAddress"
+            :value="bitcoinAddress"
+            input-aria-label="Bitcoin address"
+            test-id-prefix="receive-onchain"
+            input-test-id="receive-onchain-address-input"
+            copy-test-id="receive-onchain-copy-btn"
+            share-test-id="receive-onchain-share-btn"
+            @copy="copyToClipboard"
+            @share="shareAddress"
+          />
 
           <div v-if="bitcoinAddress" class="receive-onchain-status">
             <div class="status-title" data-testid="receive-onchain-status-text">
@@ -136,8 +101,8 @@ defineOptions({
 import { computed, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useShare } from '@vueuse/core'
-import QrcodeVue from 'qrcode.vue'
 import type { WalletDepositState } from '@fedimint/core'
+import CopyableQrCard from 'src/components/CopyableQrCard.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useFederationStore } from 'src/stores/federation'

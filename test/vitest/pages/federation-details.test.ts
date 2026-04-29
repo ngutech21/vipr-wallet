@@ -101,7 +101,7 @@ describe('FederationDetailsPage', () => {
           transition: false,
           FederationGuardians: true,
           FederationUtxos: true,
-          QrcodeVue: true,
+          CopyableQrCard: true,
           'q-page': { template: '<div><slot /></div>' },
           'q-card': { template: '<div><slot /></div>' },
           'q-card-section': { template: '<div><slot /></div>' },

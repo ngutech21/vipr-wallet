@@ -98,7 +98,7 @@ describe('ReceivePage timer lifecycle', () => {
       global: {
         stubs: {
           transition: false,
-          QrcodeVue: true,
+          CopyableQrCard: true,
           'q-page': true,
           'q-toolbar': true,
           'q-btn': true,

@@ -75,54 +75,18 @@ meta:
           </div>
         </div>
 
-        <!-- QR Code Card -->
-        <div class="vipr-qr-card-shell">
-          <q-card
-            v-if="qrData"
-            flat
-            class="vipr-qr-card task-card vipr-surface-card--strong"
-            data-testid="receive-qr-container"
-          >
-            <q-card-section class="vipr-qr-container">
-              <div class="vipr-qr-surface">
-                <qrcode-vue
-                  :value="qrData"
-                  level="M"
-                  render-as="svg"
-                  :size="0"
-                  class="vipr-qr-code"
-                />
-              </div>
-            </q-card-section>
-            <q-separator class="vipr-copy-separator" />
-            <q-card-section class="vipr-copy-section">
-              <div class="vipr-copy-row">
-                <input
-                  class="vipr-copy-value"
-                  :title="qrData"
-                  :value="qrData"
-                  readonly
-                  data-testid="receive-invoice-input"
-                  aria-label="Lightning invoice"
-                />
-                <q-btn
-                  icon="content_copy"
-                  flat
-                  round
-                  @click="copyToClipboard"
-                  data-testid="receive-copy-invoice-btn"
-                />
-                <q-btn
-                  icon="share"
-                  flat
-                  round
-                  @click="shareQrcode"
-                  data-testid="receive-share-invoice-btn"
-                />
-              </div>
-            </q-card-section>
-          </q-card>
-        </div>
+        <CopyableQrCard
+          v-if="qrData"
+          :value="qrData"
+          input-aria-label="Lightning invoice"
+          test-id-prefix="receive"
+          container-test-id="receive-qr-container"
+          input-test-id="receive-invoice-input"
+          copy-test-id="receive-copy-invoice-btn"
+          share-test-id="receive-share-invoice-btn"
+          @copy="copyToClipboard"
+          @share="shareQrcode"
+        />
 
         <!-- Payment Status -->
         <div v-if="qrData" class="receive-status">
@@ -159,7 +123,6 @@ defineOptions({
 })
 
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import QrcodeVue from 'qrcode.vue'
 import { Loading } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useShare } from '@vueuse/core'
@@ -168,6 +131,7 @@ import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import { logger } from 'src/services/logger'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
+import CopyableQrCard from 'src/components/CopyableQrCard.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'

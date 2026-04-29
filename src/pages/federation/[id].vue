@@ -83,52 +83,19 @@ meta:
           </q-card-section>
         </q-card>
 
-        <q-card
-          flat
-          class="federation-card vipr-surface-card vipr-surface-card--subtle"
+        <CopyableQrCard
           v-if="inviteCode"
-        >
-          <q-card-section class="vipr-qr-container">
-            <div class="vipr-qr-surface">
-              <qrcode-vue
-                :value="inviteCode"
-                level="M"
-                render-as="svg"
-                :size="0"
-                class="vipr-qr-code"
-              />
-            </div>
-          </q-card-section>
-
-          <q-separator class="vipr-copy-separator" />
-          <q-card-section class="vipr-copy-section">
-            <div class="vipr-copy-label">Invite code</div>
-            <div class="vipr-copy-row">
-              <input
-                class="vipr-copy-value"
-                :title="inviteCode"
-                :value="inviteCode"
-                readonly
-                data-testid="federation-details-invite-input"
-                aria-label="Federation invite code"
-              />
-              <q-btn
-                icon="content_copy"
-                flat
-                round
-                @click="copyInviteCode"
-                data-testid="federation-details-copy-invite-btn"
-              />
-              <q-btn
-                icon="share"
-                flat
-                round
-                @click="shareInviteCode"
-                data-testid="federation-details-share-invite-btn"
-              />
-            </div>
-          </q-card-section>
-        </q-card>
+          :value="inviteCode"
+          label="Invite code"
+          input-aria-label="Federation invite code"
+          test-id-prefix="federation-details-invite"
+          card-class="federation-card vipr-surface-card--subtle"
+          input-test-id="federation-details-invite-input"
+          copy-test-id="federation-details-copy-invite-btn"
+          share-test-id="federation-details-share-invite-btn"
+          @copy="copyInviteCode"
+          @share="shareInviteCode"
+        />
 
         <FederationGuardians :guardians="federation?.guardians ?? []" class="federation-card" />
 
@@ -391,12 +358,12 @@ defineOptions({
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useShare } from '@vueuse/core'
-import QrcodeVue from 'qrcode.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import FederationGuardians from 'src/components/FederationGuardians.vue'
 import FederationUtxos from 'src/components/FederationUtxos.vue'
+import CopyableQrCard from 'src/components/CopyableQrCard.vue'
 import type { FederationUtxo } from 'src/types/federation'
 import { useFormatters } from '../../utils/formatter'
 import { logger } from 'src/services/logger'
