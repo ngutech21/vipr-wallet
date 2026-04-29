@@ -2,11 +2,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import { Quasar } from 'quasar'
-import { defineComponent } from 'vue'
+import { computed, defineComponent, type PropType } from 'vue'
 import { createTestingPinia } from '@pinia/testing'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import FederationsPage from 'src/pages/federations/index.vue'
 import type { Federation } from 'src/types/federation'
+import type { FederationJoinFlow } from 'src/composables/useFederationJoinFlow'
 
 const createMockFederation = (overrides: Partial<Federation> = {}): Federation => ({
   title: 'Test Federation',
@@ -14,6 +15,23 @@ const createMockFederation = (overrides: Partial<Federation> = {}): Federation =
   federationId: 'abc123def456',
   modules: [],
   ...overrides,
+})
+
+const FederationJoinDialogsStub = defineComponent({
+  name: 'FederationJoinDialogs',
+  props: {
+    flow: {
+      type: Object as PropType<FederationJoinFlow>,
+      required: true,
+    },
+  },
+  setup(props) {
+    return {
+      selectionOpen: computed(() => props.flow.showSelection.value),
+    }
+  },
+  template:
+    '<div data-testid="federation-join-dialogs-stub" :data-selection-open="selectionOpen ? \'true\' : \'false\'" />',
 })
 
 describe('FederationsPage.vue', () => {
@@ -64,9 +82,16 @@ describe('FederationsPage.vue', () => {
       global: {
         plugins: [Quasar, pinia, router],
         stubs: {
-          AddFederationSelection: true,
-          DiscoverFederations: true,
-          AddFederation: true,
+          FederationJoinDialogs: FederationJoinDialogsStub,
+          FederationList: true,
+          QPage: defineComponent({
+            name: 'QPage',
+            template: '<div><slot /></div>',
+          }),
+          QBtn: defineComponent({
+            name: 'QBtn',
+            template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
+          }),
         },
       },
     })
@@ -92,114 +117,22 @@ describe('FederationsPage.vue', () => {
     )
   })
 
-  it('returns from preview back to discovery when opened from discovery', async () => {
-    const pinia = createTestingPinia({
-      initialState: {
-        federation: {
-          federations: [],
-          selectedFederationId: null,
-        },
+  it('opens the shared federation join flow from the add button', async () => {
+    await createWrapper([])
+
+    expect(wrapper?.get('[data-testid="federation-join-dialogs-stub"]').attributes()).toMatchObject(
+      {
+        'data-selection-open': 'false',
       },
-      stubActions: true,
-      createSpy: vi.fn,
-    })
+    )
 
-    const router = createRouter({
-      history: createMemoryHistory(),
-      routes: [
-        {
-          path: '/federations',
-          name: '/federations/',
-          component: { template: '<div />' },
-        },
-      ],
-    })
+    await wrapper?.get('[data-testid="add-federation-button"]').trigger('click')
+    await flushPromises()
 
-    await router.push('/federations')
-    await router.isReady()
-
-    wrapper = mount(FederationsPage, {
-      global: {
-        plugins: [Quasar, pinia, router],
-        stubs: {
-          AddFederationSelection: true,
-          DiscoverFederations: defineComponent({
-            name: 'DiscoverFederations',
-            emits: ['showAdd'],
-            template: `
-              <div data-testid="discover-federations-stub">
-                <button
-                  data-testid="discover-open-preview-btn"
-                  @click="$emit('showAdd', { inviteCode: 'fed11preview' })"
-                >
-                  open preview
-                </button>
-              </div>
-            `,
-          }),
-          AddFederation: defineComponent({
-            name: 'AddFederation',
-            props: {
-              backTarget: { type: String, required: false, default: 'invite' },
-            },
-            emits: ['back'],
-            template: `
-              <div data-testid="add-federation-stub">
-                <div data-testid="add-federation-back-target">{{ backTarget }}</div>
-                <button data-testid="add-federation-back-btn" @click="$emit('back')">back</button>
-              </div>
-            `,
-          }),
-          QDialog: defineComponent({
-            name: 'QDialog',
-            props: {
-              modelValue: { type: Boolean, required: false, default: false },
-            },
-            emits: ['hide', 'update:modelValue'],
-            watch: {
-              modelValue(newValue: boolean, oldValue: boolean) {
-                if (oldValue === true && newValue === false) {
-                  this.$emit('hide')
-                }
-              },
-            },
-            template: '<div v-if="modelValue"><slot /></div>',
-          }),
-          QPage: defineComponent({
-            name: 'QPage',
-            template: '<div><slot /></div>',
-          }),
-          QToolbar: defineComponent({
-            name: 'QToolbar',
-            template: '<div><slot /></div>',
-          }),
-          QToolbarTitle: defineComponent({
-            name: 'QToolbarTitle',
-            template: '<div><slot /></div>',
-          }),
-          FederationList: true,
-          QBtn: defineComponent({
-            name: 'QBtn',
-            template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
-          }),
-        },
+    expect(wrapper?.get('[data-testid="federation-join-dialogs-stub"]').attributes()).toMatchObject(
+      {
+        'data-selection-open': 'true',
       },
-    })
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(wrapper.vm as any).showDiscover = true
-    await flushPromises()
-
-    await wrapper.get('[data-testid="discover-open-preview-btn"]').trigger('click')
-    await flushPromises()
-
-    expect(wrapper.find('[data-testid="discover-federations-stub"]').exists()).toBe(false)
-    expect(wrapper.get('[data-testid="add-federation-back-target"]').text()).toBe('discover')
-
-    await wrapper.get('[data-testid="add-federation-back-btn"]').trigger('click')
-    await flushPromises()
-
-    expect(wrapper.find('[data-testid="add-federation-stub"]').exists()).toBe(false)
-    expect(wrapper.find('[data-testid="discover-federations-stub"]').exists()).toBe(true)
+    )
   })
 })

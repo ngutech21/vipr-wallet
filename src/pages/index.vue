@@ -132,11 +132,6 @@ const totalBalance = computed(() => walletStore.balance)
 const federationJoinFlow = useFederationJoinFlow()
 const showSendEcashSelection = ref(false)
 const showReceiveEcashSelection = ref(false)
-const { showDiscover } = federationJoinFlow
-
-defineExpose({
-  showDiscover,
-})
 </script>
 
 <style scoped>

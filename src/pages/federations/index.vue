@@ -31,11 +31,7 @@ import FederationList from 'src/components/FederationList.vue'
 import { useFederationJoinFlow } from 'src/composables/useFederationJoinFlow'
 
 const federationJoinFlow = useFederationJoinFlow()
-const { showSelection, showDiscover } = federationJoinFlow
-
-defineExpose({
-  showDiscover,
-})
+const { showSelection } = federationJoinFlow
 </script>
 
 <style scoped>
