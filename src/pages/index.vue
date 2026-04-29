@@ -1,39 +1,6 @@
 <template>
   <q-page class="home-page" data-testid="home-page">
-    <q-dialog
-      v-model="showSelection"
-      position="bottom"
-      transition-show="slide-up"
-      transition-hide="slide-down"
-    >
-      <AddFederationSelection
-        v-if="showSelection"
-        @close="showSelection = false"
-        @show-discover="showDiscover = true"
-        @show-add="showAdd = true"
-      />
-    </q-dialog>
-
-    <q-dialog v-model="showDiscover" position="bottom" @hide="onDiscoverHide">
-      <DiscoverFederations
-        v-if="showDiscover"
-        :visible="showDiscover"
-        @close="showDiscover = false"
-        @show-add="openAddFederationPreview"
-      />
-    </q-dialog>
-
-    <q-dialog v-model="showAdd" position="bottom">
-      <AddFederation
-        v-if="showAdd"
-        :back-target="addFederationBackTarget"
-        @close="closeAddFederation"
-        @back="returnToDiscovery"
-        :initial-invite-code="selectedInviteCode"
-        :initial-preview-federation="selectedPreviewFederation"
-        :auto-preview="selectedInviteCode != null"
-      />
-    </q-dialog>
+    <FederationJoinDialogs :flow="federationJoinFlow" />
 
     <q-dialog
       v-model="showSendEcashSelection"
@@ -53,8 +20,6 @@
       <ReceiveEcashSelection
         v-if="showReceiveEcashSelection"
         @close="showReceiveEcashSelection = false"
-        @show-discover="showReceiveEcashSelection = true"
-        @show-add="showAdd = true"
       />
     </q-dialog>
 
@@ -91,7 +56,7 @@
         label="Join a federation"
         class="home-empty-state__action vipr-btn vipr-btn--primary-soft vipr-btn--md"
         icon="add"
-        @click="showSelection = true"
+        @click="federationJoinFlow.openSelection"
         :data-testid="'home-join-federation-btn'"
       />
     </div>
@@ -148,21 +113,15 @@ import { computed, ref, defineAsyncComponent } from 'vue'
 defineOptions({
   name: 'IndexPage',
 })
-import type { DiscoverySelectionPayload, Federation } from 'src/types/federation'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
+import FederationJoinDialogs from 'src/components/FederationJoinDialogs.vue'
 import TransactionsList from 'src/components/TransactionsList.vue'
+import { useFederationJoinFlow } from 'src/composables/useFederationJoinFlow'
 
-const AddFederationSelection = defineAsyncComponent(
-  () => import('src/components/AddFederationSelection.vue'),
-)
 const SendEcashSelection = defineAsyncComponent(
   () => import('src/components/SendEcashSelection.vue'),
 )
-const DiscoverFederations = defineAsyncComponent(
-  () => import('src/components/DiscoverFederations.vue'),
-)
-const AddFederation = defineAsyncComponent(() => import('src/components/AddFederation.vue'))
 const ReceiveEcashSelection = defineAsyncComponent(
   () => import('src/components/ReceiveEcashSelection.vue'),
 )
@@ -170,57 +129,14 @@ const ReceiveEcashSelection = defineAsyncComponent(
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
 const totalBalance = computed(() => walletStore.balance)
-const showSelection = ref(false)
+const federationJoinFlow = useFederationJoinFlow()
 const showSendEcashSelection = ref(false)
 const showReceiveEcashSelection = ref(false)
-const showDiscover = ref(false)
-const showAdd = ref(false)
-const selectedInviteCode = ref<string | null>(null)
-const selectedPreviewFederation = ref<Federation | null>(null)
-const addFederationBackTarget = ref<'invite' | 'discover'>('invite')
-const pendingDiscoverySelection = ref<DiscoverySelectionPayload | null>(null)
+const { showDiscover } = federationJoinFlow
 
-function openAddFederationPreview(payload: DiscoverySelectionPayload) {
-  pendingDiscoverySelection.value = payload
-  if (showDiscover.value) {
-    showDiscover.value = false
-    return
-  }
-  applyDiscoverySelection(payload)
-}
-
-function onDiscoverHide() {
-  if (pendingDiscoverySelection.value == null) {
-    return
-  }
-
-  applyDiscoverySelection(pendingDiscoverySelection.value)
-}
-
-function applyDiscoverySelection(payload: DiscoverySelectionPayload) {
-  selectedInviteCode.value = payload.inviteCode
-  selectedPreviewFederation.value = payload.prefetchedFederation ?? null
-  addFederationBackTarget.value = 'discover'
-  pendingDiscoverySelection.value = null
-  showAdd.value = true
-}
-
-function closeAddFederation() {
-  showAdd.value = false
-  selectedInviteCode.value = null
-  selectedPreviewFederation.value = null
-  addFederationBackTarget.value = 'invite'
-  pendingDiscoverySelection.value = null
-}
-
-function returnToDiscovery() {
-  showAdd.value = false
-  selectedInviteCode.value = null
-  selectedPreviewFederation.value = null
-  addFederationBackTarget.value = 'invite'
-  pendingDiscoverySelection.value = null
-  showDiscover.value = true
-}
+defineExpose({
+  showDiscover,
+})
 </script>
 
 <style scoped>

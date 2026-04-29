@@ -1,36 +1,6 @@
 <template>
   <q-page data-testid="federations-page">
-    <q-dialog
-      v-model="showSelection"
-      position="bottom"
-      transition-show="slide-up"
-      transition-hide="slide-down"
-    >
-      <AddFederationSelection
-        @close="showSelection = false"
-        @show-discover="showDiscover = true"
-        @show-add="showAdd = true"
-      />
-    </q-dialog>
-
-    <q-dialog v-model="showDiscover" position="bottom" @hide="onDiscoverHide">
-      <DiscoverFederations
-        :visible="showDiscover"
-        @close="showDiscover = false"
-        @show-add="openAddFederationPreview"
-      />
-    </q-dialog>
-
-    <q-dialog v-model="showAdd" position="bottom">
-      <AddFederation
-        :back-target="addFederationBackTarget"
-        @close="closeAddFederation"
-        @back="returnToDiscovery"
-        :initial-invite-code="selectedInviteCode"
-        :initial-preview-federation="selectedPreviewFederation"
-        :auto-preview="selectedInviteCode != null"
-      />
-    </q-dialog>
+    <FederationJoinDialogs :flow="federationJoinFlow" />
 
     <div class="page-content federations-page-content">
       <FederationList />
@@ -43,7 +13,7 @@
           unelevated
           class="add-federation-fab__button vipr-fab--primary"
           :aria-expanded="showSelection"
-          @click="showSelection = true"
+          @click="federationJoinFlow.openSelection"
           data-testid="add-federation-button"
         />
       </div>
@@ -56,62 +26,16 @@ defineOptions({
   name: 'FederationsPage',
 })
 
-import AddFederation from 'src/components/AddFederation.vue'
-import AddFederationSelection from 'src/components/AddFederationSelection.vue'
-import DiscoverFederations from 'src/components/DiscoverFederations.vue'
+import FederationJoinDialogs from 'src/components/FederationJoinDialogs.vue'
 import FederationList from 'src/components/FederationList.vue'
-import type { DiscoverySelectionPayload, Federation } from 'src/types/federation'
-import { ref } from 'vue'
+import { useFederationJoinFlow } from 'src/composables/useFederationJoinFlow'
 
-const showSelection = ref(false)
-const showDiscover = ref(false)
-const showAdd = ref(false)
-const selectedInviteCode = ref<string | null>(null)
-const selectedPreviewFederation = ref<Federation | null>(null)
-const addFederationBackTarget = ref<'invite' | 'discover'>('invite')
-const pendingDiscoverySelection = ref<DiscoverySelectionPayload | null>(null)
+const federationJoinFlow = useFederationJoinFlow()
+const { showSelection, showDiscover } = federationJoinFlow
 
-function openAddFederationPreview(payload: DiscoverySelectionPayload) {
-  pendingDiscoverySelection.value = payload
-  if (showDiscover.value) {
-    showDiscover.value = false
-    return
-  }
-  applyDiscoverySelection(payload)
-}
-
-function onDiscoverHide() {
-  if (pendingDiscoverySelection.value == null) {
-    return
-  }
-
-  applyDiscoverySelection(pendingDiscoverySelection.value)
-}
-
-function applyDiscoverySelection(payload: DiscoverySelectionPayload) {
-  selectedInviteCode.value = payload.inviteCode
-  selectedPreviewFederation.value = payload.prefetchedFederation ?? null
-  addFederationBackTarget.value = 'discover'
-  pendingDiscoverySelection.value = null
-  showAdd.value = true
-}
-
-function closeAddFederation() {
-  showAdd.value = false
-  selectedInviteCode.value = null
-  selectedPreviewFederation.value = null
-  addFederationBackTarget.value = 'invite'
-  pendingDiscoverySelection.value = null
-}
-
-function returnToDiscovery() {
-  showAdd.value = false
-  selectedInviteCode.value = null
-  selectedPreviewFederation.value = null
-  addFederationBackTarget.value = 'invite'
-  pendingDiscoverySelection.value = null
-  showDiscover.value = true
-}
+defineExpose({
+  showDiscover,
+})
 </script>
 
 <style scoped>
