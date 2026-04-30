@@ -11,7 +11,7 @@
           clickable
           class="discover-row"
           @click="openFederationPreview(federation)"
-          :disable="isAdded(federation)"
+          :disable="isAdded(federation) || isPreviewingSelection"
           :data-testid="`discover-federation-item-${federation.federationId}`"
         >
           <q-item-section avatar v-if="federation.pictureUrl != null">
@@ -50,7 +50,7 @@
               round
               :icon="isAdded(federation) ? 'check_circle' : 'visibility'"
               :color="isAdded(federation) ? 'positive' : 'primary'"
-              :disable="isAdded(federation)"
+              :disable="isAdded(federation) || isPreviewingSelection"
               :aria-label="isAdded(federation) ? 'Federation already added' : 'Preview federation'"
               :title="isAdded(federation) ? 'Federation already added' : 'Preview federation'"
               :data-testid="`discover-federation-action-${federation.federationId}`"
@@ -111,12 +111,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, onUnmounted } from 'vue'
+import { computed, ref, watch, onUnmounted } from 'vue'
+import { Loading } from 'quasar'
 import { useNostrStore } from 'src/stores/nostr'
 import { useFederationStore } from 'src/stores/federation'
+import { useWalletStore } from 'src/stores/wallet'
 import ModalCard from 'src/components/ModalCard.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
-import type { DiscoverySelectionPayload } from 'src/types/federation'
+import type { DiscoverySelectionPayload, Federation } from 'src/types/federation'
 import { getErrorMessage } from 'src/utils/error'
 import { logger } from 'src/services/logger'
 
@@ -125,13 +127,16 @@ type DiscoveryListItem = {
   federationId: string
   inviteCode: string
   recommendationCount: number
+  prefetchedFederation?: Federation
   about?: string
   pictureUrl?: string
 }
 
 const nostr = useNostrStore()
 const federationStore = useFederationStore()
+const walletStore = useWalletStore()
 const notify = useAppNotify()
+const isPreviewingSelection = ref(false)
 const isDiscovering = computed(() => nostr.isDiscoveringFederations)
 const visibleFederations = computed<DiscoveryListItem[]>(() => {
   return nostr.discoveryCandidates.slice(0, nostr.previewTargetCount).map((candidate) => {
@@ -139,12 +144,14 @@ const visibleFederations = computed<DiscoveryListItem[]>(() => {
       candidate.recommendationCount ?? 0,
       nostr.getRecommendationCountForFederationId(candidate.federationId),
     )
+    const prefetchedFederation = nostr.getCachedPreviewForCandidate(candidate)
 
     return {
       title: candidate.displayName ?? `Federation ${truncateFederationId(candidate.federationId)}`,
       federationId: candidate.federationId,
       inviteCode: candidate.inviteCode,
       recommendationCount,
+      ...(prefetchedFederation != null ? { prefetchedFederation } : {}),
       ...(candidate.about != null ? { about: candidate.about } : {}),
       ...(candidate.pictureUrl != null ? { pictureUrl: candidate.pictureUrl } : {}),
     }
@@ -237,7 +244,11 @@ function federationSummary(federation: DiscoveryListItem): string | null {
   return null
 }
 
-function openFederationPreview(federation: DiscoveryListItem) {
+async function openFederationPreview(federation: DiscoveryListItem) {
+  if (isPreviewingSelection.value) {
+    return
+  }
+
   if (federationStore.federations.some((f) => f.federationId === federation.federationId)) {
     notify.notify({
       message: 'Federation already exists',
@@ -248,8 +259,45 @@ function openFederationPreview(federation: DiscoveryListItem) {
     return
   }
 
-  emit('close')
-  emit('showAdd', { inviteCode: federation.inviteCode })
+  if (federation.prefetchedFederation != null) {
+    emit('close')
+    emit('showAdd', {
+      inviteCode: federation.inviteCode,
+      prefetchedFederation: federation.prefetchedFederation,
+    })
+    return
+  }
+
+  Loading.show({ message: 'Loading federation preview' })
+  isPreviewingSelection.value = true
+
+  try {
+    const previewFederation = await walletStore.previewFederation(federation.inviteCode)
+
+    if (previewFederation == null) {
+      return
+    }
+
+    emit('close')
+    emit('showAdd', {
+      inviteCode: federation.inviteCode,
+      prefetchedFederation: previewFederation,
+    })
+  } catch (error) {
+    notify.notify({
+      message: `Failed to preview federation: ${getErrorMessage(error)}`,
+      color: 'negative',
+      icon: 'error',
+      timeout: 5000,
+    })
+  } finally {
+    clearPreviewingSelection()
+    Loading.hide()
+  }
+}
+
+function clearPreviewingSelection() {
+  isPreviewingSelection.value = false
 }
 
 function truncateFederationId(federationId: string): string {

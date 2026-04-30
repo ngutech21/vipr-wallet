@@ -5,6 +5,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import DiscoverFederations from 'src/components/DiscoverFederations.vue'
 import { useFederationStore } from 'src/stores/federation'
 import { useNostrStore } from 'src/stores/nostr'
+import { useWalletStore } from 'src/stores/wallet'
+import type { Federation } from 'src/types/federation'
 
 type DiscoveryCandidate = {
   federationId: string
@@ -36,6 +38,13 @@ describe('DiscoverFederations.vue', () => {
   const mockNotify = vi.fn()
   const mockLoadingShow = vi.fn()
   const mockLoadingHide = vi.fn()
+  const previewFederation: Federation = {
+    title: 'Test Federation',
+    inviteCode: 'fed11qgqpw9thwimyd3shxvn4da5mskvkv5w6t40hx8hwcfgezx30raj6n6ju5kfdvfmx06f',
+    federationId: 'test-fed-id-123',
+    modules: [],
+    metadata: {},
+  }
   Notify.create = mockNotify
   Loading.show = mockLoadingShow
   Loading.hide = mockLoadingHide
@@ -197,16 +206,25 @@ describe('DiscoverFederations.vue', () => {
     expect(nostrStore.previewTargetCount).toBeGreaterThan(initialTarget)
   })
 
-  it('emits invite code only when preview is opened', async () => {
+  it('loads the preview before opening the add federation dialog', async () => {
     wrapper = createWrapper()
     const candidate = createCandidate()
+    const walletStore = useWalletStore()
+    const previewFederationMock = vi
+      .spyOn(walletStore, 'previewFederation')
+      .mockResolvedValue(previewFederation)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(wrapper.vm as any).openFederationPreview(candidate)
+    await (wrapper.vm as any).openFederationPreview(candidate)
     await flushPromises()
 
+    expect(mockLoadingShow).toHaveBeenCalledWith({ message: 'Loading federation preview' })
+    expect(previewFederationMock).toHaveBeenCalledWith(candidate.inviteCode)
     expect(wrapper.emitted('close')).toEqual([[]])
-    expect(wrapper.emitted('showAdd')).toEqual([[{ inviteCode: candidate.inviteCode }]])
+    expect(wrapper.emitted('showAdd')).toEqual([
+      [{ inviteCode: candidate.inviteCode, prefetchedFederation: previewFederation }],
+    ])
+    expect(mockLoadingHide).toHaveBeenCalled()
   })
 
   it('forwards the modal close event', async () => {
