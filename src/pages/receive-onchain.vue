@@ -205,7 +205,7 @@ async function completeDeposit(amountSats: number) {
   stopDepositPolling()
   await walletStore.updateBalance()
   await router.push({
-    name: '/received-lightning',
+    name: '/received-onchain',
     query: { amount: amountSats.toString() },
   })
 }
