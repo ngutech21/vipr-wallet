@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import { reactive } from 'vue'
 import SendOnchainPage from 'src/pages/send-onchain.vue'
-import { MIN_ONCHAIN_SEND_SATS, ONCHAIN_FEE_RESERVE_SATS } from 'src/utils/onchainPolicy'
+import { MIN_ONCHAIN_SEND_SATS } from 'src/utils/onchainPolicy'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockUseRoute = vi.hoisted(() => vi.fn())

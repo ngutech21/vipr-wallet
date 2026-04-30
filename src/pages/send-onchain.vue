@@ -231,9 +231,7 @@ const uriAmountHint = computed(() => {
   return paymentFlowCopy.sendOnchain.uriAmountHint(parsedTarget.value.data.amountSats)
 })
 const onchainAmountMetaText = computed(() => uriAmountHint.value)
-const sendOnchainBottomHint = computed(() =>
-  paymentFlowCopy.sendOnchain.bottomHint(maxSendAmount.value),
-)
+const sendOnchainBottomHint = computed(() => paymentFlowCopy.sendOnchain.bottomHint())
 
 const bitcoinUriDetails = computed(() => {
   const details: string[] = []

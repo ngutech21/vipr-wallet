@@ -19,7 +19,7 @@ export const paymentFlowCopy = {
   },
   sendOnchain: {
     submitLabel: 'Send Bitcoin',
-    bottomHint(maxSendAmount: number) {
+    bottomHint() {
       return `A ${ONCHAIN_FEE_RESERVE_SATS.toLocaleString()} sat fee reserve is kept for network fees. Minimum on-chain send: ${MIN_ONCHAIN_SEND_SATS.toLocaleString()} sats.`
     },
     uriAmountHint(amountSats: number) {
