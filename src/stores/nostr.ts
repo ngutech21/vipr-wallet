@@ -1,17 +1,9 @@
 import { defineStore } from 'pinia'
 import { useLocalStorage } from '@vueuse/core'
-import NDK, {
-  isValidNip05,
-  nip19,
-  profileFromEvent,
-  type NDKEvent,
-  type NDKFilter,
-  type NDKSubscription,
-} from '@nostr-dev-kit/ndk'
+import type { NDKEvent } from '@nostr-dev-kit/ndk'
 import type { Federation } from 'src/types/federation'
 import type {
   NostrContactSource,
-  NostrContactSourceType,
   NostrContactSyncMeta,
   NostrContactSyncStatus,
   SyncedNostrContact,
@@ -21,25 +13,38 @@ import { useWalletStore } from './wallet'
 import { logger } from 'src/services/logger'
 import { raceWithTimeout } from 'src/utils/async'
 import { getErrorMessage } from 'src/utils/error'
-
-type DiscoveredFederationCandidate = {
-  federationId: string
-  inviteCode: string
-  createdAt: number
-  displayName?: string
-  about?: string
-  pictureUrl?: string
-  network?: string
-  recommendationCount?: number
-}
-
-type CachedFederationPreview = {
-  federation: Federation
-  candidateCreatedAt: number
-  inviteCode: string
-  cachedAt: number
-  completeness: 'full'
-}
+import {
+  doesPreviewMatchCandidate,
+  extractFederationCandidate,
+  extractRecommendationTargets,
+  isExpectedDiscoveryError,
+  type DiscoveredFederationCandidate,
+} from 'src/services/nostr/discovery'
+import {
+  compareSyncedContacts,
+  getContactSearchValues,
+  getInvalidContactSourceMessage,
+  getLatestProfileEvents,
+  inferContactSourceType,
+  isValidContactSource,
+  mapProfileEventToContact,
+  normalizeContactSearchValue,
+} from 'src/services/nostr/contacts'
+import {
+  createCachedFederationPreview,
+  isCachedPreviewValid,
+  removeCachedPreview as removeCachedPreviewFromCache,
+  syncDiscoveredFederationsFromCache as buildDiscoveredFederationsFromCache,
+  trimPreviewCache as trimPreviewCacheEntries,
+  type CachedFederationPreview,
+} from 'src/services/nostr/previewCache'
+import {
+  initializeNdk,
+  stopDiscoverySubscriptions,
+  subscribeToFederationDiscovery,
+  type NostrEventSubscription,
+  type NostrNdkClient,
+} from 'src/services/nostr/subscriptions'
 
 type PreviewStatus = 'loading' | 'failed' | 'timed_out' | 'ready'
 
@@ -74,7 +79,6 @@ const MAX_DISCOVERY_CACHE_SIZE = 50
 const PREVIEW_QUEUE_OVERSCAN = 3
 const PREVIEW_TIMEOUT_MS = 7_000
 const PREVIEW_QUEUE_IDLE_POLL_MS = 50
-const PREVIEW_CACHE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000
 const PREVIEW_TIMEOUT_TOKEN = Symbol('preview-timeout')
 const DEFAULT_CONTACT_SOURCE: NostrContactSource = {
   sourceType: 'nip05',
@@ -85,17 +89,6 @@ const DEFAULT_CONTACT_SYNC_META: NostrContactSyncMeta = {
   lastSyncedAt: null,
   lastSyncError: null,
 }
-const EXPECTED_DISCOVERY_ERROR_PATTERNS = [
-  /failed to download client config/i,
-  /failed to fetch/i,
-  /networkerror/i,
-  /load failed/i,
-  /connection timeout/i,
-  /security error when calling getdirectory/i,
-  /securityerror.*getdirectory/i,
-  /operation is insecure/i,
-]
-
 export const useNostrStore = defineStore('nostr', {
   state: () => ({
     relays: useLocalStorage<string[]>('vipr.nostr.relays', DEFAULT_RELAYS),
@@ -110,7 +103,7 @@ export const useNostrStore = defineStore('nostr', {
       DEFAULT_CONTACT_SYNC_META,
     ),
     syncStatus: createInitialNostrSyncStatus(),
-    ndk: null as NDK | null,
+    ndk: null as NostrNdkClient | null,
     discoveredFederations: useLocalStorage<Federation[]>('vipr.nostr.discovery.federations', []),
     previewCacheByFederation: useLocalStorage<Record<string, CachedFederationPreview>>(
       'vipr.nostr.discovery.preview-cache',
@@ -131,8 +124,8 @@ export const useNostrStore = defineStore('nostr', {
     ),
     recommendationVotersByFederation: createRecommendationVotersByFederation(),
     isDiscoveringFederations: false,
-    federationSubscription: null as NDKSubscription | null,
-    recommendationSubscription: null as NDKSubscription | null,
+    federationSubscription: null as NostrEventSubscription | null,
+    recommendationSubscription: null as NostrEventSubscription | null,
     previewTargetCount: DISCOVERY_PAGE_SIZE,
     previewQueue: [] as string[],
     isPreviewQueueRunning: false,
@@ -338,38 +331,7 @@ export const useNostrStore = defineStore('nostr', {
     },
 
     async initNdk() {
-      try {
-        this.ndk = new NDK({
-          explicitRelayUrls: this.relays,
-        })
-
-        // Setup connection promise before connecting
-        const connectionPromise = new Promise<void>((resolve) => {
-          this.ndk?.pool.on('relay:connect', () => resolve())
-        })
-
-        // Start connection
-        this.ndk?.connect().catch(() => {
-          // Connection errors are handled by the race condition below
-        })
-
-        // Wait for either timeout or connection
-        await Promise.race([
-          new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Connection timeout')), 10000)
-          }),
-          connectionPromise,
-        ])
-
-        logger.nostr.debug('NDK initialized', { relayUrls: this.ndk.explicitRelayUrls })
-
-        // Give time for more relays to connect
-        await new Promise((resolve) => {
-          setTimeout(resolve, 1000)
-        })
-      } catch (error) {
-        logger.error('Failed to initialize NDK', error)
-      }
+      this.ndk = await initializeNdk(this.relays)
     },
 
     async discoverFederations(options: { reset?: boolean } = {}) {
@@ -387,48 +349,21 @@ export const useNostrStore = defineStore('nostr', {
       this.syncDiscoveredFederationsFromCache()
       this.resetPreviewTargetCount()
 
-      const mintInfoFilter: NDKFilter = {
-        kinds: [Nip87Kinds.FediInfo],
-      } as unknown as NDKFilter
-      const recommendationFilter: NDKFilter = {
-        kinds: [Nip87Kinds.Recommendation],
-        '#k': [String(Nip87Kinds.FediInfo)],
-        limit: 500,
-      } as unknown as NDKFilter
-
-      if (this.lastDiscoveryCreatedAt > 0) {
-        ;(mintInfoFilter as NDKFilter & { since?: number }).since = this.lastDiscoveryCreatedAt + 1
-      }
-
       if (this.ndk != null) {
-        this.federationSubscription = this.ndk.subscribe(mintInfoFilter, { closeOnEose: false })
-
-        this.federationSubscription?.on('event', (event) => {
-          try {
-            this.handleFederationEvent(event)
-          } catch (error) {
-            if (isExpectedDiscoveryError(error)) {
-              logger.nostr.warn('Skipping federation event due to expected discovery error', {
-                eventId: event.id,
-                reason: getErrorMessage(error),
-              })
-              return
-            }
-            logger.error('Failed to process federation event', error)
-          }
-        })
-
-        this.recommendationSubscription = this.ndk.subscribe(recommendationFilter, {
-          closeOnEose: false,
-        })
-
-        this.recommendationSubscription?.on('event', (event) => {
-          try {
-            this.handleRecommendationEvent(event)
-          } catch (error) {
-            logger.error('Failed to process federation recommendation', error)
-          }
-        })
+        const subscriptions = subscribeToFederationDiscovery(
+          this.ndk,
+          this.lastDiscoveryCreatedAt,
+          {
+            onFederationEvent: (event) => {
+              this.handleFederationEvent(event)
+            },
+            onRecommendationEvent: (event) => {
+              this.handleRecommendationEvent(event)
+            },
+          },
+        )
+        this.federationSubscription = subscriptions.federationSubscription
+        this.recommendationSubscription = subscriptions.recommendationSubscription
       } else {
         this.isDiscoveringFederations = false
       }
@@ -436,6 +371,11 @@ export const useNostrStore = defineStore('nostr', {
 
     handleFederationEvent(event: NDKEvent) {
       if (event.kind !== Nip87Kinds.FediInfo) return
+
+      logger.nostr.debug('Processing federation event', {
+        eventId: event.id,
+        createdAt: event.created_at,
+      })
 
       const candidate = extractFederationCandidate(event)
       if (candidate == null) {
@@ -546,13 +486,7 @@ export const useNostrStore = defineStore('nostr', {
     cacheFederationPreview(candidate: DiscoveredFederationCandidate, federation: Federation) {
       this.previewCacheByFederation = {
         ...this.previewCacheByFederation,
-        [candidate.federationId]: {
-          federation,
-          candidateCreatedAt: candidate.createdAt,
-          inviteCode: candidate.inviteCode,
-          cachedAt: Date.now(),
-          completeness: 'full',
-        },
+        [candidate.federationId]: createCachedFederationPreview(candidate, federation),
       }
 
       this.trimPreviewCache()
@@ -560,64 +494,27 @@ export const useNostrStore = defineStore('nostr', {
     },
 
     removeCachedPreview(federationId: string) {
-      if (!(federationId in this.previewCacheByFederation)) {
-        this.discoveredFederations = this.discoveredFederations.filter(
-          (federation) => federation.federationId !== federationId,
-        )
-        return
-      }
-
-      const { [federationId]: _removed, ...remaining } = this.previewCacheByFederation
-      this.previewCacheByFederation = remaining
+      this.previewCacheByFederation = removeCachedPreviewFromCache(
+        this.previewCacheByFederation,
+        federationId,
+      )
       this.discoveredFederations = this.discoveredFederations.filter(
         (federation) => federation.federationId !== federationId,
       )
     },
 
     trimPreviewCache() {
-      const entries = Object.entries(this.previewCacheByFederation)
-      if (entries.length <= MAX_DISCOVERY_CACHE_SIZE) {
-        return
-      }
-
-      entries.sort(([, left], [, right]) => right.cachedAt - left.cachedAt)
-      this.previewCacheByFederation = Object.fromEntries(entries.slice(0, MAX_DISCOVERY_CACHE_SIZE))
+      this.previewCacheByFederation = trimPreviewCacheEntries(
+        this.previewCacheByFederation,
+        MAX_DISCOVERY_CACHE_SIZE,
+      )
     },
 
     syncDiscoveredFederationsFromCache() {
-      const validEntries = this.discoveryCandidates
-        .map((candidate) => {
-          const cached = this.previewCacheByFederation[candidate.federationId]
-          if (!isCachedPreviewValid(cached, candidate)) {
-            return undefined
-          }
-
-          return cached
-        })
-        .filter((cached): cached is CachedFederationPreview => cached != null)
-
-      const remainingEntries = Object.entries(this.previewCacheByFederation)
-        .filter(([federationId, cached]) => {
-          const candidate = this.discoveryCandidates.find(
-            (item) => item.federationId === federationId,
-          )
-          return candidate == null && !isPreviewCacheExpired(cached)
-        })
-        .map(([, cached]) => cached)
-
-      const deduped = [...validEntries, ...remainingEntries]
-      const seenIds = new Set<string>()
-      this.discoveredFederations = deduped
-        .filter((cached) => {
-          const federationId = cached.federation.federationId
-          if (seenIds.has(federationId)) {
-            return false
-          }
-          seenIds.add(federationId)
-          return true
-        })
-        .sort((left, right) => right.cachedAt - left.cachedAt)
-        .map((cached) => cached.federation)
+      this.discoveredFederations = buildDiscoveredFederationsFromCache(
+        this.previewCacheByFederation,
+        this.discoveryCandidates,
+      )
     },
 
     enqueueCandidatesForPreview() {
@@ -786,14 +683,12 @@ export const useNostrStore = defineStore('nostr', {
 
     stopDiscoveringFederations() {
       logger.nostr.debug('Stopping federation discovery')
-      if (this.federationSubscription != null) {
-        this.federationSubscription.stop()
-        this.federationSubscription = null
-      }
-      if (this.recommendationSubscription != null) {
-        this.recommendationSubscription.stop()
-        this.recommendationSubscription = null
-      }
+      stopDiscoverySubscriptions({
+        federationSubscription: this.federationSubscription,
+        recommendationSubscription: this.recommendationSubscription,
+      })
+      this.federationSubscription = null
+      this.recommendationSubscription = null
       this.previewQueue = []
       this.previewAttemptedCreatedAt = {}
       this.previewErrorLoggedCreatedAt = {}
@@ -802,290 +697,3 @@ export const useNostrStore = defineStore('nostr', {
     },
   },
 })
-
-function extractFederationCandidate(event: NDKEvent): DiscoveredFederationCandidate | null {
-  logger.nostr.debug('Processing federation event', {
-    eventId: event.id,
-    createdAt: event.created_at,
-  })
-
-  const inviteTags = event.getMatchingTags('u')
-  const inviteCode = inviteTags[0]?.[1]
-  if (inviteCode == null || inviteCode === '') {
-    return null
-  }
-
-  const fedTags = event.getMatchingTags('d')
-  const federationId = fedTags[0]?.[1]
-  if (federationId == null || federationId === '') {
-    return null
-  }
-
-  const summary = extractCandidateSummary(event)
-
-  return {
-    federationId,
-    inviteCode,
-    createdAt: event.created_at ?? 0,
-    ...(summary.displayName != null ? { displayName: summary.displayName } : {}),
-    ...(summary.about != null ? { about: summary.about } : {}),
-    ...(summary.pictureUrl != null ? { pictureUrl: summary.pictureUrl } : {}),
-    ...(summary.network != null ? { network: summary.network } : {}),
-  }
-}
-
-function extractRecommendationTargets(event: NDKEvent): string[] {
-  const recommendedFederationIds = new Set<string>()
-
-  for (const pointerTag of event.getMatchingTags('a')) {
-    const pointer = pointerTag[1]
-    if (pointer == null || pointer === '') {
-      continue
-    }
-
-    const [kind, _pubkey, identifier] = pointer.split(':', 3)
-    if (kind !== String(Nip87Kinds.FediInfo) || identifier == null || identifier === '') {
-      continue
-    }
-
-    recommendedFederationIds.add(identifier)
-  }
-
-  const directFederationIds = event
-    .getMatchingTags('d')
-    .map((tag) => tag[1])
-    .filter((federationId): federationId is string => federationId != null && federationId !== '')
-  for (const federationId of directFederationIds) {
-    recommendedFederationIds.add(federationId)
-  }
-
-  return [...recommendedFederationIds]
-}
-
-function isExpectedDiscoveryError(error: unknown): boolean {
-  const message = getErrorMessage(error).trim()
-  if (message === '') {
-    return false
-  }
-
-  return EXPECTED_DISCOVERY_ERROR_PATTERNS.some((pattern) => pattern.test(message))
-}
-
-function extractCandidateSummary(
-  event: NDKEvent,
-): Pick<DiscoveredFederationCandidate, 'displayName' | 'about' | 'pictureUrl' | 'network'> {
-  const content =
-    typeof event.content === 'string' && event.content.trim() !== ''
-      ? safeJsonParse(event.content)
-      : undefined
-
-  const networkTag = event
-    .getMatchingTags('n')
-    .map((tag) => tag[1])
-    .find((value): value is string => typeof value === 'string' && value.trim() !== '')
-
-  const displayName = getStringValue(content, ['name', 'federation_name'])
-  const about = getStringValue(content, ['about', 'description'])
-  const pictureUrl = getStringValue(content, [
-    'picture',
-    'image',
-    'icon',
-    'icon_url',
-    'picture_url',
-    'federation_icon_url',
-  ])
-  const network = networkTag ?? getStringValue(content, ['network'])
-
-  return {
-    ...(displayName != null ? { displayName } : {}),
-    ...(about != null ? { about } : {}),
-    ...(pictureUrl != null ? { pictureUrl } : {}),
-    ...(network != null ? { network } : {}),
-  }
-}
-
-function safeJsonParse(value: string): Record<string, unknown> | undefined {
-  try {
-    const parsed = JSON.parse(value) as unknown
-    return typeof parsed === 'object' && parsed !== null
-      ? (parsed as Record<string, unknown>)
-      : undefined
-  } catch {
-    return undefined
-  }
-}
-
-function getStringValue(
-  content: Record<string, unknown> | undefined,
-  keys: string[],
-): string | undefined {
-  if (content == null) {
-    return undefined
-  }
-
-  for (const key of keys) {
-    const value = content[key]
-    if (typeof value === 'string' && value.trim() !== '') {
-      return value.trim()
-    }
-  }
-
-  return undefined
-}
-
-function isPreviewCacheExpired(cached: CachedFederationPreview): boolean {
-  return Date.now() - cached.cachedAt > PREVIEW_CACHE_MAX_AGE_MS
-}
-
-function isCachedPreviewValid(
-  cached: CachedFederationPreview | undefined,
-  candidate: DiscoveredFederationCandidate,
-): cached is CachedFederationPreview {
-  if (cached == null) {
-    return false
-  }
-
-  if (cached.completeness !== 'full') {
-    return false
-  }
-
-  if (isPreviewCacheExpired(cached)) {
-    return false
-  }
-
-  return (
-    cached.federation.federationId === candidate.federationId &&
-    cached.inviteCode === candidate.inviteCode &&
-    cached.candidateCreatedAt === candidate.createdAt
-  )
-}
-
-function doesPreviewMatchCandidate(
-  candidate: DiscoveredFederationCandidate,
-  federation: Federation,
-): boolean {
-  return federation.federationId === candidate.federationId
-}
-
-function isValidContactSource(sourceType: NostrContactSourceType, sourceValue: string): boolean {
-  if (sourceType === 'nip05') {
-    return isValidNip05(sourceValue)
-  }
-
-  try {
-    const decoded = nip19.decode(sourceValue)
-    return decoded.type === 'npub'
-  } catch {
-    return false
-  }
-}
-
-function inferContactSourceType(sourceValue: string): NostrContactSourceType {
-  try {
-    const decoded = nip19.decode(sourceValue)
-    if (decoded.type === 'npub') {
-      return 'npub'
-    }
-  } catch {
-    // Fall through to NIP-05 validation for non-npub identifiers.
-  }
-
-  return 'nip05'
-}
-
-function getInvalidContactSourceMessage(): string {
-  return 'Enter a valid NIP-05 identifier like user@domain.com or a valid npub identifier.'
-}
-
-function getLatestProfileEvents(profileEvents: Set<NDKEvent>): Map<string, NDKEvent> {
-  const latestEvents = new Map<string, NDKEvent>()
-
-  for (const event of profileEvents) {
-    if (event.pubkey == null || event.pubkey === '') {
-      continue
-    }
-
-    const existingEvent = latestEvents.get(event.pubkey)
-    if (existingEvent == null || (event.created_at ?? 0) > (existingEvent.created_at ?? 0)) {
-      latestEvents.set(event.pubkey, event)
-    }
-  }
-
-  return latestEvents
-}
-
-function mapProfileEventToContact(
-  pubkey: string,
-  profileEvent: NDKEvent,
-): SyncedNostrContact | null {
-  try {
-    const profile = profileFromEvent(profileEvent)
-    const displayName = normalizeOptionalString(profile.displayName)
-    const name = normalizeOptionalString(profile.name)
-    const nip05 = normalizeOptionalString(profile.nip05)
-    const picture = normalizeOptionalString(profile.picture)
-    const lud16 = normalizeOptionalString(profile.lud16)
-    const lud06 = normalizeOptionalString(profile.lud06)
-    const paymentTarget = lud16 ?? lud06
-
-    if (paymentTarget == null) {
-      return null
-    }
-
-    return {
-      pubkey,
-      npub: nip19.npubEncode(pubkey),
-      ...(displayName != null ? { displayName } : {}),
-      ...(name != null ? { name } : {}),
-      ...(nip05 != null ? { nip05 } : {}),
-      ...(picture != null ? { picture } : {}),
-      ...(lud16 != null ? { lud16 } : {}),
-      ...(lud06 != null ? { lud06 } : {}),
-      paymentTarget,
-    }
-  } catch (error) {
-    logger.nostr.warn('Skipping invalid Nostr profile while syncing contacts', {
-      pubkey,
-      reason: getErrorMessage(error),
-    })
-    return null
-  }
-}
-
-function compareSyncedContacts(left: SyncedNostrContact, right: SyncedNostrContact): number {
-  const leftLabel = getComparableContactLabel(left)
-  const rightLabel = getComparableContactLabel(right)
-
-  if (leftLabel === rightLabel) {
-    return left.npub.localeCompare(right.npub)
-  }
-
-  return leftLabel.localeCompare(rightLabel)
-}
-
-function getComparableContactLabel(contact: SyncedNostrContact): string {
-  return normalizeContactSearchValue(
-    contact.displayName ?? contact.name ?? contact.nip05 ?? contact.npub,
-  )
-}
-
-function getContactSearchValues(contact: SyncedNostrContact): string[] {
-  return [
-    contact.displayName,
-    contact.name,
-    contact.nip05,
-    contact.npub,
-    contact.lud16,
-    contact.paymentTarget,
-  ]
-    .map((value) => normalizeContactSearchValue(value))
-    .filter((value) => value !== '')
-}
-
-function normalizeOptionalString(value: unknown): string | undefined {
-  return typeof value === 'string' && value.trim() !== '' ? value.trim() : undefined
-}
-
-function normalizeContactSearchValue(value: unknown): string {
-  return typeof value === 'string' ? value.trim().toLocaleLowerCase() : ''
-}
