@@ -306,15 +306,6 @@ const lnurlAmountHint = computed(() => {
   return `Limit: ${limits.minSats.toLocaleString()} - ${limits.maxSats.toLocaleString()} sats`
 })
 
-// FIXME
-// Validate input before allowing to continue
-// const isValidInput = computed(() => {
-//   if (amountRequired.value) {
-//     return invoiceAmount.value > 0 && lightningInvoice.value.includes('@')
-//   }
-//   return lightningInvoice.value.trim().startsWith('lnbc')
-// })
-
 // Watch for query params
 watch(
   () => route.query.invoice,
