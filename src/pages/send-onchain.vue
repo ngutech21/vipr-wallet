@@ -20,7 +20,7 @@ meta:
         @back="goBack"
       />
 
-      <div class="send-onchain-content vipr-flow-content">
+      <div class="send-onchain-content vipr-flow-content vipr-flow-content--keypad">
         <FederationSelector class="send-onchain-federation-selector" />
 
         <div class="vipr-flow-center">
@@ -89,7 +89,6 @@ meta:
               :meta-text="onchainAmountMetaText"
               amount-test-id="send-onchain-amount-input"
               meta-test-id="send-onchain-amount-meta"
-              class="vipr-flow-spacer-md"
             />
           </div>
         </div>

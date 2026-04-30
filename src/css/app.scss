@@ -559,6 +559,10 @@ html[data-e2e='1'] *::after {
   padding-top: var(--vipr-space-5);
 }
 
+.vipr-flow-content--keypad .vipr-flow-bottom-action {
+  margin-top: var(--vipr-space-5);
+}
+
 .vipr-flow-bottom-hint {
   margin-bottom: var(--vipr-space-4);
   color: var(--vipr-text-muted);

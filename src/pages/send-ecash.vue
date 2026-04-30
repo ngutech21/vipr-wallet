@@ -17,7 +17,7 @@ meta:
         @back="goBack"
       />
 
-      <div class="send-ecash-content vipr-flow-content">
+      <div class="send-ecash-content vipr-flow-content vipr-flow-content--keypad">
         <template v-if="exportedNotes === ''">
           <FederationSelector class="send-ecash-federation-selector" />
 
@@ -32,7 +32,6 @@ meta:
                 :error-message="amountError"
                 amount-test-id="send-ecash-amount-input"
                 meta-test-id="send-ecash-amount-meta"
-                class="vipr-flow-spacer-lg"
               />
             </div>
           </div>

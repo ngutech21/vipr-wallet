@@ -16,7 +16,10 @@ meta:
         button-test-id="send-back-btn"
         @back="goBack"
       />
-      <div class="send-content vipr-flow-content">
+      <div
+        class="send-content vipr-flow-content"
+        :class="{ 'vipr-flow-content--keypad': amountRequired }"
+      >
         <FederationSelector class="send-federation-control" :selectable="!decodedInvoice" />
 
         <!-- Payment input section -->

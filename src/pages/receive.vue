@@ -19,7 +19,7 @@ meta:
         @back="goBack"
       />
 
-      <div class="receive-content vipr-flow-content">
+      <div class="receive-content vipr-flow-content vipr-flow-content--keypad">
         <FederationSelector
           class="receive-federation-selector"
           :class="{ 'receive-federation-selector--qr': qrData !== '' }"
@@ -37,7 +37,6 @@ meta:
               :buttons="keypadButtons"
               amount-test-id="amount-input"
               :reserve-meta-space="false"
-              class="vipr-flow-spacer-lg"
             >
               <q-input
                 v-model="invoiceMemo"
