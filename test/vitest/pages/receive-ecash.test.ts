@@ -78,6 +78,17 @@ const joinFederationPreviewStepStub = defineComponent({
     '<div data-testid="join-federation-preview-step" :data-import-amount-sats="importAmountSats">{{ federation.title }}</div>',
 })
 
+const federationAvatarStub = defineComponent({
+  name: 'FederationAvatar',
+  props: {
+    federation: {
+      type: Object,
+      default: null,
+    },
+  },
+  template: '<div data-testid="federation-avatar-stub" />',
+})
+
 const joinedFederation: Federation = {
   federationId: 'fed-1',
   title: 'Joined Federation',
@@ -109,9 +120,12 @@ describe('ReceiveEcashPage', () => {
           'q-card': passthrough,
           'q-card-section': passthrough,
           'q-dialog': passthrough,
+          'q-icon': passthrough,
           'q-btn': qBtnStub,
           'q-input': passthrough,
+          'q-spinner': passthrough,
           'q-spinner-dots': passthrough,
+          FederationAvatar: federationAvatarStub,
           ModalCard: modalCardStub,
           JoinFederationPreviewStep: joinFederationPreviewStepStub,
         },
@@ -131,6 +145,21 @@ describe('ReceiveEcashPage', () => {
 
   async function redeemEcash() {
     await (wrapper.vm as unknown as { redeemEcash: () => Promise<void> }).redeemEcash()
+  }
+
+  async function pasteFromClipboard() {
+    await (
+      wrapper.vm as unknown as { pasteFromClipboard: () => Promise<void> }
+    ).pasteFromClipboard()
+  }
+
+  function mockClipboardText(value: string) {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        readText: vi.fn().mockResolvedValue(value),
+      },
+    })
   }
 
   function createInspection(overrides: Partial<EcashInspection> = {}): EcashInspection {
@@ -163,6 +192,78 @@ describe('ReceiveEcashPage', () => {
     await flushPromises()
 
     expect((wrapper.vm as unknown as { ecashToken: string }).ecashToken).toBe('cashuAquery')
+    wrapper.unmount()
+  })
+
+  it('keeps a federation-sized placeholder before ecash is inspected', async () => {
+    wrapper = createWrapper()
+    await flushPromises()
+
+    expect(
+      wrapper
+        .get('[data-testid="receive-ecash-token-preview"] .receive-ecash-token-preview__card')
+        .classes(),
+    ).toContain('receive-ecash-token-preview__card--placeholder')
+    expect(wrapper.text()).toContain('Paste or scan ecash to detect its federation.')
+    wrapper.unmount()
+  })
+
+  it('previews the issuing federation and amount after pasting joined federation ecash', async () => {
+    wrapper = createWrapper()
+    const walletStore = useWalletStore()
+    joinFederationInStore()
+
+    vi.spyOn(walletStore, 'inspectEcash').mockResolvedValue(createInspection())
+    mockClipboardText('notes-1')
+
+    await pasteFromClipboard()
+    await flushPromises()
+
+    expect(wrapper.get('[data-testid="receive-ecash-token-preview"]').text()).toContain(
+      'Joined Federation',
+    )
+    expect(wrapper.get('[data-testid="receive-ecash-token-preview"]').text()).toContain(
+      'Detected federation',
+    )
+    expect(wrapper.get('[data-testid="receive-ecash-preview-amount"]').text()).toContain('12 sats')
+    expect(wrapper.text()).toContain('Redeems ecash into its issuing federation.')
+    wrapper.unmount()
+  })
+
+  it('previews join-required federation ecash without making it selectable', async () => {
+    wrapper = createWrapper()
+    const walletStore = useWalletStore()
+
+    vi.spyOn(walletStore, 'inspectEcash').mockResolvedValue(
+      createInspection({
+        parsed: {
+          total_amount: 21_000,
+          federation_id_prefix: 'fed2',
+          federation_id: newFederation.federationId,
+          invite_code: newFederation.inviteCode,
+          note_counts: { '1000': 21 },
+        },
+        amountMsats: 21_000,
+        amountSats: 21,
+        matchedFederation: null,
+        inviteCode: newFederation.inviteCode,
+        requiresJoin: true,
+      }),
+    )
+    vi.spyOn(walletStore, 'previewFederation').mockResolvedValue(newFederation)
+    mockClipboardText('new-fed-notes')
+
+    await pasteFromClipboard()
+    await flushPromises()
+
+    expect(wrapper.get('[data-testid="receive-ecash-token-preview"]').text()).toContain(
+      'New Federation',
+    )
+    expect(wrapper.get('[data-testid="receive-ecash-token-preview"]').text()).toContain(
+      'Join required',
+    )
+    expect(wrapper.get('[data-testid="receive-ecash-preview-amount"]').text()).toContain('21 sats')
+    expect(wrapper.text()).toContain('requires joining its federation')
     wrapper.unmount()
   })
 
