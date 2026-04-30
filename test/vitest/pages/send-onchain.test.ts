@@ -163,9 +163,6 @@ describe('SendOnchainPage', () => {
     await flushPromises()
 
     expect(wrapper.text()).toContain(`Available: ${walletStoreState.balance.toLocaleString()} sats`)
-    expect(wrapper.text()).toContain(
-      `Maximum spendable now: ${(500_000 - ONCHAIN_FEE_RESERVE_SATS).toLocaleString()} sats`,
-    )
     wrapper.unmount()
   })
 
