@@ -133,21 +133,17 @@ meta:
           </q-slide-transition>
 
           <!-- Action button -->
-          <div class="send-action">
+          <div class="vipr-flow-bottom-action">
             <div class="vipr-flow-bottom-hint">
-              {{
-                amountRequired
-                  ? 'Review the payment details before sending.'
-                  : 'Enter a Lightning invoice, address, or contact.'
-              }}
+              {{ sendBottomHint }}
             </div>
             <q-btn
-              :label="amountRequired ? 'Review payment' : 'Continue'"
-              :icon="amountRequired ? 'bolt' : 'arrow_forward'"
+              :label="sendActionLabel"
+              :icon="sendActionIcon"
               color="primary"
               no-caps
               unelevated
-              class="send-action__button vipr-btn vipr-btn--primary vipr-btn--lg"
+              class="vipr-flow-action vipr-btn vipr-btn--primary vipr-btn--lg"
               size="lg"
               :loading="isProcessing"
               :disable="isContinueDisabled"
@@ -191,6 +187,7 @@ import { useAppNotify } from 'src/composables/useAppNotify'
 import { useInvoiceDecoding } from 'src/composables/useInvoiceDecoding'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
 import { useNumericInput } from 'src/composables/useNumericInput'
+import { paymentFlowCopy } from 'src/constants/paymentFlowCopy'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import { useNostrStore } from 'src/stores/nostr'
@@ -281,6 +278,17 @@ const paymentBalanceError = computed(() => {
 })
 
 const isContinueDisabled = computed(() => isProcessing.value || amountError.value != null)
+const sendActionLabel = computed(() =>
+  amountRequired.value
+    ? paymentFlowCopy.sendLightning.reviewLabel
+    : paymentFlowCopy.sendLightning.continueLabel,
+)
+const sendActionIcon = computed(() => (amountRequired.value ? 'bolt' : 'arrow_forward'))
+const sendBottomHint = computed(() =>
+  amountRequired.value
+    ? paymentFlowCopy.sendLightning.reviewHint
+    : paymentFlowCopy.sendLightning.inputHint,
+)
 const lnurlAmountHint = computed(() => {
   const limits = getLnurlLimitSats()
   if (limits == null) {
@@ -495,8 +503,7 @@ function getLnurlLimitSats(): { minSats: number; maxSats: number } | null {
 .send-invoice-input,
 .send-amount-entry,
 .send-contacts-block,
-.send-federation-control,
-.send-action {
+.send-federation-control {
   width: 100%;
   max-width: var(--vipr-width-flow-panel);
 }
@@ -535,17 +542,6 @@ function getLnurlLimitSats(): { minSats: number; maxSats: number } | null {
 .send-contact-hint__body {
   min-width: 0;
   flex: 1 1 auto;
-}
-
-.send-action {
-  margin-top: auto;
-  padding-top: var(--vipr-space-5);
-}
-
-.send-action__button {
-  width: 100%;
-  padding-top: var(--vipr-space-2);
-  padding-bottom: var(--vipr-space-2);
 }
 
 .rounded-contact-list {

@@ -269,6 +269,12 @@ describe('SendPage query invoice handling', () => {
     wrapper = createWrapper()
     await flushPromises()
 
+    expect(wrapper.text()).toContain('Review the payment details before sending.')
+    expect(wrapper.get('[data-testid="send-continue-btn"]').attributes('label')).toBe(
+      'Review payment',
+    )
+    expect(wrapper.get('[data-testid="send-continue-btn"]').attributes('icon')).toBe('bolt')
+
     await wrapper.get('[data-testid="send-continue-btn"]').trigger('click')
     await flushPromises()
 

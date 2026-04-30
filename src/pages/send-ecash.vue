@@ -92,15 +92,11 @@ meta:
         </template>
 
         <div v-if="exportedNotes === ''" class="vipr-flow-bottom-action">
-          <div
-            v-if="selectedFederation != null"
-            class="vipr-flow-bottom-hint"
-            data-testid="send-ecash-denomination-note"
-          >
-            Exact offline amounts depend on your current note denominations.
+          <div class="vipr-flow-bottom-hint" data-testid="send-ecash-denomination-note">
+            {{ sendEcashBottomHint }}
           </div>
           <q-btn
-            label="Export ecash"
+            :label="paymentFlowCopy.sendEcash.submitLabel"
             icon="arrow_upward"
             color="primary"
             no-caps
@@ -137,6 +133,7 @@ import ViprTopbar from 'src/components/ViprTopbar.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useCopyShare } from 'src/composables/useCopyShare'
 import { useNumericInput } from 'src/composables/useNumericInput'
+import { paymentFlowCopy } from 'src/constants/paymentFlowCopy'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import { getErrorMessage } from 'src/utils/error'
@@ -165,6 +162,11 @@ const {
 })
 
 const selectedFederation = computed(() => federationStore.selectedFederation)
+const sendEcashBottomHint = computed(() =>
+  selectedFederation.value == null
+    ? paymentFlowCopy.sendEcash.selectFederationHint
+    : paymentFlowCopy.sendEcash.denominationHint,
+)
 
 const maxOfflineAmount = computed(() => {
   const balanceLimit = Math.max(0, Math.floor(walletStore.balance))

@@ -54,9 +54,9 @@ meta:
         </div>
 
         <div v-if="!qrData" class="vipr-flow-bottom-action">
-          <div class="vipr-flow-bottom-hint">Creates a Lightning invoice for this federation.</div>
+          <div class="vipr-flow-bottom-hint">{{ paymentFlowCopy.receiveLightning.bottomHint }}</div>
           <q-btn
-            label="Create Invoice"
+            :label="paymentFlowCopy.receiveLightning.submitLabel"
             color="primary"
             no-caps
             unelevated
@@ -135,6 +135,7 @@ import { useAppNotify } from 'src/composables/useAppNotify'
 import { useCopyShare } from 'src/composables/useCopyShare'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
 import { useNumericInput } from 'src/composables/useNumericInput'
+import { paymentFlowCopy } from 'src/constants/paymentFlowCopy'
 import { getErrorMessage } from 'src/utils/error'
 
 const qrData = ref('')

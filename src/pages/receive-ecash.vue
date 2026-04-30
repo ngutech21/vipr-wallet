@@ -148,7 +148,7 @@ meta:
             {{ receiveEcashHint }}
           </div>
           <q-btn
-            label="Receive ecash"
+            :label="paymentFlowCopy.receiveEcash.submitLabel"
             icon="arrow_downward"
             color="primary"
             no-caps
@@ -186,6 +186,7 @@ import ModalCard from 'src/components/ModalCard.vue'
 import JoinFederationPreviewStep from 'src/components/JoinFederationPreviewStep.vue'
 import FederationAvatar from 'src/components/FederationAvatar.vue'
 import ViprTopbar from 'src/components/ViprTopbar.vue'
+import { paymentFlowCopy } from 'src/constants/paymentFlowCopy'
 import type { Federation } from 'src/types/federation'
 
 type PendingEcashImport = {
@@ -248,11 +249,11 @@ const ecashPreviewState = computed(() => {
 const receiveEcashHint = computed(() => {
   if (previewFederation.value != null) {
     return previewRequiresJoin.value
-      ? 'This ecash requires joining its federation before redeeming.'
-      : 'Redeems ecash into its issuing federation.'
+      ? paymentFlowCopy.receiveEcash.joinRequiredHint
+      : paymentFlowCopy.receiveEcash.joinedHint
   }
 
-  return 'Paste or scan ecash to detect its federation.'
+  return paymentFlowCopy.receiveEcash.emptyHint
 })
 
 async function pasteFromClipboard() {

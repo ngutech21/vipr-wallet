@@ -169,6 +169,22 @@ describe('SendOnchainPage', () => {
     wrapper.unmount()
   })
 
+  it('shows bitcoin URI amount metadata inside the shared amount group', async () => {
+    wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper
+      .get('[data-testid="send-onchain-target-input"] textarea')
+      .setValue('bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021')
+    await flushPromises()
+
+    expect(wrapper.get('[data-testid="send-onchain-amount-meta"]').text()).toContain(
+      'Using 21,000 sats from the Bitcoin URI',
+    )
+    expect(wrapper.find('[data-testid="send-onchain-uri-amount-hint"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
   it('submits an onchain transfer and routes to the pending screen', async () => {
     routeState.query.target = '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy'
     amountRef.value = 21_000

@@ -86,29 +86,20 @@ meta:
               :buttons="keypadButtons"
               label="Amount (sats)"
               :error-message="amountError"
+              :meta-text="onchainAmountMetaText"
               amount-test-id="send-onchain-amount-input"
               meta-test-id="send-onchain-amount-meta"
               class="vipr-flow-spacer-md"
             />
-
-            <div
-              v-if="uriAmountHint"
-              class="vipr-caption vipr-flow-spacer-md"
-              data-testid="send-onchain-uri-amount-hint"
-            >
-              {{ uriAmountHint }}
-            </div>
           </div>
         </div>
 
         <div class="vipr-flow-bottom-action">
           <div class="vipr-flow-bottom-hint" data-testid="send-onchain-max-amount">
-            A {{ ONCHAIN_FEE_RESERVE_SATS.toLocaleString() }} sat fee reserve is kept for network
-            fees. Minimum on-chain send: {{ MIN_ONCHAIN_SEND_SATS.toLocaleString() }} sats. Maximum
-            spendable now: {{ maxSendAmount.toLocaleString() }} sats.
+            {{ sendOnchainBottomHint }}
           </div>
           <q-btn
-            label="Send Bitcoin"
+            :label="paymentFlowCopy.sendOnchain.submitLabel"
             icon="arrow_upward"
             color="primary"
             no-caps
@@ -143,6 +134,7 @@ import FederationSelector from 'src/components/FederationSelector.vue'
 import ViprTopbar from 'src/components/ViprTopbar.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useNumericInput } from 'src/composables/useNumericInput'
+import { paymentFlowCopy } from 'src/constants/paymentFlowCopy'
 import { logger } from 'src/services/logger'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
@@ -237,8 +229,12 @@ const uriAmountHint = computed(() => {
     return ''
   }
 
-  return `Using ${parsedTarget.value.data.amountSats.toLocaleString()} sats from the Bitcoin URI`
+  return paymentFlowCopy.sendOnchain.uriAmountHint(parsedTarget.value.data.amountSats)
 })
+const onchainAmountMetaText = computed(() => uriAmountHint.value)
+const sendOnchainBottomHint = computed(() =>
+  paymentFlowCopy.sendOnchain.bottomHint(maxSendAmount.value),
+)
 
 const bitcoinUriDetails = computed(() => {
   const details: string[] = []
