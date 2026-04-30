@@ -24,12 +24,11 @@ import {
   compareSyncedContacts,
   getContactSearchValues,
   getInvalidContactSourceMessage,
-  getLatestProfileEvents,
   inferContactSourceType,
   isValidContactSource,
-  mapProfileEventToContact,
   normalizeContactSearchValue,
 } from 'src/services/nostr/contacts'
+import { syncNostrContacts } from 'src/services/nostr/contactSync'
 import {
   createCachedFederationPreview,
   isCachedPreviewValid,
@@ -230,35 +229,14 @@ export const useNostrStore = defineStore('nostr', {
           throw new Error('NDK is not initialized')
         }
 
-        const sourceUser = await this.ndk.fetchUser(sourceValue)
-        if (sourceUser == null) {
-          throw new Error('Nostr user not found')
-        }
-
-        const followedPubkeys = Array.from(await sourceUser.followSet())
-        const profileEvents =
-          followedPubkeys.length > 0
-            ? await this.ndk.fetchEvents({ kinds: [0], authors: followedPubkeys })
-            : new Set<NDKEvent>()
-        const latestProfileEvents = getLatestProfileEvents(profileEvents)
-        const contacts = followedPubkeys
-          .map((pubkey) => {
-            const profileEvent = latestProfileEvents.get(pubkey)
-            if (profileEvent == null) {
-              return null
-            }
-
-            return mapProfileEventToContact(pubkey, profileEvent)
-          })
-          .filter((contact): contact is SyncedNostrContact => contact != null)
-          .sort(compareSyncedContacts)
+        const result = await syncNostrContacts(this.ndk, sourceValue)
 
         this.contactSource = {
           sourceType,
           sourceValue,
-          resolvedPubkey: sourceUser.pubkey,
+          resolvedPubkey: result.resolvedPubkey,
         }
-        this.contacts = contacts
+        this.contacts = result.contacts
         this.contactSyncMeta = {
           lastSyncedAt: Date.now(),
           lastSyncError: null,
@@ -267,7 +245,7 @@ export const useNostrStore = defineStore('nostr', {
 
         logger.nostr.info('Synced Nostr contacts', {
           sourceType,
-          count: contacts.length,
+          count: result.contacts.length,
         })
 
         return true
