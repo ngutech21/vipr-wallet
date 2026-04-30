@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance for AI coding agents working in this repository.
 
 ## Project Overview
 
@@ -23,8 +23,9 @@ Vipr Wallet is a Progressive Web App (PWA) that serves as an ecash wallet for Fe
 - `pnpm format:check` - Verify formatting without modifying files
 - `pnpm typecheck` - Run Vue TypeScript compiler checks
 - `pnpm final-check` - Run all checks: format check, lint, typecheck, and tests
-- After every change made by an agent, run `pnpm format`.
-- After every code change made by an agent, run `pnpm final-check` before finalizing the work.
+- After each coherent change set made by an agent, run `pnpm format`.
+- After every code, config, or dependency change made by an agent, run `pnpm final-check` before finalizing the work.
+- Documentation-only changes do not require `pnpm final-check`, but should still be formatted.
 
 ### Testing
 
@@ -37,6 +38,13 @@ Playwright is configured in `playwright.config.ts` (tests live under `test/e2e`)
 - `nix develop --accept-flake-config --command pnpm test:e2e` - Run end to end tests using playwright in nix dev shell
 - After any updates (code, config, or dependencies), run tests and ensure they pass before finalizing changes.
 - For UI verification/debugging tasks, use the Codex Playwright/Browser plugin and Playwright MCP tooling first (`browser_snapshot` first, then interactions/assertions). Use Playwright via CLI only as a fallback when the plugin is unavailable, cannot reach the target, or when running the committed E2E suite itself.
+
+### Design System
+
+- Vipr has a mandatory design system documented in `docs/design-system.md`.
+- All new or changed UI must use the shared `vipr-*` classes and CSS tokens from `src/css/app.scss`.
+- Do not add ad hoc hardcoded colors, raw pixel radii, or Quasar layout/typography utility classes when an existing token or shared class covers the use case.
+- Always register every Quasar icon name you add or change in templates in `src/boot/icon-map.ts`; otherwise the icon may render as raw text instead of a mapped symbol.
 
 ### Local Federation UI Testing
 
@@ -118,8 +126,11 @@ Located in `src/stores/`:
 - Firefox as default development browser
 - Router import hint: import runtime APIs/composables from `vue-router` (e.g. `useRoute`, `useRouter`, `createRouter`) and keep generated route types/routes from `vue-router/auto-routes` only.
 - When wiring app navigation, prefer named routes such as `:to="{ name: '/federations/' }"` over string paths like `to="/federations/"` so route references stay type-safe and refactor-friendly.
-- Always register every Quasar icon name you add or change in templates in `src/boot/icon-map.ts`; otherwise the icon may render as raw text instead of a mapped symbol.
-- Vipr has a mandatory design system documented in `docs/design-system.md`. All new or changed UI must use the shared `vipr-*` classes and CSS tokens from `src/css/app.scss`; do not add ad hoc hardcoded colors, raw pixel radii, or Quasar layout/typography utility classes when an existing token or shared class covers the use case.
+
+### Local Troubleshooting Notes
+
+- The browser may contain stale local PWA/wallet state from previous manual testing. If the dev console shows errors like `no valid bech32 or bech32m checksum`, `client is not initialized for this database`, or `Unable to open or join wallet 'wallet-...'`, first verify whether this is stale local state before treating it as a new regression.
+- For layout-only checks, these stale wallet initialization errors can be unrelated to the UI change being tested. Still report them when they affect the flow under test.
 
 ### Key Implementation Patterns
 
@@ -134,14 +145,16 @@ Located in `src/stores/`:
 
 #### Context7 Server for API Documentation
 
-- ALWAYS use the Context7 MCP server when requiring API documentation for libraries
+- Use the Context7 MCP server when external API documentation for libraries is needed.
 - Use `resolve-library-id` first to get the correct library ID, then `query-docs` to fetch documentation
-- This provides up-to-date documentation and code examples for all project dependencies
+- This provides up-to-date documentation and code examples for project dependencies.
+- Context7 is not required for purely local codebase questions where the needed context is available in this repository.
 
 #### Playwright MCP Server for E2E Testing
 
-- Use the Playwright MCP server for end-to-end testing and browser automation
-- For any UI testing request (layout, rendering, interaction regressions, visual checks), prefer the Codex Playwright/Browser plugin as the default approach. Use Playwright via CLI only as a fallback when the plugin is unavailable, cannot reach the target, or when running the committed E2E suite itself.
+- Use the Codex Playwright/Browser plugin and Playwright MCP server for browser automation, UI debugging, and layout verification.
+- For any UI testing request (layout, rendering, interaction regressions, visual checks), prefer the Playwright MCP tools over Playwright CLI.
+- Use Playwright via CLI only as a fallback when the plugin is unavailable, cannot reach the target, or when running the committed E2E suite itself.
 - Available tools include:
   - `browser_navigate` - Navigate to URLs
   - `browser_snapshot` - Take accessibility snapshots (preferred over screenshots)
