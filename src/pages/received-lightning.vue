@@ -35,22 +35,13 @@ defineOptions({
 })
 
 import { ref } from 'vue'
-import { useRoute, type LocationQueryValue } from 'vue-router'
+import { useRoute } from 'vue-router'
 import SuccessResultLayout from 'src/components/SuccessResultLayout.vue'
 import { useFormatters } from '../utils/formatter'
+import { getQueryInteger } from 'src/utils/routeQuery'
 
 const { formatNumber } = useFormatters()
 const route = useRoute('/received-lightning')
 
-function getQueryNumber(value: LocationQueryValue | LocationQueryValue[] | undefined): number {
-  const firstValue = Array.isArray(value) ? value[0] : value
-  if (typeof firstValue !== 'string') {
-    return 0
-  }
-
-  const parsed = Number.parseInt(firstValue, 10)
-  return Number.isNaN(parsed) ? 0 : parsed
-}
-
-const amount = ref(getQueryNumber(route.query.amount))
+const amount = ref(getQueryInteger(route.query.amount))
 </script>

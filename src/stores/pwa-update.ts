@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { logger } from 'src/services/logger'
+import { getErrorMessage } from 'src/utils/error'
 
 const UPDATE_APPLY_ALLOWLIST = new Set(['/', '/settings/'])
 const CONTROLLER_CHANGE_TIMEOUT_MS = 10_000
@@ -42,20 +43,6 @@ function routeNameToString(routeName: unknown): string {
     return routeName
   }
   return ''
-}
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message
-  }
-  if (typeof error === 'string') {
-    return error
-  }
-  try {
-    return JSON.stringify(error)
-  } catch {
-    return String(error)
-  }
 }
 
 function hasServiceWorkerSupport(): boolean {

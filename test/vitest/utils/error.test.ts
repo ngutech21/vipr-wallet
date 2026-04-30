@@ -36,9 +36,19 @@ describe('error.ts', () => {
       expect(getErrorMessage(undefined)).toBe('undefined')
     })
 
-    it('should convert object to string', () => {
+    it('should read message from object errors', () => {
       const obj = { code: 500, message: 'Server error' }
-      expect(getErrorMessage(obj)).toBe('[object Object]')
+      expect(getErrorMessage(obj)).toBe('Server error')
+    })
+
+    it('should read error from object errors when message is unavailable', () => {
+      const obj = { code: 500, error: 'Server error' }
+      expect(getErrorMessage(obj)).toBe('Server error')
+    })
+
+    it('should stringify object errors without message details', () => {
+      const obj = { code: 500 }
+      expect(getErrorMessage(obj)).toBe('{"code":500}')
     })
 
     it('should convert array to string', () => {

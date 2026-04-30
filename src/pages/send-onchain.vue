@@ -144,6 +144,7 @@ import {
   MIN_ONCHAIN_SEND_SATS,
   ONCHAIN_FEE_RESERVE_SATS,
 } from 'src/utils/onchainPolicy'
+import { getPositiveQueryInteger } from 'src/utils/routeQuery'
 
 const router = useRouter()
 const route = useRoute()
@@ -271,7 +272,7 @@ watch(
       return
     }
 
-    const queryAmount = getQueryNumber(route.query.amount)
+    const queryAmount = getPositiveQueryInteger(route.query.amount)
     if (queryAmount != null) {
       setValue(queryAmount)
     }
@@ -358,21 +359,6 @@ function safeParseBitcoinInput(input: string): {
       error: input.trim() === '' ? null : getErrorMessage(error),
     }
   }
-}
-
-function getQueryString(value: unknown): string | null {
-  const firstValue = Array.isArray(value) ? value[0] : value
-  return typeof firstValue === 'string' ? firstValue : null
-}
-
-function getQueryNumber(value: unknown): number | null {
-  const rawValue = getQueryString(value)
-  if (rawValue == null) {
-    return null
-  }
-
-  const parsed = Number.parseInt(rawValue, 10)
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
 }
 </script>
 

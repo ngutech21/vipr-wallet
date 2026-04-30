@@ -197,6 +197,7 @@ import { useNostrStore } from 'src/stores/nostr'
 import type { SyncedNostrContact } from 'src/types/nostr'
 import { getErrorMessage } from 'src/utils/error'
 import { getNostrContactDisplayName, getNostrContactSubtitle } from 'src/utils/nostrContacts'
+import { getPositiveQueryInteger, getQueryString } from 'src/utils/routeQuery'
 
 const lightningInvoice = ref('')
 
@@ -425,7 +426,7 @@ function buildScanReturnQuery() {
 }
 
 function restoreSendDraftFromQuery() {
-  const amount = getQueryNumber(route.query.amount)
+  const amount = getPositiveQueryInteger(route.query.amount)
   if (amount != null) {
     invoiceAmount.value = amount
   }
@@ -434,21 +435,6 @@ function restoreSendDraftFromQuery() {
   if (memo != null) {
     invoiceMemo.value = memo
   }
-}
-
-function getQueryString(value: unknown): string | null {
-  const firstValue = Array.isArray(value) ? value[0] : value
-  return typeof firstValue === 'string' ? firstValue : null
-}
-
-function getQueryNumber(value: unknown): number | null {
-  const rawValue = getQueryString(value)
-  if (rawValue == null) {
-    return null
-  }
-
-  const parsed = Number.parseInt(rawValue, 10)
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
 }
 
 function getContactDisplayName(contact: SyncedNostrContact): string {

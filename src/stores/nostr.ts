@@ -19,6 +19,8 @@ import type {
 import { Nip87Kinds } from 'src/types/nip87'
 import { useWalletStore } from './wallet'
 import { logger } from 'src/services/logger'
+import { raceWithTimeout } from 'src/utils/async'
+import { getErrorMessage } from 'src/utils/error'
 
 type DiscoveredFederationCandidate = {
   federationId: string
@@ -723,7 +725,11 @@ export const useNostrStore = defineStore('nostr', {
 
           // Sequential previews avoid overloading wallet I/O and keep join UX responsive.
           // eslint-disable-next-line no-await-in-loop
-          const previewResult = await raceWithTimeout(previewPromise, PREVIEW_TIMEOUT_MS)
+          const previewResult = await raceWithTimeout(
+            previewPromise,
+            PREVIEW_TIMEOUT_MS,
+            PREVIEW_TIMEOUT_TOKEN,
+          )
           if (previewResult === PREVIEW_TIMEOUT_TOKEN) {
             this.previewStatusByFederation[candidate.federationId] = 'timed_out'
             this.sortDiscoveryCandidates()
@@ -854,50 +860,6 @@ function extractRecommendationTargets(event: NDKEvent): string[] {
   }
 
   return [...recommendedFederationIds]
-}
-
-async function raceWithTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-): Promise<T | typeof PREVIEW_TIMEOUT_TOKEN> {
-  let timeoutId: ReturnType<typeof setTimeout> | undefined
-  const timeoutPromise = new Promise<typeof PREVIEW_TIMEOUT_TOKEN>((resolve) => {
-    timeoutId = setTimeout(() => resolve(PREVIEW_TIMEOUT_TOKEN), timeoutMs)
-  })
-
-  try {
-    return await Promise.race([promise, timeoutPromise])
-  } finally {
-    if (timeoutId != null) {
-      clearTimeout(timeoutId)
-    }
-  }
-}
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message
-  }
-
-  if (typeof error === 'string') {
-    return error
-  }
-
-  if (typeof error === 'object' && error !== null) {
-    const details = error as { message?: unknown; error?: unknown }
-    if (typeof details.message === 'string' && details.message !== '') {
-      return details.message
-    }
-    if (typeof details.error === 'string' && details.error !== '') {
-      return details.error
-    }
-  }
-
-  try {
-    return JSON.stringify(error)
-  } catch {
-    return String(error)
-  }
 }
 
 function isExpectedDiscoveryError(error: unknown): boolean {
