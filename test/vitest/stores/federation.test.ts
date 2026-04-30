@@ -58,6 +58,35 @@ describe('federation store', () => {
     expect(federationStore.selectedFederationId).toBe(first.federationId)
   })
 
+  it('does not duplicate an existing federation when added again', () => {
+    const federationStore = useFederationStore()
+    const federation = createFederation()
+
+    federationStore.addFederation(federation)
+    federationStore.addFederation(federation)
+
+    expect(federationStore.federations).toEqual([federation])
+    expect(federationStore.selectedFederationId).toBe(federation.federationId)
+  })
+
+  it('updates an existing federation in place when added with the same federation id', () => {
+    const federationStore = useFederationStore()
+    const first = createFederation({ federationId: 'fed-1', title: 'Original Federation' })
+    const second = createFederation({ federationId: 'fed-2', title: 'Second Federation' })
+    const updatedFirst = createFederation({
+      federationId: 'fed-1',
+      title: 'Updated Federation',
+      inviteCode: 'fed11updated',
+    })
+    federationStore.federations = [first, second]
+    federationStore.selectedFederationId = second.federationId
+
+    federationStore.addFederation(updatedFirst)
+
+    expect(federationStore.federations).toEqual([updatedFirst, second])
+    expect(federationStore.selectedFederationId).toBe(second.federationId)
+  })
+
   it('repairs a stale selection by choosing the first available federation', () => {
     const federationStore = useFederationStore()
     const first = createFederation({ federationId: 'fed-1' })
