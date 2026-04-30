@@ -14,6 +14,21 @@ export type DiscoveredFederationCandidate = {
   recommendationCount?: number
 }
 
+export type RecommendationVotersByFederation = Record<string, Record<string, number>>
+
+export type FederationCandidateUpdate = {
+  candidates: DiscoveredFederationCandidate[]
+  invalidatedFederationId?: string
+  shouldRemoveCachedPreview: boolean
+}
+
+export type RecommendationStateUpdate = {
+  candidates: DiscoveredFederationCandidate[]
+  recommendationCountsByFederation: Record<string, number>
+  recommendationVotersByFederation: RecommendationVotersByFederation
+  lastRecommendationCreatedAt: number
+}
+
 const EXPECTED_DISCOVERY_ERROR_PATTERNS = [
   /failed to download client config/i,
   /failed to fetch/i,
@@ -93,6 +108,158 @@ export function doesPreviewMatchCandidate(
   federation: Federation,
 ): boolean {
   return federation.federationId === candidate.federationId
+}
+
+export function applyFederationCandidateToDiscoveryState({
+  candidates,
+  candidate,
+  recommendationCountsByFederation,
+  maxCandidates,
+}: {
+  candidates: DiscoveredFederationCandidate[]
+  candidate: DiscoveredFederationCandidate
+  recommendationCountsByFederation: Record<string, number>
+  maxCandidates: number
+}): FederationCandidateUpdate {
+  const existing = candidates.find((item) => item.federationId === candidate.federationId)
+  const recommendationCount = recommendationCountsByFederation[candidate.federationId] ?? 0
+
+  if (existing == null) {
+    return {
+      candidates: limitDiscoveryCandidates(
+        sortDiscoveredFederationCandidates([
+          ...candidates,
+          {
+            ...candidate,
+            recommendationCount,
+          },
+        ]),
+        maxCandidates,
+      ),
+      invalidatedFederationId: candidate.federationId,
+      shouldRemoveCachedPreview: false,
+    }
+  }
+
+  if (existing.inviteCode === candidate.inviteCode && existing.createdAt === candidate.createdAt) {
+    return {
+      candidates,
+      shouldRemoveCachedPreview: false,
+    }
+  }
+
+  return {
+    candidates: limitDiscoveryCandidates(
+      sortDiscoveredFederationCandidates(
+        candidates.map((item) =>
+          item.federationId === candidate.federationId
+            ? {
+                ...candidate,
+                recommendationCount: Math.max(
+                  existing.recommendationCount ?? 0,
+                  recommendationCount,
+                ),
+              }
+            : item,
+        ),
+      ),
+      maxCandidates,
+    ),
+    invalidatedFederationId: candidate.federationId,
+    shouldRemoveCachedPreview: true,
+  }
+}
+
+export function applyRecommendationTargetsToDiscoveryState({
+  candidates,
+  recommendationCountsByFederation,
+  recommendationVotersByFederation,
+  lastRecommendationCreatedAt,
+  pubkey,
+  createdAt,
+  federationIds,
+}: {
+  candidates: DiscoveredFederationCandidate[]
+  recommendationCountsByFederation: Record<string, number>
+  recommendationVotersByFederation: RecommendationVotersByFederation
+  lastRecommendationCreatedAt: number
+  pubkey: string
+  createdAt: number
+  federationIds: string[]
+}): RecommendationStateUpdate {
+  const nextRecommendationVotersByFederation = { ...recommendationVotersByFederation }
+  let nextRecommendationCountsByFederation = recommendationCountsByFederation
+  let recommendationCountsChanged = false
+
+  for (const federationId of federationIds) {
+    const votersByFederation = nextRecommendationVotersByFederation[federationId] ?? {}
+    const previousVoteCreatedAt = votersByFederation[pubkey]
+    if (previousVoteCreatedAt != null && previousVoteCreatedAt >= createdAt) {
+      continue
+    }
+
+    const nextVotersByFederation = {
+      ...votersByFederation,
+      [pubkey]: createdAt,
+    }
+    nextRecommendationVotersByFederation[federationId] = nextVotersByFederation
+
+    const recommendationCount = Object.keys(nextVotersByFederation).length
+    if (nextRecommendationCountsByFederation[federationId] !== recommendationCount) {
+      if (!recommendationCountsChanged) {
+        nextRecommendationCountsByFederation = { ...recommendationCountsByFederation }
+        recommendationCountsChanged = true
+      }
+      nextRecommendationCountsByFederation[federationId] = recommendationCount
+    }
+  }
+
+  return {
+    candidates: recommendationCountsChanged
+      ? sortDiscoveredFederationCandidates(
+          applyRecommendationCountsToDiscoveryCandidates(
+            candidates,
+            nextRecommendationCountsByFederation,
+          ),
+        )
+      : candidates,
+    recommendationCountsByFederation: nextRecommendationCountsByFederation,
+    recommendationVotersByFederation: nextRecommendationVotersByFederation,
+    lastRecommendationCreatedAt: Math.max(lastRecommendationCreatedAt, createdAt),
+  }
+}
+
+export function applyRecommendationCountsToDiscoveryCandidates(
+  candidates: DiscoveredFederationCandidate[],
+  recommendationCountsByFederation: Record<string, number>,
+): DiscoveredFederationCandidate[] {
+  return candidates.map((candidate) => {
+    const recommendationCount = recommendationCountsByFederation[candidate.federationId] ?? 0
+    return {
+      ...candidate,
+      recommendationCount: Math.max(candidate.recommendationCount ?? 0, recommendationCount),
+    }
+  })
+}
+
+export function sortDiscoveredFederationCandidates(
+  candidates: DiscoveredFederationCandidate[],
+): DiscoveredFederationCandidate[] {
+  return [...candidates].sort((left, right) => {
+    const recommendationDiff = (right.recommendationCount ?? 0) - (left.recommendationCount ?? 0)
+    if (recommendationDiff !== 0) {
+      return recommendationDiff
+    }
+
+    return right.createdAt - left.createdAt
+  })
+}
+
+function limitDiscoveryCandidates(
+  candidates: DiscoveredFederationCandidate[],
+  maxCandidates: number,
+): DiscoveredFederationCandidate[] {
+  return candidates.length > maxCandidates ? candidates.slice(0, maxCandidates) : candidates
 }
 
 function extractCandidateSummary(

@@ -14,10 +14,14 @@ import { logger } from 'src/services/logger'
 import { raceWithTimeout } from 'src/utils/async'
 import { getErrorMessage } from 'src/utils/error'
 import {
+  applyFederationCandidateToDiscoveryState,
+  applyRecommendationCountsToDiscoveryCandidates,
+  applyRecommendationTargetsToDiscoveryState,
   doesPreviewMatchCandidate,
   extractFederationCandidate,
   extractRecommendationTargets,
   isExpectedDiscoveryError,
+  sortDiscoveredFederationCandidates,
   type DiscoveredFederationCandidate,
 } from 'src/services/nostr/discovery'
 import {
@@ -362,41 +366,20 @@ export const useNostrStore = defineStore('nostr', {
 
       this.lastDiscoveryCreatedAt = Math.max(this.lastDiscoveryCreatedAt, candidate.createdAt)
 
-      const existingIndex = this.discoveryCandidates.findIndex(
-        (item) => item.federationId === candidate.federationId,
-      )
-      if (existingIndex >= 0) {
-        const existing = this.discoveryCandidates[existingIndex]
-        if (existing == null) {
-          return
-        }
-        if (
-          existing.inviteCode !== candidate.inviteCode ||
-          existing.createdAt !== candidate.createdAt
-        ) {
-          const recommendationCount = this.getRecommendationCountForFederationId(
-            candidate.federationId,
-          )
-          this.discoveryCandidates[existingIndex] = {
-            ...candidate,
-            recommendationCount: Math.max(existing.recommendationCount ?? 0, recommendationCount),
-          }
-          this.removeCachedPreview(candidate.federationId)
-          delete this.previewAttemptedCreatedAt[candidate.federationId]
-          delete this.previewStatusByFederation[candidate.federationId]
-        }
-      } else {
-        this.discoveryCandidates.push({
-          ...candidate,
-          recommendationCount: this.getRecommendationCountForFederationId(candidate.federationId),
-        })
-        delete this.previewAttemptedCreatedAt[candidate.federationId]
-        delete this.previewStatusByFederation[candidate.federationId]
-      }
+      const update = applyFederationCandidateToDiscoveryState({
+        candidates: this.discoveryCandidates,
+        candidate,
+        recommendationCountsByFederation: this.recommendationCountsByFederation,
+        maxCandidates: MAX_DISCOVERY_CACHE_SIZE,
+      })
 
-      this.sortDiscoveryCandidates()
-      if (this.discoveryCandidates.length > MAX_DISCOVERY_CACHE_SIZE) {
-        this.discoveryCandidates = this.discoveryCandidates.slice(0, MAX_DISCOVERY_CACHE_SIZE)
+      this.discoveryCandidates = update.candidates
+      if (update.invalidatedFederationId != null) {
+        if (update.shouldRemoveCachedPreview) {
+          this.removeCachedPreview(update.invalidatedFederationId)
+        }
+        delete this.previewAttemptedCreatedAt[update.invalidatedFederationId]
+        delete this.previewStatusByFederation[update.invalidatedFederationId]
       }
     },
 
@@ -410,55 +393,31 @@ export const useNostrStore = defineStore('nostr', {
       }
 
       const createdAt = event.created_at ?? 0
-      this.lastRecommendationCreatedAt = Math.max(this.lastRecommendationCreatedAt, createdAt)
+      const update = applyRecommendationTargetsToDiscoveryState({
+        candidates: this.discoveryCandidates,
+        recommendationCountsByFederation: this.recommendationCountsByFederation,
+        recommendationVotersByFederation: this.recommendationVotersByFederation,
+        lastRecommendationCreatedAt: this.lastRecommendationCreatedAt,
+        pubkey: event.pubkey,
+        createdAt,
+        federationIds: recommendedFederationIds,
+      })
 
-      let updated = false
-      for (const federationId of recommendedFederationIds) {
-        const votersByFederation = this.recommendationVotersByFederation[federationId] ?? {}
-        const previousVoteCreatedAt = votersByFederation[event.pubkey]
-        if (previousVoteCreatedAt != null && previousVoteCreatedAt >= createdAt) {
-          continue
-        }
-
-        votersByFederation[event.pubkey] = createdAt
-        this.recommendationVotersByFederation[federationId] = votersByFederation
-
-        const recommendationCount = Object.keys(votersByFederation).length
-        if (this.recommendationCountsByFederation[federationId] !== recommendationCount) {
-          this.recommendationCountsByFederation[federationId] = recommendationCount
-          updated = true
-        }
-      }
-
-      if (!updated) {
-        return
-      }
-
-      this.applyRecommendationCountsToCandidates()
-      this.sortDiscoveryCandidates()
+      this.discoveryCandidates = update.candidates
+      this.recommendationCountsByFederation = update.recommendationCountsByFederation
+      this.recommendationVotersByFederation = update.recommendationVotersByFederation
+      this.lastRecommendationCreatedAt = update.lastRecommendationCreatedAt
     },
 
     applyRecommendationCountsToCandidates() {
-      this.discoveryCandidates = this.discoveryCandidates.map((candidate) => {
-        const recommendationCount = this.getRecommendationCountForFederationId(
-          candidate.federationId,
-        )
-        return {
-          ...candidate,
-          recommendationCount: Math.max(candidate.recommendationCount ?? 0, recommendationCount),
-        }
-      })
+      this.discoveryCandidates = applyRecommendationCountsToDiscoveryCandidates(
+        this.discoveryCandidates,
+        this.recommendationCountsByFederation,
+      )
     },
 
     sortDiscoveryCandidates() {
-      this.discoveryCandidates.sort((a, b) => {
-        const recommendationDiff = (b.recommendationCount ?? 0) - (a.recommendationCount ?? 0)
-        if (recommendationDiff !== 0) {
-          return recommendationDiff
-        }
-
-        return b.createdAt - a.createdAt
-      })
+      this.discoveryCandidates = sortDiscoveredFederationCandidates(this.discoveryCandidates)
     },
 
     cacheFederationPreview(candidate: DiscoveredFederationCandidate, federation: Federation) {
