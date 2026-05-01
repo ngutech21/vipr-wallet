@@ -1,5 +1,5 @@
 <template>
-  <div class="payment-verification">
+  <div class="payment-verification vipr-flow-panel">
     <div
       class="payment-details-card vipr-surface-card vipr-surface-card--strong"
       data-testid="verify-payment-details"
@@ -214,16 +214,21 @@ function formatMsatsAsSats(msats: number): string {
 }
 
 .payment-verification {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vipr-space-5);
+  box-sizing: border-box;
+  width: 100%;
   padding-bottom: var(--vipr-space-5);
 }
 
 .payment-details-card {
-  margin-bottom: var(--vipr-space-6);
-  padding: var(--vipr-space-4) var(--vipr-space-4-5);
+  width: 100%;
+  padding: var(--vipr-space-5);
+  box-sizing: border-box;
 }
 
 .payment-balance-error {
-  margin-bottom: var(--vipr-space-4);
   padding: var(--vipr-space-3) var(--vipr-space-4);
   border-radius: var(--vipr-radius-control);
   border: 1px solid var(--q-negative);
@@ -239,19 +244,20 @@ function formatMsatsAsSats(msats: number): string {
   align-items: center;
   justify-content: space-between;
   gap: var(--vipr-space-4);
-  min-height: var(--vipr-control-height-lg);
+  min-height: 72px;
 }
 
 .payment-amount-summary__label {
   color: var(--vipr-text-soft);
-  font-size: var(--vipr-font-size-section-title);
-  font-weight: 700;
+  font-size: var(--vipr-font-size-caption);
+  font-weight: 600;
   line-height: var(--vipr-line-height-tight);
+  letter-spacing: 0;
 }
 
 .payment-amount-summary__value {
   color: var(--vipr-text-primary);
-  font-size: var(--vipr-font-size-summary-title);
+  font-size: var(--vipr-font-size-display);
   font-weight: 700;
   line-height: var(--vipr-line-height-tight);
   text-align: right;
@@ -276,7 +282,6 @@ function formatMsatsAsSats(msats: number): string {
 .payment-slider-container {
   position: relative;
   width: 100%;
-  margin-top: var(--vipr-space-4);
   border-radius: var(--vipr-radius-pill);
   overflow: hidden;
   box-shadow: var(--vipr-action-slider-shadow);
@@ -292,7 +297,7 @@ function formatMsatsAsSats(msats: number): string {
 
 .payment-slider {
   width: 100%;
-  height: 56px;
+  height: 64px;
   background: var(--vipr-action-slider-bg);
   border: 1px solid var(--vipr-action-slider-border);
   border-radius: var(--vipr-radius-pill);
@@ -323,16 +328,17 @@ function formatMsatsAsSats(msats: number): string {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 56px;
-  padding-left: 56px;
+  height: 64px;
+  padding: var(--vipr-space-0) var(--vipr-space-5) var(--vipr-space-0) 64px;
+  box-sizing: border-box;
 }
 
 .slider-handle {
   position: absolute;
-  left: 6px;
+  left: 8px;
   top: 8px;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: var(--vipr-radius-round);
   background: var(--vipr-action-slider-handle-bg);
   display: flex;
@@ -351,6 +357,7 @@ function formatMsatsAsSats(msats: number): string {
 .slider-text {
   color: var(--vipr-text-primary);
   z-index: 1;
+  text-align: center;
 }
 
 .q-slide-item__content {
@@ -358,6 +365,22 @@ function formatMsatsAsSats(msats: number): string {
 }
 
 @media (max-width: 599px) {
+  .payment-verification {
+    gap: var(--vipr-space-4);
+  }
+
+  .payment-details-card {
+    padding: var(--vipr-row-padding-x);
+  }
+
+  .payment-amount-summary {
+    min-height: 64px;
+  }
+
+  .payment-amount-summary__value {
+    font-size: var(--vipr-font-size-title);
+  }
+
   .payment-details-row {
     grid-template-columns: 1fr;
     gap: 6px;
