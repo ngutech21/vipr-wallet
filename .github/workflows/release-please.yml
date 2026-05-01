@@ -6,6 +6,10 @@ on:
       - master
   workflow_dispatch: {}
 
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
   issues: write
