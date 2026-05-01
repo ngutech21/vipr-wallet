@@ -88,10 +88,11 @@ function sanitizeApplyIntent(value: unknown): ApplyIntentState | null {
   }
 }
 
-function waitForControllerChange(): Promise<void> {
+function waitForServiceWorkerActivation(waitingWorker: ServiceWorker): Promise<void> {
   return new Promise((resolve, reject) => {
     const timeoutRef: { id: number | ReturnType<typeof setTimeout> | null } = { id: null }
     let onControllerChange: (() => void) | null = null
+    let onStateChange: (() => void) | null = null
 
     const cleanup = () => {
       if (timeoutRef.id != null) {
@@ -100,11 +101,25 @@ function waitForControllerChange(): Promise<void> {
       if (onControllerChange != null) {
         navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
       }
+      if (onStateChange != null) {
+        waitingWorker.removeEventListener('statechange', onStateChange)
+      }
     }
 
     onControllerChange = () => {
       cleanup()
       resolve()
+    }
+    onStateChange = () => {
+      if (waitingWorker.state === 'activated') {
+        cleanup()
+        resolve()
+      }
+    }
+
+    if (waitingWorker.state === 'activated') {
+      resolve()
+      return
     }
 
     timeoutRef.id = window.setTimeout(() => {
@@ -113,6 +128,7 @@ function waitForControllerChange(): Promise<void> {
     }, CONTROLLER_CHANGE_TIMEOUT_MS)
 
     navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
+    waitingWorker.addEventListener('statechange', onStateChange)
   })
 }
 
@@ -418,9 +434,9 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
           return 'checking'
         }
 
-        const controllerChangePromise = waitForControllerChange()
+        const activationPromise = waitForServiceWorkerActivation(waitingWorker)
         waitingWorker.postMessage({ type: 'SKIP_WAITING' })
-        await controllerChangePromise
+        await activationPromise
 
         this.isUpdateReady = false
         this.setState('idle')

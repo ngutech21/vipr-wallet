@@ -72,10 +72,6 @@ jobs:
           username: ${{ secrets.DOCKER_NAME }}
           password: ${{ secrets.DOCKER_PAT }}
 
-      - name: Get current date
-        id: date
-        run: echo "date=$(date -u '+%F-%T')" >> "$GITHUB_OUTPUT"
-
       - name: Get commit SHAs
         id: sha
         run: |
@@ -99,7 +95,6 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             COMMITHASH=${{ steps.sha.outputs.short_sha }}
-            BUILDTIME=${{ steps.date.outputs.date }}
             APP_VERSION=${{ steps.version.outputs.version }}
           tags: |
             docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:${{ steps.sha.outputs.sha }}-alpine

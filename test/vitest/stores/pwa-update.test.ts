@@ -9,6 +9,11 @@ type ServiceWorkerContainerMock = {
   getRegistration: ReturnType<typeof vi.fn>
 }
 
+type ServiceWorkerMock = ServiceWorker & {
+  activate: () => void
+  postMessage: ReturnType<typeof vi.fn>
+}
+
 function installServiceWorkerMock(
   getRegistrationValue: () => ServiceWorkerRegistration | undefined,
   options: { controller?: ServiceWorker | null } = {},
@@ -33,6 +38,24 @@ function installServiceWorkerMock(
     },
     getRegistration,
   }
+}
+
+function createWaitingWorker(postMessage = vi.fn()): ServiceWorkerMock {
+  const target = new EventTarget()
+  let state: ServiceWorkerState = 'installed'
+
+  return {
+    postMessage,
+    get state() {
+      return state
+    },
+    addEventListener: target.addEventListener.bind(target),
+    removeEventListener: target.removeEventListener.bind(target),
+    activate() {
+      state = 'activated'
+      target.dispatchEvent(new Event('statechange'))
+    },
+  } as unknown as ServiceWorkerMock
 }
 
 function createRegistration(
@@ -60,9 +83,7 @@ describe('pwa update store', () => {
   })
 
   it('moves to waiting when updated hook receives waiting worker', () => {
-    const waitingWorker = {
-      postMessage: vi.fn(),
-    } as unknown as ServiceWorker
+    const waitingWorker = createWaitingWorker()
     const registration = createRegistration({ waiting: waitingWorker })
     installServiceWorkerMock(() => registration)
     const store = usePwaUpdateStore()
@@ -97,9 +118,7 @@ describe('pwa update store', () => {
 
   it('startup check does not auto-apply when update is waiting', async () => {
     const postMessage = vi.fn()
-    const waitingWorker = {
-      postMessage,
-    } as unknown as ServiceWorker
+    const waitingWorker = createWaitingWorker(postMessage)
     const registration = createRegistration({ waiting: waitingWorker })
     installServiceWorkerMock(() => registration)
     const store = usePwaUpdateStore()
@@ -112,9 +131,7 @@ describe('pwa update store', () => {
   })
 
   it('ignores waiting worker during first install when no controller exists', async () => {
-    const waitingWorker = {
-      postMessage: vi.fn(),
-    } as unknown as ServiceWorker
+    const waitingWorker = createWaitingWorker()
     const registration = createRegistration({ waiting: waitingWorker })
     installServiceWorkerMock(() => registration, { controller: null })
     const store = usePwaUpdateStore()
@@ -143,9 +160,7 @@ describe('pwa update store', () => {
 
   it('blocks apply update on non-allowlisted routes', async () => {
     const postMessage = vi.fn()
-    const waitingWorker = {
-      postMessage,
-    } as unknown as ServiceWorker
+    const waitingWorker = createWaitingWorker(postMessage)
     const registration = createRegistration({ waiting: waitingWorker })
     installServiceWorkerMock(() => registration)
     const store = usePwaUpdateStore()
@@ -159,9 +174,7 @@ describe('pwa update store', () => {
 
   it('applies update on safe route and clears apply intent', async () => {
     const postMessage = vi.fn()
-    const waitingWorker = {
-      postMessage,
-    } as unknown as ServiceWorker
+    const waitingWorker = createWaitingWorker(postMessage)
     const registration = createRegistration({ waiting: waitingWorker })
     const serviceWorkerMock = installServiceWorkerMock(() => registration)
     const store = usePwaUpdateStore()
@@ -178,11 +191,28 @@ describe('pwa update store', () => {
     expect(window.localStorage.getItem(APPLY_INTENT_STORAGE_KEY)).toBeNull()
   })
 
+  it('applies update when waiting worker activates without controllerchange', async () => {
+    const postMessage = vi.fn()
+    const waitingWorker = createWaitingWorker(postMessage)
+    const registration = createRegistration({ waiting: waitingWorker })
+    installServiceWorkerMock(() => registration)
+    const store = usePwaUpdateStore()
+    store.reloadTriggered = true
+    store.bindRegistration(registration)
+
+    const applyPromise = store.applyUpdate('/')
+    await Promise.resolve()
+    waitingWorker.activate()
+    const result = await applyPromise
+
+    expect(result).toBe('applied')
+    expect(postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' })
+    expect(window.localStorage.getItem(APPLY_INTENT_STORAGE_KEY)).toBeNull()
+  })
+
   it('forces reload on apply timeout and preserves apply intent for resume', async () => {
     vi.useFakeTimers()
-    const waitingWorker = {
-      postMessage: vi.fn(),
-    } as unknown as ServiceWorker
+    const waitingWorker = createWaitingWorker()
     const registration = createRegistration({ waiting: waitingWorker })
     installServiceWorkerMock(() => registration)
     const store = usePwaUpdateStore()
@@ -203,9 +233,7 @@ describe('pwa update store', () => {
 
   it('auto-resumes pending apply on safe route', async () => {
     const postMessage = vi.fn()
-    const waitingWorker = {
-      postMessage,
-    } as unknown as ServiceWorker
+    const waitingWorker = createWaitingWorker(postMessage)
     const registration = createRegistration({ waiting: waitingWorker })
     const serviceWorkerMock = installServiceWorkerMock(() => registration)
     const store = usePwaUpdateStore()
@@ -250,7 +278,7 @@ describe('pwa update store', () => {
 
   it('clears stale or over-attempted intents during resume', async () => {
     const registration = createRegistration({
-      waiting: { postMessage: vi.fn() } as unknown as ServiceWorker,
+      waiting: createWaitingWorker(),
     })
     installServiceWorkerMock(() => registration)
     const store = usePwaUpdateStore()

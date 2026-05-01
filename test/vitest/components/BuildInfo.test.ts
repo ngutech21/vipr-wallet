@@ -15,7 +15,6 @@ describe('BuildInfo.vue', () => {
     Object.assign(import.meta.env, {
       VITE_APP_VERSION: '0.0.1',
       VITE_COMMIT_HASH: 'abc123def',
-      VITE_BUILD_TIME: '2024-01-15T10:30:00Z',
       DEV: false,
       ...envOverrides,
     })
@@ -51,31 +50,20 @@ describe('BuildInfo.vue', () => {
     it('should render commit hash from environment variable', () => {
       wrapper = createWrapper({
         VITE_COMMIT_HASH: 'commit-hash-123',
-        VITE_BUILD_TIME: '2024-01-15T10:30:00Z',
       })
 
       expect(wrapper.text()).toContain('Commit SHA: commit-hash-123')
     })
 
-    it('should render build time from environment variable', () => {
-      wrapper = createWrapper({
-        VITE_COMMIT_HASH: 'abc123',
-        VITE_BUILD_TIME: '2024-02-20T15:45:00Z',
-      })
-
-      expect(wrapper.text()).toContain('Build Time: Feb 20, 2024, 15:45 UTC')
-    })
-
-    it('should render both commit hash and build time together', () => {
+    it('should render version and commit hash together', () => {
       wrapper = createWrapper({
         VITE_COMMIT_HASH: 'xyz789',
-        VITE_BUILD_TIME: '2024-03-10T08:00:00Z',
       })
 
       const text = wrapper.text()
       expect(text).toContain('Release Version: 0.0.1')
       expect(text).toContain('Commit SHA: xyz789')
-      expect(text).toContain('Build Time: Mar 10, 2024, 08:00 UTC')
+      expect(text).not.toContain('Build Time:')
     })
 
     it('should have proper text structure with subtitle1 class', () => {
@@ -90,7 +78,6 @@ describe('BuildInfo.vue', () => {
       wrapper = createWrapper({
         DEV: true,
         VITE_COMMIT_HASH: 'dev-hash',
-        VITE_BUILD_TIME: '2024-01-01',
       })
 
       expect(wrapper.text()).toContain('Debug:')
@@ -100,7 +87,6 @@ describe('BuildInfo.vue', () => {
       wrapper = createWrapper({
         DEV: true,
         VITE_COMMIT_HASH: 'test-commit',
-        VITE_BUILD_TIME: 'test-time',
         CUSTOM_VAR: 'custom-value',
       })
 
@@ -124,7 +110,6 @@ describe('BuildInfo.vue', () => {
       wrapper = createWrapper({
         DEV: false,
         VITE_COMMIT_HASH: 'prod-hash',
-        VITE_BUILD_TIME: '2024-01-01',
       })
 
       expect(wrapper.text()).not.toContain('Debug:')
@@ -134,13 +119,12 @@ describe('BuildInfo.vue', () => {
       wrapper = createWrapper({
         DEV: false,
         VITE_COMMIT_HASH: 'abc123',
-        VITE_BUILD_TIME: '2024-01-15',
       })
 
       const text = wrapper.text()
       expect(text).toContain('Release Version: 0.0.1')
       expect(text).toContain('Commit SHA: abc123')
-      expect(text).toContain('Build Time: Jan 15, 2024, 00:00 UTC')
+      expect(text).not.toContain('Build Time:')
       expect(text).not.toContain('Debug:')
     })
 
@@ -149,7 +133,7 @@ describe('BuildInfo.vue', () => {
 
       const divs = wrapper.findAll('div')
       // Should have the main container plus the metadata rows, but no debug div
-      expect(divs.length).toBe(4)
+      expect(divs.length).toBe(3)
     })
   })
 
@@ -158,7 +142,6 @@ describe('BuildInfo.vue', () => {
       wrapper = createWrapper({
         VITE_APP_VERSION: undefined,
         VITE_COMMIT_HASH: undefined,
-        VITE_BUILD_TIME: '2024-01-01',
       })
 
       expect(wrapper.text()).toContain('Release Version:')
@@ -166,22 +149,10 @@ describe('BuildInfo.vue', () => {
       expect(wrapper.text()).toContain('undefined')
     })
 
-    it('should handle missing VITE_BUILD_TIME gracefully', () => {
-      wrapper = createWrapper({
-        VITE_APP_VERSION: '0.0.1',
-        VITE_COMMIT_HASH: 'abc123',
-        VITE_BUILD_TIME: undefined,
-      })
-
-      expect(wrapper.text()).toContain('Commit SHA: abc123')
-      expect(wrapper.text()).toContain('undefined')
-    })
-
     it('should handle missing both environment variables', () => {
       wrapper = createWrapper({
         VITE_APP_VERSION: undefined,
         VITE_COMMIT_HASH: undefined,
-        VITE_BUILD_TIME: undefined,
       })
 
       const text = wrapper.text()
@@ -194,7 +165,6 @@ describe('BuildInfo.vue', () => {
       wrapper = createWrapper({
         VITE_APP_VERSION: '',
         VITE_COMMIT_HASH: '',
-        VITE_BUILD_TIME: '',
       })
 
       expect(wrapper.exists()).toBe(true)
@@ -208,7 +178,6 @@ describe('BuildInfo.vue', () => {
         VITE_APP_VERSION: '0.0.1',
         DEV: true,
         VITE_COMMIT_HASH: 'test',
-        VITE_BUILD_TIME: 'test-time',
       })
 
       const text = wrapper.text()
@@ -224,32 +193,19 @@ describe('BuildInfo.vue', () => {
       wrapper = createWrapper({
         VITE_APP_VERSION: '0.0.1',
         VITE_COMMIT_HASH: longHash,
-        VITE_BUILD_TIME: '2024-01-01',
       })
 
       expect(wrapper.text()).toContain(longHash)
-    })
-
-    it('should handle special characters in build time', () => {
-      wrapper = createWrapper({
-        VITE_APP_VERSION: '0.0.1',
-        VITE_COMMIT_HASH: 'abc123',
-        VITE_BUILD_TIME: '2024-01-15T10:30:00.000Z',
-      })
-
-      expect(wrapper.text()).toContain('Build Time: Jan 15, 2024, 10:30 UTC')
     })
 
     it('should handle numeric environment variables', () => {
       wrapper = createWrapper({
         VITE_APP_VERSION: 123,
         VITE_COMMIT_HASH: 123456,
-        VITE_BUILD_TIME: 789,
       })
 
       expect(wrapper.text()).toContain('Release Version: 123')
       expect(wrapper.text()).toContain('Commit SHA: 123456')
-      expect(wrapper.text()).toContain('789')
     })
   })
 })
