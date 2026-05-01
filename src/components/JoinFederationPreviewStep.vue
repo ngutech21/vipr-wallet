@@ -34,10 +34,6 @@
           <div v-if="previewMessage" class="preview-note preview-note--prominent">
             {{ previewMessage }}
           </div>
-
-          <div v-if="welcomeMessage" class="preview-note">
-            {{ welcomeMessage }}
-          </div>
         </div>
       </q-card-section>
     </q-card>
@@ -126,7 +122,6 @@ const moduleKinds = computed(() => props.federation.modules.map((module) => modu
 const defaultCurrency = computed(() => props.federation.metadata?.default_currency ?? null)
 const networkLabel = computed(() => props.federation.network ?? null)
 const previewMessage = computed(() => props.federation.metadata?.preview_message ?? null)
-const welcomeMessage = computed(() => props.federation.metadata?.welcome_message ?? null)
 </script>
 
 <style scoped>
