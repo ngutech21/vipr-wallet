@@ -28,8 +28,8 @@
     "final-check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm typecheck:pwa && pnpm test:unit:ci && pnpm audit --prod"
   },
   "dependencies": {
-    "@fedimint/core": "0.0.0-canary-50fca06f9c3a3dc13e16b2f3440e66e852dc0d35",
-    "@fedimint/transport-web": "0.0.0-canary-50fca06f9c3a3dc13e16b2f3440e66e852dc0d35",
+    "@fedimint/core": "0.0.0-om-fix-url-e8d09c42ece5b96ab94a5890277601dde18559a5",
+    "@fedimint/transport-web": "0.0.0-om-fix-url-e8d09c42ece5b96ab94a5890277601dde18559a5",
     "@getalby/bitcoin-connect": "^3.12.2",
     "@getalby/lightning-tools": "^8.1.0",
     "@nostr-dev-kit/ndk": "^3.0.3",
@@ -65,7 +65,7 @@
     "autoprefixer": "^10.5.0",
     "eslint": "10.2.1",
     "eslint-plugin-vue": "^10.9.0",
-    "globals": "^17.5.0",
+    "globals": "^17.6.0",
     "happy-dom": "20.9.0",
     "pinia": "^3.0.4",
     "prettier": "^3.8.3",
