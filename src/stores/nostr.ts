@@ -14,7 +14,6 @@ import { logger } from 'src/services/logger'
 import { getErrorMessage } from 'src/utils/error'
 import {
   applyFederationCandidateToDiscoveryState,
-  applyRecommendationCountsToDiscoveryCandidates,
   applyRecommendationTargetsToDiscoveryState,
   extractFederationCandidate,
   extractRecommendationTargets,
@@ -329,7 +328,10 @@ export const useNostrStore = defineStore('nostr', {
       }
 
       this.isDiscoveringFederations = true
-      this.syncDiscoveredFederationsFromCache()
+      this.discoveredFederations = buildDiscoveredFederationsFromCache(
+        this.previewCacheByFederation,
+        this.discoveryCandidates,
+      )
       this.resetPreviewTargetCount()
 
       if (this.ndk != null) {
@@ -410,25 +412,18 @@ export const useNostrStore = defineStore('nostr', {
       this.lastRecommendationCreatedAt = update.lastRecommendationCreatedAt
     },
 
-    applyRecommendationCountsToCandidates() {
-      this.discoveryCandidates = applyRecommendationCountsToDiscoveryCandidates(
-        this.discoveryCandidates,
-        this.recommendationCountsByFederation,
-      )
-    },
-
-    sortDiscoveryCandidates() {
-      this.discoveryCandidates = sortDiscoveredFederationCandidates(this.discoveryCandidates)
-    },
-
     cacheFederationPreview(candidate: DiscoveredFederationCandidate, federation: Federation) {
-      this.previewCacheByFederation = {
-        ...this.previewCacheByFederation,
-        [candidate.federationId]: createCachedFederationPreview(candidate, federation),
-      }
-
-      this.trimPreviewCache()
-      this.syncDiscoveredFederationsFromCache()
+      this.previewCacheByFederation = trimPreviewCacheEntries(
+        {
+          ...this.previewCacheByFederation,
+          [candidate.federationId]: createCachedFederationPreview(candidate, federation),
+        },
+        MAX_DISCOVERY_CACHE_SIZE,
+      )
+      this.discoveredFederations = buildDiscoveredFederationsFromCache(
+        this.previewCacheByFederation,
+        this.discoveryCandidates,
+      )
     },
 
     removeCachedPreview(federationId: string) {
@@ -438,20 +433,6 @@ export const useNostrStore = defineStore('nostr', {
       )
       this.discoveredFederations = this.discoveredFederations.filter(
         (federation) => federation.federationId !== federationId,
-      )
-    },
-
-    trimPreviewCache() {
-      this.previewCacheByFederation = trimPreviewCacheEntries(
-        this.previewCacheByFederation,
-        MAX_DISCOVERY_CACHE_SIZE,
-      )
-    },
-
-    syncDiscoveredFederationsFromCache() {
-      this.discoveredFederations = buildDiscoveredFederationsFromCache(
-        this.previewCacheByFederation,
-        this.discoveryCandidates,
       )
     },
 
@@ -516,7 +497,7 @@ export const useNostrStore = defineStore('nostr', {
           })
           if (previewResult.type === 'timed_out') {
             this.previewStatusByFederation[candidate.federationId] = 'timed_out'
-            this.sortDiscoveryCandidates()
+            this.discoveryCandidates = sortDiscoveredFederationCandidates(this.discoveryCandidates)
             logger.warn('Federation preview timed out', { federationId: candidate.federationId })
             continue
           }
@@ -539,14 +520,14 @@ export const useNostrStore = defineStore('nostr', {
                 error: previewResult.errorMessage ?? getErrorMessage(previewResult.error),
               })
             }
-            this.sortDiscoveryCandidates()
+            this.discoveryCandidates = sortDiscoveredFederationCandidates(this.discoveryCandidates)
             continue
           }
 
           if (previewResult.type === 'mismatched') {
             this.previewStatusByFederation[candidate.federationId] = 'failed'
             this.removeCachedPreview(candidate.federationId)
-            this.sortDiscoveryCandidates()
+            this.discoveryCandidates = sortDiscoveredFederationCandidates(this.discoveryCandidates)
             logger.nostr.warn(
               'Skipping federation candidate with mismatched preview federation id',
               {
