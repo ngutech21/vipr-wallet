@@ -503,22 +503,6 @@ describe('nostr store discovery queue', () => {
     expect(nostr.recommendationCountsByFederation['fed-3']).toBe(1)
   })
 
-  it('does not drop existing candidate recommendation counts when recomputing', () => {
-    const nostr = useNostrStore()
-    nostr.discoveryCandidates = [
-      {
-        federationId: 'candidate-fed',
-        inviteCode: 'invite-shared',
-        createdAt: 10,
-        recommendationCount: 7,
-      },
-    ]
-
-    nostr.applyRecommendationCountsToCandidates()
-
-    expect(nostr.discoveryCandidates[0]?.recommendationCount).toBe(7)
-  })
-
   it('keeps higher recommendation count when federation event updates candidate metadata', () => {
     const nostr = useNostrStore()
     nostr.discoveryCandidates = [
@@ -541,14 +525,18 @@ describe('nostr store discovery queue', () => {
     nostr.isDiscoveringFederations = true
     nostr.previewTargetCount = 1
     nostr.discoveryCandidates = [
-      { federationId: 'resolved-fed', inviteCode: 'invite-candidate', createdAt: 10 },
+      {
+        federationId: 'resolved-fed',
+        inviteCode: 'invite-candidate',
+        createdAt: 10,
+        recommendationCount: 2,
+      },
     ]
     nostr.recommendationCountsByFederation['resolved-fed'] = 2
     nostr.recommendationVotersByFederation['resolved-fed'] = {
       'pubkey-a': 100,
       'pubkey-b': 101,
     }
-    nostr.applyRecommendationCountsToCandidates()
 
     walletStoreMock.previewFederation.mockResolvedValue(
       createFederation('resolved-fed', 'invite-candidate', 'Resolved Federation'),

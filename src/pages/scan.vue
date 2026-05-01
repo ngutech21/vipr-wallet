@@ -124,6 +124,7 @@ import { useAppNotify } from 'src/composables/useAppNotify'
 import { logger } from 'src/services/logger'
 import { classifyScannedPayment, type ScannedPaymentAction } from 'src/utils/scannedPayment'
 import { useFormatters } from 'src/utils/formatter'
+import { getQueryString } from 'src/utils/routeQuery'
 
 const detectedContent = ref<string | null>('')
 const router = useRouter()
@@ -341,11 +342,6 @@ function copyQueryParam(target: Record<string, string>, key: string) {
   if (value != null && value !== '') {
     target[key] = value
   }
-}
-
-function getQueryString(value: unknown): string | null {
-  const firstValue = Array.isArray(value) ? value[0] : value
-  return typeof firstValue === 'string' ? firstValue : null
 }
 
 function paintOutline(detectedCodes: DetectedBarcode[], ctx: CanvasRenderingContext2D) {

@@ -24,6 +24,8 @@ import type {
 } from 'src/types/federation'
 import { logger } from 'src/services/logger'
 import { fedimintClient } from 'src/services/fedimint-client'
+import { withTimeout } from 'src/utils/async'
+import { getErrorMessage } from 'src/utils/error'
 
 const WALLET_OPEN_TIMEOUT_MS = 15_000
 const FEDERATION_JOIN_TIMEOUT_MS = 20_000
@@ -936,21 +938,6 @@ export function parseOutpoint(outpoint: string | { txid?: string; vout?: number 
   }
 }
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message
-  }
-  if (typeof error === 'string') {
-    return error
-  }
-
-  try {
-    return JSON.stringify(error)
-  } catch {
-    return String(error)
-  }
-}
-
 function isRecoverableTransportError(error: unknown): boolean {
   return /(rpc is not a function|unreachable executed|closure invoked recursively|after being dropped)/i.test(
     getErrorMessage(error),
@@ -959,23 +946,6 @@ function isRecoverableTransportError(error: unknown): boolean {
 
 function isTimeoutError(error: unknown): boolean {
   return /timed out/i.test(getErrorMessage(error))
-}
-
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
-  let timeoutId: ReturnType<typeof setTimeout> | undefined
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => {
-      reject(new Error(`${label} timed out after ${timeoutMs}ms`))
-    }, timeoutMs)
-  })
-
-  try {
-    return await Promise.race([promise, timeoutPromise])
-  } finally {
-    if (timeoutId != null) {
-      clearTimeout(timeoutId)
-    }
-  }
 }
 
 if (import.meta.hot != null) {

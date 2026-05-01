@@ -100,6 +100,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/received-onchain': RouteRecordInfo<
+      '/received-onchain',
+      '/received-onchain',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/scan': RouteRecordInfo<
       '/scan',
       '/scan',
@@ -254,6 +261,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/received-lightning.vue': {
       routes:
         | '/received-lightning'
+      views:
+        | never
+    }
+    'src/pages/received-onchain.vue': {
+      routes:
+        | '/received-onchain'
       views:
         | never
     }

@@ -98,6 +98,7 @@ import SuccessResultLayout from 'src/components/SuccessResultLayout.vue'
 import { logger } from 'src/services/logger'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFormatters } from 'src/utils/formatter'
+import { getQueryInteger, getQueryStringOrEmpty } from 'src/utils/routeQuery'
 
 const MAX_POLL_ATTEMPTS = 10
 const POLL_INTERVAL_MS = 3_000
@@ -112,9 +113,9 @@ const refreshAttempts = ref(0)
 
 let pollTimeout: ReturnType<typeof setTimeout> | null = null
 
-const operationId = getSingleQueryValue(route.query.operationId)
-const submittedAddress = getSingleQueryValue(route.query.address)
-const submittedAmount = getQueryNumber(route.query.amount)
+const operationId = getQueryStringOrEmpty(route.query.operationId)
+const submittedAddress = getQueryStringOrEmpty(route.query.address)
+const submittedAmount = getQueryInteger(route.query.amount)
 
 const displayAddress = computed(() => {
   if (transaction.value?.onchainAddress != null && transaction.value.onchainAddress !== '') {
@@ -290,17 +291,6 @@ async function viewTransaction() {
       id: transaction.value.operationId,
     },
   })
-}
-
-function getSingleQueryValue(value: unknown): string {
-  const firstValue = Array.isArray(value) ? value[0] : value
-  return typeof firstValue === 'string' ? firstValue : ''
-}
-
-function getQueryNumber(value: unknown): number {
-  const rawValue = getSingleQueryValue(value)
-  const parsedValue = Number.parseInt(rawValue, 10)
-  return Number.isNaN(parsedValue) ? 0 : parsedValue
 }
 
 function applyTransactionUpdate(nextTransaction: WalletTransaction) {

@@ -16,6 +16,16 @@ export const useFederationStore = defineStore('federation', {
   },
   actions: {
     addFederation(newFedi: Federation) {
+      const existingIndex = this.federations.findIndex(
+        (federation) => federation.federationId === newFedi.federationId,
+      )
+
+      if (existingIndex >= 0) {
+        this.federations[existingIndex] = newFedi
+        this.ensureValidSelection()
+        return
+      }
+
       this.federations.push(newFedi)
       this.ensureValidSelection()
     },

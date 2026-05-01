@@ -2,6 +2,7 @@ import { WalletDirector, type FedimintWallet, type ParsedNoteDetails } from '@fe
 import { WasmWorkerTransport } from '@fedimint/transport-web'
 import { v5 as uuidv5 } from 'uuid'
 import { logger } from 'src/services/logger'
+import { getErrorMessage } from 'src/utils/error'
 
 type PreviewFederationResponse = {
   config: unknown
@@ -405,22 +406,6 @@ function applyClientNameToWallet(wallet: FedimintWallet, clientName: string): vo
     if (service != null && typeof service === 'object') {
       ;(service as Record<string, unknown>).clientName = clientName
     }
-  }
-}
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message
-  }
-
-  if (typeof error === 'string') {
-    return error
-  }
-
-  try {
-    return JSON.stringify(error)
-  } catch {
-    return String(error)
   }
 }
 

@@ -179,7 +179,7 @@ import { computed, ref, watch } from 'vue'
 import { useWalletStore, type EcashInspection } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
 import { Loading } from 'quasar'
-import { useRoute, useRouter, type LocationQueryValue } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { getErrorMessage } from 'src/utils/error'
 import ModalCard from 'src/components/ModalCard.vue'
@@ -188,6 +188,7 @@ import FederationAvatar from 'src/components/FederationAvatar.vue'
 import ViprTopbar from 'src/components/ViprTopbar.vue'
 import { paymentFlowCopy } from 'src/constants/paymentFlowCopy'
 import type { Federation } from 'src/types/federation'
+import { getQueryStringOrEmpty } from 'src/utils/routeQuery'
 
 type PendingEcashImport = {
   token: string
@@ -219,7 +220,7 @@ const notify = useAppNotify()
 watch(
   () => route.query.token,
   async (token) => {
-    const nextToken = getQueryString(token)
+    const nextToken = getQueryStringOrEmpty(token)
     if (nextToken !== '') {
       ecashToken.value = nextToken
       await inspectEcashPreview(nextToken)
@@ -463,11 +464,6 @@ function isEcashInspectionUnavailable(error: unknown): boolean {
     message.includes('parse oob notes') ||
     message.includes('parse_oob_notes')
   )
-}
-
-function getQueryString(value: LocationQueryValue | LocationQueryValue[] | undefined): string {
-  const firstValue = Array.isArray(value) ? value[0] : value
-  return typeof firstValue === 'string' ? firstValue : ''
 }
 </script>
 
