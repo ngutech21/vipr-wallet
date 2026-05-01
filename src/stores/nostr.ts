@@ -11,16 +11,13 @@ import type {
 import { Nip87Kinds } from 'src/types/nip87'
 import { useWalletStore } from './wallet'
 import { logger } from 'src/services/logger'
-import { raceWithTimeout } from 'src/utils/async'
 import { getErrorMessage } from 'src/utils/error'
 import {
   applyFederationCandidateToDiscoveryState,
   applyRecommendationCountsToDiscoveryCandidates,
   applyRecommendationTargetsToDiscoveryState,
-  doesPreviewMatchCandidate,
   extractFederationCandidate,
   extractRecommendationTargets,
-  isExpectedDiscoveryError,
   sortDiscoveredFederationCandidates,
   type DiscoveredFederationCandidate,
 } from 'src/services/nostr/discovery'
@@ -42,14 +39,19 @@ import {
   type CachedFederationPreview,
 } from 'src/services/nostr/previewCache'
 import {
+  buildPreviewQueue,
+  previewFederationCandidate,
+  takeNextPreviewCandidate,
+  waitUntilPreviewQueueIdle,
+  type PreviewStatus,
+} from 'src/services/nostr/previewQueue'
+import {
   initializeNdk,
   stopDiscoverySubscriptions,
   subscribeToFederationDiscovery,
   type NostrEventSubscription,
   type NostrNdkClient,
 } from 'src/services/nostr/subscriptions'
-
-type PreviewStatus = 'loading' | 'failed' | 'timed_out' | 'ready'
 
 function createInitialNostrSyncStatus(): NostrContactSyncStatus {
   return 'idle'
@@ -82,7 +84,6 @@ const MAX_DISCOVERY_CACHE_SIZE = 50
 const PREVIEW_QUEUE_OVERSCAN = 3
 const PREVIEW_TIMEOUT_MS = 7_000
 const PREVIEW_QUEUE_IDLE_POLL_MS = 50
-const PREVIEW_TIMEOUT_TOKEN = Symbol('preview-timeout')
 const DEFAULT_CONTACT_SOURCE: NostrContactSource = {
   sourceType: 'nip05',
   sourceValue: '',
@@ -455,43 +456,17 @@ export const useNostrStore = defineStore('nostr', {
     },
 
     enqueueCandidatesForPreview() {
-      const validCandidateIds = new Set(
-        this.discoveryCandidates.map((candidate) => candidate.federationId),
-      )
-      this.previewQueue = this.previewQueue.filter((federationId) => {
-        if (!validCandidateIds.has(federationId)) {
-          return false
-        }
-
-        const candidate = this.discoveryCandidates.find(
-          (item) => item.federationId === federationId,
-        )
-        return candidate != null && this.getCachedPreviewForCandidate(candidate) == null
+      const nextPreviewState = buildPreviewQueue({
+        currentQueue: this.previewQueue,
+        discoveryCandidates: this.discoveryCandidates,
+        previewTargetCount: this.previewTargetCount,
+        previewQueueOverscan: PREVIEW_QUEUE_OVERSCAN,
+        previewAttemptedCreatedAt: this.previewAttemptedCreatedAt,
+        previewStatusByFederation: this.previewStatusByFederation,
+        hasCachedPreview: (candidate) => this.getCachedPreviewForCandidate(candidate) != null,
       })
-
-      const queuedIds = new Set(this.previewQueue)
-      const previewWindow = this.discoveryCandidates.slice(
-        0,
-        this.previewTargetCount + PREVIEW_QUEUE_OVERSCAN,
-      )
-
-      for (const candidate of previewWindow) {
-        if (this.getCachedPreviewForCandidate(candidate) != null) {
-          this.previewStatusByFederation[candidate.federationId] = 'ready'
-          continue
-        }
-        if (queuedIds.has(candidate.federationId)) {
-          continue
-        }
-
-        const attemptedCreatedAt = this.previewAttemptedCreatedAt[candidate.federationId]
-        if (attemptedCreatedAt != null && attemptedCreatedAt >= candidate.createdAt) {
-          continue
-        }
-
-        this.previewQueue.push(candidate.federationId)
-        queuedIds.add(candidate.federationId)
-      }
+      this.previewQueue = nextPreviewState.previewQueue
+      this.previewStatusByFederation = nextPreviewState.previewStatusByFederation
     },
 
     async processPreviewQueue() {
@@ -513,14 +488,12 @@ export const useNostrStore = defineStore('nostr', {
             }
           }
 
-          const federationId = this.previewQueue.shift()
-          if (federationId == null || federationId === '') {
-            continue
-          }
-
-          const candidate = this.discoveryCandidates.find(
-            (item) => item.federationId === federationId,
-          )
+          const nextCandidate = takeNextPreviewCandidate({
+            previewQueue: this.previewQueue,
+            discoveryCandidates: this.discoveryCandidates,
+          })
+          this.previewQueue = nextCandidate.previewQueue
+          const candidate = nextCandidate.candidate
           if (candidate == null) {
             continue
           }
@@ -534,53 +507,43 @@ export const useNostrStore = defineStore('nostr', {
           this.previewAttemptedCreatedAt[candidate.federationId] = candidate.createdAt
           this.previewStatusByFederation[candidate.federationId] = 'loading'
 
-          const previewPromise = walletStore
-            .previewFederation(candidate.inviteCode)
-            .catch((error) => {
-              this.previewStatusByFederation[candidate.federationId] = 'failed'
-              if (isExpectedDiscoveryError(error)) {
-                const lastLoggedCreatedAt = this.previewErrorLoggedCreatedAt[candidate.federationId]
-                if (lastLoggedCreatedAt == null || lastLoggedCreatedAt < candidate.createdAt) {
-                  this.previewErrorLoggedCreatedAt[candidate.federationId] = candidate.createdAt
-                  logger.nostr.warn('Skipping federation candidate with unavailable config', {
-                    federationId: candidate.federationId,
-                    createdAt: candidate.createdAt,
-                    reason: getErrorMessage(error),
-                  })
-                }
-              } else {
-                logger.error('Unexpected error while previewing federation candidate', {
-                  federationId: candidate.federationId,
-                  error: getErrorMessage(error),
-                })
-              }
-              return undefined
-            })
-
           // Sequential previews avoid overloading wallet I/O and keep join UX responsive.
           // eslint-disable-next-line no-await-in-loop
-          const previewResult = await raceWithTimeout(
-            previewPromise,
-            PREVIEW_TIMEOUT_MS,
-            PREVIEW_TIMEOUT_TOKEN,
-          )
-          if (previewResult === PREVIEW_TIMEOUT_TOKEN) {
+          const previewResult = await previewFederationCandidate({
+            candidate,
+            previewFederation: (inviteCode) => walletStore.previewFederation(inviteCode),
+            timeoutMs: PREVIEW_TIMEOUT_MS,
+          })
+          if (previewResult.type === 'timed_out') {
             this.previewStatusByFederation[candidate.federationId] = 'timed_out'
             this.sortDiscoveryCandidates()
             logger.warn('Federation preview timed out', { federationId: candidate.federationId })
             continue
           }
 
-          const federation = previewResult
-          if (federation == null) {
-            if (this.previewStatusByFederation[candidate.federationId] === 'loading') {
-              this.previewStatusByFederation[candidate.federationId] = 'failed'
+          if (previewResult.type === 'failed') {
+            this.previewStatusByFederation[candidate.federationId] = 'failed'
+            if (previewResult.error != null && previewResult.isExpectedError) {
+              const lastLoggedCreatedAt = this.previewErrorLoggedCreatedAt[candidate.federationId]
+              if (lastLoggedCreatedAt == null || lastLoggedCreatedAt < candidate.createdAt) {
+                this.previewErrorLoggedCreatedAt[candidate.federationId] = candidate.createdAt
+                logger.nostr.warn('Skipping federation candidate with unavailable config', {
+                  federationId: candidate.federationId,
+                  createdAt: candidate.createdAt,
+                  reason: previewResult.errorMessage ?? getErrorMessage(previewResult.error),
+                })
+              }
+            } else if (previewResult.error != null) {
+              logger.error('Unexpected error while previewing federation candidate', {
+                federationId: candidate.federationId,
+                error: previewResult.errorMessage ?? getErrorMessage(previewResult.error),
+              })
             }
             this.sortDiscoveryCandidates()
             continue
           }
 
-          if (!doesPreviewMatchCandidate(candidate, federation)) {
+          if (previewResult.type === 'mismatched') {
             this.previewStatusByFederation[candidate.federationId] = 'failed'
             this.removeCachedPreview(candidate.federationId)
             this.sortDiscoveryCandidates()
@@ -588,7 +551,7 @@ export const useNostrStore = defineStore('nostr', {
               'Skipping federation candidate with mismatched preview federation id',
               {
                 federationId: candidate.federationId,
-                resolvedFederationId: federation.federationId,
+                resolvedFederationId: previewResult.federation.federationId,
                 createdAt: candidate.createdAt,
               },
             )
@@ -596,7 +559,7 @@ export const useNostrStore = defineStore('nostr', {
           }
 
           this.previewStatusByFederation[candidate.federationId] = 'ready'
-          this.cacheFederationPreview(candidate, federation)
+          this.cacheFederationPreview(candidate, previewResult.federation)
         }
       } catch (error) {
         logger.error('Error processing federation preview queue', error)
@@ -606,16 +569,11 @@ export const useNostrStore = defineStore('nostr', {
     },
 
     async waitForPreviewQueueIdle(timeoutMs = PREVIEW_TIMEOUT_MS + 500) {
-      const deadline = Date.now() + timeoutMs
-      while (this.isPreviewQueueRunning && Date.now() < deadline) {
-        // Allow in-flight preview calls to finish before wallet join/open.
-        // eslint-disable-next-line no-await-in-loop
-        await new Promise<void>((resolve) => {
-          setTimeout(resolve, PREVIEW_QUEUE_IDLE_POLL_MS)
-        })
-      }
-
-      return !this.isPreviewQueueRunning
+      return waitUntilPreviewQueueIdle({
+        isPreviewQueueRunning: () => this.isPreviewQueueRunning,
+        timeoutMs,
+        pollMs: PREVIEW_QUEUE_IDLE_POLL_MS,
+      })
     },
 
     stopDiscoveringFederations() {
