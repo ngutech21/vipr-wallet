@@ -51,10 +51,13 @@ meta:
         <LeaveFederationCard @leave="leaveFederation" />
 
         <FederationMetaConsensusCard
-          v-if="showRawMetaConsensusCard && metaConsensusValue != null"
+          v-if="
+            showRawMetaConsensusCard &&
+            (isLoadingMetaConsensus || metaConsensusError != null || metaConsensusValue != null)
+          "
           :metadata="metaConsensusValue"
-          :is-loading="false"
-          :error="null"
+          :is-loading="isLoadingMetaConsensus"
+          :error="metaConsensusError"
         />
       </div>
     </q-page>
