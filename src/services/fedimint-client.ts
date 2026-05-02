@@ -128,19 +128,11 @@ class FedimintClientAdapter {
   }
 
   async getMnemonicIfSet(): Promise<string[] | null> {
-    try {
-      const mnemonicValue = await this.getMnemonicValue()
-      if (mnemonicValue == null) {
-        return null
-      }
-
-      return normalizeMnemonicWords(mnemonicValue, 'get')
-    } catch (error) {
-      if (isMissingMnemonicError(error)) {
-        return null
-      }
-      throw error
+    if (!(await this.hasMnemonicSet())) {
+      return null
     }
+
+    return await this.getMnemonic()
   }
 
   async generateMnemonic(): Promise<string[]> {
@@ -165,6 +157,16 @@ class FedimintClientAdapter {
     if (!success) {
       throw new Error('Failed to set wallet mnemonic')
     }
+  }
+
+  async hasMnemonicSet(): Promise<boolean> {
+    await this.init()
+
+    if (this.director == null) {
+      throw new Error('Wallet director is not initialized')
+    }
+
+    return await this.director.hasMnemonicSet()
   }
 
   async ensureMnemonic(): Promise<EnsureMnemonicResult> {
@@ -407,10 +409,6 @@ function applyClientNameToWallet(wallet: FedimintWallet, clientName: string): vo
       ;(service as Record<string, unknown>).clientName = clientName
     }
   }
-}
-
-function isMissingMnemonicError(error: unknown): boolean {
-  return /no wallet mnemonic set/i.test(getErrorMessage(error))
 }
 
 function isExistingClientError(error: unknown): boolean {
