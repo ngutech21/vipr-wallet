@@ -27,13 +27,6 @@ meta:
 
         <FederationMetadataCard :metadata="federation?.metadata" />
 
-        <FederationMetaConsensusCard
-          v-if="showRawMetaConsensusCard"
-          :metadata="metaConsensusValue"
-          :is-loading="isLoadingMetaConsensus"
-          :error="metaConsensusError"
-        />
-
         <FederationGatewayList
           :gateways="walletGateways"
           :is-loading="isLoadingWalletGateways"
@@ -54,6 +47,13 @@ meta:
         />
 
         <LeaveFederationCard @leave="leaveFederation" />
+
+        <FederationMetaConsensusCard
+          v-if="showRawMetaConsensusCard && metaConsensusValue != null"
+          :metadata="metaConsensusValue"
+          :is-loading="false"
+          :error="null"
+        />
       </div>
     </q-page>
   </transition>
