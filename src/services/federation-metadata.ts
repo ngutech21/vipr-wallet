@@ -83,8 +83,17 @@ export function getFederationTitleFallback(
 
 export function extractExternalMetadataPayload(data: unknown): JSONObject | null {
   if (isJSONObject(data)) {
-    const firstObjectValue = Object.values(data).find(isJSONObject)
-    return firstObjectValue ?? data
+    if (hasKnownMetadataKey(data)) {
+      return data
+    }
+
+    const entries = Object.entries(data)
+    if (entries.length === 1) {
+      const [, value] = entries[0] ?? []
+      return isJSONObject(value) ? value : data
+    }
+
+    return data
   }
 
   return null
@@ -307,6 +316,54 @@ function getFirstValue(raw: JSONObject, keys: string[]): JSONValue | undefined {
   }
 
   return undefined
+}
+
+const KNOWN_METADATA_KEYS = [
+  'federationName',
+  'federation_name',
+  'welcomeMessage',
+  'welcome_message',
+  'defaultCurrency',
+  'default_currency',
+  'fedi:default_currency',
+  'iconUrl',
+  'federation_icon_url',
+  'fedi:federation_icon_url',
+  'maxBalanceMsats',
+  'max_balance_msats',
+  'fedi:max_balance_msats',
+  'maxInvoiceMsats',
+  'max_invoice_msats',
+  'fedi:max_invoice_msats',
+  'tosUrl',
+  'tos_url',
+  'fedi:tos_url',
+  'inviteCode',
+  'invite_code',
+  'previewMessage',
+  'preview_message',
+  'popupEndTimestamp',
+  'popup_end_timestamp',
+  'fedi:popup_end_timestamp',
+  'popupCountdownMessage',
+  'popup_countdown_message',
+  'fedi:popup_countdown_message',
+  'isPublic',
+  'public',
+  'vettedGateways',
+  'vetted_gateways',
+  'recurringdApi',
+  'recurringd_api',
+  'lnaddressApi',
+  'lnaddress_api',
+  'federationExpiryTimestamp',
+  'federation_expiry_timestamp',
+  'federationSuccessor',
+  'federation_successor',
+] as const
+
+function hasKnownMetadataKey(raw: JSONObject): boolean {
+  return KNOWN_METADATA_KEYS.some((key) => raw[key] !== undefined)
 }
 
 function parsePositiveInteger(value: JSONValue | undefined): number | undefined {

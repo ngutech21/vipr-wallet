@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  extractExternalMetadataPayload,
   normalizeFederationMetadata,
   resolveFederationMetadata,
 } from 'src/services/federation-metadata'
@@ -99,6 +100,42 @@ describe('federation metadata resolver', () => {
       inviteCode: 'fed11invite',
       popupCountdownMessage: 'Migrating soon',
       popupEndTimestamp: 1_893_456_000,
+    })
+  })
+
+  it('keeps flat external metadata flat when it contains JSON extension fields', () => {
+    const payload = extractExternalMetadataPayload({
+      federation_icon_url: 'https://legacy.example/icon.png',
+      tos_url: 'https://legacy.example/terms',
+      'fedi:fedimods': {
+        mods: [],
+      },
+    })
+
+    const metadata = resolveFederationMetadata({
+      legacy: payload,
+    })
+
+    expect(payload).toEqual({
+      federation_icon_url: 'https://legacy.example/icon.png',
+      tos_url: 'https://legacy.example/terms',
+      'fedi:fedimods': {
+        mods: [],
+      },
+    })
+    expect(metadata.iconUrl).toBe('https://legacy.example/icon.png')
+    expect(metadata.tosUrl).toBe('https://legacy.example/terms')
+  })
+
+  it('unwraps single-object external metadata wrappers', () => {
+    expect(
+      extractExternalMetadataPayload({
+        federationId: {
+          federation_icon_url: 'https://legacy.example/icon.png',
+        },
+      }),
+    ).toEqual({
+      federation_icon_url: 'https://legacy.example/icon.png',
     })
   })
 

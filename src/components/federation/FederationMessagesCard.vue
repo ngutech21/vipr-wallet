@@ -11,16 +11,6 @@
               </div>
             </div>
           </template>
-
-          <template v-if="metadata?.previewMessage">
-            <div class="vipr-detail-row vipr-detail-row--block">
-              <div class="vipr-detail-label">Preview Message</div>
-              <div class="vipr-body federation-message-copy">
-                {{ metadata.previewMessage }}
-              </div>
-            </div>
-          </template>
-
           <template v-if="metadata?.popupCountdownMessage">
             <div class="vipr-detail-row vipr-detail-row--block">
               <div class="vipr-detail-label">End Message</div>
