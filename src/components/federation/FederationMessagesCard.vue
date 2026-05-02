@@ -48,7 +48,6 @@ const hasMessages = computed(() => {
   })
   return (
     (props.metadata?.welcomeMessage != null && props.metadata.welcomeMessage !== '') ||
-    (props.metadata?.previewMessage != null && props.metadata.previewMessage !== '') ||
     (props.metadata?.popupCountdownMessage != null && props.metadata.popupCountdownMessage !== '')
   )
 })
