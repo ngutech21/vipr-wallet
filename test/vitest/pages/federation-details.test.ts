@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import { Quasar } from 'quasar'
 import FederationDetailsPage from 'src/pages/federation/[id].vue'
 import type { Federation } from 'src/types/federation'
@@ -13,6 +14,7 @@ const routeState = vi.hoisted(() => ({
 const updateGatewayCache = vi.hoisted(() => vi.fn())
 const listGateways = vi.hoisted(() => vi.fn())
 const getSpendableUtxos = vi.hoisted(() => vi.fn())
+const getMetaConsensusValue = vi.hoisted(() => vi.fn())
 const selectFederation = vi.hoisted(() => vi.fn())
 
 const federationStoreState = vi.hoisted(() => ({
@@ -30,6 +32,7 @@ const walletStoreState = vi.hoisted(() => ({
     },
   },
   getSpendableUtxos,
+  getMetaConsensusValue,
   closeWallet: vi.fn(),
   deleteFederationData: vi.fn(),
   openWallet: vi.fn(),
@@ -75,6 +78,12 @@ describe('FederationDetailsPage', () => {
     federationStoreState.selectedFederationId = 'fed-1'
     federationStoreState.federations = [createFederation()]
     getSpendableUtxos.mockResolvedValue([])
+    getMetaConsensusValue.mockResolvedValue({
+      revision: 1,
+      value: {
+        federation_name: 'Meta Federation',
+      },
+    })
     updateGatewayCache.mockResolvedValue(undefined)
     listGateways.mockResolvedValue([
       {
@@ -143,6 +152,34 @@ describe('FederationDetailsPage', () => {
     expect(wrapper.html()).toContain(
       'https://amboss.space/node/02dd3fcdaa17b9bc83bf7138fbea85d0e83385a68b5fc8f9933658c8ee04644f68',
     )
+
+    wrapper.unmount()
+  })
+
+  it('shows meta consensus loading state while debug metadata is loading', async () => {
+    getMetaConsensusValue.mockReturnValue(
+      new Promise(() => {
+        // Keep the Meta module request pending so the loading UI remains visible.
+      }),
+    )
+
+    const wrapper = createWrapper()
+    await nextTick()
+
+    expect(wrapper.text()).toContain('Consensus Metadata')
+    expect(wrapper.text()).toContain('Loading metadata from the Meta module...')
+
+    wrapper.unmount()
+  })
+
+  it('shows meta consensus failure state when debug metadata loading fails', async () => {
+    getMetaConsensusValue.mockRejectedValue(new Error('Meta module unavailable'))
+
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Consensus Metadata')
+    expect(wrapper.text()).toContain('Failed to load consensus metadata.')
 
     wrapper.unmount()
   })

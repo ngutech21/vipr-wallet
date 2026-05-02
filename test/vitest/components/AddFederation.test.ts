@@ -34,8 +34,8 @@ describe('AddFederation.vue', () => {
       },
     ],
     metadata: {
-      default_currency: 'USD',
-      preview_message: 'Known federation preview message',
+      defaultCurrency: 'USD',
+      previewMessage: 'Known federation preview message',
     },
     network: 'mainnet',
   }

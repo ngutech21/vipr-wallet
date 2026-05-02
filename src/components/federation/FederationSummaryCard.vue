@@ -5,13 +5,8 @@
   >
     <q-card-section class="summary-layout">
       <div class="summary-logo">
-        <q-avatar v-if="federation?.metadata?.federation_icon_url" size="78px">
-          <q-img
-            :src="federation.metadata.federation_icon_url"
-            loading="eager"
-            no-spinner
-            no-transition
-          />
+        <q-avatar v-if="federation?.metadata?.iconUrl" size="78px">
+          <q-img :src="federation.metadata.iconUrl" loading="eager" no-spinner no-transition />
         </q-avatar>
         <template v-else>
           <q-avatar color="grey-3" text-color="grey-7" class="logo">
@@ -42,7 +37,7 @@
         </div>
 
         <div class="summary-currency vipr-caption">
-          {{ federation?.metadata?.default_currency }}
+          {{ federation?.metadata?.defaultCurrency }}
         </div>
 
         <div class="summary-modules">

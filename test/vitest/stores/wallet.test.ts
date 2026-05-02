@@ -53,6 +53,7 @@ function createWalletMock(balanceMsats: number) {
     cleanup: vi.fn(),
     federation: {
       getFederationId: vi.fn(() => Promise.resolve('fed-1')),
+      getMetaConsensusValue: vi.fn<() => Promise<unknown>>(() => Promise.resolve(null)),
       listTransactions: vi.fn(),
       listOperations: vi.fn(),
     },
@@ -152,6 +153,85 @@ describe('wallet store', () => {
     })
     expect(walletStore.activeWalletName).toBe(getWalletNameForFederationId(federation.federationId))
     expect(walletStore.balance).toBe(12)
+  })
+
+  it('refreshes selected federation metadata from the meta module after opening', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    const federation = createFederation({
+      title: 'Legacy Federation',
+      metadata: {
+        iconUrl: 'https://legacy.example/icon.png',
+        maxInvoiceMsats: 50_000,
+      },
+    })
+
+    federationStore.federations = [federation]
+    federationStore.selectedFederationId = federation.federationId
+
+    const wallet = createWalletMock(12_000)
+    wallet.federation.getMetaConsensusValue.mockResolvedValue({
+      revision: 1,
+      value: {
+        federation_name: 'Meta Federation',
+        'fedi:federation_icon_url': 'https://meta.example/icon.png',
+        'fedi:max_invoice_msats': 75_000,
+      },
+    })
+    fedimintClientMock.ensureWalletOpen.mockResolvedValue(wallet)
+
+    await walletStore.openWallet()
+
+    expect(federationStore.federations[0]?.title).toBe('Meta Federation')
+    expect(federationStore.federations[0]?.metadata).toMatchObject({
+      federationName: 'Meta Federation',
+      iconUrl: 'https://meta.example/icon.png',
+      maxInvoiceMsats: 75_000,
+    })
+  })
+
+  it('previews a federation with normalized config and legacy metadata', async () => {
+    const walletStore = useWalletStore()
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          default: {
+            federation_icon_url: 'https://legacy.example/icon.png',
+            default_currency: 'USD',
+            max_invoice_msats: '50000',
+          },
+        }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    fedimintClientMock.previewFederation.mockResolvedValue({
+      federation_id: 'fed-preview',
+      config: {
+        global: {
+          meta: {
+            federation_name: 'Preview Federation',
+            meta_external_url: 'https://meta.example/federation.json',
+          },
+          api_endpoints: {},
+        },
+        modules: {},
+      },
+    })
+
+    const federation = await walletStore.previewFederation('fed11preview')
+
+    expect(fetchMock).toHaveBeenCalledWith('https://meta.example/federation.json')
+    expect(federation).toMatchObject({
+      title: 'Preview Federation',
+      federationId: 'fed-preview',
+      metadata: {
+        federationName: 'Preview Federation',
+        iconUrl: 'https://legacy.example/icon.png',
+        defaultCurrency: 'USD',
+        maxInvoiceMsats: 50_000,
+      },
+    })
+    vi.unstubAllGlobals()
   })
 
   it('throws when opening a federation wallet without mnemonic', async () => {

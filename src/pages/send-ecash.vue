@@ -169,18 +169,17 @@ const sendEcashBottomHint = computed(() =>
 
 const maxOfflineAmount = computed(() => {
   const balanceLimit = Math.max(0, Math.floor(walletStore.balance))
-  const metadataLimitMsats = selectedFederation.value?.metadata?.max_invoice_msats
+  const metadataLimitMsats = selectedFederation.value?.metadata?.maxInvoiceMsats
 
-  if (metadataLimitMsats == null || metadataLimitMsats === '') {
+  if (metadataLimitMsats == null) {
     return balanceLimit
   }
 
-  const parsedLimitMsats = Number.parseInt(metadataLimitMsats, 10)
-  if (!Number.isFinite(parsedLimitMsats) || parsedLimitMsats <= 0) {
+  if (!Number.isFinite(metadataLimitMsats) || metadataLimitMsats <= 0) {
     return balanceLimit
   }
 
-  return Math.min(balanceLimit, Math.floor(parsedLimitMsats / 1_000))
+  return Math.min(balanceLimit, Math.floor(metadataLimitMsats / 1_000))
 })
 
 const hasExactOfflineAmount = computed(() => {

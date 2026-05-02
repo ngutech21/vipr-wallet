@@ -13,13 +13,8 @@
     >
       <q-item class="federation-item">
         <q-item-section avatar class="federation-avatar-section">
-          <q-avatar size="44px" v-if="fedi?.metadata?.federation_icon_url">
-            <q-img
-              :src="fedi?.metadata?.federation_icon_url"
-              loading="eager"
-              no-spinner
-              no-transition
-            />
+          <q-avatar v-if="fedi?.metadata?.iconUrl" size="44px">
+            <q-img :src="fedi.metadata.iconUrl" loading="eager" no-spinner no-transition />
           </q-avatar>
           <template v-else>
             <q-avatar color="grey-3" text-color="grey-7" class="logo" size="44px">

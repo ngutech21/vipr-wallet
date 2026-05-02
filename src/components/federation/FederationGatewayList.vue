@@ -1,6 +1,6 @@
 <template>
   <template v-if="showWalletGateways">
-    <div class="vipr-section-title federation-section-title">Gateways</div>
+    <div v-if="showHeader" class="vipr-section-title federation-section-title">Gateways</div>
     <div class="federation-gateways">
       <div v-if="error" class="wallet-gateway-error">
         {{ error }}
@@ -74,12 +74,18 @@ defineOptions({
   name: 'FederationGatewayList',
 })
 
-const props = defineProps<{
-  gateways: unknown[]
-  isLoading: boolean
-  error: string | null
-  hasLoaded: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    gateways: unknown[]
+    isLoading: boolean
+    error: string | null
+    hasLoaded: boolean
+    showHeader?: boolean
+  }>(),
+  {
+    showHeader: true,
+  },
+)
 
 type WalletGatewayInfoRecord = {
   api?: unknown

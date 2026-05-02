@@ -21,23 +21,25 @@ meta:
       <div class="federation-details-content">
         <FederationSummaryCard :federation="federation" :observer-url="observerUrl" />
 
-        <FederationInviteCard :invite-code="inviteCode" :federation-title="federation?.title" />
-
-        <FederationGuardians :guardians="federation?.guardians ?? []" class="federation-card" />
-
-        <FederationMetadataCard :metadata="federation?.metadata" />
-
-        <FederationGatewayList
-          :gateways="walletGateways"
-          :is-loading="isLoadingWalletGateways"
-          :error="walletGatewayError"
-          :has-loaded="hasLoadedWalletGateways"
-        />
-
         <FederationMessagesCard
           :metadata="federation?.metadata"
           :federation-id="federation?.federationId"
         />
+
+        <FederationMetadataCard :metadata="federation?.metadata" />
+
+        <FederationInviteCard :invite-code="inviteCode" :federation-title="federation?.title" />
+
+        <div class="federation-trust-section">
+          <FederationGuardians :guardians="federation?.guardians ?? []" class="federation-card" />
+
+          <FederationGatewayList
+            :gateways="walletGateways"
+            :is-loading="isLoadingWalletGateways"
+            :error="walletGatewayError"
+            :has-loaded="hasLoadedWalletGateways"
+          />
+        </div>
 
         <FederationUtxos
           :utxos="spendableUtxos"
@@ -47,6 +49,16 @@ meta:
         />
 
         <LeaveFederationCard @leave="leaveFederation" />
+
+        <FederationMetaConsensusCard
+          v-if="
+            showRawMetaConsensusCard &&
+            (isLoadingMetaConsensus || metaConsensusError != null || metaConsensusValue != null)
+          "
+          :metadata="metaConsensusValue"
+          :is-loading="isLoadingMetaConsensus"
+          :error="metaConsensusError"
+        />
       </div>
     </q-page>
   </transition>
@@ -64,6 +76,7 @@ import { useWalletStore } from 'src/stores/wallet'
 import FederationGatewayList from 'src/components/federation/FederationGatewayList.vue'
 import FederationGuardians from 'src/components/FederationGuardians.vue'
 import FederationInviteCard from 'src/components/federation/FederationInviteCard.vue'
+import FederationMetaConsensusCard from 'src/components/federation/FederationMetaConsensusCard.vue'
 import FederationMessagesCard from 'src/components/federation/FederationMessagesCard.vue'
 import FederationMetadataCard from 'src/components/federation/FederationMetadataCard.vue'
 import FederationSummaryCard from 'src/components/federation/FederationSummaryCard.vue'
@@ -72,6 +85,7 @@ import ViprTopbar from 'src/components/ViprTopbar.vue'
 import type { FederationUtxo } from 'src/types/federation'
 import FederationUtxos from 'src/components/FederationUtxos.vue'
 import { logger } from 'src/services/logger'
+import type { MetaConsensusValue, JSONObject } from '@fedimint/core'
 
 const route = useRoute('/federation/[id]')
 const router = useRouter()
@@ -84,13 +98,17 @@ const walletGateways = ref<unknown[]>([])
 const isLoadingWalletGateways = ref(false)
 const hasLoadedWalletGateways = ref(false)
 const walletGatewayError = ref<string | null>(null)
+const metaConsensusValue = ref<MetaConsensusValue<JSONObject> | null>(null)
+const isLoadingMetaConsensus = ref(false)
+const metaConsensusError = ref<string | null>(null)
+const showRawMetaConsensusCard = import.meta.env.DEV || import.meta.env.VITE_E2E_MODE === '1'
 
 const federation = computed(() => {
   return federationStore.federations.find((f) => f.federationId === route.params.id)
 })
 
 const inviteCode = computed(() => {
-  const metadataInviteCode = federation.value?.metadata?.invite_code
+  const metadataInviteCode = federation.value?.metadata?.inviteCode
   return metadataInviteCode != null && metadataInviteCode !== ''
     ? metadataInviteCode
     : (federation.value?.inviteCode ?? '')
@@ -109,8 +127,10 @@ watch(
     const currentFederation = federation.value
     spendableUtxos.value = []
     walletGateways.value = []
+    metaConsensusValue.value = null
     utxoError.value = null
     walletGatewayError.value = null
+    metaConsensusError.value = null
     hasLoadedWalletGateways.value = false
 
     if (currentFederation == null) {
@@ -119,24 +139,28 @@ watch(
 
     isLoadingUtxos.value = true
     isLoadingWalletGateways.value = true
+    isLoadingMetaConsensus.value = showRawMetaConsensusCard
 
     try {
       if (federationStore.selectedFederationId !== currentFederation.federationId) {
         await federationStore.selectFederation(currentFederation)
       }
 
-      const [utxos, gateways] = await Promise.all([
+      const [utxos, gateways, metadata] = await Promise.all([
         walletStore.getSpendableUtxos(),
         loadWalletGateways(),
+        showRawMetaConsensusCard ? loadMetaConsensusValue() : Promise.resolve(null),
       ])
       spendableUtxos.value = utxos
       walletGateways.value = gateways
+      metaConsensusValue.value = metadata
     } catch (error) {
       logger.error('Failed to load federation UTXOs', error)
       utxoError.value = 'Failed to load spendable UTXOs.'
     } finally {
       isLoadingUtxos.value = false
       isLoadingWalletGateways.value = false
+      isLoadingMetaConsensus.value = false
       hasLoadedWalletGateways.value = true
     }
   },
@@ -157,6 +181,22 @@ async function loadWalletGateways(): Promise<unknown[]> {
     logger.error('Failed to load wallet gateways', error)
     walletGatewayError.value = 'Failed to load wallet gateways.'
     return []
+  }
+}
+
+async function loadMetaConsensusValue(): Promise<MetaConsensusValue<JSONObject> | null> {
+  const wallet = walletStore.wallet
+  if (wallet == null) {
+    metaConsensusError.value = 'Wallet is not open.'
+    return null
+  }
+
+  try {
+    return await walletStore.getMetaConsensusValue()
+  } catch (error) {
+    logger.error('Failed to load federation consensus metadata', error)
+    metaConsensusError.value = 'Failed to load consensus metadata.'
+    return null
   }
 }
 
@@ -189,5 +229,14 @@ async function leaveFederation() {
 
 .federation-details-content :deep(.federation-section-title) {
   margin-bottom: var(--vipr-federation-detail-section-title-gap);
+}
+
+.federation-trust-section {
+  margin-bottom: var(--vipr-federation-detail-card-gap);
+}
+
+.federation-trust-section :deep(.federation-card),
+.federation-trust-section :deep(.federation-gateways) {
+  margin-bottom: var(--vipr-space-2);
 }
 </style>

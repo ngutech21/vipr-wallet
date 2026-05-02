@@ -393,7 +393,10 @@ describe('ReceiveEcashPage', () => {
     ).joinFederationAndRedeem()
     await flushPromises()
 
-    expect(federationStore.federations).toContainEqual(newFederation)
+    expect(federationStore.federations).toContainEqual({
+      ...newFederation,
+      metadata: {},
+    })
     expect(selectFederationSpy).toHaveBeenCalledWith(newFederation)
     expect(redeemEcashSpy).toHaveBeenCalledWith('new-fed-notes')
     expect(mockRouterPush).toHaveBeenCalledWith({

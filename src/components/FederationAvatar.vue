@@ -1,8 +1,8 @@
 <template>
   <span class="federation-avatar" aria-hidden="true">
     <q-img
-      v-if="federation?.metadata?.federation_icon_url"
-      :src="federation.metadata.federation_icon_url"
+      v-if="federation?.metadata?.iconUrl"
+      :src="federation.metadata.iconUrl"
       class="federation-avatar__image"
       loading="eager"
       no-spinner

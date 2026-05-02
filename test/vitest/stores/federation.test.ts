@@ -69,6 +69,54 @@ describe('federation store', () => {
     expect(federationStore.selectedFederationId).toBe(federation.federationId)
   })
 
+  it('normalizes old metadata keys when adding a federation', () => {
+    const federationStore = useFederationStore()
+    const federation = createFederation({
+      title: 'Fallback Federation',
+      metadata: {
+        federation_name: 'Normalized Federation',
+        federation_icon_url: 'https://legacy.example/icon.png',
+        max_invoice_msats: '50000',
+        chat_server_domain: 'chat.example.com',
+      } as never,
+    })
+
+    federationStore.addFederation(federation)
+
+    expect(federationStore.federations[0]).toMatchObject({
+      title: 'Normalized Federation',
+      metadata: {
+        federationName: 'Normalized Federation',
+        iconUrl: 'https://legacy.example/icon.png',
+        maxInvoiceMsats: 50_000,
+      },
+    })
+    expect(federationStore.federations[0]?.metadata).not.toHaveProperty('chat_server_domain')
+  })
+
+  it('updates normalized metadata on an existing federation', () => {
+    const federationStore = useFederationStore()
+    const federation = createFederation({
+      metadata: {
+        iconUrl: 'https://legacy.example/icon.png',
+      },
+    })
+    federationStore.federations = [federation]
+
+    federationStore.updateFederationMetadata(federation.federationId, {
+      federationName: 'Meta Federation',
+      iconUrl: 'https://meta.example/icon.png',
+    })
+
+    expect(federationStore.federations[0]).toMatchObject({
+      title: 'Meta Federation',
+      metadata: {
+        federationName: 'Meta Federation',
+        iconUrl: 'https://meta.example/icon.png',
+      },
+    })
+  })
+
   it('updates an existing federation in place when added with the same federation id', () => {
     const federationStore = useFederationStore()
     const first = createFederation({ federationId: 'fed-1', title: 'Original Federation' })

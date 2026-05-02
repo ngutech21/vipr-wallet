@@ -1,80 +1,62 @@
 <template>
-  <template v-if="hasMetadata">
-    <div class="vipr-section-title federation-section-title">Details</div>
+  <template v-if="factItems.length > 0">
+    <div class="federation-facts-grid">
+      <q-card
+        v-for="fact in factItems"
+        :key="fact.label"
+        flat
+        class="federation-fact-card vipr-surface-card vipr-surface-card--subtle"
+      >
+        <q-card-section class="federation-fact-card__section">
+          <div class="federation-fact-card__label">{{ fact.label }}</div>
+          <div class="federation-fact-card__value">{{ fact.value }}</div>
+          <div v-if="fact.caption" class="federation-fact-card__caption">{{ fact.caption }}</div>
+        </q-card-section>
+      </q-card>
+    </div>
+  </template>
+
+  <template v-if="hasLinkItems">
     <q-card flat class="federation-card vipr-surface-card vipr-surface-card--subtle">
       <q-card-section>
         <div class="vipr-detail-list">
-          <div v-if="metadata?.max_balance_msats" class="vipr-detail-row">
-            <div class="vipr-detail-label">Maximum Balance</div>
-            <div class="vipr-detail-value">
-              <span> {{ formatMsatsAsSats(metadata.max_balance_msats) }} sats </span>
+          <div v-if="metadata?.tosUrl" class="vipr-detail-row vipr-detail-row--block">
+            <div class="vipr-detail-label">Terms of Service</div>
+            <a
+              class="vipr-detail-value vipr-detail-value--mono federation-metadata-url federation-metadata-link"
+              :href="metadata.tosUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="federation-details-tos-link"
+            >
+              {{ metadata.tosUrl }}
+            </a>
+          </div>
+
+          <div v-if="metadata?.recurringdApi" class="vipr-detail-row vipr-detail-row--block">
+            <div class="vipr-detail-label">Recurringd API</div>
+            <div class="vipr-detail-value vipr-detail-value--mono federation-metadata-url">
+              {{ metadata.recurringdApi }}
             </div>
           </div>
 
-          <div v-if="metadata?.max_invoice_msats" class="vipr-detail-row">
-            <div class="vipr-detail-label">Maximum Invoice</div>
-            <div class="vipr-detail-value">
-              <span> {{ formatMsatsAsSats(metadata.max_invoice_msats) }} sats </span>
+          <div v-if="metadata?.lnaddressApi" class="vipr-detail-row vipr-detail-row--block">
+            <div class="vipr-detail-label">Lightning Address API</div>
+            <div class="vipr-detail-value vipr-detail-value--mono federation-metadata-url">
+              {{ metadata.lnaddressApi }}
             </div>
           </div>
 
-          <div v-if="metadata?.public" class="vipr-detail-row">
-            <div class="vipr-detail-label">Public Federation</div>
-            <div class="vipr-detail-value">
-              <span>
-                <q-chip
-                  size="sm"
-                  :class="[
-                    'vipr-chip',
-                    metadata.public === 'true' ? 'vipr-chip--positive' : 'vipr-chip--muted',
-                  ]"
-                >
-                  <q-icon
-                    :name="metadata.public === 'true' ? 'public' : 'public_off'"
-                    left
-                    size="xs"
-                  />
-                  {{ metadata.public === 'true' ? 'Public' : 'Private' }}
-                </q-chip>
-              </span>
+          <div v-if="metadata?.federationSuccessor" class="vipr-detail-row vipr-detail-row--block">
+            <div class="vipr-detail-label">Successor Federation</div>
+            <div class="vipr-detail-value vipr-detail-value--mono federation-metadata-url">
+              {{ metadata.federationSuccessor }}
             </div>
           </div>
         </div>
       </q-card-section>
     </q-card>
   </template>
-
-  <q-card
-    v-if="metadata?.tos_url"
-    flat
-    class="federation-card vipr-surface-card vipr-surface-card--subtle"
-  >
-    <q-card-section>
-      <q-list>
-        <q-item
-          clickable
-          tag="a"
-          :href="metadata.tos_url"
-          target="_blank"
-          rel="noopener noreferrer"
-          data-testid="federation-details-tos-link"
-        >
-          <q-item-section avatar>
-            <q-icon name="description" color="primary" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Terms of Service</q-item-label>
-            <q-item-label class="vipr-caption">
-              View the federation's terms and conditions
-            </q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-icon name="open_in_new" color="primary" />
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </q-card-section>
-  </q-card>
 </template>
 
 <script setup lang="ts">
@@ -92,11 +74,115 @@ const props = defineProps<{
 
 const { formatNumber } = useFormatters()
 
-const hasMetadata = computed(() => {
-  return props.metadata != null && Object.keys(props.metadata).length > 0
+const factItems = computed(() => {
+  const metadata = props.metadata
+  if (metadata == null) {
+    return []
+  }
+
+  return [
+    metadata.isPublic != null
+      ? {
+          label: 'Visibility',
+          value: metadata.isPublic ? 'Public' : 'Private',
+        }
+      : null,
+    metadata.defaultCurrency != null
+      ? {
+          label: 'Currency',
+          value: metadata.defaultCurrency,
+        }
+      : null,
+    metadata.maxInvoiceMsats != null
+      ? {
+          label: 'Max invoice',
+          value: `${formatMsatsAsSats(metadata.maxInvoiceMsats)} sats`,
+        }
+      : null,
+    metadata.maxBalanceMsats != null
+      ? {
+          label: 'Max balance',
+          value: `${formatMsatsAsSats(metadata.maxBalanceMsats)} sats`,
+        }
+      : null,
+    metadata.federationExpiryTimestamp != null
+      ? {
+          label: 'Expires',
+          value: formatTimestamp(metadata.federationExpiryTimestamp),
+        }
+      : null,
+  ].filter((item): item is { label: string; value: string; caption?: string } => item != null)
 })
 
-function formatMsatsAsSats(value: string): string {
-  return formatNumber(Number.parseInt(value, 10) / 1000)
+const hasLinkItems = computed(() => {
+  return (
+    props.metadata?.tosUrl != null ||
+    props.metadata?.recurringdApi != null ||
+    props.metadata?.lnaddressApi != null ||
+    props.metadata?.federationSuccessor != null
+  )
+})
+
+function formatMsatsAsSats(value: number): string {
+  return formatNumber(value / 1000)
+}
+
+function formatTimestamp(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleDateString()
 }
 </script>
+
+<style scoped>
+.federation-facts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--vipr-space-2);
+  margin-bottom: var(--vipr-federation-detail-card-gap);
+}
+
+.federation-fact-card {
+  min-width: 0;
+}
+
+.federation-fact-card__section {
+  padding: var(--vipr-space-3);
+}
+
+.federation-fact-card__label {
+  color: var(--vipr-text-muted);
+  font-size: var(--vipr-font-size-label);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: var(--vipr-line-height-tight);
+}
+
+.federation-fact-card__value {
+  margin-top: var(--vipr-space-2);
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-body);
+  font-weight: 700;
+  line-height: var(--vipr-line-height-tight);
+  word-break: break-word;
+}
+
+.federation-fact-card__caption,
+.federation-metadata-url {
+  margin-top: var(--vipr-space-2);
+}
+
+.federation-metadata-link {
+  display: inline-block;
+  color: var(--vipr-text-secondary);
+  text-decoration: none;
+}
+
+.federation-metadata-link:hover {
+  color: var(--vipr-text-primary);
+}
+
+@media (max-width: 420px) {
+  .federation-facts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

@@ -1,3 +1,5 @@
+import type { ResolvedFederationMetadata } from 'src/services/federation-metadata'
+
 export type Federation = {
   title: string
   inviteCode: string
@@ -8,7 +10,7 @@ export type Federation = {
   network?: string
   modules: ModuleConfig[]
   guardians?: FederationGuardian[]
-  metadata?: FederationMeta
+  metadata?: ResolvedFederationMetadata
 }
 
 export type DiscoverySelectionPayload = {
@@ -45,20 +47,4 @@ export type FederationConfig = {
   modules: ModuleConfig[]
 }
 
-export type FederationMeta = {
-  chat_server_domain?: string
-  default_currency?: string
-  federation_icon_url?: string
-  max_balance_msats?: string
-  max_invoice_msats?: string
-  onchain_deposits_disabled?: boolean
-  public?: string
-  stability_pool_disabled?: boolean
-  welcome_message?: string
-  tos_url?: string
-  invite_code?: string
-  preview_message?: string
-  popup_end_timestamp?: string
-  popup_countdown_message?: string
-  vetted_gateways?: string[]
-}
+export type FederationMeta = ResolvedFederationMetadata

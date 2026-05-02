@@ -1,7 +1,11 @@
 import { defineStore } from 'pinia'
-import type { Federation } from 'src/types/federation'
+import type { Federation, FederationMeta } from 'src/types/federation'
 import { useWalletStore } from './wallet'
 import { useLocalStorage } from '@vueuse/core'
+import {
+  getFederationTitleFallback,
+  normalizeFederationMetadata,
+} from 'src/services/federation-metadata'
 
 export const useFederationStore = defineStore('federation', {
   state: () => ({
@@ -16,21 +20,28 @@ export const useFederationStore = defineStore('federation', {
   },
   actions: {
     addFederation(newFedi: Federation) {
+      const normalizedMetadata = normalizeFederationMetadata(newFedi.metadata)
+      const normalizedFederation = {
+        ...newFedi,
+        title: getFederationTitleFallback(normalizedMetadata, newFedi.title),
+        metadata: normalizedMetadata,
+      }
       const existingIndex = this.federations.findIndex(
-        (federation) => federation.federationId === newFedi.federationId,
+        (federation) => federation.federationId === normalizedFederation.federationId,
       )
 
       if (existingIndex >= 0) {
-        this.federations[existingIndex] = newFedi
+        this.federations[existingIndex] = normalizedFederation
         this.ensureValidSelection()
         return
       }
 
-      this.federations.push(newFedi)
+      this.federations.push(normalizedFederation)
       this.ensureValidSelection()
     },
 
     ensureValidSelection(): Federation | undefined {
+      this.normalizeStoredFederations()
       const selectedFederation = this.federations.find(
         (f) => f.federationId === this.selectedFederationId,
       )
@@ -47,6 +58,38 @@ export const useFederationStore = defineStore('federation', {
     deleteFederation(federationId: string) {
       this.federations = this.federations.filter((f) => f.federationId !== federationId)
       this.ensureValidSelection()
+    },
+
+    updateFederationMetadata(federationId: string, metadata: FederationMeta) {
+      const federationIndex = this.federations.findIndex(
+        (federation) => federation.federationId === federationId,
+      )
+      if (federationIndex < 0) {
+        return
+      }
+
+      const federation = this.federations[federationIndex]
+      if (federation == null) {
+        return
+      }
+
+      const normalizedMetadata = normalizeFederationMetadata(metadata)
+      this.federations[federationIndex] = {
+        ...federation,
+        title: getFederationTitleFallback(normalizedMetadata, federation.title),
+        metadata: normalizedMetadata,
+      }
+    },
+
+    normalizeStoredFederations() {
+      this.federations = this.federations.map((federation) => {
+        const normalizedMetadata = normalizeFederationMetadata(federation.metadata)
+        return {
+          ...federation,
+          title: getFederationTitleFallback(normalizedMetadata, federation.title),
+          metadata: normalizedMetadata,
+        }
+      })
     },
 
     async selectFederation(fedi: Federation | undefined) {
