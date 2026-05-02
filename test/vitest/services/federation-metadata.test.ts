@@ -101,4 +101,42 @@ describe('federation metadata resolver', () => {
       popupEndTimestamp: 1_893_456_000,
     })
   })
+
+  it('does not recursively capture existing raw sources as legacy metadata', () => {
+    const metadata = resolveFederationMetadata({
+      legacy: {
+        welcomeMessage: 'Welcome',
+        rawSources: {
+          legacy: {
+            welcome_message: 'Welcome',
+          },
+        },
+      },
+      includeRawSources: true,
+    })
+
+    expect(metadata.rawSources?.legacy).toEqual({
+      welcomeMessage: 'Welcome',
+    })
+  })
+
+  it('keeps stored raw sources idempotent when normalizing repeatedly', () => {
+    const metadata = resolveFederationMetadata({
+      legacy: {
+        welcome_message: 'Welcome',
+      },
+      includeRawSources: true,
+    })
+
+    const normalizedOnce = normalizeFederationMetadata(metadata)
+    const normalizedTwice = normalizeFederationMetadata(normalizedOnce)
+
+    expect(normalizedOnce.rawSources).toEqual({
+      legacy: {
+        welcome_message: 'Welcome',
+      },
+    })
+    expect(normalizedTwice).toEqual(normalizedOnce)
+    expect(JSON.stringify(normalizedTwice.rawSources)).not.toContain('rawSources')
+  })
 })

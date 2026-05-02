@@ -52,15 +52,10 @@ export function resolveFederationMetadata(
   )
 
   if (options.includeRawSources === true) {
-    if (configRaw != null) {
-      rawSources.config = configRaw
-    }
-    if (legacyRaw != null) {
-      rawSources.legacy = legacyRaw
-    }
-    if (metaModuleRaw != null) {
-      rawSources.metaModule = metaModuleRaw
-    }
+    assignRawSource(rawSources, 'config', configRaw)
+    assignRawSource(rawSources, 'legacy', legacyRaw)
+    assignRawSource(rawSources, 'metaModule', metaModuleRaw)
+
     if (Object.keys(rawSources).length > 0) {
       resolved.rawSources = rawSources
     }
@@ -74,7 +69,6 @@ export function normalizeFederationMetadata(
 ): ResolvedFederationMetadata {
   return resolveFederationMetadata({
     legacy: metadata ?? null,
-    includeRawSources: hasRawSources(metadata),
   })
 }
 
@@ -152,7 +146,7 @@ function normalizeRawMetadata(raw: JSONObject | null): ResolvedFederationMetadat
   ])
 
   if (hasRawSources(raw)) {
-    resolved.rawSources = raw.rawSources
+    resolved.rawSources = sanitizeRawSources(raw.rawSources)
   }
 
   return resolved
@@ -172,6 +166,45 @@ function mergeResolvedMetadata(
   }
 
   return merged
+}
+
+function assignRawSource(
+  target: FederationMetadataRawSources,
+  source: FederationMetadataSource,
+  raw: JSONObject | null,
+) {
+  if (raw == null) {
+    return
+  }
+
+  const sanitized = stripRawSources(raw)
+  if (Object.keys(sanitized).length > 0) {
+    target[source] = sanitized
+  }
+}
+
+function sanitizeRawSources(
+  rawSources: FederationMetadataRawSources,
+): FederationMetadataRawSources {
+  const sanitized: FederationMetadataRawSources = {}
+
+  assignRawSource(sanitized, 'config', rawSources.config ?? null)
+  assignRawSource(sanitized, 'legacy', rawSources.legacy ?? null)
+  assignRawSource(sanitized, 'metaModule', rawSources.metaModule ?? null)
+
+  return sanitized
+}
+
+function stripRawSources(raw: JSONObject): JSONObject {
+  const sanitized: JSONObject = {}
+
+  for (const [key, value] of Object.entries(raw)) {
+    if (key !== 'rawSources') {
+      sanitized[key] = value
+    }
+  }
+
+  return sanitized
 }
 
 function assignString(
