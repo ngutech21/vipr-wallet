@@ -2,10 +2,15 @@
   <CopyableQrCard
     v-if="inviteCode"
     :value="inviteCode"
-    label="Invite code"
+    eyebrow="Invite"
+    heading=""
+    description="Scan the QR code or share the invite with others to join the federation."
     input-aria-label="Federation invite code"
     test-id-prefix="federation-details-invite"
-    card-class="federation-card vipr-surface-card--subtle"
+    card-class="federation-card vipr-surface-card--subtle vipr-qr-card--invite"
+    compact
+    :show-value="false"
+    :enable-qr-zoom="true"
     input-test-id="federation-details-invite-input"
     copy-test-id="federation-details-copy-invite-btn"
     share-test-id="federation-details-share-invite-btn"

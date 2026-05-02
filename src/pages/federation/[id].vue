@@ -21,23 +21,25 @@ meta:
       <div class="federation-details-content">
         <FederationSummaryCard :federation="federation" :observer-url="observerUrl" />
 
-        <FederationInviteCard :invite-code="inviteCode" :federation-title="federation?.title" />
-
-        <FederationGuardians :guardians="federation?.guardians ?? []" class="federation-card" />
-
-        <FederationMetadataCard :metadata="federation?.metadata" />
-
-        <FederationGatewayList
-          :gateways="walletGateways"
-          :is-loading="isLoadingWalletGateways"
-          :error="walletGatewayError"
-          :has-loaded="hasLoadedWalletGateways"
-        />
-
         <FederationMessagesCard
           :metadata="federation?.metadata"
           :federation-id="federation?.federationId"
         />
+
+        <FederationMetadataCard :metadata="federation?.metadata" />
+
+        <FederationInviteCard :invite-code="inviteCode" :federation-title="federation?.title" />
+
+        <div class="federation-trust-section">
+          <FederationGuardians :guardians="federation?.guardians ?? []" class="federation-card" />
+
+          <FederationGatewayList
+            :gateways="walletGateways"
+            :is-loading="isLoadingWalletGateways"
+            :error="walletGatewayError"
+            :has-loaded="hasLoadedWalletGateways"
+          />
+        </div>
 
         <FederationUtxos
           :utxos="spendableUtxos"
@@ -224,5 +226,14 @@ async function leaveFederation() {
 
 .federation-details-content :deep(.federation-section-title) {
   margin-bottom: var(--vipr-federation-detail-section-title-gap);
+}
+
+.federation-trust-section {
+  margin-bottom: var(--vipr-federation-detail-card-gap);
+}
+
+.federation-trust-section :deep(.federation-card),
+.federation-trust-section :deep(.federation-gateways) {
+  margin-bottom: var(--vipr-space-2);
 }
 </style>

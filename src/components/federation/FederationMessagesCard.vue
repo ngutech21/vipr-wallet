@@ -1,6 +1,5 @@
 <template>
   <template v-if="hasMessages">
-    <div class="vipr-section-title federation-section-title">Messages</div>
     <q-card flat class="federation-card vipr-surface-card vipr-surface-card--subtle">
       <q-card-section>
         <div class="vipr-detail-list">
