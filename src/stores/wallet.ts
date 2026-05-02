@@ -31,6 +31,7 @@ import {
   getFederationTitleFallback,
   resolveFederationMetadata,
 } from 'src/services/federation-metadata'
+import { federationHasModule } from 'src/utils/federationModules'
 
 const WALLET_NAME_PREFIX = 'wallet-'
 
@@ -638,13 +639,15 @@ export const useWalletStore = defineStore('wallet', {
         return
       }
 
-      try {
-        metaModule = await this.getMetaConsensusValue()
-      } catch (error) {
-        logger.warn('Failed to load federation meta module data; keeping legacy metadata', {
-          federationId: federation.federationId,
-          error,
-        })
+      if (federationHasModule(federation, 'meta')) {
+        try {
+          metaModule = await this.getMetaConsensusValue()
+        } catch (error) {
+          logger.warn('Failed to load federation meta module data; keeping legacy metadata', {
+            federationId: federation.federationId,
+            error,
+          })
+        }
       }
 
       const metadata = resolveFederationMetadata({

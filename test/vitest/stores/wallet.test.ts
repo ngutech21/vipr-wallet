@@ -45,6 +45,17 @@ function createFederation(overrides: Partial<Federation> = {}): Federation {
   }
 }
 
+function createMetaModule() {
+  return {
+    config: 'meta',
+    kind: 'meta',
+    version: {
+      major: 0,
+      minor: 0,
+    },
+  }
+}
+
 function createWalletMock(balanceMsats: number) {
   return {
     isOpen: vi.fn(() => true),
@@ -217,6 +228,7 @@ describe('wallet store', () => {
     const federationStore = useFederationStore()
     const federation = createFederation({
       title: 'Legacy Federation',
+      modules: [createMetaModule()],
       metadata: {
         iconUrl: 'https://legacy.example/icon.png',
         maxInvoiceMsats: 50_000,

@@ -73,6 +73,17 @@ function createFederation(overrides: Partial<Federation> = {}): Federation {
   }
 }
 
+function createMetaModule() {
+  return {
+    config: 'meta',
+    kind: 'meta',
+    version: {
+      major: 0,
+      minor: 0,
+    },
+  }
+}
+
 describe('FederationDetailsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -167,6 +178,17 @@ describe('FederationDetailsPage', () => {
     wrapper.unmount()
   })
 
+  it('does not load meta consensus metadata when the federation has no meta module', async () => {
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    expect(getMetaConsensusValue).not.toHaveBeenCalled()
+    expect(wrapper.text()).not.toContain('Consensus Metadata')
+    expect(wrapper.text()).not.toContain('Failed to load consensus metadata.')
+
+    wrapper.unmount()
+  })
+
   it('waits for the selected federation wallet to open before loading wallet-backed details', async () => {
     walletStoreState.activeWalletName = 'wallet-fed-1'
     federationStoreState.selectedFederationId = 'fed-2'
@@ -194,6 +216,7 @@ describe('FederationDetailsPage', () => {
   })
 
   it('shows meta consensus loading state while debug metadata is loading', async () => {
+    federationStoreState.federations = [createFederation({ modules: [createMetaModule()] })]
     getMetaConsensusValue.mockReturnValue(
       new Promise(() => {
         // Keep the Meta module request pending so the loading UI remains visible.
@@ -210,6 +233,7 @@ describe('FederationDetailsPage', () => {
   })
 
   it('shows meta consensus failure state when debug metadata loading fails', async () => {
+    federationStoreState.federations = [createFederation({ modules: [createMetaModule()] })]
     getMetaConsensusValue.mockRejectedValue(new Error('Meta module unavailable'))
 
     const wrapper = createWrapper()

@@ -86,6 +86,7 @@ import type { FederationUtxo } from 'src/types/federation'
 import FederationUtxos from 'src/components/FederationUtxos.vue'
 import { logger } from 'src/services/logger'
 import type { MetaConsensusValue, JSONObject } from '@fedimint/core'
+import { federationHasModule } from 'src/utils/federationModules'
 
 const route = useRoute('/federation/[id]')
 const router = useRouter()
@@ -139,7 +140,9 @@ watch(
 
     isLoadingUtxos.value = true
     isLoadingWalletGateways.value = true
-    isLoadingMetaConsensus.value = showRawMetaConsensusCard
+    const shouldLoadMetaConsensus =
+      showRawMetaConsensusCard && federationHasModule(currentFederation, 'meta')
+    isLoadingMetaConsensus.value = shouldLoadMetaConsensus
 
     try {
       await ensureFederationWalletOpen(currentFederation)
@@ -147,7 +150,7 @@ watch(
       const [utxos, gateways, metadata] = await Promise.all([
         walletStore.getSpendableUtxos(),
         loadWalletGateways(),
-        showRawMetaConsensusCard ? loadMetaConsensusValue() : Promise.resolve(null),
+        shouldLoadMetaConsensus ? loadMetaConsensusValue() : Promise.resolve(null),
       ])
       spendableUtxos.value = utxos
       walletGateways.value = gateways
