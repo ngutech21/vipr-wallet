@@ -88,7 +88,7 @@ describe('FederationList.vue', () => {
     it('should display federation icon when metadata has icon URL', () => {
       const federation = createMockFederation({
         metadata: {
-          federation_icon_url: 'https://example.com/icon.png',
+          iconUrl: 'https://example.com/icon.png',
         },
       })
       wrapper = createWrapper({ federations: [federation] })
@@ -298,11 +298,10 @@ describe('FederationList.vue', () => {
     it('should handle federation with all metadata fields', () => {
       const federation = createMockFederation({
         metadata: {
-          federation_icon_url: 'https://example.com/icon.png',
-          welcome_message: 'Welcome!',
-          chat_server_domain: 'chat.example.com',
-          default_currency: 'USD',
-          max_balance_msats: '1000000000',
+          iconUrl: 'https://example.com/icon.png',
+          welcomeMessage: 'Welcome!',
+          defaultCurrency: 'USD',
+          maxBalanceMsats: 1_000_000_000,
         },
       })
       wrapper = createWrapper({ federations: [federation] })

@@ -17,7 +17,7 @@ const federationStoreState = vi.hoisted(() => ({
     inviteCode: 'fed11test',
     modules: [],
     metadata: {
-      max_invoice_msats: '50000',
+      maxInvoiceMsats: 50_000,
     },
   },
 }))
@@ -145,7 +145,7 @@ describe('SendEcashPage.vue', () => {
       inviteCode: 'fed11test',
       modules: [],
       metadata: {
-        max_invoice_msats: '50000',
+        maxInvoiceMsats: 50_000,
       },
     }
 

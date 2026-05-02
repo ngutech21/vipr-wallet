@@ -13,6 +13,7 @@ const routeState = vi.hoisted(() => ({
 const updateGatewayCache = vi.hoisted(() => vi.fn())
 const listGateways = vi.hoisted(() => vi.fn())
 const getSpendableUtxos = vi.hoisted(() => vi.fn())
+const getMetaConsensusValue = vi.hoisted(() => vi.fn())
 const selectFederation = vi.hoisted(() => vi.fn())
 
 const federationStoreState = vi.hoisted(() => ({
@@ -30,6 +31,7 @@ const walletStoreState = vi.hoisted(() => ({
     },
   },
   getSpendableUtxos,
+  getMetaConsensusValue,
   closeWallet: vi.fn(),
   deleteFederationData: vi.fn(),
   openWallet: vi.fn(),
@@ -75,6 +77,12 @@ describe('FederationDetailsPage', () => {
     federationStoreState.selectedFederationId = 'fed-1'
     federationStoreState.federations = [createFederation()]
     getSpendableUtxos.mockResolvedValue([])
+    getMetaConsensusValue.mockResolvedValue({
+      revision: 1,
+      value: {
+        federation_name: 'Meta Federation',
+      },
+    })
     updateGatewayCache.mockResolvedValue(undefined)
     listGateways.mockResolvedValue([
       {

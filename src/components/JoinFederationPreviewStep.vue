@@ -2,8 +2,8 @@
   <div class="vipr-flow-step preview-step" data-testid="join-federation-preview-step">
     <q-card flat class="preview-card vipr-surface-card vipr-surface-card--strong">
       <q-card-section class="preview-header">
-        <q-avatar v-if="federation.metadata?.federation_icon_url" size="64px" class="preview-icon">
-          <q-img :src="federation.metadata.federation_icon_url" loading="eager" no-spinner />
+        <q-avatar v-if="federation.metadata?.iconUrl" size="64px" class="preview-icon">
+          <q-img :src="federation.metadata.iconUrl" loading="eager" no-spinner />
         </q-avatar>
         <q-avatar v-else size="64px" color="grey-3" text-color="grey-8" class="preview-icon">
           <q-icon name="account_balance" />
@@ -119,9 +119,9 @@ const { formatNumber } = useFormatters()
 const guardianCount = computed(() => props.federation.guardians?.length ?? 0)
 const moduleCount = computed(() => props.federation.modules.length)
 const moduleKinds = computed(() => props.federation.modules.map((module) => module.kind))
-const defaultCurrency = computed(() => props.federation.metadata?.default_currency ?? null)
+const defaultCurrency = computed(() => props.federation.metadata?.defaultCurrency ?? null)
 const networkLabel = computed(() => props.federation.network ?? null)
-const previewMessage = computed(() => props.federation.metadata?.preview_message ?? null)
+const previewMessage = computed(() => props.federation.metadata?.previewMessage ?? null)
 </script>
 
 <style scoped>

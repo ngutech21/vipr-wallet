@@ -4,26 +4,32 @@
     <q-card flat class="federation-card vipr-surface-card vipr-surface-card--subtle">
       <q-card-section>
         <div class="vipr-detail-list">
-          <template v-if="metadata?.preview_message">
+          <template v-if="metadata?.welcomeMessage">
             <div class="vipr-detail-row vipr-detail-row--block">
-              <div class="vipr-detail-label">Preview Message</div>
+              <div class="vipr-detail-label">Welcome Message</div>
               <div class="vipr-body federation-message-copy">
-                {{ metadata.preview_message }}
+                {{ metadata.welcomeMessage }}
               </div>
             </div>
           </template>
 
-          <template v-if="metadata?.popup_countdown_message">
+          <template v-if="metadata?.previewMessage">
+            <div class="vipr-detail-row vipr-detail-row--block">
+              <div class="vipr-detail-label">Preview Message</div>
+              <div class="vipr-body federation-message-copy">
+                {{ metadata.previewMessage }}
+              </div>
+            </div>
+          </template>
+
+          <template v-if="metadata?.popupCountdownMessage">
             <div class="vipr-detail-row vipr-detail-row--block">
               <div class="vipr-detail-label">End Message</div>
               <div class="vipr-body federation-message-copy">
-                {{ metadata.popup_countdown_message }}
+                {{ metadata.popupCountdownMessage }}
               </div>
-              <div
-                v-if="metadata?.popup_end_timestamp"
-                class="vipr-caption federation-message-copy"
-              >
-                Ends: {{ formatDate(metadata.popup_end_timestamp) }}
+              <div v-if="metadata?.popupEndTimestamp" class="vipr-caption federation-message-copy">
+                Ends: {{ formatDate(metadata.popupEndTimestamp) }}
               </div>
             </div>
           </template>
@@ -52,18 +58,18 @@ const hasMessages = computed(() => {
     federationId: props.federationId,
   })
   return (
-    (props.metadata?.preview_message != null && props.metadata.preview_message !== '') ||
-    (props.metadata?.popup_countdown_message != null &&
-      props.metadata.popup_countdown_message !== '')
+    (props.metadata?.welcomeMessage != null && props.metadata.welcomeMessage !== '') ||
+    (props.metadata?.previewMessage != null && props.metadata.previewMessage !== '') ||
+    (props.metadata?.popupCountdownMessage != null && props.metadata.popupCountdownMessage !== '')
   )
 })
 
-function formatDate(timestamp: string) {
+function formatDate(timestamp: number) {
   try {
-    return new Date(timestamp).toLocaleString()
+    return new Date(timestamp * 1000).toLocaleString()
   } catch (error) {
     logger.error('Failed to parse metadata date', error)
-    return timestamp
+    return String(timestamp)
   }
 }
 </script>

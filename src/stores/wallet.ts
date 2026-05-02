@@ -4,6 +4,7 @@ import type {
   ParsedNoteDetails,
   JSONValue,
   JSONObject,
+  MetaConsensusValue,
   MSats,
   OperationKey,
   OperationLog,
@@ -26,6 +27,11 @@ import { logger } from 'src/services/logger'
 import { fedimintClient } from 'src/services/fedimint-client'
 import { withTimeout } from 'src/utils/async'
 import { getErrorMessage } from 'src/utils/error'
+import {
+  extractExternalMetadataPayload,
+  getFederationTitleFallback,
+  resolveFederationMetadata,
+} from 'src/services/federation-metadata'
 
 const WALLET_OPEN_TIMEOUT_MS = 15_000
 const FEDERATION_JOIN_TIMEOUT_MS = 20_000
@@ -157,6 +163,7 @@ export const useWalletStore = defineStore('wallet', {
 
       this.activeWalletName = walletName
       await withTimeout(this.updateBalance(), BALANCE_UPDATE_TIMEOUT_MS, 'balance update')
+      await this.refreshFederationMetadata(selectedFederation)
     },
 
     async openWallet() {
@@ -590,19 +597,52 @@ export const useWalletStore = defineStore('wallet', {
         return undefined
       }
       try {
-        const response = await fetch(federation.metaUrl)
+        const metadata = await fetchExternalFederationMetadata(federation.metaUrl)
         logger.logFederation('Fetching federation metadata', undefined)
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        const data = await response.json()
         logger.logFederation('Metadata fetched successfully')
-        const metadata = Object.values(data)[0] as FederationMeta
-        return metadata
+        return resolveFederationMetadata({
+          legacy: metadata,
+          includeRawSources: isMetadataDebugEnabled(),
+        })
       } catch (error) {
         logger.error('Failed to fetch federation metadata', error)
         return undefined
       }
+    },
+
+    async getMetaConsensusValue(key?: number): Promise<MetaConsensusValue<JSONObject> | null> {
+      if (this.wallet == null) {
+        throw new Error('Wallet is not open')
+      }
+
+      return await this.wallet.federation.getMetaConsensusValue<JSONObject>(key)
+    },
+
+    async refreshFederationMetadata(federation: Federation): Promise<void> {
+      const federationStore = useFederationStore()
+      let metaModule: MetaConsensusValue<JSONObject> | null = null
+
+      if (this.wallet == null) {
+        return
+      }
+
+      try {
+        metaModule = await this.getMetaConsensusValue()
+      } catch (error) {
+        logger.warn('Failed to load federation meta module data; keeping legacy metadata', {
+          federationId: federation.federationId,
+          error,
+        })
+      }
+
+      const metadata = resolveFederationMetadata({
+        config: { federation_name: federation.title },
+        legacy: federation.metadata ?? null,
+        metaModule,
+        includeRawSources: isMetadataDebugEnabled(),
+      })
+
+      federationStore.updateFederationMetadata(federation.federationId, metadata)
     },
 
     async previewFederation(inviteCode: string): Promise<Federation | undefined> {
@@ -638,39 +678,51 @@ export const useWalletStore = defineStore('wallet', {
       const metaExternalUrl = typedConfig?.global?.meta?.meta_external_url as string
       const modules = typedConfig?.modules ?? {}
 
-      let meta: FederationMeta
+      let legacyMetadata: JSONObject | null = null
 
       if (metaExternalUrl != null && metaExternalUrl !== '') {
         try {
-          const response = await fetch(metaExternalUrl)
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-          }
-          const data = await response.json()
+          legacyMetadata = await fetchExternalFederationMetadata(metaExternalUrl)
           logger.logFederation('External metadata fetched')
-          meta = Object.values(data)[0] as FederationMeta
           logger.logFederation('External metadata parsed')
         } catch (error) {
           logger.warn('Failed to fetch external metadata, continuing without metadata', error)
-          meta = {}
         }
-      } else {
-        meta = {}
       }
 
+      const metadata = resolveFederationMetadata({
+        config: typedConfig?.global?.meta ?? null,
+        legacy: legacyMetadata,
+        includeRawSources: isMetadataDebugEnabled(),
+      })
+      const title = getFederationTitleFallback(metadata, federationName)
+
       return {
-        title: federationName,
+        title,
         inviteCode: inviteCode,
         federationId: federation_id.trim(),
         metaUrl: metaExternalUrl,
         modules: Object.values(modules) as ModuleConfig[],
         guardians,
-        metadata: meta,
+        metadata,
       } satisfies Federation
     },
   },
 })
+
+async function fetchExternalFederationMetadata(url: string): Promise<JSONObject | null> {
+  const response = await fetch(url)
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  }
+
+  return extractExternalMetadataPayload(await response.json())
+}
+
+function isMetadataDebugEnabled(): boolean {
+  return import.meta.env.DEV || import.meta.env.VITE_E2E_MODE === '1'
+}
 
 async function fetchTransactionsBatch(
   wallet: TransactionHistoryWallet,
