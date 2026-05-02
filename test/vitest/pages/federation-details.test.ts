@@ -25,6 +25,7 @@ const federationStoreState = vi.hoisted(() => ({
 }))
 
 const walletStoreState = vi.hoisted(() => ({
+  activeWalletName: 'wallet-fed-1',
   wallet: {
     lightning: {
       updateGatewayCache,
@@ -58,6 +59,7 @@ vi.mock('src/stores/federation', () => ({
 
 vi.mock('src/stores/wallet', () => ({
   useWalletStore: () => walletStoreState,
+  getWalletNameForFederationId: (federationId: string) => `wallet-${federationId}`,
 }))
 
 function createFederation(overrides: Partial<Federation> = {}): Federation {
@@ -77,6 +79,15 @@ describe('FederationDetailsPage', () => {
     routeState.params.id = 'fed-1'
     federationStoreState.selectedFederationId = 'fed-1'
     federationStoreState.federations = [createFederation()]
+    walletStoreState.activeWalletName = 'wallet-fed-1'
+    walletStoreState.wallet = {
+      lightning: {
+        updateGatewayCache,
+        listGateways,
+      },
+    }
+    walletStoreState.openWallet.mockResolvedValue(undefined)
+    selectFederation.mockResolvedValue(undefined)
     getSpendableUtxos.mockResolvedValue([])
     getMetaConsensusValue.mockResolvedValue({
       revision: 1,
@@ -152,6 +163,32 @@ describe('FederationDetailsPage', () => {
     expect(wrapper.html()).toContain(
       'https://amboss.space/node/02dd3fcdaa17b9bc83bf7138fbea85d0e83385a68b5fc8f9933658c8ee04644f68',
     )
+
+    wrapper.unmount()
+  })
+
+  it('waits for the selected federation wallet to open before loading wallet-backed details', async () => {
+    walletStoreState.activeWalletName = 'wallet-fed-1'
+    federationStoreState.selectedFederationId = 'fed-2'
+    routeState.params.id = 'fed-2'
+    federationStoreState.federations = [
+      createFederation(),
+      createFederation({ federationId: 'fed-2', inviteCode: 'fed11second' }),
+    ]
+
+    walletStoreState.openWallet.mockImplementation(() => {
+      walletStoreState.activeWalletName = 'wallet-fed-2'
+      return Promise.resolve()
+    })
+
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    expect(walletStoreState.openWallet).toHaveBeenCalledTimes(1)
+    expect(getSpendableUtxos).toHaveBeenCalledTimes(1)
+    expect(updateGatewayCache).toHaveBeenCalledTimes(1)
+    expect(listGateways).toHaveBeenCalledTimes(1)
+    expect(wrapper.text()).not.toContain('Wallet is not open.')
 
     wrapper.unmount()
   })

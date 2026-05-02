@@ -75,6 +75,17 @@ function createWalletMock(balanceMsats: number) {
   }
 }
 
+function createDeferred<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise
+    reject = rejectPromise
+  })
+
+  return { promise, resolve, reject }
+}
+
 function createHiddenTransaction(operationId: string): Transactions {
   return {
     kind: 'unknown',
@@ -153,6 +164,52 @@ describe('wallet store', () => {
     })
     expect(walletStore.activeWalletName).toBe(getWalletNameForFederationId(federation.federationId))
     expect(walletStore.balance).toBe(12)
+  })
+
+  it('serializes concurrent wallet opens so only one ensureWalletOpen runs at a time', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    const firstFederation = createFederation({ federationId: 'fed-1', inviteCode: 'fed11first' })
+    const secondFederation = createFederation({ federationId: 'fed-2', inviteCode: 'fed11second' })
+    const firstWallet = createWalletMock(12_000)
+    const secondWallet = createWalletMock(34_000)
+    const firstOpen = createDeferred<typeof firstWallet>()
+
+    federationStore.federations = [firstFederation, secondFederation]
+    federationStore.selectedFederationId = firstFederation.federationId
+    fedimintClientMock.ensureWalletOpen
+      .mockReturnValueOnce(firstOpen.promise)
+      .mockResolvedValueOnce(secondWallet)
+
+    const firstOpenAttempt = walletStore.openWallet()
+    await vi.waitFor(() => {
+      expect(fedimintClientMock.ensureWalletOpen).toHaveBeenCalledTimes(1)
+    })
+
+    federationStore.selectedFederationId = secondFederation.federationId
+    const secondOpenAttempt = walletStore.openWallet()
+    await Promise.resolve()
+
+    expect(fedimintClientMock.ensureWalletOpen).toHaveBeenCalledTimes(1)
+
+    firstOpen.resolve(firstWallet)
+    await firstOpenAttempt
+    await secondOpenAttempt
+
+    expect(fedimintClientMock.ensureWalletOpen).toHaveBeenNthCalledWith(1, {
+      walletName: getWalletNameForFederationId(firstFederation.federationId),
+      federationId: firstFederation.federationId,
+      inviteCode: firstFederation.inviteCode,
+    })
+    expect(fedimintClientMock.ensureWalletOpen).toHaveBeenNthCalledWith(2, {
+      walletName: getWalletNameForFederationId(secondFederation.federationId),
+      federationId: secondFederation.federationId,
+      inviteCode: secondFederation.inviteCode,
+    })
+    expect(walletStore.activeWalletName).toBe(
+      getWalletNameForFederationId(secondFederation.federationId),
+    )
+    expect(walletStore.balance).toBe(34)
   })
 
   it('refreshes selected federation metadata from the meta module after opening', async () => {

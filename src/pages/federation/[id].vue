@@ -72,7 +72,7 @@ defineOptions({
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFederationStore } from 'src/stores/federation'
-import { useWalletStore } from 'src/stores/wallet'
+import { getWalletNameForFederationId, useWalletStore } from 'src/stores/wallet'
 import FederationGatewayList from 'src/components/federation/FederationGatewayList.vue'
 import FederationGuardians from 'src/components/FederationGuardians.vue'
 import FederationInviteCard from 'src/components/federation/FederationInviteCard.vue'
@@ -142,9 +142,7 @@ watch(
     isLoadingMetaConsensus.value = showRawMetaConsensusCard
 
     try {
-      if (federationStore.selectedFederationId !== currentFederation.federationId) {
-        await federationStore.selectFederation(currentFederation)
-      }
+      await ensureFederationWalletOpen(currentFederation)
 
       const [utxos, gateways, metadata] = await Promise.all([
         walletStore.getSpendableUtxos(),
@@ -181,6 +179,19 @@ async function loadWalletGateways(): Promise<unknown[]> {
     logger.error('Failed to load wallet gateways', error)
     walletGatewayError.value = 'Failed to load wallet gateways.'
     return []
+  }
+}
+
+async function ensureFederationWalletOpen(currentFederation: NonNullable<typeof federation.value>) {
+  const walletName = getWalletNameForFederationId(currentFederation.federationId)
+
+  if (federationStore.selectedFederationId !== currentFederation.federationId) {
+    await federationStore.selectFederation(currentFederation)
+    return
+  }
+
+  if (walletStore.activeWalletName !== walletName || walletStore.wallet == null) {
+    await walletStore.openWallet()
   }
 }
 

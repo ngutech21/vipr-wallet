@@ -25,7 +25,6 @@ import type {
 } from 'src/types/federation'
 import { logger } from 'src/services/logger'
 import { fedimintClient } from 'src/services/fedimint-client'
-import { withTimeout } from 'src/utils/async'
 import { getErrorMessage } from 'src/utils/error'
 import {
   extractExternalMetadataPayload,
@@ -33,10 +32,9 @@ import {
   resolveFederationMetadata,
 } from 'src/services/federation-metadata'
 
-const WALLET_OPEN_TIMEOUT_MS = 15_000
-const FEDERATION_JOIN_TIMEOUT_MS = 20_000
-const BALANCE_UPDATE_TIMEOUT_MS = 10_000
 const WALLET_NAME_PREFIX = 'wallet-'
+
+let walletOpenQueue: Promise<void> | null = null
 
 export const FEDIMINT_STORAGE_SCHEMA_KEY = 'vipr.fedimint.storage.schema'
 export const FEDIMINT_STORAGE_SCHEMA_VERSION = '2'
@@ -151,22 +149,36 @@ export const useWalletStore = defineStore('wallet', {
         await this.closeWallet()
       }
 
-      this.wallet = await withTimeout(
-        fedimintClient.ensureWalletOpen({
-          walletName,
-          federationId: selectedFederation.federationId,
-          inviteCode: selectedFederation.inviteCode,
-        }),
-        WALLET_OPEN_TIMEOUT_MS + FEDERATION_JOIN_TIMEOUT_MS,
-        'wallet open',
-      )
+      this.wallet = await fedimintClient.ensureWalletOpen({
+        walletName,
+        federationId: selectedFederation.federationId,
+        inviteCode: selectedFederation.inviteCode,
+      })
 
       this.activeWalletName = walletName
-      await withTimeout(this.updateBalance(), BALANCE_UPDATE_TIMEOUT_MS, 'balance update')
+      await this.updateBalance()
       await this.refreshFederationMetadata(selectedFederation)
     },
 
     async openWallet() {
+      const previousOpen = walletOpenQueue
+      const openAttempt =
+        previousOpen == null
+          ? this.openWalletOnce()
+          : previousOpen.catch(() => undefined).then(() => this.openWalletOnce())
+
+      walletOpenQueue = openAttempt
+
+      try {
+        await openAttempt
+      } finally {
+        if (walletOpenQueue === openAttempt) {
+          walletOpenQueue = null
+        }
+      }
+    },
+
+    async openWalletOnce() {
       const federationStore = useFederationStore()
       const selectedFederation = federationStore.selectedFederation
 
@@ -184,7 +196,7 @@ export const useWalletStore = defineStore('wallet', {
       try {
         await this.openWalletForFederation(selectedFederation)
       } catch (error) {
-        if (!isRecoverableTransportError(error) && !isTimeoutError(error)) {
+        if (!isRecoverableTransportError(error)) {
           throw error
         }
 
@@ -994,10 +1006,6 @@ function isRecoverableTransportError(error: unknown): boolean {
   return /(rpc is not a function|unreachable executed|closure invoked recursively|after being dropped)/i.test(
     getErrorMessage(error),
   )
-}
-
-function isTimeoutError(error: unknown): boolean {
-  return /timed out/i.test(getErrorMessage(error))
 }
 
 if (import.meta.hot != null) {
