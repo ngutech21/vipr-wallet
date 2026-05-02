@@ -40,6 +40,8 @@ describe('federation metadata resolver', () => {
       metaModule: {
         'fedi:default_currency': 'EUR',
         'fedi:tos_url': 'https://meta.example/terms',
+        'fedi:popup_countdown_message': 'Ends soon',
+        'fedi:popup_end_timestamp': '1893456000',
         vetted_gateways: ['gateway-a', 'gateway-b'],
         recurringd_api: 'https://recurring.example/api',
         lnaddress_api: 'https://lnaddress.example/api',
@@ -49,6 +51,8 @@ describe('federation metadata resolver', () => {
     expect(metadata.defaultCurrency).toBe('EUR')
     expect(metadata.tosUrl).toBe('https://meta.example/terms')
     expect(metadata.isPublic).toBe(true)
+    expect(metadata.popupCountdownMessage).toBe('Ends soon')
+    expect(metadata.popupEndTimestamp).toBe(1_893_456_000)
     expect(metadata.vettedGateways).toEqual(['gateway-a', 'gateway-b'])
     expect(metadata.recurringdApi).toBe('https://recurring.example/api')
     expect(metadata.lnaddressApi).toBe('https://lnaddress.example/api')

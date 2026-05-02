@@ -131,10 +131,12 @@ function normalizeRawMetadata(raw: JSONObject | null): ResolvedFederationMetadat
   assignUnixTimestamp(resolved, 'popupEndTimestamp', raw, [
     'popupEndTimestamp',
     'popup_end_timestamp',
+    'fedi:popup_end_timestamp',
   ])
   assignString(resolved, 'popupCountdownMessage', raw, [
     'popupCountdownMessage',
     'popup_countdown_message',
+    'fedi:popup_countdown_message',
   ])
   assignBoolean(resolved, 'isPublic', raw, ['isPublic', 'public'])
   assignStringList(resolved, 'vettedGateways', raw, ['vettedGateways', 'vetted_gateways'])
