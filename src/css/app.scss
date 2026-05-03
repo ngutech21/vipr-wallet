@@ -342,11 +342,21 @@ body,
   --vipr-glass-panel-border: var(--vipr-color-surface-border);
   --vipr-glass-panel-backdrop: blur(16px);
   --vipr-home-hero-bg:
-    radial-gradient(circle at top left, rgba(156, 39, 255, 0.18), transparent 42%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
-  --vipr-home-hero-border: var(--vipr-color-surface-border);
-  --vipr-home-hero-padding: 18px var(--vipr-space-5) var(--vipr-space-4);
-  --vipr-home-balance-font-size: clamp(2rem, 6vw, var(--vipr-font-size-amount));
+    radial-gradient(circle at top left, rgba(156, 39, 255, 0.1), transparent 38%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.048), rgba(255, 255, 255, 0.025));
+  --vipr-home-hero-border: rgba(255, 255, 255, 0.065);
+  --vipr-home-hero-padding: var(--vipr-space-4) var(--vipr-space-5) var(--vipr-space-4);
+  --vipr-home-balance-font-size: clamp(1.9rem, 5.3vw, 2.55rem);
+  --vipr-home-action-bg:
+    linear-gradient(180deg, rgba(156, 39, 255, 0.92), rgba(109, 0, 226, 0.92)),
+    rgba(120, 22, 235, 0.9);
+  --vipr-home-action-bg-secondary:
+    linear-gradient(180deg, rgba(156, 39, 255, 0.78), rgba(111, 0, 226, 0.74)),
+    rgba(112, 24, 210, 0.82);
+  --vipr-home-action-shadow:
+    0 8px 18px rgba(111, 0, 255, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --vipr-home-action-shadow-secondary:
+    0 6px 14px rgba(111, 0, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   --vipr-home-actions-width: min(calc(100vw - var(--vipr-space-8)), 420px);
   --vipr-home-actions-width-mobile: min(calc(100vw - (var(--vipr-row-padding-y) * 2)), 420px);
   --vipr-home-action-gap: var(--vipr-space-3);
@@ -1243,12 +1253,17 @@ html[data-e2e='1'] *::after {
 }
 
 .transaction-item .transaction-icon-shell {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
   border-radius: var(--vipr-radius-round);
-  background: var(--vipr-row-icon-bg-subtle);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.transaction-item .transaction-icon-shell .q-icon {
+  font-size: 1.18rem;
+  opacity: 0.86;
 }
 
 .transaction-item .transaction-title {

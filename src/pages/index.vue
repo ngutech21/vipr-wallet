@@ -213,6 +213,8 @@ const showReceiveEcashSelection = ref(false)
   flex: 0 1 var(--vipr-home-action-button-width);
   min-width: 0;
   min-height: var(--vipr-home-action-height);
+  background: var(--vipr-home-action-bg) !important;
+  box-shadow: var(--vipr-home-action-shadow) !important;
 }
 
 .home-action-btn--icon {
@@ -220,6 +222,8 @@ const showReceiveEcashSelection = ref(false)
   width: var(--vipr-home-action-icon-width);
   min-width: var(--vipr-home-action-icon-width);
   padding: 0;
+  background: var(--vipr-home-action-bg-secondary) !important;
+  box-shadow: var(--vipr-home-action-shadow-secondary) !important;
 }
 
 .home-action-btn :deep(.q-btn__content) {
