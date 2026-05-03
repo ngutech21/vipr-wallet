@@ -31,6 +31,11 @@ body,
   --vipr-color-scrollbar-thumb: rgba(128, 0, 255, 0.3);
   --vipr-color-glass-bg: rgba(255, 255, 255, 0.1);
   --vipr-color-header-section-bg: #202020;
+  --vipr-color-positive: oklch(0.76 0.18 155);
+  --vipr-color-negative: oklch(0.68 0.2 18);
+  --vipr-color-bitcoin: oklch(0.78 0.16 72);
+  --vipr-color-lightning: oklch(0.82 0.16 82);
+  --vipr-color-primary-accent: oklch(0.64 0.27 302);
   --vipr-text-primary: white;
   --vipr-text-secondary: rgba(255, 255, 255, 0.78);
   --vipr-text-muted: rgba(255, 255, 255, 0.62);
@@ -296,30 +301,28 @@ body,
   --vipr-copy-button-border-compact: var(--vipr-control-panel-border);
   --vipr-copy-button-shadow-compact: var(--vipr-control-panel-shadow);
   --vipr-copy-button-bg-compact-hover: var(--vipr-control-panel-bg-hover);
-  --vipr-transaction-content-padding: var(--vipr-space-4);
-  --vipr-transaction-card-bg: rgba(255, 255, 255, 0.025);
-  --vipr-transaction-card-padding: var(--vipr-row-padding-y) var(--vipr-row-padding-x)
-    var(--vipr-row-padding-x);
-  --vipr-transaction-card-gap: var(--vipr-space-4);
-  --vipr-transaction-details-padding: var(--vipr-space-1) var(--vipr-row-padding-x)
-    var(--vipr-space-3);
+  --vipr-transaction-content-padding: var(--vipr-space-4) var(--vipr-row-padding-x);
+  --vipr-transaction-summary-padding: var(--vipr-space-5) var(--vipr-space-0) var(--vipr-space-6);
+  --vipr-transaction-details-top-space: var(--vipr-space-1);
   --vipr-transaction-type-gap: 10px;
   --vipr-transaction-status-color: var(--vipr-text-on-accent);
-  --vipr-transaction-status-padding: var(--vipr-space-1) 10px;
-  --vipr-transaction-amount-section-padding: var(--vipr-space-2) var(--vipr-space-0)
-    var(--vipr-row-padding-x);
+  --vipr-transaction-status-padding: 5px 10px;
+  --vipr-transaction-amount-section-padding: var(--vipr-space-0);
   --vipr-transaction-amount-line-height: 1.05;
   --vipr-transaction-fiat-top-space: 6px;
   --vipr-transaction-fiat-font-size: 0.95rem;
-  --vipr-transaction-row-padding: var(--vipr-space-3) var(--vipr-space-0);
+  --vipr-transaction-row-padding: 15px var(--vipr-space-0);
   --vipr-transaction-row-separator: var(--vipr-detail-separator);
   --vipr-transaction-label-font-size: 0.82rem;
-  --vipr-transaction-block-row-top-padding: var(--vipr-row-padding-y);
-  --vipr-transaction-data-section-bg: rgba(255, 255, 255, 0.018);
-  --vipr-transaction-data-section-padding: 11px var(--vipr-space-3);
-  --vipr-transaction-data-section-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.018);
-  --vipr-transaction-data-section-top-space: var(--vipr-space-2);
-  --vipr-transaction-data-section-max-height: 80px;
+  --vipr-transaction-block-row-top-padding: var(--vipr-space-4);
+  --vipr-transaction-data-section-bg: rgba(255, 255, 255, 0.032);
+  --vipr-transaction-data-section-padding: 13px var(--vipr-space-3);
+  --vipr-transaction-data-section-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+  --vipr-transaction-data-section-top-space: var(--vipr-space-3);
+  --vipr-transaction-data-section-max-height: 92px;
+  --vipr-transaction-rail-icon-size: 42px;
+  --vipr-transaction-rail-icon-base-size: 1.45rem;
+  --vipr-transaction-rail-icon-badge-size: 20px;
   --vipr-action-slider-bg: var(--vipr-control-panel-bg);
   --vipr-action-slider-border: var(--vipr-control-panel-border);
   --vipr-action-slider-handle-bg: var(--vipr-gradient-primary);
@@ -1266,6 +1269,21 @@ html[data-e2e='1'] *::after {
   opacity: 0.86;
 }
 
+.transaction-item .transaction-rail-icon {
+  --vipr-transaction-rail-icon-size: 36px;
+  --vipr-transaction-rail-icon-base-size: 1.12rem;
+  --vipr-transaction-rail-icon-badge-size: 17px;
+}
+
+.transaction-item .transaction-rail-icon__badge {
+  right: -3px;
+  bottom: -3px;
+}
+
+.transaction-item .transaction-rail-icon__badge .q-icon {
+  font-size: 0.78rem;
+}
+
 .transaction-item .transaction-title {
   display: block;
   min-width: 0;
@@ -1278,6 +1296,7 @@ html[data-e2e='1'] *::after {
 .transaction-item .transaction-meta {
   margin-top: var(--vipr-space-1);
   color: var(--vipr-text-soft);
+  white-space: nowrap;
 }
 
 .transaction-item .transaction-amount {
@@ -1674,46 +1693,26 @@ html[data-e2e='1'] *::after {
   padding: var(--vipr-transaction-content-padding);
 }
 
-.transaction-content .transaction-card {
-  background: var(--vipr-transaction-card-bg);
-  border: 1px solid var(--vipr-color-surface-border);
-  border-radius: var(--vipr-radius-card);
-  padding: var(--vipr-transaction-card-padding);
-  margin-bottom: var(--vipr-transaction-card-gap);
+.transaction-content .transaction-receipt__summary {
+  padding: var(--vipr-transaction-summary-padding);
 }
 
-.transaction-content .transaction-card--summary {
-  background: var(--vipr-surface-card-bg-summary);
-}
-
-.transaction-content .transaction-card--details {
-  background: var(--vipr-surface-card-bg-subtle);
-  border-color: var(--vipr-surface-card-border-subtle);
-  box-shadow: var(--vipr-surface-card-shadow-subtle);
-  padding: var(--vipr-transaction-details-padding);
+.transaction-content .transaction-receipt__details {
+  margin-top: var(--vipr-transaction-details-top-space);
 }
 
 .transaction-content .transaction-type {
-  display: flex;
-  align-items: center;
-  gap: var(--vipr-transaction-type-gap);
+  display: contents;
   min-width: 0;
-  width: 100%;
 }
 
 .transaction-content .summary-meta {
-  display: flex;
-  align-items: center;
-  gap: var(--vipr-space-2);
+  display: contents;
   min-width: 0;
-  flex: 1 1 auto;
-  flex-wrap: nowrap;
-  justify-content: space-between;
 }
 
 .transaction-content .status-badge {
-  flex-shrink: 0;
-  margin-left: auto;
+  justify-self: end;
   color: var(--vipr-transaction-status-color);
   border-radius: var(--vipr-radius-pill);
   padding: var(--vipr-transaction-status-padding);
@@ -1723,7 +1722,7 @@ html[data-e2e='1'] *::after {
 
 .transaction-content .amount-section {
   padding: var(--vipr-transaction-amount-section-padding);
-  text-align: center;
+  text-align: left;
 }
 
 .transaction-content .amount-value {
@@ -1744,15 +1743,75 @@ html[data-e2e='1'] *::after {
   font-size: var(--vipr-font-size-summary-title);
   font-weight: 600;
   line-height: var(--vipr-line-height-tight);
+  justify-self: center;
+  text-align: center;
   overflow-wrap: anywhere;
   white-space: nowrap;
 }
 
 .transaction-content .summary-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  gap: var(--vipr-space-4);
+  gap: var(--vipr-space-3);
   width: 100%;
+  margin-top: var(--vipr-space-5);
+}
+
+.transaction-rail-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--vipr-transaction-rail-icon-size);
+  height: var(--vipr-transaction-rail-icon-size);
+  flex: 0 0 var(--vipr-transaction-rail-icon-size);
+  border-radius: var(--vipr-radius-round);
+  background: rgba(255, 255, 255, 0.055);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+}
+
+.transaction-rail-icon__base {
+  color: var(--vipr-text-secondary);
+  font-size: var(--vipr-transaction-rail-icon-base-size);
+}
+
+.transaction-rail-icon--bitcoin .transaction-rail-icon__base {
+  color: var(--vipr-color-bitcoin);
+}
+
+.transaction-rail-icon--lightning .transaction-rail-icon__base {
+  color: var(--vipr-color-lightning);
+}
+
+.transaction-rail-icon--ecash .transaction-rail-icon__base {
+  color: var(--vipr-color-primary-accent);
+}
+
+.transaction-rail-icon__badge {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  width: var(--vipr-transaction-rail-icon-badge-size);
+  height: var(--vipr-transaction-rail-icon-badge-size);
+  border-radius: var(--vipr-radius-round);
+  background: var(--vipr-color-surface-base);
+  box-shadow:
+    0 0 0 2px var(--vipr-color-page),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.transaction-rail-icon__badge .q-icon {
+  font-size: 0.9rem;
+}
+
+.transaction-rail-icon__badge--send {
+  color: var(--vipr-color-negative);
+}
+
+.transaction-rail-icon__badge--receive {
+  color: var(--vipr-color-positive);
 }
 
 .transaction-content .detail-stack {
@@ -1803,8 +1862,9 @@ html[data-e2e='1'] *::after {
 }
 
 .transaction-content .detail-row__heading {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--vipr-space-2);
 }
 
@@ -1837,14 +1897,10 @@ html[data-e2e='1'] *::after {
   font-family: var(--vipr-font-family-mono);
   color: var(--vipr-text-secondary);
   font-size: var(--vipr-font-size-caption);
+  line-height: 1.55;
 }
 
 @media (max-width: 599px) {
-  .transaction-content .summary-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
   .transaction-content .detail-row {
     flex-direction: column;
     align-items: flex-start;

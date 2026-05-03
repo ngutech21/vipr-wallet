@@ -7,13 +7,10 @@
     :data-testid="`wallet-transaction-item-${transaction.operationId}`"
   >
     <q-item-section avatar>
-      <div class="transaction-icon-shell">
-        <q-icon
-          :name="transaction.type === 'withdraw' ? 'arrow_upward' : 'arrow_downward'"
-          :color="transaction.type === 'withdraw' ? 'negative' : 'positive'"
-          size="md"
-        />
-      </div>
+      <TransactionRailIcon
+        rail="bitcoin"
+        :direction="transaction.type === 'withdraw' ? 'send' : 'receive'"
+      />
     </q-item-section>
 
     <q-item-section>
@@ -53,6 +50,7 @@ import {
   getWalletTransactionListTitle,
 } from 'src/utils/walletTransactionPresentation'
 import { formatTransactionListTimestamp } from 'src/utils/formatter'
+import TransactionRailIcon from 'src/components/TransactionRailIcon.vue'
 
 interface Props {
   transaction: WalletTransaction

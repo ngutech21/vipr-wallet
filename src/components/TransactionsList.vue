@@ -31,19 +31,19 @@
           <LightningTransactionItem
             v-if="transaction.kind === 'ln'"
             :transaction="transaction as LightningTransaction"
-            :compact-timestamp="useCompactTimestamps"
+            compact-timestamp
             @click="viewTransactionDetails"
           />
           <EcashTransactionItem
             v-else-if="transaction.kind === 'mint'"
             :transaction="transaction as EcashTransaction"
-            :compact-timestamp="useCompactTimestamps"
+            compact-timestamp
             @click="viewTransactionDetails"
           />
           <WalletTransactionItem
             v-else-if="transaction.kind === 'wallet'"
             :transaction="transaction as WalletTransaction"
-            :compact-timestamp="useCompactTimestamps"
+            compact-timestamp
             @click="viewTransactionDetails"
           />
         </template>
@@ -137,7 +137,6 @@ const emptyTransactionsTestId = 'transactions-empty-state'
 let activeLoadRequestId = 0
 
 const pageSize = computed(() => (props.mode === 'history' ? HISTORY_PAGE_SIZE : HOME_PAGE_SIZE))
-const useCompactTimestamps = computed(() => props.mode === 'home')
 const showHomeEmptyState = computed(() => {
   return props.mode === 'home' && !isInitialLoading.value && transactions.value.length === 0
 })

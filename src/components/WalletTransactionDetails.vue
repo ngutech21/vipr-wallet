@@ -1,6 +1,6 @@
 <template>
-  <div class="transaction-content">
-    <section class="transaction-card transaction-card--summary">
+  <div class="transaction-content transaction-receipt">
+    <section class="transaction-receipt__summary">
       <div class="amount-section">
         <div
           class="amount-value"
@@ -15,12 +15,11 @@
       </div>
 
       <div class="summary-row">
+        <TransactionRailIcon
+          rail="bitcoin"
+          :direction="transaction.type === 'withdraw' ? 'send' : 'receive'"
+        />
         <div class="transaction-type">
-          <q-icon
-            :name="transaction.type === 'withdraw' ? 'arrow_upward' : 'arrow_downward'"
-            :color="transaction.type === 'withdraw' ? 'negative' : 'positive'"
-            size="2rem"
-          />
           <div class="summary-meta">
             <span class="summary-title">
               {{ transactionTitle }}
@@ -38,7 +37,7 @@
       </div>
     </section>
 
-    <section class="transaction-card transaction-card--details">
+    <section class="transaction-receipt__details">
       <div class="detail-stack">
         <div class="detail-row">
           <div class="label">Created on</div>
@@ -99,6 +98,7 @@ import { useFederationStore } from 'src/stores/federation'
 import { useLightningStore } from 'src/stores/lightning'
 import type { WalletTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
+import TransactionRailIcon from 'src/components/TransactionRailIcon.vue'
 import {
   getWalletTransactionDetailTitle,
   getWalletTransactionAmountSats,

@@ -7,9 +7,7 @@
     :data-testid="`ecash-transaction-item-${transaction.operationId}`"
   >
     <q-item-section avatar>
-      <div class="transaction-icon-shell">
-        <q-icon :name="getTransactionIcon()" :color="getTransactionColor()" size="md" />
-      </div>
+      <TransactionRailIcon rail="ecash" :direction="transactionDirection" />
     </q-item-section>
 
     <q-item-section>
@@ -39,6 +37,7 @@ import { useLightningStore } from 'src/stores/lightning'
 import type { EcashTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
 import { formatTransactionListTimestamp } from 'src/utils/formatter'
+import TransactionRailIcon from 'src/components/TransactionRailIcon.vue'
 
 interface Props {
   transaction: EcashTransaction
@@ -60,6 +59,10 @@ const amountInSats = computed(() => {
   return Math.floor(props.transaction.amountMsats / 1000).toLocaleString()
 })
 
+const transactionDirection = computed<'send' | 'receive'>(() => {
+  return props.transaction.type === 'spend_oob' ? 'send' : 'receive'
+})
+
 onMounted(async () => {
   try {
     const sats = Math.floor(props.transaction.amountMsats / 1000)
@@ -70,28 +73,6 @@ onMounted(async () => {
     amountInFiat.value = '0.00'
   }
 })
-
-function getTransactionIcon(): string {
-  switch (props.transaction.type) {
-    case 'spend_oob':
-      return 'arrow_upward'
-    case 'reissue':
-      return 'arrow_downward'
-    default:
-      return 'account_balance_wallet'
-  }
-}
-
-function getTransactionColor(): string {
-  switch (props.transaction.type) {
-    case 'spend_oob':
-      return 'negative'
-    case 'reissue':
-      return 'positive'
-    default:
-      return 'primary'
-  }
-}
 
 function getTransactionLabel(): string {
   switch (props.transaction.type) {

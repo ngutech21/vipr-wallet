@@ -27,7 +27,7 @@
         <BottomSheetOptionCard
           title="Send offline ecash"
           description="Export ecash notes to share without a live internet connection."
-          icon="swap_horiz"
+          icon="toll"
           icon-color="primary"
           data-testid="send-offline-card"
           @select="onSendOffline"

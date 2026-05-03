@@ -1,6 +1,6 @@
 <template>
-  <div class="transaction-content">
-    <section class="transaction-card transaction-card--summary">
+  <div class="transaction-content transaction-receipt">
+    <section class="transaction-receipt__summary">
       <div class="amount-section">
         <div class="amount-value" :class="getAmountClass()">
           {{ getAmountPrefix() }}{{ amountInSats }}
@@ -9,8 +9,11 @@
       </div>
 
       <div class="summary-row">
+        <TransactionRailIcon
+          rail="ecash"
+          :direction="transaction.type === 'spend_oob' ? 'send' : 'receive'"
+        />
         <div class="transaction-type">
-          <q-icon :name="getTransactionIcon()" :color="getTransactionColor()" size="2rem" />
           <div class="summary-meta">
             <span class="summary-title">
               {{ getTransactionLabel() }}
@@ -28,7 +31,7 @@
       </div>
     </section>
 
-    <section class="transaction-card transaction-card--details">
+    <section class="transaction-receipt__details">
       <div class="detail-stack">
         <div class="detail-row">
           <div class="label">Created on</div>
@@ -75,6 +78,7 @@ import { useFederationStore } from 'src/stores/federation'
 import { useLightningStore } from 'src/stores/lightning'
 import type { EcashTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
+import TransactionRailIcon from 'src/components/TransactionRailIcon.vue'
 
 interface Props {
   transaction: EcashTransaction
@@ -105,28 +109,6 @@ onMounted(async () => {
     amountInFiat.value = '0.00'
   }
 })
-
-function getTransactionIcon(): string {
-  switch (props.transaction.type) {
-    case 'spend_oob':
-      return 'arrow_upward'
-    case 'reissue':
-      return 'arrow_downward'
-    default:
-      return 'account_balance_wallet'
-  }
-}
-
-function getTransactionColor(): string {
-  switch (props.transaction.type) {
-    case 'spend_oob':
-      return 'negative'
-    case 'reissue':
-      return 'positive'
-    default:
-      return 'primary'
-  }
-}
 
 function getTransactionLabel(): string {
   switch (props.transaction.type) {

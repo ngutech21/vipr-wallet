@@ -1,6 +1,6 @@
 <template>
-  <div class="transaction-content">
-    <section class="transaction-card transaction-card--summary">
+  <div class="transaction-content transaction-receipt">
+    <section class="transaction-receipt__summary">
       <div class="amount-section">
         <div
           class="amount-value"
@@ -12,12 +12,11 @@
       </div>
 
       <div class="summary-row">
+        <TransactionRailIcon
+          rail="lightning"
+          :direction="transaction.type === 'send' ? 'send' : 'receive'"
+        />
         <div class="transaction-type">
-          <q-icon
-            :name="transaction.type === 'send' ? 'arrow_upward' : 'arrow_downward'"
-            :color="transaction.type === 'send' ? 'negative' : 'positive'"
-            size="2rem"
-          />
           <div class="summary-meta">
             <span class="summary-title">
               {{ transaction.type === 'send' ? 'Sent Lightning' : 'Received Lightning' }}
@@ -35,7 +34,7 @@
       </div>
     </section>
 
-    <section class="transaction-card transaction-card--details">
+    <section class="transaction-receipt__details">
       <div class="detail-stack">
         <div class="detail-row">
           <div class="label">Created on</div>
@@ -98,6 +97,7 @@ import { useLightningStore } from 'src/stores/lightning'
 import { useWalletStore } from 'src/stores/wallet'
 import type { LightningTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
+import TransactionRailIcon from 'src/components/TransactionRailIcon.vue'
 
 interface Props {
   transaction: LightningTransaction

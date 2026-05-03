@@ -524,12 +524,12 @@ describe('EcashTransactionDetails.vue', () => {
         expect(wrapper.html()).toContain('arrow_downward')
       })
 
-      it('should return account_balance_wallet for unknown type', () => {
+      it('should keep the ecash rail icon for unknown type', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const transaction = createMockTransaction({ type: 'unknown' as any })
         wrapper = createWrapper(transaction)
 
-        expect(wrapper.html()).toContain('account_balance_wallet')
+        expect(wrapper.html()).toContain('toll')
       })
     })
 

@@ -266,6 +266,9 @@ describe('TransactionsList.vue', () => {
       visibleOnly: true,
     })
     expect(wrapper.findAll('[data-testid$="-transaction-item"]')).toHaveLength(2)
+    expect(
+      wrapper.getComponent({ name: 'LightningTransactionItem' }).props('compactTimestamp'),
+    ).toBe(true)
     expect(wrapper.get('[data-testid="transactions-show-more-btn"]').text()).toContain('Show more')
 
     await wrapper.get('[data-testid="transactions-show-more-btn"]').trigger('click')

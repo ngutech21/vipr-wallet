@@ -1,5 +1,5 @@
 <template>
-  <ModalCard title="Receive ecash" @close="emit('close')">
+  <ModalCard title="Receive" @close="emit('close')">
     <div class="vipr-selection-sheet">
       <div class="vipr-selection-sheet__intro">
         Choose how you want to receive funds into your current federation.
@@ -27,7 +27,7 @@
         <BottomSheetOptionCard
           title="Receive offline ecash"
           description="Generate a QR code to receive ecash from another wallet without using the internet."
-          icon="swap_horiz"
+          icon="toll"
           icon-color="primary"
           data-testid="receive-offline-card"
           @select="onReceiveOffline"
