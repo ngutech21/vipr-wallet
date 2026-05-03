@@ -1,5 +1,12 @@
 <template>
-  <SettingsSection variant="secondary" icon="update" label="Updates" caption="Check for updates">
+  <SettingsSection
+    variant="secondary"
+    icon="update"
+    label="Updates"
+    caption="Check for updates"
+    :status="updateStatusLabel"
+    :status-tone="updateStatusTone"
+  >
     <div class="settings-copy-block settings-block">
       <BuildInfo />
     </div>
@@ -50,6 +57,32 @@ const updateButtonLabel = computed(() =>
   isUpdateReady.value ? 'Update ready' : 'Check for updates',
 )
 const updateButtonIcon = computed(() => (isUpdateReady.value ? 'update' : 'refresh'))
+const updateStatusLabel = computed(() => {
+  if (isApplyingUpdate.value) {
+    return 'Applying'
+  }
+  if (isCheckingForUpdates.value) {
+    return 'Checking'
+  }
+  if (isUpdateReady.value) {
+    return 'Ready'
+  }
+  if (pwaUpdateStore.state === 'error') {
+    return 'Error'
+  }
+
+  return 'Up to date'
+})
+const updateStatusTone = computed(() => {
+  if (isUpdateReady.value || isCheckingForUpdates.value || isApplyingUpdate.value) {
+    return 'warning'
+  }
+  if (pwaUpdateStore.state === 'error') {
+    return 'danger'
+  }
+
+  return 'neutral'
+})
 
 async function handleUpdateAction() {
   if (isUpdateReady.value) {

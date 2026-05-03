@@ -3,6 +3,7 @@
     icon="forum"
     label="Nostr"
     caption="Manage relays"
+    :status="relayStatusLabel"
     data-testid="settings-nostr-section"
   >
     <div class="settings-section-title">Relays</div>
@@ -92,6 +93,10 @@ const notify = useAppNotify()
 
 const relays = ref(nostrStore.relays)
 const newRelay = ref('')
+const relayStatusLabel = computed(() => {
+  const suffix = relays.value.length === 1 ? 'relay' : 'relays'
+  return `${relays.value.length} ${suffix}`
+})
 
 watch(
   () => nostrStore.relays,

@@ -3,6 +3,8 @@
     icon="perm_contact_calendar"
     label="Contacts"
     caption="Sync nostr contacts"
+    :status="contactsStatusLabel"
+    :status-tone="contactsStatusTone"
     data-testid="settings-contacts-section"
   >
     <div class="contacts-section">
@@ -142,6 +144,20 @@ const notify = useAppNotify()
 const contactSourceValue = ref(nostrStore.contactSource.sourceValue)
 const syncedContacts = computed(() => nostrStore.contacts)
 const isSyncingContacts = computed(() => nostrStore.syncStatus === 'syncing')
+const contactsStatusLabel = computed(() => {
+  if (isSyncingContacts.value) {
+    return 'Syncing'
+  }
+
+  return `${syncedContacts.value.length} synced`
+})
+const contactsStatusTone = computed(() => {
+  if (isSyncingContacts.value) {
+    return 'warning'
+  }
+
+  return syncedContacts.value.length > 0 ? 'positive' : 'neutral'
+})
 const contactSyncError = computed(() => nostrStore.contactSyncMeta.lastSyncError)
 const visibleContactCount = ref(INITIAL_VISIBLE_CONTACTS)
 const lastSyncedLabel = computed(() => {

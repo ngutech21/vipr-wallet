@@ -1,29 +1,13 @@
 <template>
-  <SettingsSection variant="secondary">
-    <template #header>
-      <q-item-section avatar>
-        <q-icon name="shield" />
-      </q-item-section>
-      <q-item-section data-testid="settings-personal-backup-section">
-        <q-item-label>Backup</q-item-label>
-        <q-item-label caption>Save recovery phrase</q-item-label>
-      </q-item-section>
-    </template>
-    <div class="settings-copy-block settings-block">
-      Create a backup of your wallet using your recovery phrase. Write it down and store it safely
-      to recover your wallet if you lose access to this device.
-    </div>
-    <q-btn
-      label="Create backup"
-      color="primary"
-      icon="backup"
-      no-caps
-      unelevated
-      :to="{ name: '/settings/backup' }"
-      class="settings-action-full"
-      data-testid="settings-create-backup-btn"
-    />
-  </SettingsSection>
+  <SettingsRow
+    icon="shield"
+    label="Backup"
+    caption="Recovery phrase"
+    :status="backupStatusLabel"
+    :status-tone="backupStatusTone"
+    :to="{ name: '/settings/backup' }"
+    data-testid="settings-personal-backup-section"
+  />
 </template>
 
 <script setup lang="ts">
@@ -31,5 +15,17 @@ defineOptions({
   name: 'BackupSettings',
 })
 
-import SettingsSection from 'src/components/settings/SettingsSection.vue'
+import { computed } from 'vue'
+import SettingsRow from 'src/components/settings/SettingsRow.vue'
+import { useWalletStore } from 'src/stores/wallet'
+
+const walletStore = useWalletStore()
+const backupStatusLabel = computed(() => {
+  if (!walletStore.hasMnemonic) {
+    return 'No wallet'
+  }
+
+  return walletStore.needsMnemonicBackup ? 'Not backed up' : 'Backed up'
+})
+const backupStatusTone = computed(() => (walletStore.needsMnemonicBackup ? 'warning' : 'positive'))
 </script>

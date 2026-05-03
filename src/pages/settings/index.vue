@@ -1,19 +1,25 @@
 <template>
   <q-page class="dark-gradient" data-testid="settings-page">
     <div class="settings-page">
-      <div class="settings-stack settings-stack--primary">
+      <SettingsGroup title="Security">
+        <BackupSettings />
+        <AppLockSettings />
+      </SettingsGroup>
+
+      <SettingsGroup title="Connections">
         <LightningConnectionSettings />
         <NostrRelaySettings />
         <NostrContactsSettings />
-      </div>
+      </SettingsGroup>
 
-      <div class="settings-stack settings-stack--secondary">
+      <SettingsGroup title="App">
         <PwaUpdateSettings />
-        <BackupSettings />
-        <AppLockSettings />
         <ProjectSettings />
+      </SettingsGroup>
+
+      <SettingsGroup title="Danger zone">
         <DangerZoneSettings />
-      </div>
+      </SettingsGroup>
     </div>
   </q-page>
 </template>
@@ -31,4 +37,5 @@ import NostrContactsSettings from 'src/components/settings/NostrContactsSettings
 import NostrRelaySettings from 'src/components/settings/NostrRelaySettings.vue'
 import ProjectSettings from 'src/components/settings/ProjectSettings.vue'
 import PwaUpdateSettings from 'src/components/settings/PwaUpdateSettings.vue'
+import SettingsGroup from 'src/components/settings/SettingsGroup.vue'
 </script>

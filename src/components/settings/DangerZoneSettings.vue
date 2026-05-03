@@ -1,26 +1,76 @@
 <template>
-  <SettingsSection
-    variant="danger"
-    icon="warning"
-    label="Reset"
-    caption="Clear local data"
-    expand-icon-class="text-negative"
-  >
-    <div class="settings-copy-block settings-block">
-      Deleting all data will remove your wallet connections, federations and all settings. This
-      cannot be undone.
+  <div class="settings-danger-panel" data-testid="settings-danger-zone">
+    <div class="settings-danger-panel__body">
+      <div class="settings-danger-panel__icon">
+        <q-icon name="warning" />
+      </div>
+      <div class="settings-danger-panel__copy">
+        <div class="settings-danger-panel__title">Reset local wallet data</div>
+        <div class="settings-danger-panel__caption">
+          Clears federations, wallet connections, contacts and settings on this device.
+        </div>
+      </div>
     </div>
     <q-btn
-      label="Delete ALL Data"
+      label="Review reset"
       color="negative"
-      icon="delete"
+      icon="warning"
       no-caps
       unelevated
-      @click="deleteData"
-      class="settings-action-full"
-      data-testid="settings-delete-data-btn"
+      @click="openResetDialog"
+      class="settings-danger-panel__button"
+      data-testid="settings-review-reset-btn"
     />
-  </SettingsSection>
+
+    <q-dialog v-model="isResetDialogOpen" persistent>
+      <q-card class="settings-reset-dialog">
+        <q-card-section class="settings-reset-dialog__section">
+          <div class="settings-reset-dialog__eyebrow">Danger zone</div>
+          <div class="settings-reset-dialog__title">Reset this device?</div>
+          <div class="settings-reset-dialog__copy">
+            This removes local wallet data, federations, Lightning connections, Nostr relays,
+            contacts and app settings from this browser. This cannot be undone.
+          </div>
+        </q-card-section>
+
+        <q-card-section
+          class="settings-reset-dialog__section settings-reset-dialog__section--check"
+        >
+          <q-checkbox
+            v-model="resetAcknowledged"
+            color="negative"
+            class="settings-reset-dialog__checkbox"
+            data-testid="settings-reset-confirm-checkbox"
+          >
+            <span>I understand this clears this device and cannot be undone.</span>
+          </q-checkbox>
+        </q-card-section>
+
+        <q-card-actions class="settings-reset-dialog__actions">
+          <q-btn
+            label="Cancel"
+            flat
+            no-caps
+            color="secondary"
+            class="settings-reset-dialog__action"
+            @click="closeResetDialog"
+            data-testid="settings-reset-cancel-btn"
+          />
+          <q-btn
+            label="Reset data"
+            color="negative"
+            icon="delete"
+            no-caps
+            unelevated
+            class="settings-reset-dialog__action"
+            :disable="!resetAcknowledged"
+            @click="deleteData"
+            data-testid="settings-delete-data-btn"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -28,9 +78,8 @@ defineOptions({
   name: 'DangerZoneSettings',
 })
 
-import { Dialog } from 'quasar'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import SettingsSection from 'src/components/settings/SettingsSection.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { logger } from 'src/services/logger'
 import { useAppLockStore } from 'src/stores/app-lock'
@@ -50,6 +99,18 @@ const pwaUpdateStore = usePwaUpdateStore()
 const appLockStore = useAppLockStore()
 const router = useRouter()
 const notify = useAppNotify()
+const isResetDialogOpen = ref(false)
+const resetAcknowledged = ref(false)
+
+function openResetDialog() {
+  resetAcknowledged.value = false
+  isResetDialogOpen.value = true
+}
+
+function closeResetDialog() {
+  isResetDialogOpen.value = false
+  resetAcknowledged.value = false
+}
 
 function clearAppLocalStorage() {
   if (typeof localStorage === 'undefined') {
@@ -71,16 +132,12 @@ function clearAppLocalStorage() {
 
 function deleteData() {
   logger.ui.debug('User initiated data deletion')
-  Dialog.create({
-    title: 'Delete Data',
-    message: 'Are you sure you want to delete all data?',
-    persistent: true,
-    ok: { label: 'Delete', color: 'negative' },
-    cancel: true,
-  }).onOk(() => {
-    clearLocalAndWalletData().catch((error) => {
-      logger.error('Failed to clear local and wallet data', error)
-    })
+  if (!resetAcknowledged.value) {
+    return
+  }
+
+  clearLocalAndWalletData().catch((error) => {
+    logger.error('Failed to clear local and wallet data', error)
   })
 }
 

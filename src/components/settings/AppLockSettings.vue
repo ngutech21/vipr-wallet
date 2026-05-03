@@ -1,11 +1,20 @@
 <template>
-  <SettingsSection
-    variant="secondary"
-    icon="lock"
-    label="App Lock"
-    caption="PIN and Face ID"
-    data-testid="settings-app-lock-section"
-  >
+  <SettingsSection variant="secondary" data-testid="settings-app-lock-section">
+    <template #header>
+      <q-item-section avatar>
+        <q-icon name="lock" />
+      </q-item-section>
+      <q-item-section>
+        <q-item-label>App Lock</q-item-label>
+        <q-item-label caption>PIN and biometrics</q-item-label>
+      </q-item-section>
+      <q-item-section side>
+        <q-badge class="settings-status-pill" :class="appLockStatusToneClass">
+          {{ appLockHeaderStatusLabel }}
+        </q-badge>
+      </q-item-section>
+    </template>
+
     <div class="settings-copy-block settings-block" data-testid="settings-app-lock-copy">
       Protect Vipr on this device with a local PIN. Face ID / Touch ID can be enabled after a PIN is
       set.
@@ -128,6 +137,16 @@ type AccessDialogMode = 'setup' | 'verify-current-for-change' | 'verify-current-
 const accessDialogMode = ref<AccessDialogMode>(null)
 const isAppLockPinConfigured = computed(() => appLockStore.isPinConfigured)
 const isBiometricEnabled = computed(() => appLockStore.isBiometricEnabled)
+const appLockHeaderStatusLabel = computed(() => {
+  if (!isAppLockPinConfigured.value) {
+    return 'Off'
+  }
+
+  return isBiometricEnabled.value ? 'PIN + Face ID' : 'PIN enabled'
+})
+const appLockStatusToneClass = computed(() =>
+  isAppLockPinConfigured.value ? 'settings-status-pill--positive' : 'settings-status-pill--neutral',
+)
 const appLockStatusLabel = computed(() =>
   isAppLockPinConfigured.value ? 'PIN is enabled' : 'PIN is not set',
 )

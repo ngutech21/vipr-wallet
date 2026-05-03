@@ -4,7 +4,6 @@ import DangerZoneSettings from 'src/components/settings/DangerZoneSettings.vue'
 
 const mockRouterReplace = vi.hoisted(() => vi.fn())
 const mockNotifyCreate = vi.hoisted(() => vi.fn())
-const mockDialogCreate = vi.hoisted(() => vi.fn(() => ({ onOk: vi.fn() })))
 
 const walletStoreMock = vi.hoisted(() => ({
   clearAllWallets: vi.fn(),
@@ -66,16 +65,21 @@ vi.mock('quasar', async (importOriginal) => {
     Notify: {
       create: mockNotifyCreate,
     },
-    Dialog: {
-      create: mockDialogCreate,
-    },
   })
 })
 
 const QBtnStub = {
-  props: ['label'],
+  props: ['label', 'disable'],
   emits: ['click'],
-  template: '<button v-bind="$attrs" @click="$emit(\'click\')">{{ label }}</button>',
+  template:
+    '<button v-bind="$attrs" :disabled="disable" @click="!disable && $emit(\'click\')">{{ label }}</button>',
+}
+
+const QCheckboxStub = {
+  props: ['modelValue'],
+  emits: ['update:modelValue'],
+  template:
+    '<label v-bind="$attrs"><input type="checkbox" :checked="modelValue" @change="$emit(\'update:modelValue\', true)" /><slot /></label>',
 }
 
 const SlotStub = {
@@ -87,8 +91,13 @@ describe('DangerZoneSettings', () => {
     return mount(DangerZoneSettings, {
       global: {
         stubs: {
-          SettingsSection: SlotStub,
+          'q-card': SlotStub,
+          'q-card-actions': SlotStub,
+          'q-card-section': SlotStub,
+          'q-checkbox': QCheckboxStub,
+          'q-dialog': SlotStub,
           'q-btn': QBtnStub,
+          'q-icon': SlotStub,
         },
       },
     })
@@ -105,13 +114,9 @@ describe('DangerZoneSettings', () => {
     localStorage.setItem('vipr.onboarding.state', '{"status":"in_progress"}')
     localStorage.setItem('external.key', 'preserve-me')
 
-    mockDialogCreate.mockImplementationOnce(() => ({
-      onOk: vi.fn((callback: () => void | Promise<void>) => {
-        return Promise.resolve(callback()).then(() => undefined)
-      }),
-    }))
-
     const wrapper = createWrapper()
+    await wrapper.find('[data-testid="settings-review-reset-btn"]').trigger('click')
+    await wrapper.find('[data-testid="settings-reset-confirm-checkbox"] input').trigger('change')
     await wrapper.find('[data-testid="settings-delete-data-btn"]').trigger('click')
     await flushPromises()
 

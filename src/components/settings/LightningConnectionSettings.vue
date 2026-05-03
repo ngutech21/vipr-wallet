@@ -3,6 +3,8 @@
     icon="wallet"
     label="Lightning"
     caption="Connect wallet"
+    :status="connectionStatusLabel"
+    :status-tone="connectionStatusTone"
     compact
     data-testid="settings-bitcoin-wallet-section"
   >
@@ -52,7 +54,7 @@ defineOptions({
   name: 'LightningConnectionSettings',
 })
 
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import SettingsSection from 'src/components/settings/SettingsSection.vue'
 import {
   getConnectorConfig,
@@ -62,6 +64,11 @@ import {
 } from '@getalby/bitcoin-connect'
 
 const connectedProvider = ref('')
+const hasConnectedProvider = computed(() => connectedProvider.value !== '')
+const connectionStatusLabel = computed(() =>
+  hasConnectedProvider.value ? 'Connected' : 'Not connected',
+)
+const connectionStatusTone = computed(() => (hasConnectedProvider.value ? 'positive' : 'neutral'))
 
 function updateConnectedProvider() {
   const config = getConnectorConfig()
