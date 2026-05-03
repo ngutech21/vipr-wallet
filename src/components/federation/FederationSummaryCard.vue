@@ -1,19 +1,12 @@
 <template>
-  <q-card
-    flat
-    class="federation-card federation-card--summary vipr-surface-card vipr-surface-card--summary"
-  >
-    <q-card-section class="summary-layout">
-      <div class="summary-logo">
-        <q-avatar v-if="federation?.metadata?.iconUrl" size="78px">
-          <q-img :src="federation.metadata.iconUrl" loading="eager" no-spinner no-transition />
-        </q-avatar>
-        <template v-else>
-          <q-avatar color="grey-3" text-color="grey-7" class="logo">
-            <q-icon name="account_balance" />
-          </q-avatar>
-        </template>
-      </div>
+  <section class="federation-profile">
+    <div class="summary-layout">
+      <q-avatar v-if="federation?.metadata?.iconUrl" class="summary-logo">
+        <q-img :src="federation.metadata.iconUrl" loading="eager" no-spinner no-transition />
+      </q-avatar>
+      <q-avatar v-else class="summary-logo summary-logo--fallback">
+        <q-icon name="account_balance" />
+      </q-avatar>
 
       <div class="summary-body">
         <div class="summary-title-row">
@@ -36,8 +29,13 @@
           </q-btn>
         </div>
 
-        <div class="summary-currency vipr-caption">
-          {{ federation?.metadata?.defaultCurrency }}
+        <div class="summary-meta-line">
+          <span v-if="federation?.guardians?.length != null">
+            {{ federation.guardians.length }} guardians
+          </span>
+          <span v-if="gatewayCountLabel">
+            {{ gatewayCountLabel }}
+          </span>
         </div>
 
         <div class="summary-modules">
@@ -45,14 +43,14 @@
             v-for="module in federation?.modules"
             :key="module.kind"
             size="sm"
-            class="vipr-chip vipr-chip--positive summary-module-chip"
+            class="vipr-chip summary-module-chip"
           >
             {{ module.kind }}
           </q-chip>
         </div>
       </div>
-    </q-card-section>
-  </q-card>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -65,11 +63,18 @@ defineOptions({
 defineProps<{
   federation?: Federation | undefined
   observerUrl: string
+  gatewayCountLabel?: string
 }>()
 </script>
 
 <style scoped>
+.federation-profile {
+  min-width: 0;
+  padding: var(--vipr-space-3) 0 var(--vipr-space-4);
+}
+
 .summary-layout {
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: var(--vipr-federation-detail-summary-gap);
@@ -77,6 +82,13 @@ defineProps<{
 
 .summary-logo {
   flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  background: rgba(54, 164, 255, 0.08);
+}
+
+.summary-logo--fallback {
+  color: var(--vipr-text-secondary);
 }
 
 .summary-body {
@@ -92,7 +104,7 @@ defineProps<{
 
 .summary-title {
   color: var(--vipr-text-primary);
-  font-size: var(--vipr-font-size-summary-title);
+  font-size: 1.22rem;
   font-weight: 700;
   line-height: var(--vipr-line-height-tight);
   letter-spacing: 0;
@@ -102,19 +114,40 @@ defineProps<{
   color: var(--vipr-text-secondary);
 }
 
-.summary-currency {
+.summary-meta-line {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vipr-space-2);
   margin-top: var(--vipr-federation-detail-currency-gap);
+  color: var(--vipr-text-muted);
+  font-size: var(--vipr-font-size-caption);
+  line-height: var(--vipr-line-height-tight);
+}
+
+.summary-meta-line span + span::before {
+  content: '·';
+  margin-right: var(--vipr-space-2);
+  color: var(--vipr-text-faint);
 }
 
 .summary-modules {
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--vipr-federation-detail-modules-gap);
-  margin-top: var(--vipr-federation-detail-modules-top-space);
+  gap: var(--vipr-space-1);
+  margin-top: var(--vipr-space-3);
 }
 
 .summary-module-chip {
   margin: 0;
+  background: var(--vipr-color-input-bg);
+  color: var(--vipr-text-secondary);
+  font-weight: 500;
+}
+
+.summary-module-chip :deep(.q-chip__content) {
+  padding: 0 var(--vipr-space-2);
 }
 
 @media (max-width: 599px) {
@@ -123,7 +156,21 @@ defineProps<{
   }
 
   .summary-title {
-    font-size: var(--vipr-federation-detail-title-font-size-mobile);
+    font-size: 1.15rem;
+  }
+
+  .summary-logo {
+    width: 56px;
+    height: 56px;
+  }
+
+  .summary-meta-line {
+    font-size: var(--vipr-font-size-label);
+  }
+
+  .summary-module-chip {
+    height: 22px;
+    font-size: 0.74rem;
   }
 }
 </style>

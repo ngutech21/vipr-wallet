@@ -1,14 +1,26 @@
 <template>
   <div>
-    <div v-if="showHeader" class="guardian-header vipr-section-title">
-      Guardians
+    <button
+      v-if="showHeader"
+      type="button"
+      class="guardian-header"
+      :aria-expanded="isExpanded"
+      @click="isExpanded = !isExpanded"
+    >
+      <q-icon name="shield" class="guardian-header__icon" />
+      <span class="guardian-header__title">Guardians</span>
       <span class="guardian-count">{{ guardianCountLabel }}</span>
-    </div>
+      <q-icon
+        name="expand_more"
+        class="guardian-header__chevron"
+        :class="{ 'is-open': isExpanded }"
+      />
+    </button>
 
-    <q-card flat class="guardian-card vipr-surface-card vipr-surface-card--subtle">
-      <q-card-section v-if="guardians.length === 0" class="vipr-caption">
+    <div v-show="isExpanded" class="guardian-card">
+      <div v-if="guardians.length === 0" class="vipr-caption guardian-empty">
         No guardian information available.
-      </q-card-section>
+      </div>
 
       <q-list v-else separator class="guardian-list">
         <q-item v-for="guardian in guardians" :key="guardian.peerId" class="guardian-row">
@@ -28,12 +40,12 @@
           </q-item-section>
         </q-item>
       </q-list>
-    </q-card>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { FederationGuardian } from 'src/types/federation'
 
 const props = withDefaults(
@@ -45,6 +57,8 @@ const props = withDefaults(
     showHeader: true,
   },
 )
+
+const isExpanded = ref(true)
 
 const guardianCountLabel = computed(() => {
   const count = props.guardians.length
@@ -64,16 +78,59 @@ function guardianLabel(guardian: FederationGuardian): string {
 }
 
 .guardian-header {
-  margin-bottom: var(--vipr-space-1);
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--vipr-space-2);
+  padding: var(--vipr-space-2) 0;
+  border: 0;
+  border-bottom: 1px solid var(--vipr-detail-separator);
+  background: transparent;
+  color: var(--vipr-text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.guardian-header__icon {
+  color: var(--vipr-text-muted);
+  font-size: 1rem;
+}
+
+.guardian-header__title {
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-body);
+  font-weight: 700;
+  line-height: var(--vipr-line-height-tight);
+}
+
+.guardian-header__chevron {
+  color: var(--vipr-text-secondary);
+  transform: rotate(-90deg);
+  transition: transform 160ms ease-out;
+}
+
+.guardian-header__chevron.is-open {
+  transform: rotate(180deg);
 }
 
 .guardian-list {
   background: transparent;
 }
 
+.guardian-card {
+  border-bottom: 1px solid var(--vipr-detail-separator);
+}
+
+.guardian-empty {
+  padding: var(--vipr-space-4) 0;
+}
+
 .guardian-row {
-  padding-top: var(--vipr-row-padding-y);
-  padding-bottom: var(--vipr-row-padding-y);
+  min-height: 0;
+  padding-top: var(--vipr-space-3);
+  padding-bottom: var(--vipr-space-3);
 }
 
 .guardian-list :deep(.q-item) {
@@ -86,19 +143,26 @@ function guardianLabel(guardian: FederationGuardian): string {
 }
 
 .guardian-avatar {
+  width: 38px;
+  height: 38px;
   background: var(--vipr-row-icon-bg-subtle);
   border: 1px solid var(--vipr-surface-card-border-subtle);
   color: var(--vipr-text-secondary);
+  font-size: var(--vipr-font-size-body);
 }
 
 .guardian-title {
   color: var(--vipr-text-primary);
-  font-size: var(--vipr-font-size-body);
+  font-size: var(--vipr-font-size-caption);
   font-weight: 600;
+  line-height: var(--vipr-line-height-tight);
 }
 
 .guardian-url {
+  margin-top: var(--vipr-space-1);
   color: var(--vipr-text-soft);
+  font-size: var(--vipr-font-size-label);
+  line-height: var(--vipr-line-height-tight);
   word-break: break-all;
 }
 </style>

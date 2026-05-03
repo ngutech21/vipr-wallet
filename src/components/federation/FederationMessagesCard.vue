@@ -1,30 +1,17 @@
 <template>
   <template v-if="hasMessages">
-    <q-card flat class="federation-card vipr-surface-card vipr-surface-card--subtle">
-      <q-card-section>
-        <div class="vipr-detail-list">
-          <template v-if="metadata?.welcomeMessage">
-            <div class="vipr-detail-row vipr-detail-row--block">
-              <div class="vipr-detail-label">Welcome Message</div>
-              <div class="vipr-body federation-message-copy">
-                {{ metadata.welcomeMessage }}
-              </div>
-            </div>
-          </template>
-          <template v-if="metadata?.popupCountdownMessage">
-            <div class="vipr-detail-row vipr-detail-row--block">
-              <div class="vipr-detail-label">End Message</div>
-              <div class="vipr-body federation-message-copy">
-                {{ metadata.popupCountdownMessage }}
-              </div>
-              <div v-if="metadata?.popupEndTimestamp" class="vipr-caption federation-message-copy">
-                Ends: {{ formatDate(metadata.popupEndTimestamp) }}
-              </div>
-            </div>
-          </template>
+    <section class="federation-notice">
+      <q-icon name="info" class="federation-notice__icon" />
+      <div class="federation-notice__body">
+        <div class="federation-notice__title">Notice</div>
+        <div v-if="metadata?.welcomeMessage" class="federation-notice__copy">
+          {{ shortWelcomeMessage }}
         </div>
-      </q-card-section>
-    </q-card>
+        <div v-if="metadata?.popupEndTimestamp" class="federation-notice__date">
+          Ends {{ formatDate(metadata.popupEndTimestamp) }}
+        </div>
+      </div>
+    </section>
   </template>
 </template>
 
@@ -52,6 +39,12 @@ const hasMessages = computed(() => {
   )
 })
 
+const shortWelcomeMessage = computed(() => {
+  const message = props.metadata?.welcomeMessage ?? ''
+  const [firstSentence] = message.split(/(?<=[.!?])\s+/u)
+  return firstSentence !== '' ? firstSentence : message
+})
+
 function formatDate(timestamp: number) {
   try {
     return new Date(timestamp * 1000).toLocaleString()
@@ -63,7 +56,70 @@ function formatDate(timestamp: number) {
 </script>
 
 <style scoped>
-.federation-message-copy {
-  margin-top: var(--vipr-federation-detail-message-gap);
+.federation-notice {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--vipr-space-2);
+  padding: var(--vipr-space-3);
+  border: 1px solid var(--vipr-surface-card-border-subtle);
+  border-radius: var(--vipr-radius-md);
+  background: var(--vipr-surface-card-bg-subtle);
+  box-shadow: var(--vipr-surface-card-shadow-subtle);
+  overflow: hidden;
+}
+
+.federation-notice::before {
+  content: '';
+  position: absolute;
+  top: var(--vipr-space-2);
+  bottom: var(--vipr-space-2);
+  left: 0;
+  width: 1px;
+  background: var(--vipr-color-primary-accent);
+}
+
+.federation-notice__icon {
+  margin-top: 1px;
+  color: var(--vipr-color-primary-accent);
+  font-size: 1rem;
+}
+
+.federation-notice__body {
+  min-width: 0;
+  display: grid;
+  gap: var(--vipr-space-1);
+}
+
+.federation-notice__title {
+  color: var(--vipr-color-primary-accent);
+  font-size: var(--vipr-font-size-caption);
+  font-weight: 700;
+  line-height: var(--vipr-line-height-tight);
+}
+
+.federation-notice__copy,
+.federation-notice__date {
+  max-width: 58ch;
+  color: var(--vipr-text-secondary);
+  font-size: var(--vipr-font-size-caption);
+  line-height: var(--vipr-line-height-body);
+}
+
+.federation-notice__date {
+  color: var(--vipr-text-muted);
+  font-size: var(--vipr-font-size-caption);
+}
+
+@media (max-width: 480px) {
+  .federation-notice {
+    padding: var(--vipr-space-3);
+    border-radius: var(--vipr-radius-sm);
+  }
+
+  .federation-notice__copy,
+  .federation-notice__date {
+    font-size: var(--vipr-font-size-caption);
+  }
 }
 </style>

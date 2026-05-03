@@ -19,46 +19,60 @@ meta:
       />
 
       <div class="federation-details-content">
-        <FederationSummaryCard :federation="federation" :observer-url="observerUrl" />
-
-        <FederationMessagesCard
-          :metadata="federation?.metadata"
-          :federation-id="federation?.federationId"
+        <FederationSummaryCard
+          :federation="federation"
+          :observer-url="observerUrl"
+          :gateway-count-label="gatewayCountLabel"
         />
 
-        <FederationMetadataCard :metadata="federation?.metadata" />
-
-        <FederationInviteCard :invite-code="inviteCode" :federation-title="federation?.title" />
-
-        <div class="federation-trust-section">
-          <FederationGuardians :guardians="federation?.guardians ?? []" class="federation-card" />
-
-          <FederationGatewayList
-            :gateways="walletGateways"
-            :is-loading="isLoadingWalletGateways"
-            :error="walletGatewayError"
-            :has-loaded="hasLoadedWalletGateways"
+        <div class="federation-section-stack">
+          <FederationMessagesCard
+            :metadata="federation?.metadata"
+            :federation-id="federation?.federationId"
           />
+
+          <FederationMetadataCard :metadata="federation?.metadata" />
+
+          <FederationInviteCard :invite-code="inviteCode" :federation-title="federation?.title" />
+
+          <section class="federation-open-section federation-trust-section">
+            <div class="federation-section-header">
+              <div class="federation-section-heading">Guardians & Lightning gateways</div>
+            </div>
+            <FederationGuardians :guardians="federation?.guardians ?? []" :show-header="true" />
+
+            <FederationGatewayList
+              :gateways="walletGateways"
+              :is-loading="isLoadingWalletGateways"
+              :error="walletGatewayError"
+              :has-loaded="hasLoadedWalletGateways"
+            />
+          </section>
+
+          <section class="federation-open-section federation-advanced-section">
+            <div class="federation-section-header">
+              <div class="federation-section-heading">Advanced</div>
+            </div>
+            <FederationUtxos
+              :utxos="spendableUtxos"
+              :is-loading="isLoadingUtxos"
+              :error="utxoError"
+              :network="federation?.network ?? null"
+            />
+
+            <FederationMetaConsensusCard
+              v-if="
+                showRawMetaConsensusCard &&
+                (isLoadingMetaConsensus || metaConsensusError != null || metaConsensusValue != null)
+              "
+              :metadata="metaConsensusValue"
+              :is-loading="isLoadingMetaConsensus"
+              :error="metaConsensusError"
+            />
+          </section>
+
+          <LeaveFederationCard @leave="leaveFederation" />
         </div>
-
-        <FederationUtxos
-          :utxos="spendableUtxos"
-          :is-loading="isLoadingUtxos"
-          :error="utxoError"
-          :network="federation?.network ?? null"
-        />
-
-        <LeaveFederationCard @leave="leaveFederation" />
-
-        <FederationMetaConsensusCard
-          v-if="
-            showRawMetaConsensusCard &&
-            (isLoadingMetaConsensus || metaConsensusError != null || metaConsensusValue != null)
-          "
-          :metadata="metaConsensusValue"
-          :is-loading="isLoadingMetaConsensus"
-          :error="metaConsensusError"
-        />
       </div>
     </q-page>
   </transition>
@@ -120,6 +134,11 @@ const observerUrl = computed(() => {
   return federationId !== ''
     ? `https://observer.fedimint.org/federations/${encodeURIComponent(federationId)}`
     : ''
+})
+
+const gatewayCountLabel = computed(() => {
+  const count = walletGateways.value.length
+  return count > 0 ? `${count} gateways` : ''
 })
 
 watch(
@@ -234,23 +253,65 @@ async function leaveFederation() {
 </script>
 <style scoped>
 .federation-details-content {
+  box-sizing: border-box;
+  width: 100%;
   padding: var(--vipr-federation-detail-content-padding);
+  max-width: min(var(--vipr-width-mobile), 100vw);
+  margin: 0 auto;
+  overflow-x: clip;
+}
+
+.federation-section-stack {
+  min-width: 0;
+  display: grid;
+  gap: var(--vipr-space-5);
+  margin-top: var(--vipr-space-5);
 }
 
 .federation-details-content :deep(.federation-card) {
-  margin-bottom: var(--vipr-federation-detail-card-gap);
+  margin-bottom: 0;
 }
 
 .federation-details-content :deep(.federation-section-title) {
-  margin-bottom: var(--vipr-federation-detail-section-title-gap);
+  margin-bottom: var(--vipr-space-2);
 }
 
-.federation-trust-section {
-  margin-bottom: var(--vipr-federation-detail-card-gap);
+.federation-open-section,
+.federation-trust-section,
+.federation-advanced-section {
+  min-width: 0;
+  display: grid;
+  gap: var(--vipr-space-3);
+}
+
+.federation-details-page {
+  overflow-x: clip;
+}
+
+.federation-section-header {
+  display: grid;
+  gap: var(--vipr-space-1);
+}
+
+.federation-section-heading {
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-caption);
+  font-weight: 700;
+  line-height: var(--vipr-line-height-tight);
+}
+
+.federation-section-caption {
+  color: var(--vipr-text-muted);
+  font-size: var(--vipr-font-size-label);
+  line-height: var(--vipr-line-height-tight);
 }
 
 .federation-trust-section :deep(.federation-card),
 .federation-trust-section :deep(.federation-gateways) {
-  margin-bottom: var(--vipr-space-2);
+  margin-bottom: 0;
+}
+
+.federation-advanced-section :deep(.federation-card) {
+  margin-bottom: 0;
 }
 </style>

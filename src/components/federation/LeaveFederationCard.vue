@@ -1,19 +1,19 @@
 <template>
-  <q-card flat class="federation-card vipr-surface-card vipr-surface-card--subtle">
-    <q-card-section>
-      <div class="leave-action">
-        <q-btn
-          label="Leave Federation"
-          color="negative"
-          outline
-          icon="logout"
-          class="leave-action__button vipr-btn vipr-btn--md"
-          data-testid="federation-details-leave-btn"
-          @click="confirmLeave = true"
-        />
-      </div>
-    </q-card-section>
-  </q-card>
+  <section class="leave-section">
+    <div class="leave-section__title">Danger zone</div>
+    <div class="leave-section__copy">
+      Leaving removes local wallet data for this federation from this device.
+    </div>
+    <q-btn
+      label="Leave Federation"
+      color="negative"
+      outline
+      icon="logout"
+      class="leave-action__button vipr-btn vipr-btn--md"
+      data-testid="federation-details-leave-btn"
+      @click="confirmLeave = true"
+    />
+  </section>
 
   <q-dialog v-model="confirmLeave">
     <q-card>
@@ -62,8 +62,23 @@ const confirmLeave = ref(false)
 </script>
 
 <style scoped>
-.leave-action {
-  padding: var(--vipr-federation-detail-action-padding);
+.leave-section {
+  display: grid;
+  gap: var(--vipr-space-3);
+  padding-top: var(--vipr-space-4);
+  border-top: 1px solid rgba(255, 67, 99, 0.28);
+}
+
+.leave-section__title {
+  color: var(--vipr-color-negative);
+  font-size: var(--vipr-font-size-body);
+  font-weight: 700;
+}
+
+.leave-section__copy {
+  color: var(--vipr-text-muted);
+  font-size: var(--vipr-font-size-caption);
+  line-height: var(--vipr-line-height-body);
 }
 
 .leave-action__button {

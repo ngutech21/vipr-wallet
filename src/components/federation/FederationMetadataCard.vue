@@ -1,62 +1,47 @@
 <template>
-  <template v-if="factItems.length > 0">
-    <div class="federation-facts-grid">
-      <q-card
-        v-for="fact in factItems"
-        :key="fact.label"
-        flat
-        class="federation-fact-card vipr-surface-card vipr-surface-card--subtle"
-      >
-        <q-card-section class="federation-fact-card__section">
-          <div class="federation-fact-card__label">{{ fact.label }}</div>
-          <div class="federation-fact-card__value">{{ fact.value }}</div>
-          <div v-if="fact.caption" class="federation-fact-card__caption">{{ fact.caption }}</div>
-        </q-card-section>
-      </q-card>
-    </div>
-  </template>
+  <section v-if="factItems.length > 0 || hasLinkItems" class="federation-open-section">
+    <div class="federation-open-section__title">Limits & terms</div>
+    <div class="vipr-detail-list federation-receipt-list">
+      <div v-for="fact in factItems" :key="fact.label" class="vipr-detail-row">
+        <div class="vipr-detail-label">{{ fact.label }}</div>
+        <div class="vipr-detail-value federation-receipt-list__value">{{ fact.value }}</div>
+      </div>
 
-  <template v-if="hasLinkItems">
-    <q-card flat class="federation-card vipr-surface-card vipr-surface-card--subtle">
-      <q-card-section>
-        <div class="vipr-detail-list">
-          <div v-if="metadata?.tosUrl" class="vipr-detail-row vipr-detail-row--block">
-            <div class="vipr-detail-label">Terms of Service</div>
-            <a
-              class="vipr-detail-value vipr-detail-value--mono federation-metadata-url federation-metadata-link"
-              :href="metadata.tosUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              data-testid="federation-details-tos-link"
-            >
-              {{ metadata.tosUrl }}
-            </a>
-          </div>
+      <div v-if="metadata?.tosUrl" class="vipr-detail-row">
+        <div class="vipr-detail-label">Terms</div>
+        <a
+          class="vipr-detail-value federation-metadata-url federation-metadata-link"
+          :href="metadata.tosUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="federation-details-tos-link"
+        >
+          {{ metadata.tosUrl }}
+        </a>
+      </div>
 
-          <div v-if="metadata?.recurringdApi" class="vipr-detail-row vipr-detail-row--block">
-            <div class="vipr-detail-label">Recurringd API</div>
-            <div class="vipr-detail-value vipr-detail-value--mono federation-metadata-url">
-              {{ metadata.recurringdApi }}
-            </div>
-          </div>
-
-          <div v-if="metadata?.lnaddressApi" class="vipr-detail-row vipr-detail-row--block">
-            <div class="vipr-detail-label">Lightning Address API</div>
-            <div class="vipr-detail-value vipr-detail-value--mono federation-metadata-url">
-              {{ metadata.lnaddressApi }}
-            </div>
-          </div>
-
-          <div v-if="metadata?.federationSuccessor" class="vipr-detail-row vipr-detail-row--block">
-            <div class="vipr-detail-label">Successor Federation</div>
-            <div class="vipr-detail-value vipr-detail-value--mono federation-metadata-url">
-              {{ metadata.federationSuccessor }}
-            </div>
-          </div>
+      <div v-if="metadata?.recurringdApi" class="vipr-detail-row vipr-detail-row--block">
+        <div class="vipr-detail-label">Recurringd API</div>
+        <div class="vipr-detail-value vipr-detail-value--mono federation-metadata-url">
+          {{ metadata.recurringdApi }}
         </div>
-      </q-card-section>
-    </q-card>
-  </template>
+      </div>
+
+      <div v-if="metadata?.lnaddressApi" class="vipr-detail-row vipr-detail-row--block">
+        <div class="vipr-detail-label">Lightning Address API</div>
+        <div class="vipr-detail-value vipr-detail-value--mono federation-metadata-url">
+          {{ metadata.lnaddressApi }}
+        </div>
+      </div>
+
+      <div v-if="metadata?.federationSuccessor" class="vipr-detail-row vipr-detail-row--block">
+        <div class="vipr-detail-label">Successor Federation</div>
+        <div class="vipr-detail-value vipr-detail-value--mono federation-metadata-url">
+          {{ metadata.federationSuccessor }}
+        </div>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -138,6 +123,22 @@ function formatTimestamp(timestamp: number): string {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--vipr-space-2);
   margin-bottom: var(--vipr-federation-detail-card-gap);
+}
+
+.federation-open-section {
+  display: grid;
+  gap: var(--vipr-space-2);
+}
+
+.federation-open-section__title {
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-body);
+  font-weight: 700;
+  line-height: var(--vipr-line-height-tight);
+}
+
+.federation-receipt-list__value {
+  text-align: right;
 }
 
 .federation-fact-card {

@@ -1100,9 +1100,7 @@ html[data-e2e='1'] *::after {
   font-size: 1rem;
 }
 
-.federation-details-page .federation-card,
-.guardian-card,
-.utxo-card {
+.federation-details-page .federation-card {
   background: var(--vipr-surface-card-bg-subtle);
   border: 1px solid var(--vipr-surface-card-border-subtle);
   border-radius: var(--vipr-radius-card);
@@ -1600,6 +1598,22 @@ html[data-e2e='1'] *::after {
   grid-template-columns:
     minmax(var(--vipr-qr-invite-column-min), var(--vipr-qr-invite-column-max))
     minmax(0, 1fr);
+}
+
+.federation-details-page .federation-invite-card {
+  margin-bottom: 0;
+  border-color: var(--vipr-surface-card-border-subtle);
+  border-radius: var(--vipr-radius-lg);
+  background: var(--vipr-surface-card-bg-subtle);
+  box-shadow: var(--vipr-surface-card-shadow-subtle);
+}
+
+.federation-details-page .federation-invite-card .vipr-qr-surface {
+  border-radius: var(--vipr-radius-sm);
+}
+
+.federation-details-page .federation-invite-card .vipr-copy-description {
+  max-width: 24ch;
 }
 
 .vipr-qr-card--actions-only .vipr-copy-section {

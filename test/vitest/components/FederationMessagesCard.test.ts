@@ -18,6 +18,7 @@ describe('FederationMessagesCard', () => {
         stubs: {
           'q-card': SlotStub,
           'q-card-section': SlotStub,
+          'q-icon': true,
         },
       },
     })
@@ -38,14 +39,14 @@ describe('FederationMessagesCard', () => {
         stubs: {
           'q-card': SlotStub,
           'q-card-section': SlotStub,
+          'q-icon': true,
         },
       },
     })
 
-    expect(wrapper.text()).toContain('Welcome Message')
+    expect(wrapper.text()).toContain('Notice')
     expect(wrapper.text()).toContain('Welcome')
-    expect(wrapper.text()).toContain('End Message')
-    expect(wrapper.text()).toContain('Migration soon')
-    expect(wrapper.text()).toContain('Ends:')
+    expect(wrapper.text()).toContain('End')
+    expect(wrapper.text()).toContain('Ends')
   })
 })
