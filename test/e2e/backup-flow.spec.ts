@@ -15,11 +15,9 @@ test.describe('Backup Flow', () => {
 
     await navigateViaFooterTab(page, 'nav-settings', 'settings-page', /#\/settings\/?$/)
 
-    await page.getByTestId('settings-personal-backup-section').click()
-
-    const createBackupButton = page.getByTestId('settings-create-backup-btn')
-    await expect(createBackupButton).toBeVisible()
-    await createBackupButton.click()
+    const backupSection = page.getByTestId('settings-personal-backup-section')
+    await expect(backupSection).toBeVisible()
+    await backupSection.click()
 
     await expect(page).toHaveURL(/#\/settings\/backup$/)
     await expect(page.getByTestId('backup-intro-page')).toBeVisible()
