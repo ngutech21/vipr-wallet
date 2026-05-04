@@ -8,6 +8,7 @@ const mockWaitForPay = vi.fn()
 const mockSubscribeInternalPayment = vi.fn()
 const mockCreateInvoice = vi.fn()
 const mockWaitForReceive = vi.fn()
+const mockAssertCanSpendDuringRecovery = vi.fn()
 
 vi.mock('src/stores/wallet', () => ({
   useWalletStore: vi.fn(() => ({
@@ -21,6 +22,7 @@ vi.mock('src/stores/wallet', () => ({
       },
     },
     updateBalance: mockUpdateBalance,
+    assertCanSpendDuringRecovery: mockAssertCanSpendDuringRecovery,
   })),
 }))
 
@@ -38,6 +40,7 @@ vi.mock('quasar', () => ({
 describe('useLightningPayment', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockAssertCanSpendDuringRecovery.mockReset()
   })
 
   afterEach(() => {
@@ -66,9 +69,24 @@ describe('useLightningPayment', () => {
       expect(result.success).toBe(true)
       expect(result.amountSats).toBe(1000)
       expect(result.fee).toBe(100)
+      expect(mockAssertCanSpendDuringRecovery).toHaveBeenCalledTimes(1)
       expect(mockPayInvoice).toHaveBeenCalledWith('lnbc1000n1...')
       expect(mockWaitForPay).toHaveBeenCalledWith('ln-op-123')
       expect(mockUpdateBalance).toHaveBeenCalled()
+    })
+
+    it('should block payment while wallet recovery is running', async () => {
+      mockAssertCanSpendDuringRecovery.mockImplementation(() => {
+        throw new Error('Wallet recovery is still running')
+      })
+
+      const { payInvoice } = useLightningPayment()
+
+      const result = await payInvoice('lnbc1000n1...', 1000)
+
+      expect(result.success).toBe(false)
+      expect(result.error?.message).toContain('Wallet recovery is still running')
+      expect(mockPayInvoice).not.toHaveBeenCalled()
     })
 
     it('waits for internal payments via the internal payment subscription', async () => {

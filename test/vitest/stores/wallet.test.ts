@@ -56,6 +56,11 @@ function createMetaModule() {
   }
 }
 
+type RecoveryProgressEvent = {
+  module_id: number
+  progress: unknown
+}
+
 function createWalletMock(balanceMsats: number) {
   return {
     isOpen: vi.fn(() => true),
@@ -82,6 +87,16 @@ function createWalletMock(balanceMsats: number) {
     wallet: {
       getWalletSummary: vi.fn(),
       sendOnchain: vi.fn(),
+    },
+    recovery: {
+      hasPendingRecoveries: vi.fn(() => Promise.resolve(false)),
+      waitForAllRecoveries: vi.fn(() => Promise.resolve()),
+      subscribeToRecoveryProgress: vi.fn(
+        (
+          _onSuccess: (progress: RecoveryProgressEvent) => void,
+          _onError: (error: string) => void,
+        ) => vi.fn(),
+      ),
     },
   }
 }
@@ -172,9 +187,31 @@ describe('wallet store', () => {
       walletName: getWalletNameForFederationId(federation.federationId),
       federationId: federation.federationId,
       inviteCode: federation.inviteCode,
+      recoverOnJoin: false,
     })
     expect(walletStore.activeWalletName).toBe(getWalletNameForFederationId(federation.federationId))
     expect(walletStore.balance).toBe(12)
+  })
+
+  it('passes recoverOnJoin to the Fedimint client only when requested', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    const federation = createFederation()
+
+    federationStore.federations = [federation]
+    federationStore.selectedFederationId = federation.federationId
+
+    const wallet = createWalletMock(12_000)
+    fedimintClientMock.ensureWalletOpen.mockResolvedValue(wallet)
+
+    await walletStore.openWallet({ recoverOnJoin: true })
+
+    expect(fedimintClientMock.ensureWalletOpen).toHaveBeenCalledWith({
+      walletName: getWalletNameForFederationId(federation.federationId),
+      federationId: federation.federationId,
+      inviteCode: federation.inviteCode,
+      recoverOnJoin: true,
+    })
   })
 
   it('serializes concurrent wallet opens so only one ensureWalletOpen runs at a time', async () => {
@@ -211,11 +248,13 @@ describe('wallet store', () => {
       walletName: getWalletNameForFederationId(firstFederation.federationId),
       federationId: firstFederation.federationId,
       inviteCode: firstFederation.inviteCode,
+      recoverOnJoin: false,
     })
     expect(fedimintClientMock.ensureWalletOpen).toHaveBeenNthCalledWith(2, {
       walletName: getWalletNameForFederationId(secondFederation.federationId),
       federationId: secondFederation.federationId,
       inviteCode: secondFederation.inviteCode,
+      recoverOnJoin: false,
     })
     expect(walletStore.activeWalletName).toBe(
       getWalletNameForFederationId(secondFederation.federationId),
@@ -257,6 +296,78 @@ describe('wallet store', () => {
       iconUrl: 'https://meta.example/icon.png',
       maxInvoiceMsats: 75_000,
     })
+  })
+
+  it('starts recovery monitoring after opening a federation with pending recoveries', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    const federation = createFederation()
+    const recoveryDone = createDeferred<void>()
+    const unsubscribe = vi.fn()
+
+    federationStore.federations = [federation]
+    federationStore.selectedFederationId = federation.federationId
+
+    const wallet = createWalletMock(12_000)
+    wallet.balance.getBalance = vi.fn().mockResolvedValueOnce(12_000).mockResolvedValueOnce(34_000)
+    wallet.recovery.hasPendingRecoveries.mockResolvedValue(true)
+    wallet.recovery.waitForAllRecoveries.mockReturnValue(recoveryDone.promise)
+    wallet.recovery.subscribeToRecoveryProgress.mockImplementation((onSuccess) => {
+      onSuccess({
+        module_id: 0,
+        progress: {
+          complete: 1,
+          total: 2,
+        },
+      })
+      return unsubscribe
+    })
+    fedimintClientMock.ensureWalletOpen.mockResolvedValue(wallet)
+
+    await walletStore.openWallet({ expectRecovery: true })
+
+    await vi.waitFor(() => {
+      expect(wallet.recovery.hasPendingRecoveries).toHaveBeenCalledTimes(1)
+      expect(walletStore.recoveryInProgress).toBe(true)
+    })
+    expect(wallet.recovery.subscribeToRecoveryProgress).toHaveBeenCalledTimes(1)
+    expect(walletStore.recoveryStatusByFederationId[federation.federationId]).toBe('restoring')
+    expect(walletStore.recoveryProgressByModule[0]).toEqual({
+      complete: 1,
+      total: 2,
+    })
+
+    recoveryDone.resolve()
+
+    await vi.waitFor(() => {
+      expect(walletStore.recoveryInProgress).toBe(false)
+      expect(walletStore.recoveryStatusByFederationId[federation.federationId]).toBe('restored')
+    })
+    expect(walletStore.balance).toBe(34)
+    expect(walletStore.transactionsRefreshVersion).toBe(1)
+    expect(unsubscribe).toHaveBeenCalledTimes(1)
+  })
+
+  it('marks expected recovery as no backup when the federation has no pending recoveries', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    const federation = createFederation()
+
+    federationStore.federations = [federation]
+    federationStore.selectedFederationId = federation.federationId
+
+    const wallet = createWalletMock(12_000)
+    wallet.recovery.hasPendingRecoveries.mockResolvedValue(false)
+    fedimintClientMock.ensureWalletOpen.mockResolvedValue(wallet)
+
+    await walletStore.openWallet({ expectRecovery: true })
+
+    await vi.waitFor(() => {
+      expect(wallet.recovery.hasPendingRecoveries).toHaveBeenCalledTimes(1)
+      expect(walletStore.recoveryStatusByFederationId[federation.federationId]).toBe('no-backup')
+    })
+    expect(walletStore.recoveryInProgress).toBe(false)
+    expect(wallet.recovery.waitForAllRecoveries).not.toHaveBeenCalled()
   })
 
   it('previews a federation with normalized config and legacy metadata', async () => {
@@ -522,6 +633,18 @@ describe('wallet store', () => {
     expect(wallet.mint.spendNotes).not.toHaveBeenCalled()
   })
 
+  it('spendEcashOffline blocks sends while recovery is running', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(21_000)
+    walletStore.wallet = wallet as never
+    walletStore.recoveryInProgress = true
+
+    await expect(walletStore.spendEcashOffline(1)).rejects.toThrow(
+      'Wallet recovery is still running',
+    )
+    expect(wallet.mint.spendNotes).not.toHaveBeenCalled()
+  })
+
   it('sendOnchain submits a withdrawal and refreshes balance', async () => {
     const walletStore = useWalletStore()
     const wallet = createWalletMock(45_000)
@@ -550,6 +673,18 @@ describe('wallet store', () => {
     walletStore.wallet = wallet as never
 
     await expect(walletStore.sendOnchain('   ', 21)).rejects.toThrow('Bitcoin address is required')
+    expect(wallet.wallet.sendOnchain).not.toHaveBeenCalled()
+  })
+
+  it('sendOnchain blocks sends while recovery is running', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(45_000)
+    walletStore.wallet = wallet as never
+    walletStore.recoveryInProgress = true
+
+    await expect(
+      walletStore.sendOnchain('bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', 1),
+    ).rejects.toThrow('Wallet recovery is still running')
     expect(wallet.wallet.sendOnchain).not.toHaveBeenCalled()
   })
 

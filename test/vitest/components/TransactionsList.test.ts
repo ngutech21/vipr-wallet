@@ -12,9 +12,15 @@ import TransactionsList from 'src/components/TransactionsList.vue'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockGetTransactionsPage = vi.hoisted(() => vi.fn())
+const walletState = vi.hoisted(() => ({
+  recoveryInProgress: false,
+  transactionsRefreshVersion: 0,
+  getTransactionsPage: mockGetTransactionsPage,
+}))
 const federationState = vi.hoisted(() => ({
   selectedFederationId: 'fed-1',
 }))
+const walletStore = reactive(walletState)
 const federationStore = reactive(federationState)
 
 vi.mock('vue-router', () => ({
@@ -24,9 +30,7 @@ vi.mock('vue-router', () => ({
 }))
 
 vi.mock('src/stores/wallet', () => ({
-  useWalletStore: () => ({
-    getTransactionsPage: mockGetTransactionsPage,
-  }),
+  useWalletStore: () => walletStore,
 }))
 
 vi.mock('src/stores/federation', () => ({
@@ -170,6 +174,8 @@ describe('TransactionsList.vue', () => {
     mockGetTransactionsPage.mockReset()
     mockRouterPush.mockReset()
     federationStore.selectedFederationId = 'fed-1'
+    walletStore.recoveryInProgress = false
+    walletStore.transactionsRefreshVersion = 0
     mockRouterPush.mockResolvedValue(undefined)
   })
 
@@ -332,6 +338,47 @@ describe('TransactionsList.vue', () => {
     })
     expect(wrapper.text()).toContain('wallet-op-fed-2')
     expect(wrapper.text()).not.toContain('ln-op-fed-1')
+  })
+
+  it('reloads the first page when wallet recovery refreshes transactions', async () => {
+    mockGetTransactionsPage
+      .mockResolvedValueOnce(
+        createPageResult([createLightningTransaction({ operationId: 'ln-op-before' })], {
+          hasMore: false,
+        }),
+      )
+      .mockResolvedValueOnce(
+        createPageResult([createWalletTransaction({ operationId: 'wallet-op-after' })], {
+          hasMore: false,
+        }),
+      )
+
+    wrapper = createWrapper('history')
+    await flushPromises()
+    expect(wrapper.text()).toContain('ln-op-before')
+
+    walletStore.transactionsRefreshVersion += 1
+    await flushPromises()
+
+    expect(mockGetTransactionsPage).toHaveBeenNthCalledWith(2, 20, undefined, {
+      visibleOnly: true,
+    })
+    expect(wrapper.text()).toContain('wallet-op-after')
+    expect(wrapper.text()).not.toContain('ln-op-before')
+  })
+
+  it('shows recovery status while the active wallet is restoring and no transactions are loaded', async () => {
+    walletStore.recoveryInProgress = true
+    mockGetTransactionsPage.mockResolvedValue(createPageResult([]))
+
+    wrapper = createWrapper('home')
+    await flushPromises()
+
+    expect(wrapper.find('[data-testid="transactions-card"]').exists()).toBe(true)
+    expect(wrapper.get('[data-testid="transactions-empty-state"]').text()).toContain(
+      'Wallet recovery is running',
+    )
+    expect(wrapper.find('[data-testid="transactions-empty-home"]').exists()).toBe(false)
   })
 
   it('opens transaction details when a row is clicked', async () => {

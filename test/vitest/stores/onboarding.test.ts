@@ -75,4 +75,19 @@ describe('onboarding store', () => {
     expect(localStorage.getItem(LEGACY_ONBOARDING_FLOW_KEY)).toBeNull()
     expect(localStorage.getItem(LEGACY_ONBOARDING_STEP_KEY)).toBeNull()
   })
+
+  it('keeps restore federation step in progress after mnemonic restore', () => {
+    const onboardingStore = useOnboardingStore()
+    onboardingStore.start('restore')
+    onboardingStore.goToStep('restore-federations')
+
+    onboardingStore.normalizeForWalletState({
+      hasMnemonic: true,
+      needsMnemonicBackup: false,
+    })
+
+    expect(onboardingStore.flow).toBe('restore')
+    expect(onboardingStore.step).toBe('restore-federations')
+    expect(onboardingStore.status).toBe('in_progress')
+  })
 })

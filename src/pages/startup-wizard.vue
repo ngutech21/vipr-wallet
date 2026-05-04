@@ -206,6 +206,132 @@ meta:
           </div>
 
           <div
+            v-else-if="currentStep === 'restore-federations'"
+            class="wizard-slide wizard-slide--restore-federations"
+            data-testid="startup-wizard-restore-federations-step"
+          >
+            <div class="wizard-copy wizard-copy--compact">
+              <div class="wizard-kicker">Federations</div>
+              <h2 class="wizard-title">Restore your federations</h2>
+              <p class="wizard-body">
+                Enter one join code for each federation you want to restore. You can skip this and
+                add join codes later.
+              </p>
+            </div>
+
+            <div class="restore-federations-panel">
+              <JoinFederationInviteStep
+                v-if="restoreFederationPreview == null"
+                :invite-code="restoreFederationInviteCode"
+                @update:invite-code="updateRestoreFederationInviteCode"
+                @paste="pasteRestoreFederationFromClipboard"
+              />
+
+              <JoinFederationPreviewStep
+                v-else
+                :federation="restoreFederationPreview"
+                :import-amount-sats="null"
+              />
+
+              <div class="restore-federations-actions">
+                <q-btn
+                  v-if="restoreFederationPreview != null"
+                  flat
+                  no-caps
+                  class="vipr-btn vipr-btn--secondary vipr-btn--lg"
+                  :disable="isRestoringFederation"
+                  data-testid="startup-wizard-restore-federations-preview-back-btn"
+                  @click="backToRestoreFederationInvite"
+                >
+                  Back
+                </q-btn>
+                <q-btn
+                  v-if="restoreFederationPreview == null"
+                  label="Preview federation"
+                  color="primary"
+                  no-caps
+                  unelevated
+                  class="vipr-btn vipr-btn--primary-soft vipr-btn--lg"
+                  :loading="isRestoringFederation"
+                  :disable="isRestoringFederation || restoreFederationInviteCode.trim() === ''"
+                  data-testid="startup-wizard-restore-federations-preview-btn"
+                  @click="loadRestoreFederationPreview"
+                />
+                <q-btn
+                  v-else
+                  label="Restore federation"
+                  color="primary"
+                  no-caps
+                  unelevated
+                  class="vipr-btn vipr-btn--primary-soft vipr-btn--lg"
+                  :loading="isRestoringFederation"
+                  :disable="isRestoringFederation"
+                  data-testid="startup-wizard-restore-federations-submit-btn"
+                  @click="submitRestoreFederation"
+                />
+              </div>
+
+              <div
+                v-if="restoreFederationStatuses.length > 0"
+                class="restore-federation-status-list"
+                data-testid="startup-wizard-restore-federations-status-list"
+              >
+                <div
+                  v-for="entry in restoreFederationStatuses"
+                  :key="entry.federationId"
+                  class="restore-federation-status"
+                  :data-testid="`startup-wizard-restore-federation-status-${entry.federationId}`"
+                >
+                  <div class="restore-federation-status__copy">
+                    <div class="restore-federation-status__title">{{ entry.title }}</div>
+                    <div class="restore-federation-status__body">
+                      {{ getRestoreFederationStatusLabel(entry.status) }}
+                    </div>
+                  </div>
+                  <q-icon
+                    :name="getRestoreFederationStatusIcon(entry.status)"
+                    class="restore-federation-status__icon"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="wizard-footer wizard-footer--restore-federations">
+              <q-btn
+                flat
+                no-caps
+                class="wizard-secondary-btn vipr-btn vipr-btn--secondary"
+                :disable="isRestoringFederation"
+                data-testid="startup-wizard-restore-federations-back-btn"
+                @click="backFromRestoreFederations"
+              >
+                Back
+              </q-btn>
+              <q-btn
+                v-if="restoreFederationStatuses.length === 0"
+                flat
+                no-caps
+                class="wizard-secondary-btn vipr-btn vipr-btn--secondary"
+                :disable="isRestoringFederation"
+                data-testid="startup-wizard-restore-federations-skip-btn"
+                @click="skipRestoreFederations"
+              >
+                Skip for now
+              </q-btn>
+              <q-btn
+                v-else
+                label="Done"
+                unelevated
+                no-caps
+                class="wizard-primary-btn vipr-btn vipr-btn--primary-soft"
+                :disable="isRestoringFederation"
+                data-testid="startup-wizard-restore-federations-finish-btn"
+                @click="finishRestoreFederations"
+              />
+            </div>
+          </div>
+
+          <div
             v-else-if="currentStep === 'done'"
             class="wizard-slide wizard-slide--done"
             data-testid="startup-wizard-done-step"
@@ -247,6 +373,8 @@ import { onBeforeUnmount, onMounted } from 'vue'
 import StartupWizardBackupStep from 'src/components/startup-wizard/StartupWizardBackupStep.vue'
 import StartupWizardInstallStep from 'src/components/startup-wizard/StartupWizardInstallStep.vue'
 import StartupWizardRestoreStep from 'src/components/startup-wizard/StartupWizardRestoreStep.vue'
+import JoinFederationInviteStep from 'src/components/JoinFederationInviteStep.vue'
+import JoinFederationPreviewStep from 'src/components/JoinFederationPreviewStep.vue'
 import { useInstallHint } from 'src/composables/useInstallHint'
 import { useStartupWizard } from 'src/composables/useStartupWizard'
 import { useAppNotify } from 'src/composables/useAppNotify'
@@ -269,20 +397,60 @@ const {
   goToFederationStep,
   isCreating,
   isRestoring,
+  isRestoringFederation,
   mnemonicWords,
+  restoreFederationInviteCode,
+  restoreFederationPreview,
+  restoreFederationStatuses,
   restoreWords,
   backFromBackup,
   backFromRestore,
+  backFromRestoreFederations,
+  backToRestoreFederationInvite,
   backToCustody,
   backToWelcome,
   continueFromFederation,
   continueFromInstall,
+  finishRestoreFederations,
   initializeWizard,
+  loadRestoreFederationPreview,
+  pasteRestoreFederationFromClipboard,
   skipCreateEducation,
+  skipRestoreFederations,
   startCreateFlow,
   startRestoreFlow,
+  submitRestoreFederation,
   submitRestore,
+  updateRestoreFederationInviteCode,
 } = useStartupWizard({ showInstallStep })
+
+function getRestoreFederationStatusLabel(status: string): string {
+  switch (status) {
+    case 'restoring':
+      return 'Recovering wallet history...'
+    case 'restored':
+      return 'Recovery complete'
+    case 'no-backup':
+      return 'No wallet history found for this federation backup'
+    case 'failed':
+      return 'Recovery failed'
+    default:
+      return 'Waiting'
+  }
+}
+
+function getRestoreFederationStatusIcon(status: string): string {
+  switch (status) {
+    case 'restored':
+      return 'check_circle'
+    case 'no-backup':
+      return 'info'
+    case 'failed':
+      return 'error'
+    default:
+      return 'schedule'
+  }
+}
 
 onMounted(() => {
   initializeInstallHint()
@@ -501,6 +669,64 @@ onBeforeUnmount(() => {
   background: var(--vipr-wizard-done-visual-bg);
 }
 
+.wizard-slide--restore-federations {
+  gap: var(--vipr-space-4);
+}
+
+.restore-federations-panel {
+  display: grid;
+  gap: var(--vipr-space-4);
+}
+
+.restore-federations-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--vipr-space-2);
+}
+
+.restore-federations-actions .q-btn:only-child {
+  grid-column: 1 / -1;
+}
+
+.restore-federation-status-list {
+  display: grid;
+  gap: var(--vipr-space-2);
+}
+
+.restore-federation-status {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--vipr-space-3);
+  align-items: center;
+  padding: var(--vipr-space-3);
+  border-radius: var(--vipr-radius-card);
+  background: var(--vipr-control-panel-bg);
+  border: 1px solid var(--vipr-control-panel-border);
+}
+
+.restore-federation-status__copy {
+  min-width: 0;
+}
+
+.restore-federation-status__title {
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-body);
+  font-weight: 700;
+  line-height: var(--vipr-line-height-body);
+}
+
+.restore-federation-status__body {
+  margin-top: var(--vipr-space-1);
+  color: var(--vipr-text-secondary);
+  font-size: var(--vipr-font-size-caption);
+  line-height: var(--vipr-line-height-body);
+}
+
+.restore-federation-status__icon {
+  color: var(--vipr-text-secondary);
+  font-size: var(--vipr-font-size-icon-lg);
+}
+
 @media (max-width: 599px) {
   .startup-wizard-page {
     padding: var(--vipr-wizard-page-padding-mobile);
@@ -542,6 +768,10 @@ onBeforeUnmount(() => {
 
   .wizard-footer {
     align-items: stretch;
+  }
+
+  .restore-federations-actions {
+    grid-template-columns: 1fr;
   }
 
   .federation-card {

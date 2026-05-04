@@ -13,6 +13,7 @@ type EnsureWalletOpenArgs = {
   walletName: string
   federationId: string
   inviteCode: string
+  recoverOnJoin?: boolean
 }
 
 type EnsureMnemonicResult = {
@@ -72,6 +73,7 @@ class FedimintClientAdapter {
     walletName,
     federationId,
     inviteCode,
+    recoverOnJoin = false,
   }: EnsureWalletOpenArgs): Promise<FedimintWallet> {
     await this.init()
 
@@ -96,11 +98,26 @@ class FedimintClientAdapter {
     applyClientNameToWallet(wallet, sdkClientName)
 
     const isKnownWallet = this.knownWalletNames.has(walletName)
+    logger.logWalletOperation('Fedimint ensureWalletOpen started', {
+      walletName,
+      federationId,
+      sdkClientName,
+      isKnownWallet,
+      activeWalletName: this.activeWalletName,
+      preferredPath: isKnownWallet ? 'open-then-join' : 'join-then-open',
+      recoverOnJoin,
+    })
+
     const ready = isKnownWallet
       ? (await this.tryOpenWallet(wallet, walletName, sdkClientName)) ||
-        (await this.tryJoinFederation(wallet, inviteCode, walletName, sdkClientName))
-      : (await this.tryJoinFederation(wallet, inviteCode, walletName, sdkClientName)) ||
-        (await this.tryOpenWallet(wallet, walletName, sdkClientName))
+        (await this.tryJoinFederation(wallet, inviteCode, walletName, sdkClientName, recoverOnJoin))
+      : (await this.tryJoinFederation(
+          wallet,
+          inviteCode,
+          walletName,
+          sdkClientName,
+          recoverOnJoin,
+        )) || (await this.tryOpenWallet(wallet, walletName, sdkClientName))
 
     if (!ready) {
       throw new Error(`Unable to open or join wallet '${walletName}'`)
@@ -254,9 +271,17 @@ class FedimintClientAdapter {
     walletName: string,
     sdkClientName: string,
   ): Promise<boolean> {
+    const startedAt = Date.now()
     try {
       const result = await wallet.open(sdkClientName)
       if (typeof result === 'boolean') {
+        logger.logWalletOperation('Fedimint open_client completed', {
+          walletName,
+          sdkClientName,
+          result,
+          walletIsOpen: wallet.isOpen(),
+          durationMs: Date.now() - startedAt,
+        })
         return result
       }
     } catch (error) {
@@ -268,6 +293,11 @@ class FedimintClientAdapter {
     }
 
     if (wallet.isOpen()) {
+      logger.logWalletOperation('Fedimint open_client left wallet open', {
+        walletName,
+        sdkClientName,
+        durationMs: Date.now() - startedAt,
+      })
       return true
     }
 
@@ -284,18 +314,39 @@ class FedimintClientAdapter {
     inviteCode: string,
     walletName: string,
     sdkClientName: string,
+    recoverOnJoin: boolean,
   ): Promise<boolean> {
+    const startedAt = Date.now()
     try {
-      const result = await wallet.joinFederation(inviteCode, sdkClientName)
+      const result = recoverOnJoin
+        ? await joinFederationWithRecover(wallet, inviteCode, sdkClientName)
+        : await wallet.joinFederation(inviteCode, sdkClientName)
       if (typeof result === 'boolean') {
-        return result || wallet.isOpen()
+        const walletIsOpen = wallet.isOpen()
+        logger.logWalletOperation('Fedimint join_federation completed', {
+          walletName,
+          sdkClientName,
+          recoverOnJoin,
+          result,
+          walletIsOpen,
+          durationMs: Date.now() - startedAt,
+        })
+        return result || walletIsOpen
       }
+      logger.logWalletOperation('Fedimint join_federation returned non-boolean', {
+        walletName,
+        sdkClientName,
+        recoverOnJoin,
+        walletIsOpen: wallet.isOpen(),
+        durationMs: Date.now() - startedAt,
+      })
       return wallet.isOpen()
     } catch (error) {
       if (isExistingClientError(error)) {
         logger.warn('Fedimint joinFederation indicates existing client; falling back to open', {
           walletName,
           sdkClientName,
+          recoverOnJoin,
           reason: getErrorMessage(error),
         })
         return false
@@ -303,6 +354,7 @@ class FedimintClientAdapter {
       logger.warn('Fedimint joinFederation failed', {
         walletName,
         sdkClientName,
+        recoverOnJoin,
         reason: getErrorMessage(error),
       })
       throw error instanceof Error ? error : new Error(String(error))
@@ -409,6 +461,47 @@ function applyClientNameToWallet(wallet: FedimintWallet, clientName: string): vo
       ;(service as Record<string, unknown>).clientName = clientName
     }
   }
+}
+
+type JoinFederationTransportClient = {
+  sendSingleMessage: <Response = unknown, Payload = unknown>(
+    type: string,
+    payload?: Payload,
+  ) => Promise<Response>
+}
+
+type FedimintWalletInternals = {
+  _client?: JoinFederationTransportClient
+  _isOpen?: boolean
+  _resolveOpen?: () => void
+}
+
+async function joinFederationWithRecover(
+  wallet: FedimintWallet,
+  inviteCode: string,
+  clientName: string,
+): Promise<boolean> {
+  if (wallet.isOpen()) {
+    throw new Error(
+      'The FedimintWallet is already open. You can only call `joinFederation` on closed clients.',
+    )
+  }
+
+  const walletInternals = wallet as unknown as FedimintWalletInternals
+  const client = walletInternals._client
+  if (client == null || typeof client.sendSingleMessage !== 'function') {
+    throw new Error('Fedimint wallet transport client is not available for recovery join')
+  }
+
+  await client.sendSingleMessage('join_federation', {
+    invite_code: inviteCode,
+    client_name: clientName,
+    force_recover: true,
+  })
+
+  walletInternals._isOpen = true
+  walletInternals._resolveOpen?.()
+  return true
 }
 
 function isExistingClientError(error: unknown): boolean {
