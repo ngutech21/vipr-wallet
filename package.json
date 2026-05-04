@@ -18,7 +18,7 @@
     "build:docker": "docker build -t vipr-wallet .",
     "postinstall": "quasar prepare",
     "coverage": "vitest run --coverage",
-    "test:setup": "bash scripts/setup_test_shell.sh",
+    "test:setup": "bash scripts/setup_test_shell.sh bash",
     "test:unit:ui": "vitest --ui",
     "test:unit:ci": "vitest run",
     "test:e2e": "pnpm run test:setup playwright test",
