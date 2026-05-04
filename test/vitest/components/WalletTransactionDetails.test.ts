@@ -150,14 +150,15 @@ describe('WalletTransactionDetails.vue', () => {
 
       const badge = wrapper.find('.status-badge')
       expect(badge.exists()).toBe(true)
-      expect(wrapper.text()).toContain('Bitcoin received')
+      expect(badge.text()).toBe('Received')
     })
 
     it('should show positive color for claimed deposits', () => {
       const transaction = createMockTransaction({ outcome: 'Claimed' })
       wrapper = createWrapper(transaction)
 
-      expect(wrapper.text()).toContain('Bitcoin received')
+      const badge = wrapper.find('.status-badge')
+      expect(badge.text()).toBe('Received')
     })
 
     it('should show warning color for deposits waiting for a transaction', () => {
@@ -270,16 +271,24 @@ describe('WalletTransactionDetails.vue', () => {
       expect(wrapper.text()).toContain('bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh')
     })
 
-    it('should display network fee in sats', () => {
-      const transaction = createMockTransaction({ fee: 5000000 })
+    it('should display network fee in sats for withdraw transactions', () => {
+      const transaction = createMockTransaction({ type: 'withdraw', fee: 5000000 })
       wrapper = createWrapper(transaction)
 
       expect(wrapper.text()).toContain('Network Fee')
       expect(wrapper.text()).toContain('5,000 sats')
     })
 
-    it('should convert fee from msats to sats', () => {
-      const transaction = createMockTransaction({ fee: 2500000 })
+    it('should hide network fee for deposit transactions', () => {
+      const transaction = createMockTransaction({ type: 'deposit', fee: 5000000 })
+      wrapper = createWrapper(transaction)
+
+      expect(wrapper.text()).not.toContain('Network Fee')
+      expect(wrapper.text()).not.toContain('5,000 sats')
+    })
+
+    it('should convert withdraw fee from msats to sats', () => {
+      const transaction = createMockTransaction({ type: 'withdraw', fee: 2500000 })
       wrapper = createWrapper(transaction)
 
       expect(wrapper.text()).toContain('2,500 sats')
@@ -303,7 +312,7 @@ describe('WalletTransactionDetails.vue', () => {
       expect(wrapper.text()).not.toContain('Net Deposited')
     })
 
-    it('should calculate net amount correctly for deposit (amount - fee)', () => {
+    it('should display net amount for deposit without subtracting sender-paid fee', () => {
       const transaction = createMockTransaction({
         type: 'deposit',
         amountMsats: 100000000,
@@ -311,8 +320,7 @@ describe('WalletTransactionDetails.vue', () => {
       })
       wrapper = createWrapper(transaction)
 
-      // Net deposited = 100,000 sats - 5,000 sats = 95,000 sats
-      expect(wrapper.text()).toContain('+95,000 sats')
+      expect(wrapper.text()).toContain('+100,000 sats')
     })
 
     it('should calculate total debited correctly for withdraw (amount + fee)', () => {
@@ -607,7 +615,8 @@ describe('WalletTransactionDetails.vue', () => {
         const transaction = createMockTransaction({ outcome: 'Confirmed' })
         wrapper = createWrapper(transaction)
 
-        expect(wrapper.text()).toContain('Bitcoin received')
+        const badge = wrapper.find('.status-badge')
+        expect(badge.text()).toBe('Received')
       })
     })
 
