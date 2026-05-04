@@ -103,7 +103,7 @@ defineOptions({
 
 import { computed, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import type { WalletDepositState } from '@fedimint/core'
+import type { CancelFunction, WalletDepositState } from '@fedimint/core'
 import CopyableQrCard from 'src/components/CopyableQrCard.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
 import ViprTopbar from 'src/components/ViprTopbar.vue'
@@ -134,7 +134,7 @@ const { copyToClipboard, shareValue: shareBitcoinAddress } = useCopyShare({
   onCopyError: (error) => logger.error('Failed to copy onchain address to clipboard', error),
 })
 
-let depositPollTimeout: ReturnType<typeof setTimeout> | null = null
+let unsubscribeDepositWait: CancelFunction | null = null
 
 const selectedFederation = computed(() => federationStore.selectedFederation)
 const canSelectFederation = computed(() => bitcoinAddress.value === '' && !isGenerating.value)
@@ -185,14 +185,13 @@ const confirmationInfo = computed(() => {
 })
 
 onUnmounted(() => {
-  stopDepositPolling()
+  cleanupDepositWait()
 })
 
-function stopDepositPolling() {
-  if (depositPollTimeout != null) {
-    clearTimeout(depositPollTimeout)
-    depositPollTimeout = null
-  }
+function cleanupDepositWait() {
+  unsubscribeDepositWait?.()
+  unsubscribeDepositWait = null
+  isWaitingForDeposit.value = false
 }
 
 async function completeDeposit(amountSats: number) {
@@ -201,8 +200,7 @@ async function completeDeposit(amountSats: number) {
   }
 
   hasCompletedDeposit.value = true
-  isWaitingForDeposit.value = false
-  stopDepositPolling()
+  cleanupDepositWait()
   await walletStore.updateBalance()
   await router.push({
     name: '/received-onchain',
@@ -231,63 +229,67 @@ function normalizeDepositState(outcome: unknown): WalletDepositState | null {
   return null
 }
 
-function scheduleDepositPoll() {
-  stopDepositPolling()
-  depositPollTimeout = setTimeout(() => {
-    pollDepositState().catch((error: unknown) => {
-      logger.error('Failed polling onchain deposit state', error)
-    })
-  }, 5000)
-}
-
-async function pollDepositState() {
-  if (operationId.value === '' || hasCompletedDeposit.value) {
+function handleDepositState(state: WalletDepositState, activeOperationId: string) {
+  if (
+    activeOperationId !== operationId.value ||
+    hasCompletedDeposit.value ||
+    normalizeDepositState(state) == null
+  ) {
     return
   }
 
-  try {
-    const operation = await walletStore.wallet?.federation.getOperation(operationId.value)
-    const nextState = normalizeDepositState(operation?.outcome?.outcome)
+  depositState.value = state
+  logger.logTransaction('Deposit state update', { state })
 
-    if (nextState != null) {
-      depositState.value = nextState
-      logger.logTransaction('Deposit state update', { state: nextState })
-    }
+  if (typeof state === 'object' && 'Confirmed' in state) {
+    completeDeposit(state.Confirmed.btc_deposited).catch((error: unknown) => {
+      logger.error('Failed to handle confirmed onchain deposit', error)
+    })
+    return
+  }
 
-    if (nextState != null && typeof nextState === 'object' && 'Confirmed' in nextState) {
-      await completeDeposit(nextState.Confirmed.btc_deposited)
-      return
-    }
+  if (typeof state === 'object' && 'Claimed' in state) {
+    completeDeposit(state.Claimed.btc_deposited).catch((error: unknown) => {
+      logger.error('Failed to handle claimed onchain deposit', error)
+    })
+    return
+  }
 
-    if (nextState != null && typeof nextState === 'object' && 'Claimed' in nextState) {
-      await completeDeposit(nextState.Claimed.btc_deposited)
-      return
-    }
-
-    if (nextState != null && typeof nextState === 'object' && 'Failed' in nextState) {
-      isWaitingForDeposit.value = false
-      stopDepositPolling()
-      notify.error(`Deposit monitoring failed: ${nextState.Failed}`)
-      return
-    }
-
-    scheduleDepositPoll()
-  } catch (error) {
-    logger.error('Error polling deposit state', error)
-    scheduleDepositPoll()
+  if (typeof state === 'object' && 'Failed' in state) {
+    cleanupDepositWait()
+    notify.error(`Deposit monitoring failed: ${state.Failed}`)
   }
 }
 
-function startDepositPolling() {
+function subscribeToDeposit() {
   if (operationId.value === '') {
     return
   }
 
+  cleanupDepositWait()
   isWaitingForDeposit.value = true
   depositState.value = 'WaitingForTransaction'
-  pollDepositState().catch((error: unknown) => {
-    logger.error('Failed to start onchain deposit polling', error)
-  })
+
+  const activeOperationId = operationId.value
+  unsubscribeDepositWait =
+    walletStore.wallet?.wallet.subscribeDeposit(
+      activeOperationId,
+      (state) => {
+        handleDepositState(state, activeOperationId)
+      },
+      (error) => {
+        if (activeOperationId !== operationId.value) {
+          return
+        }
+
+        cleanupDepositWait()
+        logger.error('Onchain deposit subscription failed', {
+          operationId: activeOperationId,
+          error,
+        })
+        notify.error(`Error monitoring deposit: ${getErrorMessage(error)}`)
+      },
+    ) ?? null
 }
 
 async function generateAddress() {
@@ -314,7 +316,7 @@ async function generateAddress() {
       operationId: response.operation_id,
     })
 
-    startDepositPolling()
+    subscribeToDeposit()
   } catch (error) {
     logger.error('Failed to generate onchain address', error)
     notify.error(`Error generating address: ${getErrorMessage(error)}`)
@@ -329,7 +331,7 @@ async function shareAddress() {
 }
 
 async function goBack() {
-  stopDepositPolling()
+  cleanupDepositWait()
   await router.push({ name: '/' })
 }
 </script>
