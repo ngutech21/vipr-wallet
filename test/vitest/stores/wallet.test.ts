@@ -736,6 +736,69 @@ describe('wallet store', () => {
     })
   })
 
+  it('getTransactions reads wallet deposit amount from the raw deposit outcome', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(45_000)
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'wallet',
+        operationId: 'wallet-deposit-op-1',
+        type: 'deposit',
+        amountMsats: 0,
+        fee: 0,
+        onchainAddress: 'bcrt1qdeposit',
+        outcome: 'Claimed',
+        timestamp: 1_234_567_890_000,
+      },
+    ])
+    wallet.federation.listOperations.mockResolvedValue([
+      [
+        {
+          creation_time: {
+            nanos_since_epoch: 0,
+            secs_since_epoch: 1_234_567_890,
+          },
+          operation_id: 'wallet-deposit-op-1',
+        },
+        {
+          operation_module_kind: 'wallet',
+          meta: {
+            amount: 0,
+            extra_meta: {},
+            variant: {
+              deposit: {
+                address: 'bcrt1qdeposit',
+                tweak_idx: 0,
+              },
+            },
+          },
+          outcome: {
+            outcome: {
+              Claimed: {
+                btc_deposited: 210_000,
+                btc_out_point: {
+                  txid: 'deposit-txid',
+                  vout: 0,
+                },
+              },
+            },
+          },
+        },
+      ],
+    ])
+
+    walletStore.wallet = wallet as never
+
+    const transactions = await walletStore.getTransactions()
+
+    expect(transactions).toHaveLength(1)
+    expect(transactions[0]).toMatchObject({
+      amountMsats: 210_000_000,
+      fee: 0,
+      type: 'deposit',
+    })
+  })
+
   it('getTransactions falls back to raw transactions when operation metadata fetch fails', async () => {
     const walletStore = useWalletStore()
     const wallet = createWalletMock(45_000)

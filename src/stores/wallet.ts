@@ -826,17 +826,20 @@ function normalizeWalletTransaction(
   const variant = operationLog.meta?.variant as WalletVariant | undefined
   const metaAmount = operationLog.meta?.amount
   const variantAmount = getWalletWithdrawAmountMsats(variant?.withdraw)
+  const depositAmount = getWalletDepositAmountMsats(operationLog)
   const extraMetaAmount = getRequestedWalletAmountMsats(operationLog.meta?.extra_meta)
   const normalizedAmountMsats =
     transaction.amountMsats > 0
       ? transaction.amountMsats
       : typeof variantAmount === 'number' && Number.isFinite(variantAmount) && variantAmount > 0
         ? variantAmount
-        : extraMetaAmount != null && extraMetaAmount > 0
-          ? extraMetaAmount
-          : typeof metaAmount === 'number' && Number.isFinite(metaAmount) && metaAmount > 0
-            ? metaAmount
-            : 0
+        : depositAmount != null && depositAmount > 0
+          ? depositAmount
+          : extraMetaAmount != null && extraMetaAmount > 0
+            ? extraMetaAmount
+            : typeof metaAmount === 'number' && Number.isFinite(metaAmount) && metaAmount > 0
+              ? metaAmount
+              : 0
 
   const feeEstimateMsats = estimateWalletFeeMsats(variant)
 
@@ -924,6 +927,34 @@ function getWalletWithdrawAmountMsats(
   }
 
   return undefined
+}
+
+function getWalletDepositAmountMsats(operationLog: OperationLog | undefined): number | undefined {
+  const outcome = operationLog?.outcome?.outcome
+
+  if (typeof outcome !== 'object' || outcome == null || Array.isArray(outcome)) {
+    return undefined
+  }
+
+  const depositOutcome =
+    'Claimed' in outcome
+      ? outcome.Claimed
+      : 'Confirmed' in outcome
+        ? outcome.Confirmed
+        : 'WaitingForConfirmation' in outcome
+          ? outcome.WaitingForConfirmation
+          : undefined
+
+  if (typeof depositOutcome !== 'object' || depositOutcome == null) {
+    return undefined
+  }
+
+  const amountSats = getFiniteNumber(
+    (depositOutcome as { btc_deposited?: JSONValue; btcDeposited?: JSONValue }).btc_deposited ??
+      (depositOutcome as { btc_deposited?: JSONValue; btcDeposited?: JSONValue }).btcDeposited,
+  )
+
+  return amountSats != null && amountSats > 0 ? amountSats * 1_000 : undefined
 }
 
 function getRequestedWalletAmountMsats(extraMeta: JSONObject | undefined): number | undefined {
