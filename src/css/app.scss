@@ -224,10 +224,6 @@ body,
   --vipr-settings-toggle-icon-color: rgba(255, 255, 255, 0.76);
   --vipr-detail-separator: rgba(255, 255, 255, 0.032);
   --vipr-detail-icon-bg: rgba(156, 39, 255, 0.12);
-  --vipr-federation-detail-page-bg:
-    radial-gradient(circle at 18% 0%, rgba(156, 39, 255, 0.035), transparent 5%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.038), rgba(255, 255, 255, 0.012) 36%),
-    var(--vipr-color-page);
   --vipr-federation-detail-content-padding: var(--vipr-space-0) var(--vipr-space-4)
     var(--vipr-space-6);
   --vipr-federation-detail-card-gap: var(--vipr-space-4);

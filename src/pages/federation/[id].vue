@@ -285,7 +285,7 @@ async function leaveFederation() {
 }
 
 .federation-details-page {
-  background: var(--vipr-federation-detail-page-bg);
+  background: var(--vipr-color-page);
   overflow-x: clip;
 }
 
