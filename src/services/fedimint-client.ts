@@ -24,6 +24,7 @@ type EnsureMnemonicResult = {
 type FedimintLogLevel = 'debug' | 'info' | 'warn' | 'error' | 'none'
 
 const WALLET_NAME_PREFIX = 'wallet-'
+const FEDIMINT_INIT_RETRY_DELAYS_MS = [0, 50, 150, 500, 1_000, 2_000] as const
 const INVALID_MNEMONIC_RESPONSE_MESSAGE = 'Invalid mnemonic response'
 const MNEMONIC_EMPTY_MESSAGE = 'Mnemonic is empty'
 const FEDIMINT_CLIENT_NAME_NAMESPACE = '6ba7b811-9dad-11d1-80b4-00c04fd430c8'
@@ -39,10 +40,38 @@ class FedimintClientAdapter {
       return
     }
 
-    this.director = new WalletDirector(new WasmWorkerTransport())
-    await this.director.initialize()
+    let lastError: unknown
 
-    logger.logWalletOperation('Fedimint wallet director initialized')
+    for (const delayMs of FEDIMINT_INIT_RETRY_DELAYS_MS) {
+      if (delayMs > 0) {
+        // eslint-disable-next-line no-await-in-loop
+        await delay(delayMs)
+      }
+
+      try {
+        const director = new WalletDirector(new WasmWorkerTransport(), undefined, true)
+        // eslint-disable-next-line no-await-in-loop
+        await director.initialize()
+        this.director = director
+
+        logger.logWalletOperation('Fedimint wallet director initialized', { delayMs })
+        return
+      } catch (error) {
+        lastError = error
+
+        if (!isFedimintStorageHandleLockedError(error) || isLastInitAttempt(delayMs)) {
+          break
+        }
+
+        logger.warn('Fedimint wallet director initialization locked; retrying', {
+          delayMs,
+          nextDelayMs: nextInitDelay(delayMs),
+          reason: getErrorMessage(error),
+        })
+      }
+    }
+
+    throw lastError instanceof Error ? lastError : new Error(String(lastError))
   }
 
   setLogLevel(level: FedimintLogLevel): void {
@@ -508,6 +537,29 @@ function isExistingClientError(error: unknown): boolean {
   return /already exists|already joined|already open|client already exists|client exists|no modification allowed|nomodificationallowederror/i.test(
     getErrorMessage(error),
   )
+}
+
+function isFedimintStorageHandleLockedError(error: unknown): boolean {
+  return /access handle|createsyncaccesshandle|another.*access handle|already.*access handle|modifications are not allowed|nomodificationallowederror/i.test(
+    getErrorMessage(error),
+  )
+}
+
+function isLastInitAttempt(delayMs: number): boolean {
+  return delayMs === FEDIMINT_INIT_RETRY_DELAYS_MS.at(-1)
+}
+
+function nextInitDelay(delayMs: number): number | null {
+  const currentIndex = FEDIMINT_INIT_RETRY_DELAYS_MS.indexOf(
+    delayMs as (typeof FEDIMINT_INIT_RETRY_DELAYS_MS)[number],
+  )
+  return FEDIMINT_INIT_RETRY_DELAYS_MS[currentIndex + 1] ?? null
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    globalThis.setTimeout(resolve, ms)
+  })
 }
 
 function getSdkClientName(walletName: string, federationId: string): string {

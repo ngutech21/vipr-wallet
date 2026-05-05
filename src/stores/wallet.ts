@@ -34,6 +34,7 @@ import {
 import { federationHasModule } from 'src/utils/federationModules'
 
 const WALLET_NAME_PREFIX = 'wallet-'
+const RECOVERY_BALANCE_REFRESH_DELAYS_MS = [0, 1_000, 3_000] as const
 
 let walletOpenQueue: Promise<void> | null = null
 
@@ -331,6 +332,14 @@ export const useWalletStore = defineStore('wallet', {
 
     async restoreMnemonic(words: string[]): Promise<void> {
       await this.initClients()
+      logger.logWalletOperation('Preparing clean Fedimint storage for mnemonic restore')
+      await fedimintClient.clearAllWallets()
+      this.wallet = null
+      this.activeWalletName = null
+      this.balance = 0
+      this.cancelRecoveryMonitor()
+      this.recoveryStatusByFederationId = {}
+      this.transactionsRefreshVersion += 1
       await fedimintClient.setMnemonic(words)
       const hasMnemonic = await this.loadMnemonic()
       if (!hasMnemonic) {
@@ -548,14 +557,7 @@ export const useWalletStore = defineStore('wallet', {
     },
 
     async refreshAfterRecovery(federationId: string) {
-      try {
-        await this.updateBalance()
-      } catch (error) {
-        logger.warn('Failed to refresh balance after wallet recovery', {
-          federationId,
-          reason: getErrorMessage(error),
-        })
-      }
+      await this.refreshBalanceAfterRecovery(federationId)
 
       const federationStore = useFederationStore()
       const federation = federationStore.federations.find(
@@ -578,14 +580,43 @@ export const useWalletStore = defineStore('wallet', {
       await this.logRecoverySnapshot(federationId, 'after-recovery-refresh')
     },
 
+    async refreshBalanceAfterRecovery(federationId: string) {
+      for (const delayMs of RECOVERY_BALANCE_REFRESH_DELAYS_MS) {
+        if (delayMs > 0) {
+          // eslint-disable-next-line no-await-in-loop
+          await delay(delayMs)
+        }
+
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          await this.updateBalance()
+          logger.logWalletOperation('Wallet recovery balance refreshed', {
+            federationId,
+            delayMs,
+            balanceSats: this.balance,
+            balanceState: this.balance > 0 ? 'nonzero' : 'zero',
+          })
+        } catch (error) {
+          logger.warn('Failed to refresh balance after wallet recovery', {
+            federationId,
+            delayMs,
+            reason: getErrorMessage(error),
+          })
+        }
+      }
+    },
+
     async logRecoverySnapshot(federationId: string, reason: string) {
       try {
+        const mintNoteCounts = await this.getRecoveryMintNoteCounts(federationId, reason)
         const page = await this.getTransactionsPage(20, undefined, { visibleOnly: true })
         logger.logWalletOperation('Wallet recovery snapshot', {
           federationId,
           reason,
           balanceState: this.balance > 0 ? 'nonzero' : 'zero',
           balanceSats: this.balance,
+          mintNoteCounts,
+          mintDenominationCount: mintNoteCounts == null ? null : Object.keys(mintNoteCounts).length,
           visibleTransactionsOnFirstPage: page.transactions.length,
           hasMoreTransactions: page.hasMore,
         })
@@ -598,12 +629,43 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
+    async getRecoveryMintNoteCounts(
+      federationId: string,
+      reason: string,
+    ): Promise<NoteCountByDenomination | null> {
+      if (this.wallet == null) {
+        return null
+      }
+
+      try {
+        const noteCounts = await this.wallet.mint.getNotesByDenomination()
+        logger.logWalletOperation('Wallet recovery mint note counts', {
+          federationId,
+          reason,
+          noteCounts,
+          denominationCount: Object.keys(noteCounts).length,
+        })
+        return noteCounts
+      } catch (error) {
+        logger.warn('Failed to collect wallet recovery mint note counts', {
+          federationId,
+          reason,
+          error: getErrorMessage(error),
+        })
+        return null
+      }
+    },
+
     getRecoveryModuleKind(federationId: string, moduleId: number): string | null {
       const federationStore = useFederationStore()
       const federation = federationStore.federations.find(
         (candidate) => candidate.federationId === federationId,
       )
-      return federation?.modules[moduleId]?.kind ?? null
+      return (
+        federation?.modules.find((module) => module.id === String(moduleId))?.kind ??
+        federation?.modules[moduleId]?.kind ??
+        null
+      )
     },
 
     assertCanSpendDuringRecovery() {
@@ -1029,6 +1091,10 @@ export const useWalletStore = defineStore('wallet', {
       const guardians = extractFederationGuardians(typedConfig?.global?.api_endpoints)
       const metaExternalUrl = typedConfig?.global?.meta?.meta_external_url as string
       const modules = typedConfig?.modules ?? {}
+      const moduleConfigs = Object.entries(modules).map(([id, module]) => ({
+        ...(module as ModuleConfig),
+        id,
+      }))
 
       let legacyMetadata: JSONObject | null = null
 
@@ -1054,7 +1120,7 @@ export const useWalletStore = defineStore('wallet', {
         inviteCode: inviteCode,
         federationId: federation_id.trim(),
         metaUrl: metaExternalUrl,
-        modules: Object.values(modules) as ModuleConfig[],
+        modules: moduleConfigs,
         guardians,
         metadata,
       } satisfies Federation
@@ -1462,6 +1528,12 @@ function getJsonShape(value: JSONValue): string {
   }
 
   return typeof value
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms)
+  })
 }
 
 export function mapTxOutputSummaryToFederationUtxo(output: TxOutputSummary): FederationUtxo {

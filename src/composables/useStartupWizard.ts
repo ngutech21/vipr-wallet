@@ -41,12 +41,23 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
   const restoreFederationEntries = ref<RestoreFederationEntry[]>([])
 
   const mnemonicWords = computed(() => walletStore.mnemonicWords)
+  const restoreFederationStatuses = computed(() =>
+    restoreFederationEntries.value.map((entry) => ({
+      ...entry,
+      status: walletStore.recoveryStatusByFederationId[entry.federationId] ?? 'restoring',
+      error:
+        walletStore.recoveryFederationId === entry.federationId ? walletStore.recoveryError : null,
+    })),
+  )
   const isCreateLocked = computed(
     () =>
       onboardingStore.status === 'in_progress' &&
       onboardingStore.flow === 'create' &&
       walletStore.hasMnemonic &&
       walletStore.needsMnemonicBackup,
+  )
+  const isRestoreFederationRecoveryRunning = computed(() =>
+    restoreFederationStatuses.value.some((entry) => entry.status === 'restoring'),
   )
 
   async function initializeWizard() {
@@ -117,7 +128,11 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
   async function finishWizardAndEnterApp() {
     onboardingStore.complete()
     try {
-      await walletStore.openWallet()
+      if (walletStore.wallet == null) {
+        await walletStore.openWallet()
+      } else if (!walletStore.recoveryInProgress) {
+        await walletStore.updateBalance()
+      }
     } catch (error) {
       logger.warn('Opening wallet after onboarding failed', {
         reason: getErrorMessage(error),
@@ -352,6 +367,11 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
   }
 
   function finishRestoreFederations() {
+    if (isRestoreFederationRecoveryRunning.value) {
+      notify.warning('Please wait until wallet recovery finishes.')
+      return
+    }
+
     onboardingStore.goToStep('done')
     currentStep.value = 'done'
   }
@@ -360,15 +380,6 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
     await finishWizardAndEnterApp()
   }
 
-  const restoreFederationStatuses = computed(() =>
-    restoreFederationEntries.value.map((entry) => ({
-      ...entry,
-      status: walletStore.recoveryStatusByFederationId[entry.federationId] ?? 'restoring',
-      error:
-        walletStore.recoveryFederationId === entry.federationId ? walletStore.recoveryError : null,
-    })),
-  )
-
   return {
     currentStep,
     finishBackup,
@@ -376,6 +387,7 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
     goToFederationStep,
     isCreating,
     isCreateLocked,
+    isRestoreFederationRecoveryRunning,
     isRestoring,
     isRestoringFederation,
     mnemonicWords,

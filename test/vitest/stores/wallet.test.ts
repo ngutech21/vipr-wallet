@@ -79,6 +79,7 @@ function createWalletMock(balanceMsats: number) {
       subscribeReissueExternalNotes: vi.fn(),
       spendNotes: vi.fn(),
       subscribeSpendNotes: vi.fn(),
+      getNotesByDenomination: vi.fn(() => Promise.resolve({})),
     },
     lightning: {},
     balance: {
@@ -309,7 +310,12 @@ describe('wallet store', () => {
     federationStore.selectedFederationId = federation.federationId
 
     const wallet = createWalletMock(12_000)
-    wallet.balance.getBalance = vi.fn().mockResolvedValueOnce(12_000).mockResolvedValueOnce(34_000)
+    wallet.balance.getBalance = vi
+      .fn()
+      .mockResolvedValueOnce(12_000)
+      .mockResolvedValueOnce(34_000)
+      .mockResolvedValueOnce(34_000)
+      .mockResolvedValueOnce(34_000)
     wallet.recovery.hasPendingRecoveries.mockResolvedValue(true)
     wallet.recovery.waitForAllRecoveries.mockReturnValue(recoveryDone.promise)
     wallet.recovery.subscribeToRecoveryProgress.mockImplementation((onSuccess) => {
@@ -339,10 +345,13 @@ describe('wallet store', () => {
 
     recoveryDone.resolve()
 
-    await vi.waitFor(() => {
-      expect(walletStore.recoveryInProgress).toBe(false)
-      expect(walletStore.recoveryStatusByFederationId[federation.federationId]).toBe('restored')
-    })
+    await vi.waitFor(
+      () => {
+        expect(walletStore.recoveryInProgress).toBe(false)
+        expect(walletStore.recoveryStatusByFederationId[federation.federationId]).toBe('restored')
+      },
+      { timeout: 5_000 },
+    )
     expect(walletStore.balance).toBe(34)
     expect(walletStore.transactionsRefreshVersion).toBe(1)
     expect(unsubscribe).toHaveBeenCalledTimes(1)
@@ -394,7 +403,16 @@ describe('wallet store', () => {
           },
           api_endpoints: {},
         },
-        modules: {},
+        modules: {
+          '1': {
+            config: 'mint',
+            kind: 'mint',
+            version: {
+              major: 0,
+              minor: 0,
+            },
+          },
+        },
       },
     })
 
@@ -410,6 +428,12 @@ describe('wallet store', () => {
         defaultCurrency: 'USD',
         maxInvoiceMsats: 50_000,
       },
+      modules: [
+        {
+          id: '1',
+          kind: 'mint',
+        },
+      ],
     })
     vi.unstubAllGlobals()
   })
@@ -486,6 +510,10 @@ describe('wallet store', () => {
       'accident',
     ])
 
+    expect(fedimintClientMock.clearAllWallets).toHaveBeenCalledTimes(1)
+    expect(fedimintClientMock.clearAllWallets.mock.invocationCallOrder[0]).toBeLessThan(
+      fedimintClientMock.setMnemonic.mock.invocationCallOrder[0] ?? 0,
+    )
     expect(fedimintClientMock.setMnemonic).toHaveBeenCalledTimes(1)
     expect(walletStore.hasMnemonic).toBe(true)
     expect(walletStore.needsMnemonicBackup).toBe(false)

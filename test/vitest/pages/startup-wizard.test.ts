@@ -46,8 +46,11 @@ const walletStoreMock = vi.hoisted(() => ({
   restoreMnemonic: vi.fn<() => Promise<void>>(),
   markMnemonicBackupConfirmed: vi.fn(),
   openWallet: vi.fn<() => Promise<void>>(),
+  updateBalance: vi.fn<() => Promise<void>>(),
+  wallet: null as Record<string, never> | null,
   previewFederation: vi.fn(),
   markFederationRecoveryStatus: vi.fn(),
+  recoveryInProgress: false,
   recoveryStatusByFederationId: {},
   recoveryFederationId: null as string | null,
   recoveryError: null as string | null,
@@ -204,6 +207,9 @@ describe('StartupWizardPage', () => {
     })
     walletStoreMock.restoreMnemonic.mockResolvedValue()
     walletStoreMock.openWallet.mockResolvedValue()
+    walletStoreMock.updateBalance.mockResolvedValue()
+    walletStoreMock.wallet = null
+    walletStoreMock.recoveryInProgress = false
     walletStoreMock.previewFederation.mockResolvedValue({
       title: 'Restored Federation',
       inviteCode: 'fed11restore',
@@ -411,6 +417,48 @@ describe('StartupWizardPage', () => {
     expect(
       wrapper.find('[data-testid="startup-wizard-restore-federation-status-fed-restore"]').text(),
     ).toContain('Recovering wallet history')
+    const finishButton = wrapper.find(
+      '[data-testid="startup-wizard-restore-federations-finish-btn"]',
+    )
+    expect(finishButton.attributes('disabled')).toBeDefined()
+    expect(finishButton.text()).toContain('Recovering...')
+  })
+
+  it('restore federation step allows finish after recovery completes', async () => {
+    setStandaloneState({ matches: true, standalone: true })
+    walletStoreMock.hasMnemonic = true
+    onboardingStoreMock.flow = 'restore'
+    onboardingStoreMock.step = 'restore-federations'
+    onboardingStoreMock.status = 'in_progress'
+    federationStoreMock.selectFederation.mockImplementationOnce(() => {
+      walletStoreMock.recoveryStatusByFederationId = {
+        'fed-restore': 'restored',
+      }
+      return Promise.resolve()
+    })
+
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.find('[data-testid="invite-code-input"]').setValue('fed11restore')
+    await wrapper
+      .find('[data-testid="startup-wizard-restore-federations-preview-btn"]')
+      .trigger('click')
+    await flushPromises()
+    await wrapper
+      .find('[data-testid="startup-wizard-restore-federations-submit-btn"]')
+      .trigger('click')
+    await flushPromises()
+
+    const finishButton = wrapper.find(
+      '[data-testid="startup-wizard-restore-federations-finish-btn"]',
+    )
+    expect(finishButton.attributes('disabled')).toBeUndefined()
+
+    await finishButton.trigger('click')
+    await flushPromises()
+
+    expect(onboardingStoreMock.goToStep).toHaveBeenCalledWith('done')
   })
 
   it('done step enters the app', async () => {
@@ -425,6 +473,24 @@ describe('StartupWizardPage', () => {
     await wrapper.find('[data-testid="startup-wizard-done-btn"]').trigger('click')
     await flushPromises()
 
+    expect(routerReplaceMock).toHaveBeenCalledWith('/')
+  })
+
+  it('done step refreshes an already open wallet without reopening it', async () => {
+    setStandaloneState({ matches: true, standalone: true })
+    onboardingStoreMock.flow = 'create'
+    onboardingStoreMock.step = 'done'
+    onboardingStoreMock.status = 'in_progress'
+    walletStoreMock.wallet = {}
+
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.find('[data-testid="startup-wizard-done-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(walletStoreMock.openWallet).not.toHaveBeenCalled()
+    expect(walletStoreMock.updateBalance).toHaveBeenCalledTimes(1)
     expect(routerReplaceMock).toHaveBeenCalledWith('/')
   })
 })

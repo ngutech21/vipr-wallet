@@ -14,6 +14,7 @@ type CoreMockState = {
   hasMnemonicSetValue: boolean | Error
   joinFederationErrorOnce: Error | null
   openWalletSuccessOnce: boolean
+  initializeErrorOnce: Error | null
   directorInstances: unknown[]
   activeWallet: unknown
   generateMnemonicValue: GeneratedMnemonicResponse
@@ -27,6 +28,7 @@ const coreMockState: CoreMockState = vi.hoisted(() => ({
   hasMnemonicSetValue: false,
   joinFederationErrorOnce: null,
   openWalletSuccessOnce: false,
+  initializeErrorOnce: null,
   directorInstances: [],
   activeWallet: null,
   generateMnemonicValue: [
@@ -121,7 +123,14 @@ vi.mock('@fedimint/core', () => {
       coreMockState.directorInstances.push(this)
     }
 
-    initialize = vi.fn(() => Promise.resolve())
+    initialize = vi.fn(() => {
+      if (coreMockState.initializeErrorOnce != null) {
+        const error = coreMockState.initializeErrorOnce
+        coreMockState.initializeErrorOnce = null
+        return Promise.reject(error)
+      }
+      return Promise.resolve()
+    })
     setLogLevel = vi.fn()
     previewFederation = vi.fn((inviteCode: string) =>
       Promise.resolve({
@@ -183,6 +192,7 @@ import { fedimintClient } from 'src/services/fedimint-client'
 
 describe('fedimint client adapter', () => {
   beforeEach(() => {
+    vi.unstubAllGlobals()
     fedimintClient.reset()
     vi.clearAllMocks()
     coreMockState.getMnemonicValue = new Error(
@@ -191,6 +201,7 @@ describe('fedimint client adapter', () => {
     coreMockState.hasMnemonicSetValue = false
     coreMockState.joinFederationErrorOnce = null
     coreMockState.openWalletSuccessOnce = false
+    coreMockState.initializeErrorOnce = null
     coreMockState.directorInstances = []
     coreMockState.activeWallet = null
     coreMockState.generateMnemonicValue = [
@@ -225,6 +236,16 @@ describe('fedimint client adapter', () => {
     expect(mockedWallet.joinMock.mock.calls[0]?.[1]).not.toBe('wallet-fed-1')
     expect(mockedWallet.openMock).not.toHaveBeenCalled()
     expect(mockedWallet.isOpen()).toBe(true)
+  })
+
+  it('retries initialization when the Fedimint storage access handle is still locked', async () => {
+    coreMockState.initializeErrorOnce = new Error(
+      "Failed to execute 'createSyncAccessHandle' on 'FileSystemFileHandle': An access handle cannot be created if there is another open access handle.",
+    )
+
+    await fedimintClient.init()
+
+    expect(coreMockState.directorInstances).toHaveLength(2)
   })
 
   it('joins federation with force_recover for restore opens', async () => {

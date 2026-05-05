@@ -320,11 +320,11 @@ meta:
               </q-btn>
               <q-btn
                 v-else
-                label="Done"
+                :label="isRestoreFederationRecoveryRunning ? 'Recovering...' : 'Done'"
                 unelevated
                 no-caps
                 class="wizard-primary-btn vipr-btn vipr-btn--primary-soft"
-                :disable="isRestoringFederation"
+                :disable="isRestoringFederation || isRestoreFederationRecoveryRunning"
                 data-testid="startup-wizard-restore-federations-finish-btn"
                 @click="finishRestoreFederations"
               />
@@ -396,6 +396,7 @@ const {
   finishWizardAndEnterApp,
   goToFederationStep,
   isCreating,
+  isRestoreFederationRecoveryRunning,
   isRestoring,
   isRestoringFederation,
   mnemonicWords,
