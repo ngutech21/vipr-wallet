@@ -32,7 +32,7 @@
     "@fedimint/core": "0.0.0-om-fix-url-e8d09c42ece5b96ab94a5890277601dde18559a5",
     "@fedimint/transport-web": "0.0.0-om-fix-url-e8d09c42ece5b96ab94a5890277601dde18559a5",
     "@getalby/bitcoin-connect": "^3.12.2",
-    "@getalby/lightning-tools": "^8.1.0",
+    "@getalby/lightning-tools": "^8.1.1",
     "@nostr-dev-kit/ndk": "^3.0.3",
     "@quasar/extras": "^1.18.0",
     "@vueuse/core": "^14.3.0",
