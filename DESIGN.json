@@ -1,0 +1,397 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-05T13:35:00Z",
+  "title": "Design System: Vipr Wallet",
+  "extensions": {
+    "colorMeta": {
+      "vault-violet": {
+        "role": "primary",
+        "displayName": "Vault Violet",
+        "canonical": "#8000ff",
+        "tonalRamp": [
+          "oklch(15% 0.12 300)",
+          "oklch(25% 0.16 300)",
+          "oklch(35% 0.2 300)",
+          "oklch(45% 0.23 300)",
+          "oklch(55% 0.25 300)",
+          "oklch(68% 0.2 300)",
+          "oklch(82% 0.12 300)",
+          "oklch(94% 0.04 300)"
+        ]
+      },
+      "vault-violet-bright": {
+        "role": "primary",
+        "displayName": "Lifted Vault Violet",
+        "canonical": "#a22bff",
+        "tonalRamp": [
+          "oklch(18% 0.12 305)",
+          "oklch(28% 0.16 305)",
+          "oklch(38% 0.2 305)",
+          "oklch(48% 0.24 305)",
+          "oklch(58% 0.25 305)",
+          "oklch(70% 0.2 305)",
+          "oklch(84% 0.12 305)",
+          "oklch(95% 0.04 305)"
+        ]
+      },
+      "primary-accent": {
+        "role": "primary",
+        "displayName": "Primary Accent Violet",
+        "canonical": "oklch(0.64 0.27 302)",
+        "tonalRamp": [
+          "oklch(18% 0.09 302)",
+          "oklch(28% 0.13 302)",
+          "oklch(38% 0.17 302)",
+          "oklch(50% 0.22 302)",
+          "oklch(64% 0.27 302)",
+          "oklch(74% 0.2 302)",
+          "oklch(86% 0.11 302)",
+          "oklch(96% 0.04 302)"
+        ]
+      },
+      "ledger-charcoal": {
+        "role": "neutral",
+        "displayName": "Ledger Charcoal",
+        "canonical": "#141414",
+        "tonalRamp": [
+          "#050505",
+          "#0c0c0c",
+          "#141414",
+          "#202020",
+          "#333333",
+          "#5a5a5a",
+          "#8d8d8d",
+          "#d8d8d8"
+        ]
+      },
+      "surface-base": {
+        "role": "neutral",
+        "displayName": "Surface Base",
+        "canonical": "rgba(15, 16, 22, 0.92)",
+        "tonalRamp": [
+          "#06070a",
+          "#0f1016",
+          "#191a23",
+          "#252631",
+          "#363746",
+          "#5b5d6e",
+          "#9092a3",
+          "#daddf0"
+        ]
+      },
+      "bitcoin": {
+        "role": "secondary",
+        "displayName": "Bitcoin Gold",
+        "canonical": "oklch(0.78 0.16 72)",
+        "tonalRamp": [
+          "oklch(18% 0.05 72)",
+          "oklch(30% 0.08 72)",
+          "oklch(42% 0.11 72)",
+          "oklch(54% 0.14 72)",
+          "oklch(66% 0.16 72)",
+          "oklch(78% 0.16 72)",
+          "oklch(88% 0.09 72)",
+          "oklch(96% 0.03 72)"
+        ]
+      },
+      "lightning": {
+        "role": "secondary",
+        "displayName": "Lightning Gold",
+        "canonical": "oklch(0.82 0.16 82)",
+        "tonalRamp": [
+          "oklch(18% 0.05 82)",
+          "oklch(30% 0.08 82)",
+          "oklch(42% 0.11 82)",
+          "oklch(56% 0.14 82)",
+          "oklch(70% 0.16 82)",
+          "oklch(82% 0.16 82)",
+          "oklch(90% 0.08 82)",
+          "oklch(97% 0.03 82)"
+        ]
+      },
+      "signal-green": {
+        "role": "secondary",
+        "displayName": "Signal Green",
+        "canonical": "#17d97a",
+        "tonalRamp": [
+          "oklch(16% 0.06 155)",
+          "oklch(26% 0.09 155)",
+          "oklch(36% 0.12 155)",
+          "oklch(48% 0.15 155)",
+          "oklch(62% 0.16 155)",
+          "oklch(74% 0.13 155)",
+          "oklch(86% 0.08 155)",
+          "oklch(95% 0.03 155)"
+        ]
+      },
+      "signal-info": {
+        "role": "secondary",
+        "displayName": "Signal Info Blue",
+        "canonical": "#4db8ff",
+        "tonalRamp": [
+          "oklch(16% 0.06 245)",
+          "oklch(26% 0.09 245)",
+          "oklch(38% 0.12 245)",
+          "oklch(50% 0.15 245)",
+          "oklch(64% 0.16 245)",
+          "oklch(76% 0.12 245)",
+          "oklch(88% 0.07 245)",
+          "oklch(96% 0.03 245)"
+        ]
+      },
+      "signal-amber": {
+        "role": "tertiary",
+        "displayName": "Signal Amber",
+        "canonical": "#ffb648",
+        "tonalRamp": [
+          "oklch(16% 0.06 75)",
+          "oklch(28% 0.08 75)",
+          "oklch(40% 0.11 75)",
+          "oklch(52% 0.14 75)",
+          "oklch(66% 0.16 75)",
+          "oklch(78% 0.12 75)",
+          "oklch(88% 0.07 75)",
+          "oklch(96% 0.03 75)"
+        ]
+      },
+      "signal-red": {
+        "role": "tertiary",
+        "displayName": "Signal Red",
+        "canonical": "#ff5d7d",
+        "tonalRamp": [
+          "oklch(16% 0.06 15)",
+          "oklch(28% 0.09 15)",
+          "oklch(40% 0.13 15)",
+          "oklch(52% 0.17 15)",
+          "oklch(64% 0.19 15)",
+          "oklch(76% 0.14 15)",
+          "oklch(88% 0.08 15)",
+          "oklch(96% 0.03 15)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Onboarding, payment review, and screens that need one dominant statement."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles and success titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Modal, card, and federation summary titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Standard copy, hints, and descriptions."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Metadata, small labels, and status descriptors."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Recovery words, ids, invoices, and exact technical strings."
+      }
+    },
+    "shadows": [
+      {
+        "name": "primary-action",
+        "value": "0 12px 28px rgba(128, 0, 255, 0.24)",
+        "purpose": "High-commitment primary buttons only."
+      },
+      {
+        "name": "primary-soft",
+        "value": "0 7px 16px rgba(111, 0, 255, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.16)",
+        "purpose": "Primary-soft buttons, FABs, and slider handles."
+      },
+      {
+        "name": "surface-inset",
+        "value": "inset 0 1px 0 rgba(255, 255, 255, 0.035)",
+        "purpose": "Strong cards and flow panels."
+      },
+      {
+        "name": "modal",
+        "value": "0 -12px 40px rgba(0, 0, 0, 0.45)",
+        "purpose": "Bottom sheets only."
+      },
+      {
+        "name": "page-panel",
+        "value": "0 26px 70px rgba(0, 0, 0, 0.44)",
+        "purpose": "Wizard and backup panels."
+      },
+      {
+        "name": "notify",
+        "value": "0 18px 40px rgba(0, 0, 0, 0.38)",
+        "purpose": "Transient notifications."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-transition",
+        "value": "160ms to 250ms ease-out",
+        "purpose": "Button, input, tab, and panel state feedback."
+      },
+      {
+        "name": "e2e-reduced-motion",
+        "value": "html[data-e2e='1'] disables transitions and animations",
+        "purpose": "Stable Playwright and CI screenshots."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile",
+        "value": "700px",
+        "purpose": "Default app shell max width."
+      },
+      {
+        "name": "mobile-wide",
+        "value": "760px",
+        "purpose": "Wider detail screens."
+      },
+      {
+        "name": "flow-panel",
+        "value": "560px",
+        "purpose": "Centered payment and form flows."
+      },
+      {
+        "name": "backup-panel",
+        "value": "720px",
+        "purpose": "Backup and recovery panels."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "High-commitment action button for payment, setup, and confirmation flows.",
+      "html": "<button class=\"ds-btn-primary\">Continue</button>",
+      "css": ".ds-btn-primary { min-height: var(--vipr-control-height-lg, 54px); padding: 0 20px; border: 0; border-radius: var(--vipr-radius-button-lg, 18px); background: var(--vipr-gradient-primary, linear-gradient(135deg, rgba(162,43,255,1), rgba(116,0,255,.96))); color: var(--vipr-text-primary, #fff); box-shadow: var(--vipr-shadow-primary, 0 12px 28px rgba(128,0,255,.24)); font: 600 var(--vipr-font-size-body, 1rem)/1.2 Roboto, system-ui, sans-serif; letter-spacing: 0; transition: transform .2s ease, box-shadow .2s ease; } .ds-btn-primary:hover { transform: translateY(-1px); } .ds-btn-primary:focus-visible { outline: 2px solid rgba(156,39,255,.55); outline-offset: 3px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Quiet alternative action that stays available without competing with the primary action.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { min-height: var(--vipr-control-height-md, 48px); padding: 0 20px; border: 1px solid var(--vipr-color-surface-border, rgba(255,255,255,.08)); border-radius: var(--vipr-radius-control, 14px); background: var(--vipr-color-surface-soft, rgba(255,255,255,.04)); color: var(--vipr-text-secondary, rgba(255,255,255,.78)); font: 600 var(--vipr-font-size-body, 1rem)/1.2 Roboto, system-ui, sans-serif; letter-spacing: 0; transition: background-color .18s ease, border-color .18s ease; } .ds-btn-secondary:hover { background: var(--vipr-color-input-bg-hover, rgba(255,255,255,.065)); border-color: var(--vipr-color-input-border-hover, rgba(255,255,255,.08)); } .ds-btn-secondary:focus-visible { outline: 2px solid rgba(156,39,255,.55); outline-offset: 3px; }"
+    },
+    {
+      "name": "Strong Surface Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Raised but quiet grouping surface for payment flows, summaries, and backup panels.",
+      "html": "<section class=\"ds-card-strong\"><h3>Selected federation</h3><p>Review the federation before moving funds.</p></section>",
+      "css": ".ds-card-strong { padding: var(--vipr-space-5, 20px); border: 1px solid var(--vipr-color-surface-raised-border, rgba(255,255,255,.075)); border-radius: var(--vipr-radius-card, 24px); background: var(--vipr-surface-card-bg-strong, rgba(15,16,22,.92)); color: var(--vipr-text-primary, #fff); box-shadow: var(--vipr-surface-card-shadow, inset 0 1px 0 rgba(255,255,255,.035)); } .ds-card-strong h3 { margin: 0; font: 700 var(--vipr-font-size-section-title, 1.05rem)/1.25 Roboto, system-ui, sans-serif; letter-spacing: 0; } .ds-card-strong p { margin: 8px 0 0; color: var(--vipr-text-muted, rgba(255,255,255,.62)); font: 400 var(--vipr-font-size-caption, .9rem)/1.45 Roboto, system-ui, sans-serif; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Dark form field for invoices, memos, addresses, relay URLs, and recovery input.",
+      "html": "<label class=\"ds-input\"><span>Memo</span><input placeholder=\"Optional description\" /></label>",
+      "css": ".ds-input { display: grid; gap: 6px; color: var(--vipr-text-muted, rgba(255,255,255,.62)); font: 500 var(--vipr-font-size-label, .78rem)/1.2 Roboto, system-ui, sans-serif; } .ds-input input { min-height: var(--vipr-control-height-md, 48px); padding: 0 16px; border: 1px solid var(--vipr-color-input-border, rgba(255,255,255,.055)); border-radius: var(--vipr-radius-input, 16px); background: var(--vipr-color-input-bg, rgba(255,255,255,.05)); color: var(--vipr-text-primary, #fff); font: 400 var(--vipr-font-size-body, 1rem)/1.45 Roboto, system-ui, sans-serif; box-shadow: var(--vipr-control-panel-inset-shadow, inset 0 1px 0 rgba(255,255,255,.018)); transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease; } .ds-input input:hover { background: var(--vipr-color-input-bg-hover, rgba(255,255,255,.065)); border-color: var(--vipr-color-input-border-hover, rgba(255,255,255,.08)); } .ds-input input:focus { outline: none; border-color: var(--vipr-color-input-border-focus, rgba(156,39,255,.5)); box-shadow: var(--vipr-control-panel-focus-shadow, 0 0 0 1px rgba(156,39,255,.12)); }"
+    },
+    {
+      "name": "Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Compact context badge for selected federation, module, status, and metadata.",
+      "html": "<span class=\"ds-chip\">Selected federation</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; min-height: 24px; padding: 0 10px; border-radius: var(--vipr-radius-pill, 999px); background: var(--vipr-chip-bg, rgba(255,255,255,.075)); color: var(--vipr-text-secondary, rgba(255,255,255,.78)); font: 500 .78rem/1 Roboto, system-ui, sans-serif; letter-spacing: 0; } .ds-chip:focus-visible { outline: 2px solid rgba(156,39,255,.55); outline-offset: 3px; }"
+    },
+    {
+      "name": "Bottom Navigation Tab",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Quiet app-shell tab for Home, Federations, and Settings.",
+      "html": "<nav class=\"ds-bottom-nav\"><button class=\"is-active\">Home</button><button>Federations</button><button>Settings</button></nav>",
+      "css": ".ds-bottom-nav { display: flex; justify-content: space-between; gap: 6px; width: min(100%, 700px); padding: var(--vipr-space-2, 8px) var(--vipr-space-3, 12px) 6px; border-top: 1px solid var(--vipr-layout-footer-border, rgba(255,255,255,.012)); background: var(--vipr-layout-footer-bg, rgba(15,16,22,.96)); box-shadow: var(--vipr-layout-footer-shadow, 0 -6px 18px rgba(0,0,0,.1)); } .ds-bottom-nav button { flex: 1 1 0; min-height: 56px; border: 1px solid transparent; border-radius: var(--vipr-radius-control, 14px); background: transparent; color: var(--vipr-text-muted, rgba(255,255,255,.62)); font: 500 .8rem/1 Roboto, system-ui, sans-serif; letter-spacing: 0; transition: color 160ms ease, opacity 160ms ease; } .ds-bottom-nav button:hover { color: var(--vipr-text-primary, #fff); } .ds-bottom-nav button.is-active { color: var(--vipr-layout-tab-active, #a970ff); font-weight: 600; } .ds-bottom-nav button:focus-visible { outline: 2px solid rgba(156,39,255,.55); outline-offset: 2px; }"
+    },
+    {
+      "name": "QR Surface",
+      "kind": "custom",
+      "refersTo": "qr-surface",
+      "description": "High-contrast QR backing surface inside the otherwise dark app.",
+      "html": "<figure class=\"ds-qr-surface\"><div></div></figure>",
+      "css": ".ds-qr-surface { display: grid; place-items: center; width: 160px; aspect-ratio: 1; margin: 0; padding: var(--vipr-qr-padding, 10px); border-radius: var(--vipr-radius-md, 16px); background: var(--vipr-qr-surface-bg, #fff); box-shadow: var(--vipr-qr-surface-shadow, 0 0 0 1px rgba(255,255,255,.04)); } .ds-qr-surface div { width: 100%; height: 100%; border-radius: 8px; background: repeating-linear-gradient(90deg, #111 0 8px, transparent 8px 16px), repeating-linear-gradient(0deg, #111 0 8px, transparent 8px 16px); opacity: .9; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet Vault",
+    "overview": "Vipr's interface is a compact private wallet surface: dark, restrained, touch-first, and deliberately calm around moments where users move money or make trust decisions. It should feel like a secure working tool rather than a crypto spectacle. The visual system earns confidence through clear hierarchy, generous touch targets, predictable flow panels, and reusable vipr-* classes.\n\nThe physical scene is a user checking or sending funds on a phone in mixed ambient light, often with limited patience and real risk attached. Dark mode is justified by repeated mobile use, QR scanning, payment review, and a need to keep the interface quiet while amounts, federation names, invoices, recovery words, and warnings remain readable.\n\nThe system explicitly rejects the PRODUCT.md anti-references: a generic crypto trading app, exchange dashboard, neon-on-black Web3 landing page, speculative finance product, enterprise banking portal, corporate blue trust-washing, dense legalese, and sterile compliance-first layout.",
+    "keyCharacteristics": [
+      "Compact mobile shells with a 700px app width ceiling and 16px edge insets.",
+      "Wider detail and backup panels use the documented wide widths (`760px`, `720px`) without changing the mobile-first rhythm.",
+      "Restrained dark neutrals with a rare violet accent for primary action and selection.",
+      "Tonal layering, borders, and inset highlights before heavy drop shadows.",
+      "Direct, plain-spoken copy that surfaces trust and custody risk at the relevant step.",
+      "Shared vipr-* classes and CSS tokens as the source of truth for new UI."
+    ],
+    "rules": [
+      {
+        "name": "The One Violet Rule",
+        "body": "Vault Violet is the only brand accent. Do not add extra brand hues for visual variety.",
+        "section": "colors"
+      },
+      {
+        "name": "The Signal Is Functional Rule",
+        "body": "Green, amber, red, and blue are status colors only. They must explain state, risk, or completion.",
+        "section": "colors"
+      },
+      {
+        "name": "The Rail Color Rule",
+        "body": "Bitcoin Gold and Lightning Gold identify payment rails. They are not general accent colors.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Crypto Glow Rule",
+        "body": "Glows and radial accents must stay subtle and contextual. If the surface reads as neon-on-black Web3, it is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Amount First Rule",
+        "body": "In money movement screens, the amount and final action outrank decorative titles.",
+        "section": "typography"
+      },
+      {
+        "name": "The Zero Tracking Rule",
+        "body": "Default letter spacing is 0. Do not widen labels unless using the established eyebrow or recovery-word pattern.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tonal First Rule",
+        "body": "Add depth with surface tint, border, and inset highlights before drop shadows.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Heavy Shadow Budget Rule",
+        "body": "Heavy shadows belong to overlays and page panels, not ordinary list items.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use shared vipr-* classes and CSS tokens before creating local styles.",
+      "Do keep primary actions visibly tied to Vault Violet and keep secondary actions visually quieter.",
+      "Do surface selected federation, amount, destination, fees, and final action before payment commitment.",
+      "Do use Signal Amber for custody, backup, or federation-risk warnings.",
+      "Do use Bitcoin Gold and Lightning Gold only for payment-rail identity.",
+      "Do respect WCAG AA, reduced motion preferences, keyboard access, and non-color status cues.",
+      "Do keep mobile edge insets aligned to --vipr-space-4 unless scanner, modal, or QR surfaces intentionally differ.",
+      "Do keep QR surfaces high-contrast even when they require a white backing surface inside the dark app."
+    ],
+    "donts": [
+      "Don't make Vipr look like a generic crypto trading app, exchange dashboard, neon-on-black Web3 landing page, or speculative finance product.",
+      "Don't use excessive glow effects, cyberpunk palettes, token-price visual language, decorative gradients, or visual drama that competes with payment comprehension.",
+      "Don't make Vipr look like an enterprise banking portal with corporate blue trust-washing, dense legalese, or sterile compliance-first layout.",
+      "Don't hardcode colors, radii, spacing, shadows, or typography in components when a vipr-* token already exists.",
+      "Don't use color alone to communicate status, risk, success, or failure.",
+      "Don't reuse scanner, QR, wizard, or backup special-purpose tokens as generic decoration on normal wallet screens.",
+      "Don't use side-stripe borders, gradient text, decorative glassmorphism, repeated identical card grids, or modal-first solutions unless the interaction truly requires a modal."
+    ]
+  }
+}
