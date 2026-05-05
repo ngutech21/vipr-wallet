@@ -77,13 +77,8 @@ test.describe('Federation Join and Onchain Receive Flow', () => {
         timeout: 15_000,
       })
 
-      const generateAddressButton = page.getByTestId('receive-onchain-generate-address-btn')
-      await expect(generateAddressButton).toHaveAttribute('data-busy', 'false')
-      await expect(generateAddressButton).toBeEnabled()
-      await generateAddressButton.click()
-
       const addressInput = page.getByTestId('receive-onchain-address-input')
-      await expect(addressInput).toBeVisible({ timeout: 15_000 })
+      await expect(addressInput).toBeVisible({ timeout: 30_000 })
       await expect(addressInput).not.toHaveValue('')
 
       await expect(page.getByTestId('receive-onchain-copy-btn')).toBeVisible()

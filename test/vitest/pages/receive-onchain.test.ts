@@ -96,7 +96,7 @@ describe('ReceiveOnchainPage', () => {
   })
 
   it('subscribes to the deposit and navigates when the wallet reports confirmation', async () => {
-    const wrapper = mount(ReceiveOnchainPage, {
+    mount(ReceiveOnchainPage, {
       global: {
         stubs: {
           transition: false,
@@ -110,8 +110,7 @@ describe('ReceiveOnchainPage', () => {
       },
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).generateAddress()
+    await flushPromises()
 
     expect(mockSubscribeDeposit).toHaveBeenCalledWith(
       'deposit-op-1',
