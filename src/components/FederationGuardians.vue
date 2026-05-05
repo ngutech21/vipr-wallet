@@ -72,9 +72,20 @@ function guardianLabel(guardian: FederationGuardian): string {
 
 <style scoped>
 .guardian-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 24px;
   margin-left: var(--vipr-space-1);
-  color: var(--vipr-text-muted);
-  font-weight: 500;
+  padding: 0 var(--vipr-space-2);
+  border: 1px solid var(--vipr-color-surface-border);
+  border-radius: var(--vipr-radius-pill);
+  background: var(--vipr-chip-bg-muted);
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-caption);
+  font-weight: 700;
+  line-height: 1;
 }
 
 .guardian-header {
@@ -164,5 +175,25 @@ function guardianLabel(guardian: FederationGuardian): string {
   font-size: var(--vipr-font-size-label);
   line-height: var(--vipr-line-height-tight);
   word-break: break-all;
+}
+
+@media (max-width: 599px) {
+  .guardian-header {
+    padding: var(--vipr-space-3) 0;
+  }
+
+  .guardian-header__icon {
+    font-size: 1.1rem;
+  }
+
+  .guardian-header__title {
+    font-size: var(--vipr-font-size-section-title);
+  }
+
+  .guardian-count {
+    min-width: 30px;
+    height: 26px;
+    font-size: var(--vipr-font-size-caption);
+  }
 }
 </style>

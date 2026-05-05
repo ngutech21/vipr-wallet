@@ -38,7 +38,11 @@
           </span>
         </div>
 
-        <div class="summary-modules">
+        <div
+          v-if="federation?.modules.length"
+          class="summary-modules"
+          aria-label="Supported modules"
+        >
           <q-chip
             v-for="module in federation?.modules"
             :key="module.kind"
@@ -120,8 +124,9 @@ defineProps<{
   flex-wrap: wrap;
   gap: var(--vipr-space-2);
   margin-top: var(--vipr-federation-detail-currency-gap);
-  color: var(--vipr-text-muted);
+  color: var(--vipr-text-secondary);
   font-size: var(--vipr-font-size-caption);
+  font-weight: 500;
   line-height: var(--vipr-line-height-tight);
 }
 
@@ -134,20 +139,36 @@ defineProps<{
 .summary-modules {
   min-width: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--vipr-space-1);
+  flex-wrap: nowrap;
+  gap: var(--vipr-space-2);
   margin-top: var(--vipr-space-3);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.summary-modules::-webkit-scrollbar {
+  display: none;
 }
 
 .summary-module-chip {
+  flex: 0 0 auto;
   margin: 0;
-  background: var(--vipr-color-input-bg);
+  min-width: 44px;
+  height: 28px;
+  background: var(--vipr-chip-bg-muted);
   color: var(--vipr-text-secondary);
-  font-weight: 500;
+  font-size: var(--vipr-font-size-label);
+  font-weight: 600;
+  line-height: var(--vipr-line-height-tight);
 }
 
 .summary-module-chip :deep(.q-chip__content) {
   padding: 0 var(--vipr-space-2);
+  max-width: 16ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (max-width: 599px) {
@@ -165,12 +186,13 @@ defineProps<{
   }
 
   .summary-meta-line {
-    font-size: var(--vipr-font-size-label);
+    font-size: var(--vipr-font-size-caption);
   }
 
   .summary-module-chip {
-    height: 22px;
-    font-size: 0.74rem;
+    height: 30px;
+    max-width: min(54vw, 220px);
+    font-size: var(--vipr-font-size-caption);
   }
 }
 </style>
