@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { framesToData, parseFramesReducer } from 'qrloop'
+import { Buffer } from 'buffer'
+import { dataToFrames, parseFramesReducer } from 'qrloop'
 import {
   buildEcashQrFrames,
+  decodeEcashQrFrames,
   ECASH_QR_FRAME_DATA_SIZE,
   ECASH_QR_FRAME_LOOPS,
 } from 'src/utils/ecashQrFrames'
@@ -23,7 +25,15 @@ describe('buildEcashQrFrames', () => {
     const frames = buildEcashQrFrames(notes)
     const importedFrames = frames.reduce(parseFramesReducer, undefined)
 
-    expect(framesToData(importedFrames).toString()).toBe(notes)
+    expect(decodeEcashQrFrames(importedFrames)).toBe(notes)
+  })
+
+  it('encodes raw OOB note bytes back to a parseable base64url string', () => {
+    const rawOobNotes = Buffer.from([0x03, 0x01, 0x04, 0xff, 0x00, 0x80, 0x1f])
+    const frames = dataToFrames(rawOobNotes)
+    const importedFrames = frames.reduce(parseFramesReducer, undefined)
+
+    expect(decodeEcashQrFrames(importedFrames)).toBe('AwEE_wCAHw==')
   })
 
   it('creates multiple frames for longer notes', () => {

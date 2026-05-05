@@ -107,12 +107,12 @@ meta:
             <q-input
               v-model="ecashToken"
               filled
-              autogrow
               dense
               dark
               type="textarea"
+              rows="3"
               placeholder="Paste ecash token here"
-              class="vipr-input"
+              class="vipr-input receive-ecash-token-input"
               data-testid="receive-ecash-token-input"
             >
               <template #append>
@@ -548,6 +548,23 @@ function isEcashInspectionUnavailable(error: unknown): boolean {
 
 .receive-ecash-card {
   margin-bottom: var(--vipr-space-4);
+}
+
+.receive-ecash-token-input :deep(.q-field__control) {
+  min-height: calc(var(--vipr-control-height-lg) + var(--vipr-space-10));
+  align-items: flex-start;
+}
+
+.receive-ecash-token-input :deep(.q-field__native) {
+  max-height: calc(var(--vipr-control-height-lg) + var(--vipr-space-5));
+  overflow-y: auto;
+  resize: none;
+  line-height: var(--vipr-line-height-body);
+}
+
+.receive-ecash-token-input :deep(.q-field__append) {
+  align-self: flex-start;
+  padding-top: var(--vipr-space-1);
 }
 
 .receive-ecash-title {
