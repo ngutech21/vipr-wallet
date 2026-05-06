@@ -3,7 +3,7 @@
   
 
   inputs = {
-    # Follow fedimint's pinned nixpkgs (nixos-24.11) for cache hits
+    # Follow fedimint's pinned nixpkgs for cache hits
     fedimint.url = "github:fedimint/fedimint/v0.11.1";
     nixpkgs.follows = "fedimint/nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
@@ -26,7 +26,7 @@
         playwrightFonts = with pkgs; [
           noto-fonts
           noto-fonts-cjk-sans
-          noto-fonts-emoji
+          noto-fonts-color-emoji
           liberation_ttf
           dejavu_fonts
         ];
