@@ -1,5 +1,5 @@
 # Stage 1: Build the Quasar PWA
-FROM node:24-slim AS builder
+FROM node:26-slim AS builder
 
 ARG COMMITHASH
 ARG APP_VERSION
