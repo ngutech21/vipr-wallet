@@ -34,6 +34,7 @@ import {
 import { federationHasModule } from 'src/utils/federationModules'
 
 const WALLET_NAME_PREFIX = 'wallet-'
+const RECOVERY_BALANCE_REFRESH_DELAYS_MS = [0, 1_000, 3_000] as const
 
 let walletOpenQueue: Promise<void> | null = null
 
@@ -73,6 +74,13 @@ export type TransactionsPageOptions = {
   visibleOnly?: boolean
 }
 
+export type OpenWalletOptions = {
+  expectRecovery?: boolean
+  recoverOnJoin?: boolean
+}
+
+export type FederationRecoveryStatus = 'restoring' | 'restored' | 'no-backup' | 'failed'
+
 type TransactionsBatchEntry = {
   transaction: Transactions
   operationKey: OperationKey | null
@@ -94,6 +102,40 @@ type TransactionHistoryWallet = {
   }
 }
 
+type RecoveryProgressEvent = {
+  module_id: number
+  progress: JSONValue
+}
+
+type RecoveryMonitoringWallet = {
+  recovery: {
+    hasPendingRecoveries: () => Promise<boolean>
+    waitForAllRecoveries: () => Promise<unknown>
+    subscribeToRecoveryProgress: (
+      onSuccess: (progress: RecoveryProgressEvent) => void,
+      onError: (error: string) => void,
+    ) => () => void
+  }
+}
+
+type RecoveryProgressSummary = {
+  shape: string
+  keys?: string[]
+  numericFields?: Record<string, number>
+  booleanFields?: Record<string, boolean>
+  stringFields?: Record<string, string>
+  sample?: JSONValue
+  truncated?: boolean
+}
+
+function createRecoveryProgressMap(): Record<number, JSONValue> {
+  return {}
+}
+
+function createFederationRecoveryStatusMap(): Record<string, FederationRecoveryStatus> {
+  return {}
+}
+
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
     wallet: null as FedimintWallet | null,
@@ -102,6 +144,13 @@ export const useWalletStore = defineStore('wallet', {
     mnemonicWords: [] as string[],
     hasMnemonic: false,
     needsMnemonicBackup: false,
+    recoveryInProgress: false,
+    recoveryFederationId: null as string | null,
+    recoveryError: null as string | null,
+    recoveryProgressByModule: createRecoveryProgressMap(),
+    recoveryStatusByFederationId: createFederationRecoveryStatusMap(),
+    transactionsRefreshVersion: 0,
+    recoveryMonitorId: 0,
   }),
   actions: {
     async initClients() {
@@ -136,7 +185,7 @@ export const useWalletStore = defineStore('wallet', {
       return true
     },
 
-    async openWalletForFederation(selectedFederation: Federation) {
+    async openWalletForFederation(selectedFederation: Federation, options: OpenWalletOptions = {}) {
       await this.initClients()
       if (!this.hasMnemonic) {
         const hasMnemonic = await this.loadMnemonic()
@@ -154,19 +203,32 @@ export const useWalletStore = defineStore('wallet', {
         walletName,
         federationId: selectedFederation.federationId,
         inviteCode: selectedFederation.inviteCode,
+        recoverOnJoin: options.recoverOnJoin === true,
       })
 
       this.activeWalletName = walletName
       await this.updateBalance()
       await this.refreshFederationMetadata(selectedFederation)
+      logger.logWalletOperation('Wallet open completed before recovery monitor', {
+        federationId: selectedFederation.federationId,
+        walletName,
+        expectRecovery: options.expectRecovery === true,
+        recoverOnJoin: options.recoverOnJoin === true,
+        balanceState: this.balance > 0 ? 'nonzero' : 'zero',
+      })
+      this.watchRecoveryInBackground(
+        walletName,
+        selectedFederation.federationId,
+        options.expectRecovery === true,
+      )
     },
 
-    async openWallet() {
+    async openWallet(options: OpenWalletOptions = {}) {
       const previousOpen = walletOpenQueue
       const openAttempt =
         previousOpen == null
-          ? this.openWalletOnce()
-          : previousOpen.catch(() => undefined).then(() => this.openWalletOnce())
+          ? this.openWalletOnce(options)
+          : previousOpen.catch(() => undefined).then(() => this.openWalletOnce(options))
 
       walletOpenQueue = openAttempt
 
@@ -179,7 +241,7 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
-    async openWalletOnce() {
+    async openWalletOnce(options: OpenWalletOptions = {}) {
       const federationStore = useFederationStore()
       const selectedFederation = federationStore.selectedFederation
 
@@ -187,6 +249,7 @@ export const useWalletStore = defineStore('wallet', {
         this.wallet = null
         this.activeWalletName = null
         this.balance = 0
+        this.cancelRecoveryMonitor()
         return
       }
 
@@ -195,7 +258,7 @@ export const useWalletStore = defineStore('wallet', {
       })
 
       try {
-        await this.openWalletForFederation(selectedFederation)
+        await this.openWalletForFederation(selectedFederation, options)
       } catch (error) {
         if (!isRecoverableTransportError(error)) {
           throw error
@@ -208,7 +271,7 @@ export const useWalletStore = defineStore('wallet', {
 
         await this.closeWallet()
         fedimintClient.reset()
-        await this.openWalletForFederation(selectedFederation)
+        await this.openWalletForFederation(selectedFederation, options)
       }
     },
 
@@ -218,6 +281,7 @@ export const useWalletStore = defineStore('wallet', {
       } finally {
         this.wallet = null
         this.activeWalletName = null
+        this.cancelRecoveryMonitor()
       }
     },
 
@@ -230,6 +294,9 @@ export const useWalletStore = defineStore('wallet', {
       this.mnemonicWords = []
       this.hasMnemonic = false
       this.needsMnemonicBackup = false
+      this.cancelRecoveryMonitor()
+      this.recoveryStatusByFederationId = {}
+      this.transactionsRefreshVersion += 1
     },
 
     async listWallets(): Promise<string[]> {
@@ -265,6 +332,14 @@ export const useWalletStore = defineStore('wallet', {
 
     async restoreMnemonic(words: string[]): Promise<void> {
       await this.initClients()
+      logger.logWalletOperation('Preparing clean Fedimint storage for mnemonic restore')
+      await fedimintClient.clearAllWallets()
+      this.wallet = null
+      this.activeWalletName = null
+      this.balance = 0
+      this.cancelRecoveryMonitor()
+      this.recoveryStatusByFederationId = {}
+      this.transactionsRefreshVersion += 1
       await fedimintClient.setMnemonic(words)
       const hasMnemonic = await this.loadMnemonic()
       if (!hasMnemonic) {
@@ -277,6 +352,326 @@ export const useWalletStore = defineStore('wallet', {
     markMnemonicBackupConfirmed() {
       localStorage.setItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY, '1')
       this.needsMnemonicBackup = false
+    },
+
+    resetActiveRecoveryState() {
+      this.recoveryInProgress = false
+      this.recoveryFederationId = null
+      this.recoveryError = null
+      this.recoveryProgressByModule = {}
+    },
+
+    cancelRecoveryMonitor() {
+      this.recoveryMonitorId += 1
+      this.resetActiveRecoveryState()
+    },
+
+    markFederationRecoveryStatus(
+      federationId: string,
+      status: FederationRecoveryStatus,
+      error?: string,
+    ) {
+      if (federationId === '') {
+        return
+      }
+
+      this.recoveryStatusByFederationId = {
+        ...this.recoveryStatusByFederationId,
+        [federationId]: status,
+      }
+
+      if (status === 'failed') {
+        this.recoveryError = error ?? 'Wallet recovery failed'
+      }
+    },
+
+    watchRecoveryInBackground(walletName: string, federationId: string, expectRecovery: boolean) {
+      const wallet = this.wallet
+      if (wallet == null) {
+        return
+      }
+
+      const monitorId = ++this.recoveryMonitorId
+      logger.logWalletOperation('Wallet recovery monitor scheduled', {
+        federationId,
+        walletName,
+        monitorId,
+        expectRecovery,
+      })
+      this.watchRecovery(wallet, walletName, federationId, monitorId, expectRecovery).catch(
+        (error) => {
+          logger.warn('Wallet recovery task failed unexpectedly', {
+            federationId,
+            walletName,
+            reason: getErrorMessage(error),
+          })
+        },
+      )
+    },
+
+    async watchRecovery(
+      wallet: RecoveryMonitoringWallet,
+      walletName: string,
+      federationId: string,
+      monitorId: number,
+      expectRecovery: boolean,
+    ) {
+      let unsubscribe: (() => void) | undefined
+      let progressEventCount = 0
+      const progressEventCountByModule: Record<number, number> = {}
+      const latestProgressSummaryByModule: Record<number, RecoveryProgressSummary> = {}
+      const startedAt = Date.now()
+
+      try {
+        logger.logWalletOperation('Wallet recovery pending check started', {
+          federationId,
+          walletName,
+          monitorId,
+          expectRecovery,
+        })
+        const hasPendingRecoveries = await wallet.recovery.hasPendingRecoveries()
+        if (!this.isCurrentRecoveryMonitor(monitorId, walletName)) {
+          logger.logWalletOperation('Wallet recovery pending check ignored for stale monitor', {
+            federationId,
+            walletName,
+            monitorId,
+          })
+          return
+        }
+
+        logger.logWalletOperation('Wallet recovery pending check completed', {
+          federationId,
+          walletName,
+          monitorId,
+          expectRecovery,
+          hasPendingRecoveries,
+          durationMs: Date.now() - startedAt,
+        })
+
+        if (!hasPendingRecoveries) {
+          await this.logRecoverySnapshot(federationId, 'no-pending-recoveries')
+          if (expectRecovery) {
+            logger.warn('Wallet restore join reported no pending recoveries', {
+              federationId,
+              walletName,
+              monitorId,
+            })
+            this.markFederationRecoveryStatus(federationId, 'no-backup')
+          }
+          this.resetActiveRecoveryState()
+          return
+        }
+
+        this.recoveryInProgress = true
+        this.recoveryFederationId = federationId
+        this.recoveryError = null
+        this.recoveryProgressByModule = {}
+        this.markFederationRecoveryStatus(federationId, 'restoring')
+        logger.logWalletOperation('Wallet recovery started', { federationId, walletName })
+
+        unsubscribe = wallet.recovery.subscribeToRecoveryProgress(
+          (event) => {
+            if (!this.isCurrentRecoveryMonitor(monitorId, walletName)) {
+              return
+            }
+
+            progressEventCount += 1
+            progressEventCountByModule[event.module_id] =
+              (progressEventCountByModule[event.module_id] ?? 0) + 1
+            const progressSummary = summarizeRecoveryProgress(event.progress)
+            latestProgressSummaryByModule[event.module_id] = progressSummary
+            logger.logWalletOperation('Wallet recovery progress event', {
+              federationId,
+              walletName,
+              monitorId,
+              moduleId: event.module_id,
+              moduleKind: this.getRecoveryModuleKind(federationId, event.module_id),
+              progressType: typeof event.progress,
+              progressEventCount,
+              moduleProgressEventCount: progressEventCountByModule[event.module_id],
+              progress: progressSummary,
+            })
+            this.recoveryProgressByModule = {
+              ...this.recoveryProgressByModule,
+              [event.module_id]: event.progress,
+            }
+          },
+          (error) => {
+            logger.warn('Wallet recovery progress subscription failed', {
+              federationId,
+              walletName,
+              reason: error,
+            })
+          },
+        )
+
+        logger.logWalletOperation('Wallet recovery wait started', {
+          federationId,
+          walletName,
+          monitorId,
+        })
+        await wallet.recovery.waitForAllRecoveries()
+        if (!this.isCurrentRecoveryMonitor(monitorId, walletName)) {
+          logger.logWalletOperation('Wallet recovery wait ignored for stale monitor', {
+            federationId,
+            walletName,
+            monitorId,
+          })
+          return
+        }
+
+        logger.logWalletOperation('Wallet recovery completed', {
+          federationId,
+          walletName,
+          monitorId,
+          progressEventCount,
+          progressEventCountByModule,
+          latestProgressByModule: latestProgressSummaryByModule,
+          durationMs: Date.now() - startedAt,
+        })
+        await this.refreshAfterRecovery(federationId)
+        this.markFederationRecoveryStatus(federationId, 'restored')
+        this.transactionsRefreshVersion += 1
+      } catch (error) {
+        if (!this.isCurrentRecoveryMonitor(monitorId, walletName)) {
+          return
+        }
+
+        const reason = getErrorMessage(error)
+        this.markFederationRecoveryStatus(federationId, 'failed', reason)
+        logger.warn('Wallet recovery failed', {
+          federationId,
+          walletName,
+          reason,
+        })
+      } finally {
+        unsubscribe?.()
+        if (this.isCurrentRecoveryMonitor(monitorId, walletName)) {
+          this.resetActiveRecoveryState()
+        }
+      }
+    },
+
+    isCurrentRecoveryMonitor(monitorId: number, walletName: string) {
+      return this.recoveryMonitorId === monitorId && this.activeWalletName === walletName
+    },
+
+    async refreshAfterRecovery(federationId: string) {
+      await this.refreshBalanceAfterRecovery(federationId)
+
+      const federationStore = useFederationStore()
+      const federation = federationStore.federations.find(
+        (candidate) => candidate.federationId === federationId,
+      )
+
+      if (federation == null) {
+        return
+      }
+
+      try {
+        await this.refreshFederationMetadata(federation)
+      } catch (error) {
+        logger.warn('Failed to refresh federation metadata after wallet recovery', {
+          federationId,
+          reason: getErrorMessage(error),
+        })
+      }
+
+      await this.logRecoverySnapshot(federationId, 'after-recovery-refresh')
+    },
+
+    async refreshBalanceAfterRecovery(federationId: string) {
+      for (const delayMs of RECOVERY_BALANCE_REFRESH_DELAYS_MS) {
+        if (delayMs > 0) {
+          // eslint-disable-next-line no-await-in-loop
+          await delay(delayMs)
+        }
+
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          await this.updateBalance()
+          logger.logWalletOperation('Wallet recovery balance refreshed', {
+            federationId,
+            delayMs,
+            balanceSats: this.balance,
+            balanceState: this.balance > 0 ? 'nonzero' : 'zero',
+          })
+        } catch (error) {
+          logger.warn('Failed to refresh balance after wallet recovery', {
+            federationId,
+            delayMs,
+            reason: getErrorMessage(error),
+          })
+        }
+      }
+    },
+
+    async logRecoverySnapshot(federationId: string, reason: string) {
+      try {
+        const mintNoteCounts = await this.getRecoveryMintNoteCounts(federationId, reason)
+        const page = await this.getTransactionsPage(20, undefined, { visibleOnly: true })
+        logger.logWalletOperation('Wallet recovery snapshot', {
+          federationId,
+          reason,
+          balanceState: this.balance > 0 ? 'nonzero' : 'zero',
+          balanceSats: this.balance,
+          mintNoteCounts,
+          mintDenominationCount: mintNoteCounts == null ? null : Object.keys(mintNoteCounts).length,
+          visibleTransactionsOnFirstPage: page.transactions.length,
+          hasMoreTransactions: page.hasMore,
+        })
+      } catch (error) {
+        logger.warn('Failed to collect wallet recovery snapshot', {
+          federationId,
+          reason,
+          error: getErrorMessage(error),
+        })
+      }
+    },
+
+    async getRecoveryMintNoteCounts(
+      federationId: string,
+      reason: string,
+    ): Promise<NoteCountByDenomination | null> {
+      if (this.wallet == null) {
+        return null
+      }
+
+      try {
+        const noteCounts = await this.wallet.mint.getNotesByDenomination()
+        logger.logWalletOperation('Wallet recovery mint note counts', {
+          federationId,
+          reason,
+          noteCounts,
+          denominationCount: Object.keys(noteCounts).length,
+        })
+        return noteCounts
+      } catch (error) {
+        logger.warn('Failed to collect wallet recovery mint note counts', {
+          federationId,
+          reason,
+          error: getErrorMessage(error),
+        })
+        return null
+      }
+    },
+
+    getRecoveryModuleKind(federationId: string, moduleId: number): string | null {
+      const federationStore = useFederationStore()
+      const federation = federationStore.federations.find(
+        (candidate) => candidate.federationId === federationId,
+      )
+      return (
+        federation?.modules.find((module) => module.id === String(moduleId))?.kind ??
+        federation?.modules[moduleId]?.kind ??
+        null
+      )
+    },
+
+    assertCanSpendDuringRecovery() {
+      if (this.recoveryInProgress) {
+        throw new Error('Wallet recovery is still running. Please wait before sending funds.')
+      }
     },
 
     async inspectEcash(tokens: string): Promise<EcashInspection> {
@@ -325,6 +720,8 @@ export const useWalletStore = defineStore('wallet', {
       if (this.wallet == null) {
         throw new Error('Wallet is not initialized')
       }
+
+      this.assertCanSpendDuringRecovery()
 
       if (!Number.isInteger(amountSats) || amountSats <= 0) {
         throw new Error('Amount must be a positive whole number of sats')
@@ -402,6 +799,8 @@ export const useWalletStore = defineStore('wallet', {
       if (this.wallet == null) {
         throw new Error('Wallet is not initialized')
       }
+
+      this.assertCanSpendDuringRecovery()
 
       const normalizedAddress = address.trim()
 
@@ -692,6 +1091,10 @@ export const useWalletStore = defineStore('wallet', {
       const guardians = extractFederationGuardians(typedConfig?.global?.api_endpoints)
       const metaExternalUrl = typedConfig?.global?.meta?.meta_external_url as string
       const modules = typedConfig?.modules ?? {}
+      const moduleConfigs = Object.entries(modules).map(([id, module]) => ({
+        ...(module as ModuleConfig),
+        id,
+      }))
 
       let legacyMetadata: JSONObject | null = null
 
@@ -717,7 +1120,7 @@ export const useWalletStore = defineStore('wallet', {
         inviteCode: inviteCode,
         federationId: federation_id.trim(),
         metaUrl: metaExternalUrl,
-        modules: Object.values(modules) as ModuleConfig[],
+        modules: moduleConfigs,
         guardians,
         metadata,
       } satisfies Federation
@@ -992,6 +1395,176 @@ function getFiniteNumber(value: JSONValue | undefined): number | undefined {
   }
 
   return undefined
+}
+
+function summarizeRecoveryProgress(progress: JSONValue): RecoveryProgressSummary {
+  const numericFields: Record<string, number> = {}
+  const booleanFields: Record<string, boolean> = {}
+  const stringFields: Record<string, string> = {}
+  const sampleState = { count: 0, truncated: false }
+  const shape = getJsonShape(progress)
+
+  collectRecoveryProgressFields(progress, '', numericFields, booleanFields, stringFields, 3)
+
+  const summary: RecoveryProgressSummary = {
+    shape,
+    sample: sanitizeRecoveryProgressSample(progress, sampleState, 3),
+  }
+
+  if (progress != null && typeof progress === 'object' && !Array.isArray(progress)) {
+    summary.keys = Object.keys(progress).slice(0, 16)
+  }
+
+  if (Object.keys(numericFields).length > 0) {
+    summary.numericFields = numericFields
+  }
+
+  if (Object.keys(booleanFields).length > 0) {
+    summary.booleanFields = booleanFields
+  }
+
+  if (Object.keys(stringFields).length > 0) {
+    summary.stringFields = stringFields
+  }
+
+  if (sampleState.truncated) {
+    summary.truncated = true
+  }
+
+  return summary
+}
+
+function collectRecoveryProgressFields(
+  value: JSONValue,
+  path: string,
+  numericFields: Record<string, number>,
+  booleanFields: Record<string, boolean>,
+  stringFields: Record<string, string>,
+  depth: number,
+) {
+  if (depth < 0 || value == null) {
+    return
+  }
+
+  const fieldPath = path === '' ? 'value' : path
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    if (Object.keys(numericFields).length < 24) {
+      numericFields[fieldPath] = value
+    }
+    return
+  }
+
+  if (typeof value === 'boolean') {
+    if (Object.keys(booleanFields).length < 24) {
+      booleanFields[fieldPath] = value
+    }
+    return
+  }
+
+  if (typeof value === 'string') {
+    if (Object.keys(stringFields).length < 12) {
+      stringFields[fieldPath] = sanitizeRecoveryString(path, value)
+    }
+    return
+  }
+
+  if (Array.isArray(value)) {
+    value.slice(0, 8).forEach((item, index) => {
+      collectRecoveryProgressFields(
+        item,
+        `${fieldPath}[${index}]`,
+        numericFields,
+        booleanFields,
+        stringFields,
+        depth - 1,
+      )
+    })
+    return
+  }
+
+  for (const [key, child] of Object.entries(value).slice(0, 16)) {
+    collectRecoveryProgressFields(
+      child,
+      path === '' ? key : `${path}.${key}`,
+      numericFields,
+      booleanFields,
+      stringFields,
+      depth - 1,
+    )
+  }
+}
+
+function sanitizeRecoveryProgressSample(
+  value: JSONValue,
+  state: { count: number; truncated: boolean },
+  depth: number,
+  key = '',
+): JSONValue {
+  state.count += 1
+  if (state.count > 80 || depth < 0) {
+    state.truncated = true
+    return '[truncated]'
+  }
+
+  if (typeof value === 'string') {
+    return sanitizeRecoveryString(key, value)
+  }
+
+  if (value == null || typeof value !== 'object') {
+    return value
+  }
+
+  if (Array.isArray(value)) {
+    if (value.length > 8) {
+      state.truncated = true
+    }
+    return value.slice(0, 8).map((item) => sanitizeRecoveryProgressSample(item, state, depth - 1))
+  }
+
+  const entries = Object.entries(value)
+  if (entries.length > 16) {
+    state.truncated = true
+  }
+
+  return Object.fromEntries(
+    entries
+      .slice(0, 16)
+      .map(([childKey, childValue]) => [
+        childKey,
+        sanitizeRecoveryProgressSample(childValue, state, depth - 1, childKey),
+      ]),
+  )
+}
+
+function sanitizeRecoveryString(key: string, value: string): string {
+  if (
+    /mnemonic|seed|secret|private|token|note|invite|preimage|invoice|address|txid|outpoint/i.test(
+      key,
+    )
+  ) {
+    return `[redacted:${value.length}]`
+  }
+
+  return value.length > 160 ? `${value.slice(0, 160)}...` : value
+}
+
+function getJsonShape(value: JSONValue): string {
+  if (value == null) {
+    return 'null'
+  }
+
+  if (Array.isArray(value)) {
+    return `array:${value.length}`
+  }
+
+  return typeof value
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms)
+  })
 }
 
 export function mapTxOutputSummaryToFederationUtxo(output: TxOutputSummary): FederationUtxo {

@@ -31,6 +31,7 @@ export type FederationUtxo = {
 }
 
 export type ModuleConfig = {
+  id?: string
   config: string
   kind: string
   version: {

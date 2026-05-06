@@ -44,6 +44,7 @@ export function useLightningPayment() {
       isProcessing.value = true
       Loading.show({ message: 'Processing payment...' })
 
+      walletStore.assertCanSpendDuringRecovery()
       const paymentResult = await walletStore.wallet?.lightning.payInvoice(invoice)
       if (paymentResult == null) {
         throw new Error('Failed to start Lightning payment')
