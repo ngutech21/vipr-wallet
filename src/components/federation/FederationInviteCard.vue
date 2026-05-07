@@ -4,7 +4,7 @@
       <button
         type="button"
         class="federation-invite__qr-trigger"
-        aria-label="Open larger federation invite QR code"
+        :aria-label="`Open larger QR code to ${inviteDialogTitle}`"
         data-testid="federation-details-invite-qr-zoom-btn"
         @click="showZoomedQr = true"
       >
@@ -55,7 +55,7 @@
     <q-dialog v-model="showZoomedQr">
       <q-card class="vipr-qr-dialog-card vipr-surface-card vipr-surface-card--strong">
         <q-card-section class="vipr-qr-dialog-header">
-          <div class="vipr-qr-dialog-title">Federation invite</div>
+          <div class="vipr-qr-dialog-title">{{ inviteDialogTitle }}</div>
           <q-btn
             icon="close"
             flat
@@ -97,6 +97,12 @@ const props = defineProps<{
 }>()
 
 const showZoomedQr = ref(false)
+
+const inviteDialogTitle = computed(() =>
+  props.federationTitle != null && props.federationTitle !== ''
+    ? `Join ${props.federationTitle}`
+    : 'Join federation',
+)
 
 const { copyToClipboard: copyInviteToClipboard, shareValue: shareFederationInvite } = useCopyShare({
   value: () => props.inviteCode,
