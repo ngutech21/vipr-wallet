@@ -1,43 +1,41 @@
 <template>
   <section v-if="factItems.length > 0 || hasLinkItems" class="federation-open-section">
     <div class="federation-open-section__title">Limits & terms</div>
-    <div class="vipr-detail-list federation-receipt-list">
+    <div
+      v-if="factItems.length > 0 || metadata?.tosUrl"
+      class="vipr-detail-list federation-receipt-list"
+    >
       <div v-for="fact in factItems" :key="fact.label" class="vipr-detail-row">
         <div class="vipr-detail-label">{{ fact.label }}</div>
         <div class="vipr-detail-value federation-receipt-list__value">{{ fact.value }}</div>
       </div>
 
-      <div v-if="metadata?.tosUrl" class="vipr-detail-row">
-        <div class="vipr-detail-label">Terms</div>
-        <a
-          class="vipr-detail-value federation-metadata-url federation-metadata-link"
-          :href="metadata.tosUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          data-testid="federation-details-tos-link"
-        >
-          {{ metadata.tosUrl }}
-        </a>
-      </div>
+      <a
+        v-if="metadata?.tosUrl"
+        class="vipr-detail-row federation-terms-row"
+        :href="metadata.tosUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        data-testid="federation-details-tos-link"
+        :aria-label="`Open terms of service: ${metadata.tosUrl}`"
+      >
+        <span class="vipr-detail-label">Terms</span>
+        <span class="federation-terms-row__value">
+          <span class="federation-terms-row__text">View document</span>
+          <q-icon name="open_in_new" class="federation-terms-row__icon" />
+        </span>
+      </a>
+    </div>
 
-      <div v-if="metadata?.recurringdApi" class="vipr-detail-row vipr-detail-row--block">
-        <div class="vipr-detail-label">Recurringd API</div>
+    <div v-if="technicalItems.length > 0" class="vipr-detail-list federation-receipt-list">
+      <div
+        v-for="item in technicalItems"
+        :key="item.label"
+        class="vipr-detail-row vipr-detail-row--block"
+      >
+        <div class="vipr-detail-label">{{ item.label }}</div>
         <div class="vipr-detail-value vipr-detail-value--mono federation-metadata-url">
-          {{ metadata.recurringdApi }}
-        </div>
-      </div>
-
-      <div v-if="metadata?.lnaddressApi" class="vipr-detail-row vipr-detail-row--block">
-        <div class="vipr-detail-label">Lightning Address API</div>
-        <div class="vipr-detail-value vipr-detail-value--mono federation-metadata-url">
-          {{ metadata.lnaddressApi }}
-        </div>
-      </div>
-
-      <div v-if="metadata?.federationSuccessor" class="vipr-detail-row vipr-detail-row--block">
-        <div class="vipr-detail-label">Successor Federation</div>
-        <div class="vipr-detail-value vipr-detail-value--mono federation-metadata-url">
-          {{ metadata.federationSuccessor }}
+          {{ item.value }}
         </div>
       </div>
     </div>
@@ -99,13 +97,36 @@ const factItems = computed(() => {
   ].filter((item): item is { label: string; value: string; caption?: string } => item != null)
 })
 
+const technicalItems = computed(() => {
+  const metadata = props.metadata
+  if (metadata == null) {
+    return []
+  }
+
+  return [
+    metadata.recurringdApi != null
+      ? {
+          label: 'Recurringd API',
+          value: metadata.recurringdApi,
+        }
+      : null,
+    metadata.lnaddressApi != null
+      ? {
+          label: 'Lightning Address API',
+          value: metadata.lnaddressApi,
+        }
+      : null,
+    metadata.federationSuccessor != null
+      ? {
+          label: 'Successor Federation',
+          value: metadata.federationSuccessor,
+        }
+      : null,
+  ].filter((item): item is { label: string; value: string } => item != null)
+})
+
 const hasLinkItems = computed(() => {
-  return (
-    props.metadata?.tosUrl != null ||
-    props.metadata?.recurringdApi != null ||
-    props.metadata?.lnaddressApi != null ||
-    props.metadata?.federationSuccessor != null
-  )
+  return props.metadata?.tosUrl != null || technicalItems.value.length > 0
 })
 
 function formatMsatsAsSats(value: number): string {
@@ -118,16 +139,9 @@ function formatTimestamp(timestamp: number): string {
 </script>
 
 <style scoped>
-.federation-facts-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--vipr-space-2);
-  margin-bottom: var(--vipr-federation-detail-card-gap);
-}
-
 .federation-open-section {
   display: grid;
-  gap: var(--vipr-space-2);
+  gap: var(--vipr-space-3);
 }
 
 .federation-open-section__title {
@@ -141,49 +155,55 @@ function formatTimestamp(timestamp: number): string {
   text-align: right;
 }
 
-.federation-fact-card {
-  min-width: 0;
-}
-
-.federation-fact-card__section {
-  padding: var(--vipr-space-3);
-}
-
-.federation-fact-card__label {
-  color: var(--vipr-text-muted);
-  font-size: var(--vipr-font-size-label);
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: var(--vipr-line-height-tight);
-}
-
-.federation-fact-card__value {
-  margin-top: var(--vipr-space-2);
-  color: var(--vipr-text-primary);
-  font-size: var(--vipr-font-size-body);
-  font-weight: 700;
-  line-height: var(--vipr-line-height-tight);
-  word-break: break-word;
-}
-
-.federation-fact-card__caption,
 .federation-metadata-url {
   margin-top: var(--vipr-space-2);
 }
 
-.federation-metadata-link {
-  display: inline-block;
-  color: var(--vipr-text-secondary);
+.federation-terms-row {
+  min-width: 0;
+  color: inherit;
   text-decoration: none;
+  transition:
+    background-color 160ms ease-out,
+    color 160ms ease-out;
 }
 
-.federation-metadata-link:hover {
+.federation-terms-row:hover,
+.federation-terms-row:focus-visible {
+  background: var(--vipr-surface-card-bg-hover);
+}
+
+.federation-terms-row:focus-visible {
+  outline: 2px solid var(--q-primary);
+  outline-offset: 2px;
+}
+
+.federation-terms-row__value {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--vipr-space-2);
+  color: var(--vipr-text-secondary);
+  font-weight: 600;
+  text-align: right;
+}
+
+.federation-terms-row__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.federation-terms-row__icon {
+  flex: 0 0 auto;
+  color: var(--vipr-text-muted);
+  font-size: 1.1rem;
+}
+
+.federation-terms-row:hover .federation-terms-row__value,
+.federation-terms-row:focus-visible .federation-terms-row__value {
   color: var(--vipr-text-primary);
-}
-
-@media (max-width: 420px) {
-  .federation-facts-grid {
-    grid-template-columns: 1fr;
-  }
 }
 </style>

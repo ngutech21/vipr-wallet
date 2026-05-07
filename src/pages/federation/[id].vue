@@ -36,9 +36,6 @@ meta:
           <FederationInviteCard :invite-code="inviteCode" :federation-title="federation?.title" />
 
           <section class="federation-open-section federation-trust-section">
-            <div class="federation-section-header">
-              <div class="federation-section-heading">Guardians & Lightning gateways</div>
-            </div>
             <FederationGuardians :guardians="federation?.guardians ?? []" :show-header="true" />
 
             <FederationGatewayList
@@ -51,7 +48,9 @@ meta:
 
           <section class="federation-open-section federation-advanced-section">
             <div class="federation-section-header">
-              <div class="federation-section-heading">Advanced</div>
+              <div class="federation-section-heading federation-section-heading--technical">
+                Technical details
+              </div>
             </div>
             <FederationUtxos
               :utxos="spendableUtxos"
@@ -299,6 +298,11 @@ async function leaveFederation() {
   font-size: var(--vipr-font-size-caption);
   font-weight: 700;
   line-height: var(--vipr-line-height-tight);
+}
+
+.federation-section-heading--technical {
+  color: var(--vipr-text-muted);
+  font-size: var(--vipr-font-size-label);
 }
 
 .federation-section-caption {

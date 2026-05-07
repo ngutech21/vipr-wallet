@@ -1,11 +1,10 @@
 <template>
   <section v-if="inviteCode" class="federation-invite">
-    <div class="federation-invite__eyebrow">Invite</div>
     <div class="federation-invite__row" data-testid="federation-details-invite-container">
       <button
         type="button"
         class="federation-invite__qr-trigger"
-        aria-label="Open larger Invite link"
+        aria-label="Open larger federation invite QR code"
         data-testid="federation-details-invite-qr-zoom-btn"
         @click="showZoomedQr = true"
       >
@@ -21,7 +20,7 @@
       </button>
 
       <div class="federation-invite__copy">
-        <div class="federation-invite__title">Invite link</div>
+        <div class="federation-invite__title">Federation invite</div>
         <div class="federation-invite__description">Scan or share this federation invite.</div>
       </div>
 
@@ -56,7 +55,7 @@
     <q-dialog v-model="showZoomedQr">
       <q-card class="vipr-qr-dialog-card vipr-surface-card vipr-surface-card--strong">
         <q-card-section class="vipr-qr-dialog-header">
-          <div class="vipr-qr-dialog-title">Invite link</div>
+          <div class="vipr-qr-dialog-title">Federation invite</div>
           <q-btn
             icon="close"
             flat
@@ -130,16 +129,7 @@ async function shareInviteCode() {
 .federation-invite {
   min-width: 0;
   display: grid;
-  gap: var(--vipr-space-2);
-}
-
-.federation-invite__eyebrow {
-  color: var(--vipr-text-muted);
-  font-size: var(--vipr-font-size-label);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: var(--vipr-line-height-tight);
-  text-transform: uppercase;
+  gap: 0;
 }
 
 .federation-invite__row {

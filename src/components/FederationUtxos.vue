@@ -135,7 +135,7 @@ function getMempoolNetworkPath(network?: string | null): string {
   grid-template-columns: auto auto auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--vipr-space-2);
-  padding: var(--vipr-space-2) 0;
+  padding: var(--vipr-space-3) 0;
   border: 0;
   border-bottom: 1px solid var(--vipr-detail-separator);
   background: transparent;
@@ -154,7 +154,7 @@ function getMempoolNetworkPath(network?: string | null): string {
   min-width: 0;
   overflow: hidden;
   color: var(--vipr-text-primary);
-  font-size: var(--vipr-font-size-body);
+  font-size: var(--vipr-font-size-section-title);
   font-weight: 700;
   line-height: var(--vipr-line-height-tight);
 }
@@ -163,6 +163,9 @@ function getMempoolNetworkPath(network?: string | null): string {
   min-width: 0;
   overflow: hidden;
   color: var(--vipr-text-muted);
+  font-size: var(--vipr-font-size-caption);
+  font-weight: 500;
+  line-height: var(--vipr-line-height-tight);
   text-overflow: ellipsis;
   white-space: nowrap;
 }

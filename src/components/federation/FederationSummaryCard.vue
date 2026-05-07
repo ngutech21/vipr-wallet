@@ -42,7 +42,6 @@
           v-if="federation?.modules.length"
           class="summary-modules"
           :modules="federation.modules"
-          scroll
         />
       </div>
     </div>
