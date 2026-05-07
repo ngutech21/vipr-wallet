@@ -4,7 +4,7 @@
       <button
         type="button"
         class="federation-invite__qr-trigger"
-        :aria-label="`Open larger QR code to ${inviteDialogTitle}`"
+        :aria-label="inviteDialogAriaLabel"
         data-testid="federation-details-invite-qr-zoom-btn"
         @click="showZoomedQr = true"
       >
@@ -102,6 +102,12 @@ const inviteDialogTitle = computed(() =>
   props.federationTitle != null && props.federationTitle !== ''
     ? `Join ${props.federationTitle}`
     : 'Join federation',
+)
+
+const inviteDialogAriaLabel = computed(() =>
+  props.federationTitle != null && props.federationTitle !== ''
+    ? `Open larger QR code to join ${props.federationTitle}`
+    : 'Open larger QR code to join federation',
 )
 
 const { copyToClipboard: copyInviteToClipboard, shareValue: shareFederationInvite } = useCopyShare({
