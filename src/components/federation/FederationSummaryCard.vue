@@ -38,26 +38,19 @@
           </span>
         </div>
 
-        <div
+        <FederationModuleChips
           v-if="federation?.modules.length"
           class="summary-modules"
-          aria-label="Supported modules"
-        >
-          <q-chip
-            v-for="module in federation?.modules"
-            :key="module.kind"
-            size="sm"
-            class="vipr-chip summary-module-chip"
-          >
-            {{ module.kind }}
-          </q-chip>
-        </div>
+          :modules="federation.modules"
+          scroll
+        />
       </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
+import FederationModuleChips from 'src/components/federation/FederationModuleChips.vue'
 import type { Federation } from 'src/types/federation'
 
 defineOptions({
@@ -137,38 +130,7 @@ defineProps<{
 }
 
 .summary-modules {
-  min-width: 0;
-  display: flex;
-  flex-wrap: nowrap;
-  gap: var(--vipr-space-2);
   margin-top: var(--vipr-space-3);
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-}
-
-.summary-modules::-webkit-scrollbar {
-  display: none;
-}
-
-.summary-module-chip {
-  flex: 0 0 auto;
-  margin: 0;
-  min-width: 44px;
-  height: 28px;
-  background: var(--vipr-chip-bg-muted);
-  color: var(--vipr-text-secondary);
-  font-size: var(--vipr-font-size-label);
-  font-weight: 600;
-  line-height: var(--vipr-line-height-tight);
-}
-
-.summary-module-chip :deep(.q-chip__content) {
-  padding: 0 var(--vipr-space-2);
-  max-width: 16ch;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 @media (max-width: 599px) {
@@ -186,12 +148,6 @@ defineProps<{
   }
 
   .summary-meta-line {
-    font-size: var(--vipr-font-size-caption);
-  }
-
-  .summary-module-chip {
-    height: 30px;
-    max-width: min(54vw, 220px);
     font-size: var(--vipr-font-size-caption);
   }
 }
