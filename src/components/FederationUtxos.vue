@@ -78,7 +78,7 @@ const { formatNumber } = useFormatters()
 const $q = useQuasar()
 const desktopVisibleCount = 10
 const mobileVisibleCount = 4
-const isSectionExpanded = ref(true)
+const isSectionExpanded = ref(false)
 const isListExpanded = ref(false)
 
 const visibleCount = computed(() => ($q.screen.lt.sm ? mobileVisibleCount : desktopVisibleCount))
