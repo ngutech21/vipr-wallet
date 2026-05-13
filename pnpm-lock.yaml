@@ -142,7 +142,7 @@ importers:
         version: 8.0.12(@types/node@24.12.4)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0)
       vite-plugin-checker:
         specifier: ^0.13.0
-        version: 0.13.0(eslint@10.3.0)(optionator@0.9.4)(typescript@6.0.3)(vite@8.0.12(@types/node@24.12.4)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0))(vue-tsc@3.2.8(typescript@6.0.3))
+        version: 0.13.0(eslint@10.3.0)(optionator@0.9.4)(typescript@6.0.3)(vite@8.0.12(@types/node@24.12.4)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0))(vue-tsc@3.2.9(typescript@6.0.3))
       vite-plugin-top-level-await:
         specifier: ^1.6.0
         version: 1.6.0(rollup@4.60.3)(vite@8.0.12(@types/node@24.12.4)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0))
@@ -153,8 +153,8 @@ importers:
         specifier: ^4.1.6
         version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@24.12.4)(@vitest/coverage-v8@4.1.6)(@vitest/ui@4.1.6)(happy-dom@20.9.0)(vite@8.0.12(@types/node@24.12.4)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0))
       vue-tsc:
-        specifier: ^3.2.8
-        version: 3.2.8(typescript@6.0.3)
+        specifier: ^3.2.9
+        version: 3.2.9(typescript@6.0.3)
       workbox-build:
         specifier: ^7.4.1
         version: 7.4.1
@@ -2147,8 +2147,8 @@ packages:
       typescript:
         optional: true
 
-  '@vue/language-core@3.2.8':
-    resolution: {integrity: sha512-9OiSPQFiAAWNVnXb0d2dcTmcKnFQamhuNES6ayyISrb/mwPWVgoGdAqSfCWqKhQpa3D5gDTcYD+w7ObiheZ81g==}
+  '@vue/language-core@3.2.9':
+    resolution: {integrity: sha512-ie0ojt/0fU/GfIogh+zgHbaYRPlt9S+cLOxcWwF7nTSFh897BVgnFKL2byT4kpp1mlqYWZ2psGwSniyE2xsxYw==}
 
   '@vue/reactivity@3.5.34':
     resolution: {integrity: sha512-y9XDjCEuBp+98k+UL5dbYkh57AHU4o6cxZedOPXw3bmrZZYLQsVHguGurq7hVrPCSrQtrnz1f9dssyFr+dMXfQ==}
@@ -2222,8 +2222,8 @@ packages:
   ajv@8.20.0:
     resolution: {integrity: sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==}
 
-  alien-signals@3.1.2:
-    resolution: {integrity: sha512-d9dYqZTS90WLiU0I5c6DHj/HcKkF8ZyGN3G5x8wSbslulz70KOxaqCT0hQCo9KOyhVqzqGojvNdJXoTumZOtcw==}
+  alien-signals@3.2.0:
+    resolution: {integrity: sha512-5J9+NpCLHgic4xnZtI8SznvNagwJsZSvRFsAwoLlLw+Edaqa4upCiOC19P8Vx2DqmEvqK2qJBMtI8+9eXOEb/A==}
 
   ansi-align@3.0.1:
     resolution: {integrity: sha512-IOfwwBF5iczOjp/WeY4YxyjqAFMQoZufdQWDd19SEExbVLNXqvpzSJ/M7Za4/sCPmQ0+GRquoA7bGcINcxew6w==}
@@ -5526,8 +5526,8 @@ packages:
       pinia:
         optional: true
 
-  vue-tsc@3.2.8:
-    resolution: {integrity: sha512-27vTLJ6Q2370obOd0PFYoYoKnmXJ521uUIedrs3Zhhhg/8YG10VOCMmwt+JQslatpAMTDbnWiitLnoD5VlIvog==}
+  vue-tsc@3.2.9:
+    resolution: {integrity: sha512-qm8/nbo+9eZc1SCndm9wT+gq23pM+wRIdHY0wjm83B3lIginHTwcdrLUyTrKjDWXbMVNjKegNrnymhpdqnCL3A==}
     hasBin: true
     peerDependencies:
       typescript: '>=5.0.0'
@@ -7988,12 +7988,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vue/language-core@3.2.8':
+  '@vue/language-core@3.2.9':
     dependencies:
       '@volar/language-core': 2.4.28
       '@vue/compiler-dom': 3.5.34
       '@vue/shared': 3.5.34
-      alien-signals: 3.1.2
+      alien-signals: 3.2.0
       muggle-string: 0.4.1
       path-browserify: 1.0.1
       picomatch: 4.0.4
@@ -8077,7 +8077,7 @@ snapshots:
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
 
-  alien-signals@3.1.2: {}
+  alien-signals@3.2.0: {}
 
   ansi-align@3.0.1:
     dependencies:
@@ -11441,7 +11441,7 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vite-plugin-checker@0.13.0(eslint@10.3.0)(optionator@0.9.4)(typescript@6.0.3)(vite@8.0.12(@types/node@24.12.4)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0))(vue-tsc@3.2.8(typescript@6.0.3)):
+  vite-plugin-checker@0.13.0(eslint@10.3.0)(optionator@0.9.4)(typescript@6.0.3)(vite@8.0.12(@types/node@24.12.4)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0))(vue-tsc@3.2.9(typescript@6.0.3)):
     dependencies:
       '@babel/code-frame': 7.29.0
       chokidar: 4.0.3
@@ -11457,7 +11457,7 @@ snapshots:
       eslint: 10.3.0
       optionator: 0.9.4
       typescript: 6.0.3
-      vue-tsc: 3.2.8(typescript@6.0.3)
+      vue-tsc: 3.2.9(typescript@6.0.3)
 
   vite-plugin-top-level-await@1.6.0(rollup@4.60.3)(vite@8.0.12(@types/node@24.12.4)(esbuild@0.27.7)(sass-embedded@1.99.0)(sass@1.99.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0)):
     dependencies:
@@ -11567,10 +11567,10 @@ snapshots:
       '@vue/compiler-sfc': 3.5.34
       pinia: 3.0.4(typescript@6.0.3)(vue@3.5.34(typescript@6.0.3))
 
-  vue-tsc@3.2.8(typescript@6.0.3):
+  vue-tsc@3.2.9(typescript@6.0.3):
     dependencies:
       '@volar/typescript': 2.4.28
-      '@vue/language-core': 3.2.8
+      '@vue/language-core': 3.2.9
       typescript: 6.0.3
 
   vue@3.5.34(typescript@6.0.3):
