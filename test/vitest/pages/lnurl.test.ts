@@ -91,8 +91,10 @@ describe('LnurlPage', () => {
     mockRouterPush.mockResolvedValue(undefined)
     mockSubmitLnurlWithdrawInvoice.mockResolvedValue(undefined)
     mockCreateInvoice.mockResolvedValue({
-      success: true,
+      type: 'success',
       invoice: 'lnbc100n1test',
+      operationId: 'op-1',
+      amountMsats: 100_000,
     })
     amountRef.value = 0
   })

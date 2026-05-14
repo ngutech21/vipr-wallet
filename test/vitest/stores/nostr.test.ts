@@ -676,7 +676,10 @@ describe('nostr store discovery queue', () => {
     } as unknown as NonNullable<typeof nostr.ndk>
     nostr.setContactSource('alice@example.com')
 
-    await expect(nostr.syncContacts()).resolves.toBe(true)
+    await expect(nostr.syncContacts()).resolves.toEqual({
+      type: 'success',
+      contactCount: 2,
+    })
 
     expect(fetchUser).toHaveBeenCalledWith('alice@example.com')
     expect(fetchEvents).toHaveBeenCalledWith({
@@ -733,12 +736,18 @@ describe('nostr store discovery queue', () => {
     ]
     nostr.setContactSource(SOURCE_NPUB)
 
-    await expect(nostr.syncContacts()).resolves.toBe(true)
+    await expect(nostr.syncContacts()).resolves.toEqual({
+      type: 'success',
+      contactCount: 1,
+    })
     expect(fetchUser).toHaveBeenCalledWith(SOURCE_NPUB)
     expect(nostr.contacts).toHaveLength(1)
     expect(nostr.contacts[0]?.pubkey).toBe(PAYABLE_LUD16_PUBKEY)
 
-    await expect(nostr.syncContacts()).resolves.toBe(true)
+    await expect(nostr.syncContacts()).resolves.toEqual({
+      type: 'success',
+      contactCount: 1,
+    })
     expect(nostr.contacts).toHaveLength(1)
     expect(nostr.contacts[0]?.pubkey).toBe(PAYABLE_LUD06_PUBKEY)
   })
@@ -763,7 +772,10 @@ describe('nostr store discovery queue', () => {
     } as unknown as NonNullable<typeof nostr.ndk>
     nostr.setContactSource('alice@example.com')
 
-    await expect(nostr.syncContacts()).resolves.toBe(false)
+    await expect(nostr.syncContacts()).resolves.toEqual({
+      type: 'error',
+      message: 'Relay timeout',
+    })
 
     expect(nostr.contacts).toEqual([])
     expect(nostr.contactSyncMeta.lastSyncError).toBe('Relay timeout')

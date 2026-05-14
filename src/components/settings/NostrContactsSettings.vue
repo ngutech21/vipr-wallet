@@ -185,10 +185,11 @@ watch(syncedContacts, () => {
 async function syncContacts() {
   nostrStore.setContactSource(contactSourceValue.value)
 
-  if (await nostrStore.syncContacts()) {
-    notify.success(`Imported ${nostrStore.contacts.length} contacts`)
+  const result = await nostrStore.syncContacts()
+  if (result.type === 'success') {
+    notify.success(`Imported ${result.contactCount} contacts`)
   } else {
-    notify.error(nostrStore.contactSyncMeta.lastSyncError ?? 'Failed to sync contacts')
+    notify.error(result.message)
   }
 }
 

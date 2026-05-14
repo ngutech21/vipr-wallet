@@ -377,7 +377,7 @@ async function payInvoice() {
 
   const result = await payInvoiceFromComposable(invoiceToPay, amountInSats)
 
-  if (result.success) {
+  if (result.type === 'success') {
     await router.push({
       path: '/sent-lightning',
       query: { amount: result.amountSats, fee: result.fee },

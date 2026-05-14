@@ -68,6 +68,16 @@ function createPreviewStatusLookup(): Record<string, PreviewStatus> {
   return {}
 }
 
+export type NostrContactSyncResult =
+  | {
+      type: 'success'
+      contactCount: number
+    }
+  | {
+      type: 'error'
+      message: string
+    }
+
 const DEFAULT_RELAYS = [
   'wss://nos.lol',
   'wss://relay.primal.net',
@@ -196,26 +206,34 @@ export const useNostrStore = defineStore('nostr', {
       )
     },
 
-    async syncContacts(): Promise<boolean> {
+    async syncContacts(): Promise<NostrContactSyncResult> {
       const sourceValue = this.contactSource.sourceValue.trim()
       if (sourceValue === '') {
+        const message = 'Enter a Nostr identifier before syncing contacts.'
         this.syncStatus = 'error'
         this.contactSyncMeta = {
           ...this.contactSyncMeta,
-          lastSyncError: 'Enter a Nostr identifier before syncing contacts.',
+          lastSyncError: message,
         }
-        return false
+        return {
+          type: 'error',
+          message,
+        }
       }
 
       const sourceType = inferContactSourceType(sourceValue)
 
       if (!isValidContactSource(sourceType, sourceValue)) {
+        const message = getInvalidContactSourceMessage()
         this.syncStatus = 'error'
         this.contactSyncMeta = {
           ...this.contactSyncMeta,
-          lastSyncError: getInvalidContactSourceMessage(),
+          lastSyncError: message,
         }
-        return false
+        return {
+          type: 'error',
+          message,
+        }
       }
 
       this.syncStatus = 'syncing'
@@ -252,7 +270,10 @@ export const useNostrStore = defineStore('nostr', {
           count: result.contacts.length,
         })
 
-        return true
+        return {
+          type: 'success',
+          contactCount: result.contacts.length,
+        }
       } catch (error) {
         const errorMessage = getErrorMessage(error)
         this.contactSyncMeta = {
@@ -261,7 +282,10 @@ export const useNostrStore = defineStore('nostr', {
         }
         this.syncStatus = 'error'
         logger.error('Failed to sync Nostr contacts', error)
-        return false
+        return {
+          type: 'error',
+          message: errorMessage,
+        }
       }
     },
 
