@@ -7,25 +7,40 @@ import { logger } from 'src/services/logger'
 
 const INTERNAL_PAYMENT_TIMEOUT_MS = 15_000
 
-export interface PaymentResult {
-  success: boolean
-  amountSats?: number
-  fee?: number
-  error?: Error
-}
+export type PaymentResult =
+  | {
+      type: 'success'
+      amountSats: number
+      fee: number
+    }
+  | {
+      type: 'error'
+      error: Error
+    }
 
-export interface InvoiceCreationResult {
-  success: boolean
-  invoice?: string
-  operationId?: string
-  amountMsats?: number
-  error?: Error
-}
+export type InvoiceCreationResult =
+  | {
+      type: 'success'
+      invoice: string
+      operationId: string
+      amountMsats: number
+    }
+  | {
+      type: 'error'
+      error: Error
+    }
 
-export interface InvoiceWaitResult {
-  success: boolean
-  amountSats?: number
-  error?: Error
+export type InvoiceWaitResult =
+  | {
+      type: 'success'
+    }
+  | {
+      type: 'error'
+      error: Error
+    }
+
+function toError(error: unknown): Error {
+  return error instanceof Error ? error : new Error(getErrorMessage(error))
 }
 
 export function useLightningPayment() {
@@ -37,7 +52,7 @@ export function useLightningPayment() {
    * Pay a lightning invoice
    * @param invoice - The invoice string to pay
    * @param expectedAmountSats - Expected amount in sats (optional, for validation)
-   * @returns Payment result with success status, amount, and fee
+   * @returns Payment result with success variant, amount, and fee
    */
   async function payInvoice(invoice: string, expectedAmountSats?: number): Promise<PaymentResult> {
     try {
@@ -72,7 +87,7 @@ export function useLightningPayment() {
       })
 
       return {
-        success: true,
+        type: 'success',
         amountSats: amount,
         fee,
       }
@@ -81,8 +96,8 @@ export function useLightningPayment() {
       notify.error(`Failed to pay invoice: ${getErrorMessage(error)}`)
 
       return {
-        success: false,
-        error: error as Error,
+        type: 'error',
+        error: toError(error),
       }
     } finally {
       isProcessing.value = false
@@ -168,7 +183,7 @@ export function useLightningPayment() {
       logger.logTransaction('Invoice created successfully')
 
       return {
-        success: true,
+        type: 'success',
         invoice: invoice.invoice,
         operationId: invoice.operation_id,
         amountMsats: amountMsats,
@@ -178,8 +193,8 @@ export function useLightningPayment() {
       notify.error(`Failed to create invoice: ${getErrorMessage(error)}`)
 
       return {
-        success: false,
-        error: error as Error,
+        type: 'error',
+        error: toError(error),
       }
     } finally {
       isProcessing.value = false
@@ -190,7 +205,7 @@ export function useLightningPayment() {
    * Wait for a lightning invoice to be paid
    * @param operationId - The operation ID from invoice creation
    * @param timeoutMs - Timeout in milliseconds
-   * @returns Wait result with success status
+   * @returns Wait result with success or error variant
    */
   async function waitForInvoicePayment(
     operationId: string,
@@ -206,7 +221,7 @@ export function useLightningPayment() {
       await walletStore.updateBalance()
 
       return {
-        success: true,
+        type: 'success',
       }
     } catch (error) {
       logger.error('Failed waiting for invoice payment', error)
@@ -221,8 +236,8 @@ export function useLightningPayment() {
       notify.error(`Error receiving payment: ${errorMessage}`)
 
       return {
-        success: false,
-        error: error as Error,
+        type: 'error',
+        error: toError(error),
       }
     }
   }

@@ -244,13 +244,7 @@ async function onRequest() {
     cleanupInvoiceWait()
     const invoiceResult = await createInvoice(amount.value, invoiceMemo.value.trim(), lnExpiry)
 
-    if (
-      invoiceResult.success &&
-      invoiceResult.invoice != null &&
-      invoiceResult.invoice !== '' &&
-      invoiceResult.operationId != null &&
-      invoiceResult.operationId !== ''
-    ) {
+    if (invoiceResult.type === 'success') {
       const invoiceAmount = amount.value
       qrData.value = invoiceResult.invoice
       isWaiting.value = true

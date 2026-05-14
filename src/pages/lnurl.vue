@@ -216,8 +216,8 @@ async function submitWithdraw() {
   try {
     const invoiceResult = await createInvoice(amount.value, withdrawDescription.value)
 
-    if (!invoiceResult.success || invoiceResult.invoice == null || invoiceResult.invoice === '') {
-      throw invoiceResult.error ?? new Error('Failed to create invoice')
+    if (invoiceResult.type === 'error') {
+      throw invoiceResult.error
     }
 
     await submitLnurlWithdrawInvoice(params, invoiceResult.invoice)
