@@ -136,6 +136,20 @@ const nextCursor = shallowRef<OperationKey | null>(null)
 const emptyTransactionsTestId = 'transactions-empty-state'
 let activeLoadRequestId = 0
 
+type LoadMoreCandidate = {
+  mode: 'home' | 'history'
+  isLoadingMore: boolean
+  nextCursor: OperationKey | null
+  hasMore: boolean
+}
+
+type LoadMoreReady = LoadMoreCandidate & {
+  mode: 'history'
+  isLoadingMore: false
+  nextCursor: OperationKey
+  hasMore: true
+}
+
 const pageSize = computed(() => (props.mode === 'history' ? HISTORY_PAGE_SIZE : HOME_PAGE_SIZE))
 const showHomeEmptyState = computed(() => {
   return props.mode === 'home' && !isInitialLoading.value && transactions.value.length === 0
@@ -190,12 +204,8 @@ async function loadInitialTransactions() {
 }
 
 async function loadMoreTransactions() {
-  if (
-    props.mode !== 'history' ||
-    isLoadingMore.value ||
-    nextCursor.value == null ||
-    !hasMore.value
-  ) {
+  const loadMoreCandidate = getLoadMoreCandidate()
+  if (!isLoadMoreReady(loadMoreCandidate)) {
     return
   }
 
@@ -204,9 +214,13 @@ async function loadMoreTransactions() {
   try {
     isLoadingMore.value = true
 
-    const page = await walletStore.getTransactionsPage(pageSize.value, nextCursor.value, {
-      visibleOnly: true,
-    })
+    const page = await walletStore.getTransactionsPage(
+      pageSize.value,
+      loadMoreCandidate.nextCursor,
+      {
+        visibleOnly: true,
+      },
+    )
     if (requestId !== activeLoadRequestId) {
       return
     }
@@ -223,6 +237,24 @@ async function loadMoreTransactions() {
       finishLoadMore()
     }
   }
+}
+
+function getLoadMoreCandidate(): LoadMoreCandidate {
+  return {
+    mode: props.mode,
+    isLoadingMore: isLoadingMore.value,
+    nextCursor: nextCursor.value,
+    hasMore: hasMore.value,
+  }
+}
+
+function isLoadMoreReady(candidate: LoadMoreCandidate): candidate is LoadMoreReady {
+  return (
+    candidate.mode === 'history' &&
+    candidate.isLoadingMore === false &&
+    candidate.nextCursor != null &&
+    candidate.hasMore === true
+  )
 }
 
 function applyInitialPage(page: {
