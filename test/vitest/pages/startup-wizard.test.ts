@@ -424,6 +424,61 @@ describe('StartupWizardPage', () => {
     expect(finishButton.text()).toContain('Recovering...')
   })
 
+  it('restore federation step allows retrying the same join code after submit fails', async () => {
+    setStandaloneState({ matches: true, standalone: true })
+    walletStoreMock.hasMnemonic = true
+    onboardingStoreMock.flow = 'restore'
+    onboardingStoreMock.step = 'restore-federations'
+    onboardingStoreMock.status = 'in_progress'
+    federationStoreMock.selectFederation
+      .mockRejectedValueOnce(new Error('temporary restore failure'))
+      .mockResolvedValueOnce()
+
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.find('[data-testid="invite-code-input"]').setValue('fed11restore')
+    await wrapper
+      .find('[data-testid="startup-wizard-restore-federations-preview-btn"]')
+      .trigger('click')
+    await flushPromises()
+    await wrapper
+      .find('[data-testid="startup-wizard-restore-federations-submit-btn"]')
+      .trigger('click')
+    await flushPromises()
+
+    expect(federationStoreMock.deleteFederation).toHaveBeenCalledWith('fed-restore')
+    expect(walletStoreMock.markFederationRecoveryStatus).toHaveBeenLastCalledWith(
+      'fed-restore',
+      'failed',
+      'temporary restore failure',
+    )
+
+    await wrapper.find('[data-testid="invite-code-input"]').setValue('fed11restore')
+    await wrapper
+      .find('[data-testid="startup-wizard-restore-federations-preview-btn"]')
+      .trigger('click')
+    await flushPromises()
+
+    expect(walletStoreMock.previewFederation).toHaveBeenCalledTimes(2)
+    expect(wrapper.find('[data-testid="join-federation-preview-step"]').text()).toContain(
+      'Restored Federation',
+    )
+
+    await wrapper
+      .find('[data-testid="startup-wizard-restore-federations-submit-btn"]')
+      .trigger('click')
+    await flushPromises()
+
+    expect(federationStoreMock.selectFederation).toHaveBeenCalledTimes(2)
+    expect(federationStoreMock.selectFederation).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        federationId: 'fed-restore',
+      }),
+      { expectRecovery: true, recoverOnJoin: true },
+    )
+  })
+
   it('restore federation step allows finish after recovery completes', async () => {
     setStandaloneState({ matches: true, standalone: true })
     walletStoreMock.hasMnemonic = true

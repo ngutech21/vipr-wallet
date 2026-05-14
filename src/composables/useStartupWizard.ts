@@ -344,6 +344,7 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
 
       restoreFederationInviteCode.value = ''
     } catch (error) {
+      removeRestoreFederationEntry(federation.federationId)
       walletStore.markFederationRecoveryStatus(
         federation.federationId,
         'failed',
@@ -370,6 +371,12 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
         inviteCode: federation.inviteCode,
       },
     ]
+  }
+
+  function removeRestoreFederationEntry(federationId: string) {
+    restoreFederationEntries.value = restoreFederationEntries.value.filter(
+      (entry) => entry.federationId !== federationId,
+    )
   }
 
   function backFromRestoreFederations() {
