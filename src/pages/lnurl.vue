@@ -24,10 +24,7 @@ meta:
               <div class="vipr-caption">Loading LNURL request</div>
             </div>
 
-            <div
-              v-else-if="pageState.type === 'withdraw' || pageState.type === 'submitting'"
-              data-testid="lnurl-withdraw-form"
-            >
+            <div v-else-if="pageState.type === 'withdraw'" data-testid="lnurl-withdraw-form">
               <div class="lnurl-heading">
                 <div class="vipr-eyebrow">LNURL Withdraw</div>
                 <h1>Claim Lightning payment</h1>
@@ -139,10 +136,6 @@ type LnurlPageState =
       params: LnurlWithdrawParams
     }
   | {
-      type: 'submitting'
-      params: LnurlWithdrawParams
-    }
-  | {
       type: 'complete'
     }
   | {
@@ -151,19 +144,11 @@ type LnurlPageState =
     }
 
 const pageState = shallowRef<LnurlPageState>({ type: 'loading' })
+const isSubmitting = shallowRef(false)
 
-function completeWithdrawSubmit(submittingState: LnurlPageState) {
-  if (pageState.value === submittingState) {
+function completeWithdrawRequest(params: LnurlWithdrawParams) {
+  if (pageState.value.type === 'withdraw' && pageState.value.params === params) {
     pageState.value = { type: 'complete' }
-  }
-}
-
-function restoreWithdrawSubmit(submittingState: LnurlPageState) {
-  if (pageState.value === submittingState && submittingState.type === 'submitting') {
-    pageState.value = {
-      type: 'withdraw',
-      params: submittingState.params,
-    }
   }
 }
 
@@ -173,11 +158,8 @@ const lnurlValue = computed(() => {
 })
 
 const withdrawParams = computed(() =>
-  pageState.value.type === 'withdraw' || pageState.value.type === 'submitting'
-    ? pageState.value.params
-    : null,
+  pageState.value.type === 'withdraw' ? pageState.value.params : null,
 )
-const isSubmitting = computed(() => pageState.value.type === 'submitting')
 const errorMessage = computed(() =>
   pageState.value.type === 'error'
     ? pageState.value.message
@@ -265,11 +247,7 @@ async function submitWithdraw() {
   }
 
   const params = pageState.value.params
-  const submittingState: LnurlPageState = {
-    type: 'submitting',
-    params,
-  }
-  pageState.value = submittingState
+  isSubmitting.value = true
 
   try {
     const invoiceResult = await createInvoice(amount.value, withdrawDescription.value)
@@ -279,11 +257,12 @@ async function submitWithdraw() {
     }
 
     await submitLnurlWithdrawInvoice(params, invoiceResult.invoice)
-    completeWithdrawSubmit(submittingState)
+    completeWithdrawRequest(params)
   } catch (error) {
     const message = getErrorMessage(error)
-    restoreWithdrawSubmit(submittingState)
     notify.error(`Failed to claim LNURL withdraw: ${message}`)
+  } finally {
+    isSubmitting.value = false
   }
 }
 
