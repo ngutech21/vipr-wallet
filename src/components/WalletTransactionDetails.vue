@@ -47,7 +47,7 @@
           <div class="label">Federation</div>
           <div class="value">{{ federationTitle }}</div>
         </div>
-        <div class="detail-row detail-row--separated">
+        <div v-if="transaction.type === 'withdraw'" class="detail-row detail-row--separated">
           <div class="label">Network Fee</div>
           <div class="value">{{ feeInSats }} sats</div>
         </div>
@@ -141,8 +141,7 @@ const totalAmountText = computed(() => {
     return null
   }
 
-  const feeSats = getWalletTransactionFeeSats(props.transaction)
-  return Math.abs(amountSats - feeSats).toLocaleString()
+  return amountSats.toLocaleString()
 })
 
 const federationTitle = computed(() => {

@@ -84,15 +84,19 @@ describe('useInvoiceDecoding', () => {
 
       const result = await decodeInvoice('lnbc1000n1...')
 
-      expect(result).toBeDefined()
-      expect(result?.invoice).toBe('lnbc1000n1...')
+      expect(result.type).toBe('invoice')
+      if (result.type !== 'invoice') {
+        throw new Error('Expected decoded invoice result')
+      }
+      expect(result.invoice.invoice).toBe('lnbc1000n1...')
     })
 
     it('should detect lightning address, set amountRequired, and expose limits', async () => {
       const { decodeInvoice, amountRequired, lnurlPayLimits } = useInvoiceDecoding()
 
-      await decodeInvoice('user@domain.com')
+      const result = await decodeInvoice('user@domain.com')
 
+      expect(result.type).toBe('amount-required')
       expect(amountRequired.value).toBe(true)
       expect(lnurlPayLimits.value).toEqual({
         minSendableMsats: 1_000,
@@ -109,10 +113,12 @@ describe('useInvoiceDecoding', () => {
         }
       })
 
-      const { decodeInvoice, amountRequired, lnAddress } = useInvoiceDecoding()
+      const { decodeInvoice, amountRequired, lnAddress, decodeState } = useInvoiceDecoding()
 
-      await decodeInvoice('user@domain.com')
+      const result = await decodeInvoice('user@domain.com')
 
+      expect(result.type).toBe('error')
+      expect(decodeState.value.type).toBe('error')
       expect(amountRequired.value).toBe(false)
       expect(lnAddress.value).toBeNull()
       expect(mockNotifyError).toHaveBeenCalledWith(
@@ -123,8 +129,9 @@ describe('useInvoiceDecoding', () => {
     it('should detect LNURL, set amountRequired, and expose limits', async () => {
       const { decodeInvoice, amountRequired, lnurlPayLimits } = useInvoiceDecoding()
 
-      await decodeInvoice('lnurl1...')
+      const result = await decodeInvoice('lnurl1...')
 
+      expect(result.type).toBe('amount-required')
       expect(amountRequired.value).toBe(true)
       expect(mockResolveLnurl).toHaveBeenCalledWith('lnurl1...')
       expect(lnurlPayLimits.value).toEqual({
@@ -145,8 +152,9 @@ describe('useInvoiceDecoding', () => {
 
       const { decodeInvoice, amountRequired, lnurlPayLimits } = useInvoiceDecoding()
 
-      await decodeInvoice('lnurl1...')
+      const result = await decodeInvoice('lnurl1...')
 
+      expect(result.type).toBe('error')
       expect(amountRequired.value).toBe(false)
       expect(lnurlPayLimits.value).toBeNull()
       expect(mockNotifyError).toHaveBeenCalledWith('LNURL is not a payment request')
@@ -170,9 +178,9 @@ describe('useInvoiceDecoding', () => {
 
       await decodeInvoice('lnurl1...')
 
-      const result = await createInvoiceFromInput('lnurl1...', 1000, 'Test memo')
+      const result = await createInvoiceFromInput('lnurl1...', 100, 'Test memo')
 
-      expect(result).toBeDefined()
+      expect(result.type).toBe('success')
       expect(decodedInvoice.value).toBeDefined()
     })
 
@@ -182,7 +190,7 @@ describe('useInvoiceDecoding', () => {
       await decodeInvoice('lnurl1...')
       const result = await createInvoiceFromInput('lnurl1...', 0, 'Test memo')
 
-      expect(result).toBeNull()
+      expect(result.type).toBe('error')
       expect(mockRequestInvoice).not.toHaveBeenCalled()
       expect(mockNotifyError).toHaveBeenCalledWith('Amount must be at least 1 sats')
     })
@@ -193,30 +201,32 @@ describe('useInvoiceDecoding', () => {
       await decodeInvoice('lnurl1...')
       const result = await createInvoiceFromInput('lnurl1...', 101, 'Test memo')
 
-      expect(result).toBeNull()
+      expect(result.type).toBe('error')
       expect(mockRequestInvoice).not.toHaveBeenCalled()
       expect(mockNotifyError).toHaveBeenCalledWith('Amount must be 100 sats or less')
     })
 
     it('should not request an invoice when the lightning address data is missing', async () => {
-      const { createInvoiceFromInput, amountRequired, lnAddress } = useInvoiceDecoding()
-      const requestInvoice = vi.fn()
+      mockLightningAddress.mockImplementation(function () {
+        return {
+          fetchWithProxy: vi.fn().mockResolvedValue(undefined),
+          requestInvoice: vi.fn(),
+          lnurlpData: null,
+        }
+      })
+      const { createInvoiceFromInput, amountRequired, lnAddress, decodeInvoice } =
+        useInvoiceDecoding()
 
-      amountRequired.value = true
-      lnAddress.value = {
-        requestInvoice,
-        lnurlpData: null,
-      } as never
+      const decodeResult = await decodeInvoice('user@domain.com')
 
+      expect(decodeResult.type).toBe('error')
       const result = await createInvoiceFromInput('user@domain.com', 1000, 'Test memo')
 
-      expect(result).toBeNull()
-      expect(requestInvoice).not.toHaveBeenCalled()
+      expect(result.type).toBe('error')
+      expect(mockRequestInvoice).not.toHaveBeenCalled()
       expect(amountRequired.value).toBe(false)
       expect(lnAddress.value).toBeNull()
-      expect(mockNotifyError).toHaveBeenCalledWith(
-        'Lightning address could not be loaded. Please try again.',
-      )
+      expect(mockNotifyError).toHaveBeenCalledWith('Invalid lightning address')
     })
   })
 })

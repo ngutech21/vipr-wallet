@@ -138,9 +138,10 @@ describe('ReceivePage timer lifecycle', () => {
   it('subscribes for payment after invoice creation and navigates when claimed', async () => {
     const clearIntervalSpy = vi.spyOn(global, 'clearInterval')
     mockCreateInvoice.mockResolvedValue({
-      success: true,
+      type: 'success',
       invoice: 'lnbc123',
       operationId: 'op-1',
+      amountMsats: 100_000,
     })
 
     wrapper = createWrapper()
@@ -170,7 +171,8 @@ describe('ReceivePage timer lifecycle', () => {
 
   it('uses the optional memo when creating an invoice', async () => {
     mockCreateInvoice.mockResolvedValue({
-      success: false,
+      type: 'error',
+      error: new Error('Creation failed'),
     })
 
     wrapper = createWrapper()
@@ -202,7 +204,7 @@ describe('ReceivePage timer lifecycle', () => {
   })
 
   it('does not subscribe for payment when invoice creation fails', async () => {
-    mockCreateInvoice.mockResolvedValue({ success: false })
+    mockCreateInvoice.mockResolvedValue({ type: 'error', error: new Error('Creation failed') })
 
     wrapper = createWrapper()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -216,9 +218,10 @@ describe('ReceivePage timer lifecycle', () => {
   it('clears countdown timer and subscription on unmount while invoice is waiting', async () => {
     const clearIntervalSpy = vi.spyOn(global, 'clearInterval')
     mockCreateInvoice.mockResolvedValue({
-      success: true,
+      type: 'success',
       invoice: 'lnbc123',
       operationId: 'op-1',
+      amountMsats: 100_000,
     })
 
     wrapper = createWrapper()
@@ -265,9 +268,10 @@ describe('ReceivePage timer lifecycle', () => {
   it('returns from invoice display to amount entry before leaving receive flow', async () => {
     const clearIntervalSpy = vi.spyOn(global, 'clearInterval')
     mockCreateInvoice.mockResolvedValue({
-      success: true,
+      type: 'success',
       invoice: 'lnbc123',
       operationId: 'op-1',
+      amountMsats: 100_000,
     })
 
     wrapper = createWrapper()

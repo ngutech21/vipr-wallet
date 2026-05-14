@@ -1,17 +1,25 @@
 {
   description = "Vipr Wallet development environment";
-  
 
   inputs = {
-    # Follow fedimint's pinned nixpkgs (nixos-24.11) for cache hits
-    fedimint.url = "github:fedimint/fedimint/v0.9.1";
+    # Follow fedimint's pinned nixpkgs for cache hits
+    fedimint.url = "github:fedimint/fedimint/v0.11.1";
     nixpkgs.follows = "fedimint/nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
   };
 
-  outputs = { self, nixpkgs, flake-utils, fedimint, nixpkgs-unstable, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      fedimint,
+      nixpkgs-unstable,
+      ...
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = import fedimint.inputs.nixpkgs {
           inherit system;
@@ -26,7 +34,7 @@
         playwrightFonts = with pkgs; [
           noto-fonts
           noto-fonts-cjk-sans
-          noto-fonts-emoji
+          noto-fonts-color-emoji
           liberation_ttf
           dejavu_fonts
         ];
@@ -38,28 +46,33 @@
       in
       {
         devShells.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            fedimint.packages.${system}.devimint
-            fedimint.packages.${system}.gateway-pkgs
-            fedimint.packages.${system}.fedimint-pkgs
-            fedimint.packages.${system}.fedimint-recurringd
-            pkgs.bitcoind
-            pkgs.electrs
-            pkgs.lnd
-            pkgs.esplora-electrs
-            nodejs_24
-            pnpm24
-            nodejs_24.pkgs.typescript
-            mkcert
-            nettools
-            fontconfig
-            fontconfig.bin
-            pkgs.playwright-driver.browsers
-            typos
-          ] ++ playwrightFonts ++ [
-            # Use latest playwright from unstable
-            pkgs-unstable.playwright-driver.browsers
-          ];
+          buildInputs =
+            with pkgs;
+            [
+              fedimint.packages.${system}.devimint
+              fedimint.packages.${system}.gateway-pkgs
+              fedimint.packages.${system}.fedimint-pkgs
+              fedimint.packages.${system}.fedimint-recurringd
+              fedimint.packages.${system}.fedimint-recurringdv2
+              pkgs.bitcoind
+              pkgs.electrs
+              pkgs.lnd
+              pkgs.esplora-electrs
+              nodejs_24
+              pnpm24
+              nodejs_24.pkgs.typescript
+              mkcert
+              nettools
+              fontconfig
+              fontconfig.bin
+              pkgs.playwright-driver.browsers
+              typos
+            ]
+            ++ playwrightFonts
+            ++ [
+              # Use latest playwright from unstable
+              pkgs-unstable.playwright-driver.browsers
+            ];
 
           shellHook = ''
             export PLAYWRIGHT_BROWSERS_PATH=${pkgs-unstable.playwright-driver.browsers}
@@ -70,14 +83,14 @@
             echo "Node.js $(node --version)"
             echo "pnpm $(pnpm --version)"
             echo "TypeScript $(tsc --version)"
-            
+
             # Check what playwright version nix provides
             echo "Nix Playwright version: ${pkgs-unstable.playwright-driver.version}"
-            
+
 
             # Create certs directory if it doesn't exist
             mkdir -p certs
-            
+
             # Generate certificates if they don't exist
             if [ ! -f "certs/localhost-key.pem" ] || [ ! -f "certs/localhost.pem" ]; then
               echo "Generating TLS certificates for localhost..."
@@ -97,14 +110,14 @@
             else
               echo "✅ TLS certificates already exist"
             fi
-            
+
             # # Export environment variables for Quasar
             export HTTPS_KEY="$(pwd)/certs/localhost-key.pem"
             export HTTPS_CERT="$(pwd)/certs/localhost.pem"
             echo "HTTPS_KEY=$HTTPS_KEY"
             echo "HTTPS_CERT=$HTTPS_CERT"
-            
-            
+
+
             echo ""
             echo "Run 'pnpm install' to set up dependencies"
             echo "Then 'pnpm dev' to start the development server with HTTPS"
@@ -112,12 +125,12 @@
         };
       }
     );
-    nixConfig = {
-      allow-dirty = true;
-      warn-dirty = false; 
-      extra-substituters = [ "https://fedimint.cachix.org" ];
-      extra-trusted-public-keys = [
-        "fedimint.cachix.org-1:FpJJjy1iPVlvyv4OMiN5y9+/arFLPcnZhZVVCHCDYTs="
+  nixConfig = {
+    allow-dirty = true;
+    warn-dirty = false;
+    extra-substituters = [ "https://fedimint.cachix.org" ];
+    extra-trusted-public-keys = [
+      "fedimint.cachix.org-1:FpJJjy1iPVlvyv4OMiN5y9+/arFLPcnZhZVVCHCDYTs="
     ];
   };
 }

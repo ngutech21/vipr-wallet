@@ -36,9 +36,6 @@ meta:
           <FederationInviteCard :invite-code="inviteCode" :federation-title="federation?.title" />
 
           <section class="federation-open-section federation-trust-section">
-            <div class="federation-section-header">
-              <div class="federation-section-heading">Guardians & Lightning gateways</div>
-            </div>
             <FederationGuardians :guardians="federation?.guardians ?? []" :show-header="true" />
 
             <FederationGatewayList
@@ -51,7 +48,9 @@ meta:
 
           <section class="federation-open-section federation-advanced-section">
             <div class="federation-section-header">
-              <div class="federation-section-heading">Advanced</div>
+              <div class="federation-section-heading federation-section-heading--technical">
+                Technical details
+              </div>
             </div>
             <FederationUtxos
               :utxos="spendableUtxos"
@@ -61,10 +60,7 @@ meta:
             />
 
             <FederationMetaConsensusCard
-              v-if="
-                showRawMetaConsensusCard &&
-                (isLoadingMetaConsensus || metaConsensusError != null || metaConsensusValue != null)
-              "
+              v-if="shouldShowMetaConsensusCard"
               :metadata="metaConsensusValue"
               :is-loading="isLoadingMetaConsensus"
               :error="metaConsensusError"
@@ -117,6 +113,7 @@ const metaConsensusValue = ref<MetaConsensusValue<JSONObject> | null>(null)
 const isLoadingMetaConsensus = ref(false)
 const metaConsensusError = ref<string | null>(null)
 const showRawMetaConsensusCard = import.meta.env.DEV || import.meta.env.VITE_E2E_MODE === '1'
+let activeDetailsLoadId = 0
 
 const federation = computed(() => {
   return federationStore.federations.find((f) => f.federationId === route.params.id)
@@ -136,6 +133,13 @@ const observerUrl = computed(() => {
     : ''
 })
 
+const shouldShowMetaConsensusCard = computed(
+  () =>
+    showRawMetaConsensusCard &&
+    (isLoadingMetaConsensus.value ||
+      metaConsensusError.value != null ||
+      metaConsensusValue.value != null),
+)
 const gatewayCountLabel = computed(() => {
   const count = walletGateways.value.length
   return count > 0 ? `${count} gateways` : ''
@@ -144,6 +148,7 @@ const gatewayCountLabel = computed(() => {
 watch(
   () => route.params.id,
   async () => {
+    const loadId = ++activeDetailsLoadId
     const currentFederation = federation.value
     spendableUtxos.value = []
     walletGateways.value = []
@@ -165,23 +170,52 @@ watch(
 
     try {
       await ensureFederationWalletOpen(currentFederation)
+    } catch (error) {
+      if (loadId !== activeDetailsLoadId) {
+        return
+      }
 
+      logger.error('Failed to open federation wallet for details', error)
+      utxoError.value = 'Failed to load spendable UTXOs.'
+      walletGatewayError.value = 'Failed to load wallet gateways.'
+      metaConsensusError.value = shouldLoadMetaConsensus
+        ? 'Failed to load consensus metadata.'
+        : null
+      isLoadingUtxos.value = false
+      isLoadingWalletGateways.value = false
+      isLoadingMetaConsensus.value = false
+      hasLoadedWalletGateways.value = true
+      return
+    }
+
+    try {
       const [utxos, gateways, metadata] = await Promise.all([
         walletStore.getSpendableUtxos(),
         loadWalletGateways(),
         shouldLoadMetaConsensus ? loadMetaConsensusValue() : Promise.resolve(null),
       ])
+
+      if (loadId !== activeDetailsLoadId) {
+        return
+      }
+
       spendableUtxos.value = utxos
       walletGateways.value = gateways
       metaConsensusValue.value = metadata
     } catch (error) {
+      if (loadId !== activeDetailsLoadId) {
+        return
+      }
+
       logger.error('Failed to load federation UTXOs', error)
       utxoError.value = 'Failed to load spendable UTXOs.'
     } finally {
-      isLoadingUtxos.value = false
-      isLoadingWalletGateways.value = false
-      isLoadingMetaConsensus.value = false
-      hasLoadedWalletGateways.value = true
+      if (loadId === activeDetailsLoadId) {
+        isLoadingUtxos.value = false
+        isLoadingWalletGateways.value = false
+        isLoadingMetaConsensus.value = false
+        hasLoadedWalletGateways.value = true
+      }
     }
   },
   { immediate: true },
@@ -204,19 +238,6 @@ async function loadWalletGateways(): Promise<unknown[]> {
   }
 }
 
-async function ensureFederationWalletOpen(currentFederation: NonNullable<typeof federation.value>) {
-  const walletName = getWalletNameForFederationId(currentFederation.federationId)
-
-  if (federationStore.selectedFederationId !== currentFederation.federationId) {
-    await federationStore.selectFederation(currentFederation)
-    return
-  }
-
-  if (walletStore.activeWalletName !== walletName || walletStore.wallet == null) {
-    await walletStore.openWallet()
-  }
-}
-
 async function loadMetaConsensusValue(): Promise<MetaConsensusValue<JSONObject> | null> {
   const wallet = walletStore.wallet
   if (wallet == null) {
@@ -230,6 +251,19 @@ async function loadMetaConsensusValue(): Promise<MetaConsensusValue<JSONObject> 
     logger.error('Failed to load federation consensus metadata', error)
     metaConsensusError.value = 'Failed to load consensus metadata.'
     return null
+  }
+}
+
+async function ensureFederationWalletOpen(currentFederation: NonNullable<typeof federation.value>) {
+  const walletName = getWalletNameForFederationId(currentFederation.federationId)
+
+  if (federationStore.selectedFederationId !== currentFederation.federationId) {
+    await federationStore.selectFederation(currentFederation)
+    return
+  }
+
+  if (walletStore.activeWalletName !== walletName || walletStore.wallet == null) {
+    await walletStore.openWallet()
   }
 }
 
@@ -285,6 +319,7 @@ async function leaveFederation() {
 }
 
 .federation-details-page {
+  background: var(--vipr-color-page);
   overflow-x: clip;
 }
 
@@ -298,6 +333,11 @@ async function leaveFederation() {
   font-size: var(--vipr-font-size-caption);
   font-weight: 700;
   line-height: var(--vipr-line-height-tight);
+}
+
+.federation-section-heading--technical {
+  color: var(--vipr-text-muted);
+  font-size: var(--vipr-font-size-label);
 }
 
 .federation-section-caption {

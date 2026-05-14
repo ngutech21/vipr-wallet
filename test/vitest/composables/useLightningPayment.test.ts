@@ -66,7 +66,10 @@ describe('useLightningPayment', () => {
 
       const result = await payInvoice('lnbc1000n1...', 1000)
 
-      expect(result.success).toBe(true)
+      expect(result.type).toBe('success')
+      if (result.type !== 'success') {
+        throw new Error('Expected successful payment result')
+      }
       expect(result.amountSats).toBe(1000)
       expect(result.fee).toBe(100)
       expect(mockAssertCanSpendDuringRecovery).toHaveBeenCalledTimes(1)
@@ -84,8 +87,11 @@ describe('useLightningPayment', () => {
 
       const result = await payInvoice('lnbc1000n1...', 1000)
 
-      expect(result.success).toBe(false)
-      expect(result.error?.message).toContain('Wallet recovery is still running')
+      expect(result.type).toBe('error')
+      if (result.type !== 'error') {
+        throw new Error('Expected payment error result')
+      }
+      expect(result.error.message).toContain('Wallet recovery is still running')
       expect(mockPayInvoice).not.toHaveBeenCalled()
     })
 
@@ -111,7 +117,7 @@ describe('useLightningPayment', () => {
       await vi.advanceTimersByTimeAsync(100)
       const result = await paymentPromise
 
-      expect(result.success).toBe(true)
+      expect(result.type).toBe('success')
       expect(mockSubscribeInternalPayment).toHaveBeenCalledWith(
         'internal-op-123',
         expect.any(Function),
@@ -126,7 +132,10 @@ describe('useLightningPayment', () => {
 
       const result = await payInvoice('lnbc1000n1...', 1000)
 
-      expect(result.success).toBe(false)
+      expect(result.type).toBe('error')
+      if (result.type !== 'error') {
+        throw new Error('Expected payment error result')
+      }
       expect(result.error).toBeDefined()
     })
   })
@@ -142,7 +151,10 @@ describe('useLightningPayment', () => {
 
       const result = await createInvoice(1000, 'test invoice', 1200)
 
-      expect(result.success).toBe(true)
+      expect(result.type).toBe('success')
+      if (result.type !== 'success') {
+        throw new Error('Expected successful invoice creation result')
+      }
       expect(result.invoice).toBe('lnbc1000n1...')
       expect(result.operationId).toBe('op-123')
       expect(mockCreateInvoice).toHaveBeenCalledWith(1000000, 'test invoice', 1200)
@@ -155,7 +167,10 @@ describe('useLightningPayment', () => {
 
       const result = await createInvoice(1000, 'test', 1200)
 
-      expect(result.success).toBe(false)
+      expect(result.type).toBe('error')
+      if (result.type !== 'error') {
+        throw new Error('Expected invoice creation error result')
+      }
       expect(result.error).toBeDefined()
     })
   })
@@ -168,7 +183,7 @@ describe('useLightningPayment', () => {
 
       const result = await waitForInvoicePayment('op-123', 120000)
 
-      expect(result.success).toBe(true)
+      expect(result.type).toBe('success')
       expect(mockWaitForReceive).toHaveBeenCalledWith('op-123', 120000)
       expect(mockUpdateBalance).toHaveBeenCalled()
     })
@@ -180,7 +195,10 @@ describe('useLightningPayment', () => {
 
       const result = await waitForInvoicePayment('op-123', 120000)
 
-      expect(result.success).toBe(false)
+      expect(result.type).toBe('error')
+      if (result.type !== 'error') {
+        throw new Error('Expected invoice wait error result')
+      }
       expect(result.error).toBeDefined()
     })
   })

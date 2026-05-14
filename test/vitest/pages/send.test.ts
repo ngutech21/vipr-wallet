@@ -6,6 +6,7 @@ import SendPage from 'src/pages/send.vue'
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockDecodeInvoiceFromComposable = vi.hoisted(() => vi.fn())
 const mockCreateInvoiceFromInput = vi.hoisted(() => vi.fn())
+const mockClearDecodedInvoice = vi.hoisted(() => vi.fn())
 const mockPayInvoiceFromComposable = vi.hoisted(() => vi.fn())
 const mockUseRoute = vi.hoisted(() => vi.fn())
 const mockNotifyError = vi.hoisted(() => vi.fn())
@@ -53,6 +54,7 @@ vi.mock('src/composables/useInvoiceDecoding', () => ({
     decodedInvoice: mockDecodedInvoiceRef,
     decodeInvoice: mockDecodeInvoiceFromComposable,
     createInvoiceFromInput: mockCreateInvoiceFromInput,
+    clearDecodedInvoice: mockClearDecodedInvoice,
   }),
 }))
 
@@ -161,7 +163,10 @@ describe('SendPage query invoice handling', () => {
     mockUseRoute.mockImplementation(() => routeState)
     mockDecodeInvoiceFromComposable.mockResolvedValue(undefined)
     mockCreateInvoiceFromInput.mockResolvedValue(undefined)
-    mockPayInvoiceFromComposable.mockResolvedValue({ success: true, amountSats: 1, fee: 0 })
+    mockClearDecodedInvoice.mockImplementation(() => {
+      mockDecodedInvoiceRef.value = null
+    })
+    mockPayInvoiceFromComposable.mockResolvedValue({ type: 'success', amountSats: 1, fee: 0 })
     mockDecodedInvoiceRef.value = null
     mockAmountRequiredRef.value = false
     mockLnurlPayLimitsRef.value = null

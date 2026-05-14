@@ -117,6 +117,13 @@ defineOptions({
 import { QrcodeStream, type DetectedBarcode, type EmittedError } from 'vue-qrcode-reader'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import {
+  areFramesComplete,
+  currentNumberOfFrames,
+  parseFramesReducer,
+  totalNumberOfFrames,
+  type State as QrLoopState,
+} from 'qrloop'
 import AddFederation from 'src/components/AddFederation.vue'
 import BottomSheetOptionCard from 'src/components/BottomSheetOptionCard.vue'
 import ModalCard from 'src/components/ModalCard.vue'
@@ -125,6 +132,7 @@ import { logger } from 'src/services/logger'
 import { classifyScannedPayment, type ScannedPaymentAction } from 'src/utils/scannedPayment'
 import { useFormatters } from 'src/utils/formatter'
 import { getQueryString } from 'src/utils/routeQuery'
+import { decodeEcashQrFrames } from 'src/utils/ecashQrFrames'
 
 const detectedContent = ref<string | null>('')
 const router = useRouter()
@@ -135,6 +143,7 @@ const showAddFederation = ref(false)
 const showBip21PaymentChoice = ref(false)
 const scannerPaused = ref(false)
 const routingInProgress = ref(false)
+const ecashQrLoopState = ref<QrLoopState>(null)
 const pendingBip21Payment = ref<Extract<
   ScannedPaymentAction,
   { type: 'choose-bip21-payment' }
@@ -207,9 +216,11 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
   const action = classifyScannedPayment(code.rawValue)
 
   if (action.type === 'add-federation') {
+    resetEcashQrLoop()
     scannerPaused.value = true
     showAddFederation.value = true
   } else if (action.type === 'send-onchain') {
+    resetEcashQrLoop()
     await navigateFromScan(
       {
         path: '/send-onchain',
@@ -218,6 +229,7 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
       'Failed to navigate to onchain send page',
     )
   } else if (action.type === 'send-lightning') {
+    resetEcashQrLoop()
     await navigateFromScan(
       {
         name: '/send',
@@ -226,6 +238,7 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
       'Failed to navigate to send page',
     )
   } else if (action.type === 'handle-lnurl') {
+    resetEcashQrLoop()
     await navigateFromScan(
       {
         name: '/lnurl',
@@ -234,18 +247,76 @@ async function onDetect(detectedCodes: DetectedBarcode[]) {
       'Failed to navigate to LNURL page',
     )
   } else if (action.type === 'choose-bip21-payment') {
+    resetEcashQrLoop()
     scannerPaused.value = true
     pendingBip21Payment.value = action
     showBip21PaymentChoice.value = true
   } else {
-    await navigateFromScan(
-      {
-        name: '/receive-ecash',
-        query: { token: action.token },
-      },
-      'Failed to navigate to receive ecash page',
-    )
+    await handleEcashScan(action.token)
   }
+}
+
+async function handleEcashScan(token: string) {
+  if (await collectEcashQrLoopFrame(token)) {
+    return
+  }
+
+  await navigateToReceiveEcash(token)
+}
+
+async function collectEcashQrLoopFrame(rawValue: string): Promise<boolean> {
+  let nextState: QrLoopState
+
+  try {
+    nextState = parseFramesReducer(ecashQrLoopState.value, rawValue)
+  } catch {
+    resetEcashQrLoop()
+    return false
+  }
+
+  const totalFrames = totalNumberOfFrames(nextState)
+  if (totalFrames == null || totalFrames <= 0) {
+    resetEcashQrLoop()
+    return false
+  }
+
+  ecashQrLoopState.value = nextState
+
+  const scannedFrames = currentNumberOfFrames(nextState)
+  logger.scanner.debug('Animated ecash QR frame collected', {
+    scannedFrames,
+    totalFrames,
+  })
+  detectedContent.value = `Scanning animated ecash ${scannedFrames}/${totalFrames}`
+
+  if (!areFramesComplete(nextState)) {
+    return true
+  }
+
+  try {
+    const token = decodeEcashQrFrames(nextState)
+    resetEcashQrLoop()
+    await navigateToReceiveEcash(token)
+  } catch (error) {
+    logger.scanner.debug('Failed to assemble animated ecash QR frames', { error })
+    resetEcashQrLoop()
+  }
+
+  return true
+}
+
+function resetEcashQrLoop() {
+  ecashQrLoopState.value = null
+}
+
+async function navigateToReceiveEcash(token: string) {
+  await navigateFromScan(
+    {
+      name: '/receive-ecash',
+      query: { token },
+    },
+    'Failed to navigate to receive ecash page',
+  )
 }
 
 async function navigateFromScan(target: Parameters<typeof router.push>[0], failureMessage: string) {

@@ -38,22 +38,18 @@
           </span>
         </div>
 
-        <div class="summary-modules">
-          <q-chip
-            v-for="module in federation?.modules"
-            :key="module.kind"
-            size="sm"
-            class="vipr-chip summary-module-chip"
-          >
-            {{ module.kind }}
-          </q-chip>
-        </div>
+        <FederationModuleChips
+          v-if="federation?.modules.length"
+          class="summary-modules"
+          :modules="federation.modules"
+        />
       </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
+import FederationModuleChips from 'src/components/federation/FederationModuleChips.vue'
 import type { Federation } from 'src/types/federation'
 
 defineOptions({
@@ -120,8 +116,9 @@ defineProps<{
   flex-wrap: wrap;
   gap: var(--vipr-space-2);
   margin-top: var(--vipr-federation-detail-currency-gap);
-  color: var(--vipr-text-muted);
+  color: var(--vipr-text-secondary);
   font-size: var(--vipr-font-size-caption);
+  font-weight: 500;
   line-height: var(--vipr-line-height-tight);
 }
 
@@ -132,22 +129,7 @@ defineProps<{
 }
 
 .summary-modules {
-  min-width: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--vipr-space-1);
   margin-top: var(--vipr-space-3);
-}
-
-.summary-module-chip {
-  margin: 0;
-  background: var(--vipr-color-input-bg);
-  color: var(--vipr-text-secondary);
-  font-weight: 500;
-}
-
-.summary-module-chip :deep(.q-chip__content) {
-  padding: 0 var(--vipr-space-2);
 }
 
 @media (max-width: 599px) {
@@ -165,12 +147,7 @@ defineProps<{
   }
 
   .summary-meta-line {
-    font-size: var(--vipr-font-size-label);
-  }
-
-  .summary-module-chip {
-    height: 22px;
-    font-size: 0.74rem;
+    font-size: var(--vipr-font-size-caption);
   }
 }
 </style>

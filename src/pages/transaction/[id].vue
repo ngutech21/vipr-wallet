@@ -23,15 +23,15 @@ meta:
       />
 
       <!-- Loading state -->
-      <div v-if="loading" class="transaction-state">
+      <div v-if="loadState.type === 'loading'" class="transaction-state">
         <q-spinner color="primary" size="3em" />
         <div class="transaction-state__message">Loading transaction...</div>
       </div>
 
       <!-- Error state -->
-      <div v-else-if="error" class="transaction-state">
+      <div v-else-if="loadState.type === 'error'" class="transaction-state">
         <q-icon name="error_outline" color="negative" size="3em" />
-        <div class="transaction-state__message">{{ error }}</div>
+        <div class="transaction-state__message">{{ loadState.message }}</div>
         <q-btn
           color="primary"
           label="Go Back"
@@ -42,18 +42,18 @@ meta:
       </div>
 
       <!-- Transaction content -->
-      <template v-if="transaction">
+      <template v-if="loadState.type === 'loaded'">
         <LightningTransactionDetails
-          v-if="transaction.kind === 'ln'"
-          :transaction="transaction as import('@fedimint/core').LightningTransaction"
+          v-if="loadState.transaction.kind === 'ln'"
+          :transaction="loadState.transaction as import('@fedimint/core').LightningTransaction"
         />
         <EcashTransactionDetails
-          v-else-if="transaction.kind === 'mint'"
-          :transaction="transaction as import('@fedimint/core').EcashTransaction"
+          v-else-if="loadState.transaction.kind === 'mint'"
+          :transaction="loadState.transaction as import('@fedimint/core').EcashTransaction"
         />
         <WalletTransactionDetails
-          v-else-if="transaction.kind === 'wallet'"
-          :transaction="transaction as import('@fedimint/core').WalletTransaction"
+          v-else-if="loadState.transaction.kind === 'wallet'"
+          :transaction="loadState.transaction as import('@fedimint/core').WalletTransaction"
         />
       </template>
     </q-page>
@@ -79,9 +79,20 @@ const route = useRoute('/transaction/[id]')
 const router = useRouter()
 const walletStore = useWalletStore()
 
-const transaction = ref<Transactions | null>(null)
-const loading = ref(true)
-const error = ref('')
+type TransactionLoadState =
+  | {
+      type: 'loading'
+    }
+  | {
+      type: 'loaded'
+      transaction: Transactions
+    }
+  | {
+      type: 'error'
+      message: string
+    }
+
+const loadState = ref<TransactionLoadState>({ type: 'loading' })
 
 async function navigateBack() {
   await router.replace(
@@ -93,25 +104,22 @@ onMounted(async () => {
   try {
     const operationId = route.params.id
 
-    if (operationId === '') {
-      error.value = 'Transaction ID is missing'
-      loading.value = false
+    if (typeof operationId !== 'string' || operationId === '') {
+      loadState.value = { type: 'error', message: 'Transaction ID is missing' }
       return
     }
 
     const foundTransaction = await walletStore.getTransactionByOperationId(operationId)
 
     if (foundTransaction != null) {
-      transaction.value = foundTransaction
+      loadState.value = { type: 'loaded', transaction: foundTransaction }
     } else {
       logger.warn('Transaction not found in initial load', { operationId })
-      error.value = 'Transaction not found'
+      loadState.value = { type: 'error', message: 'Transaction not found' }
     }
   } catch (err) {
-    error.value = 'Error loading transaction details'
+    loadState.value = { type: 'error', message: 'Error loading transaction details' }
     logger.error('Error loading transaction details', err)
-  } finally {
-    loading.value = false
   }
 })
 </script>

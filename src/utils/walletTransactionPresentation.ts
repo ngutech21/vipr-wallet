@@ -8,7 +8,7 @@ export function getWalletDepositStatusLabel(outcome: WalletDepositOutcome): stri
       return 'Transaction detected'
     case 'Confirmed':
     case 'Claimed':
-      return 'Bitcoin received'
+      return 'Received'
     case 'Failed':
       return 'Deposit failed'
     case 'pending':
@@ -65,7 +65,7 @@ export function getWalletTransactionStatusColor(status: string | undefined): str
   }
 
   switch (status) {
-    case 'Bitcoin received':
+    case 'Received':
     case 'Broadcast':
     case 'Confirmed':
     case 'Claimed':

@@ -29,34 +29,38 @@ meta:
         />
 
         <div
-          v-if="!bitcoinAddress && !isGenerating"
-          class="receive-onchain-start vipr-flow-bottom-action"
-        >
-          <div class="vipr-flow-bottom-hint">
-            Creates a Bitcoin deposit address for this federation.
-          </div>
-          <q-btn
-            label="Create Bitcoin address"
-            icon="currency_bitcoin"
-            color="primary"
-            no-caps
-            unelevated
-            class="vipr-flow-action vipr-btn vipr-btn--primary vipr-btn--lg"
-            :disable="!canGenerateAddress"
-            @click="generateAddress"
-            data-testid="receive-onchain-generate-address-btn"
-            :data-busy="isGenerating ? 'true' : 'false'"
-          />
-        </div>
-
-        <div
-          v-else-if="isGenerating"
+          v-if="isGenerating"
           class="receive-onchain-generating vipr-flow-panel task-card vipr-surface-card--strong"
+          data-testid="receive-onchain-generating-state"
         >
           <q-spinner color="primary" size="3em" />
           <div class="section-title receive-onchain-generating__title">
-            Generating Bitcoin address...
+            Creating Bitcoin address...
           </div>
+        </div>
+
+        <div
+          v-else-if="!bitcoinAddress"
+          class="receive-onchain-generating vipr-flow-panel task-card vipr-surface-card--strong"
+          data-testid="receive-onchain-empty-state"
+        >
+          <q-icon name="currency_bitcoin" class="receive-onchain-generating__icon" />
+          <div class="section-title receive-onchain-generating__title">
+            {{ emptyStateTitle }}
+          </div>
+          <div v-if="emptyStateCopy" class="receive-onchain-generating__copy">
+            {{ emptyStateCopy }}
+          </div>
+          <q-btn
+            v-if="addressErrorMessage"
+            label="Try again"
+            icon="refresh"
+            no-caps
+            unelevated
+            class="vipr-btn vipr-btn--secondary receive-onchain-generating__action"
+            data-testid="receive-onchain-retry-address-btn"
+            @click="retryGenerateAddress"
+          />
         </div>
 
         <template v-else>
@@ -101,9 +105,9 @@ defineOptions({
   name: 'ReceiveOnchainPage',
 })
 
-import { computed, onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import type { WalletDepositState } from '@fedimint/core'
+import type { CancelFunction, WalletDepositState } from '@fedimint/core'
 import CopyableQrCard from 'src/components/CopyableQrCard.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
 import ViprTopbar from 'src/components/ViprTopbar.vue'
@@ -120,6 +124,8 @@ const isGenerating = ref(false)
 const isWaitingForDeposit = ref(false)
 const depositState = ref<WalletDepositState | null>(null)
 const hasCompletedDeposit = ref(false)
+const addressRequestId = ref(0)
+const addressErrorMessage = ref('')
 
 const walletStore = useWalletStore()
 const federationStore = useFederationStore()
@@ -134,11 +140,33 @@ const { copyToClipboard, shareValue: shareBitcoinAddress } = useCopyShare({
   onCopyError: (error) => logger.error('Failed to copy onchain address to clipboard', error),
 })
 
-let depositPollTimeout: ReturnType<typeof setTimeout> | null = null
+let unsubscribeDepositWait: CancelFunction | null = null
 
 const selectedFederation = computed(() => federationStore.selectedFederation)
-const canSelectFederation = computed(() => bitcoinAddress.value === '' && !isGenerating.value)
-const canGenerateAddress = computed(() => selectedFederation.value != null && !isGenerating.value)
+const selectedFederationId = computed(() => selectedFederation.value?.federationId ?? '')
+const canSelectFederation = computed(() => !isGenerating.value)
+const emptyStateTitle = computed(() => {
+  if (selectedFederation.value == null) {
+    return 'Select a federation to create a Bitcoin address.'
+  }
+
+  if (walletStore.wallet == null) {
+    return 'Opening federation wallet...'
+  }
+
+  if (addressErrorMessage.value !== '') {
+    return 'Could not create Bitcoin address.'
+  }
+
+  return 'Preparing Bitcoin address...'
+})
+const emptyStateCopy = computed(() => {
+  if (addressErrorMessage.value !== '') {
+    return addressErrorMessage.value
+  }
+
+  return ''
+})
 
 const depositStatusText = computed(() => {
   if (depositState.value === null || depositState.value === 'WaitingForTransaction') {
@@ -185,14 +213,46 @@ const confirmationInfo = computed(() => {
 })
 
 onUnmounted(() => {
-  stopDepositPolling()
+  addressRequestId.value += 1
+  cleanupDepositWait()
 })
 
-function stopDepositPolling() {
-  if (depositPollTimeout != null) {
-    clearTimeout(depositPollTimeout)
-    depositPollTimeout = null
-  }
+watch(
+  () => [selectedFederationId.value, walletStore.wallet != null] as const,
+  ([federationId, isWalletReady], previousState) => {
+    const previousFederationId = previousState?.[0] ?? ''
+
+    if (federationId === '' || !isWalletReady) {
+      resetGeneratedAddress()
+      return
+    }
+
+    if (federationId === previousFederationId && bitcoinAddress.value !== '') {
+      return
+    }
+
+    generateAddressForFederation(federationId).catch((error: unknown) => {
+      logger.error('Failed to auto-generate onchain address', error)
+    })
+  },
+  { immediate: true },
+)
+
+function cleanupDepositWait() {
+  unsubscribeDepositWait?.()
+  unsubscribeDepositWait = null
+  isWaitingForDeposit.value = false
+}
+
+function resetGeneratedAddress() {
+  addressRequestId.value += 1
+  cleanupDepositWait()
+  bitcoinAddress.value = ''
+  operationId.value = ''
+  depositState.value = null
+  hasCompletedDeposit.value = false
+  addressErrorMessage.value = ''
+  isGenerating.value = false
 }
 
 async function completeDeposit(amountSats: number) {
@@ -201,8 +261,7 @@ async function completeDeposit(amountSats: number) {
   }
 
   hasCompletedDeposit.value = true
-  isWaitingForDeposit.value = false
-  stopDepositPolling()
+  cleanupDepositWait()
   await walletStore.updateBalance()
   await router.push({
     name: '/received-onchain',
@@ -231,77 +290,97 @@ function normalizeDepositState(outcome: unknown): WalletDepositState | null {
   return null
 }
 
-function scheduleDepositPoll() {
-  stopDepositPolling()
-  depositPollTimeout = setTimeout(() => {
-    pollDepositState().catch((error: unknown) => {
-      logger.error('Failed polling onchain deposit state', error)
-    })
-  }, 5000)
-}
-
-async function pollDepositState() {
-  if (operationId.value === '' || hasCompletedDeposit.value) {
+function handleDepositState(state: WalletDepositState, activeOperationId: string) {
+  if (
+    activeOperationId !== operationId.value ||
+    hasCompletedDeposit.value ||
+    normalizeDepositState(state) == null
+  ) {
     return
   }
 
-  try {
-    const operation = await walletStore.wallet?.federation.getOperation(operationId.value)
-    const nextState = normalizeDepositState(operation?.outcome?.outcome)
+  depositState.value = state
+  logger.logTransaction('Deposit state update', { state })
 
-    if (nextState != null) {
-      depositState.value = nextState
-      logger.logTransaction('Deposit state update', { state: nextState })
-    }
+  if (typeof state === 'object' && 'Confirmed' in state) {
+    completeDeposit(state.Confirmed.btc_deposited).catch((error: unknown) => {
+      logger.error('Failed to handle confirmed onchain deposit', error)
+    })
+    return
+  }
 
-    if (nextState != null && typeof nextState === 'object' && 'Confirmed' in nextState) {
-      await completeDeposit(nextState.Confirmed.btc_deposited)
-      return
-    }
+  if (typeof state === 'object' && 'Claimed' in state) {
+    completeDeposit(state.Claimed.btc_deposited).catch((error: unknown) => {
+      logger.error('Failed to handle claimed onchain deposit', error)
+    })
+    return
+  }
 
-    if (nextState != null && typeof nextState === 'object' && 'Claimed' in nextState) {
-      await completeDeposit(nextState.Claimed.btc_deposited)
-      return
-    }
-
-    if (nextState != null && typeof nextState === 'object' && 'Failed' in nextState) {
-      isWaitingForDeposit.value = false
-      stopDepositPolling()
-      notify.error(`Deposit monitoring failed: ${nextState.Failed}`)
-      return
-    }
-
-    scheduleDepositPoll()
-  } catch (error) {
-    logger.error('Error polling deposit state', error)
-    scheduleDepositPoll()
+  if (typeof state === 'object' && 'Failed' in state) {
+    cleanupDepositWait()
+    notify.error(`Deposit monitoring failed: ${state.Failed}`)
   }
 }
 
-function startDepositPolling() {
+function subscribeToDeposit() {
   if (operationId.value === '') {
     return
   }
 
+  cleanupDepositWait()
   isWaitingForDeposit.value = true
   depositState.value = 'WaitingForTransaction'
-  pollDepositState().catch((error: unknown) => {
-    logger.error('Failed to start onchain deposit polling', error)
-  })
+
+  const activeOperationId = operationId.value
+  unsubscribeDepositWait =
+    walletStore.wallet?.wallet.subscribeDeposit(
+      activeOperationId,
+      (state) => {
+        handleDepositState(state, activeOperationId)
+      },
+      (error) => {
+        if (activeOperationId !== operationId.value) {
+          return
+        }
+
+        cleanupDepositWait()
+        logger.error('Onchain deposit subscription failed', {
+          operationId: activeOperationId,
+          error,
+        })
+        notify.error(`Error monitoring deposit: ${getErrorMessage(error)}`)
+      },
+    ) ?? null
 }
 
-async function generateAddress() {
+async function generateAddressForFederation(federationId: string) {
   if (selectedFederation.value == null) {
     logger.error('No federation selected')
     notify.error('No federation selected')
     return
   }
 
+  const currentRequestId = addressRequestId.value + 1
+  addressRequestId.value = currentRequestId
+  cleanupDepositWait()
+  bitcoinAddress.value = ''
+  operationId.value = ''
+  depositState.value = null
+  hasCompletedDeposit.value = false
+  addressErrorMessage.value = ''
+
   try {
     isGenerating.value = true
-    logger.logTransaction('Generating onchain address')
+    logger.logTransaction('Generating onchain address', { federationId })
 
     const response = await walletStore.wallet?.wallet.generateAddress()
+    if (
+      currentRequestId !== addressRequestId.value ||
+      federationId !== selectedFederationId.value
+    ) {
+      return
+    }
+
     if (response == null) {
       throw new Error('Failed to generate onchain address')
     }
@@ -312,15 +391,33 @@ async function generateAddress() {
     logger.logTransaction('Onchain address generated successfully', {
       address: response.deposit_address,
       operationId: response.operation_id,
+      federationId,
     })
 
-    startDepositPolling()
+    subscribeToDeposit()
   } catch (error) {
+    if (currentRequestId !== addressRequestId.value) {
+      return
+    }
+
     logger.error('Failed to generate onchain address', error)
-    notify.error(`Error generating address: ${getErrorMessage(error)}`)
+    addressErrorMessage.value = getErrorMessage(error)
+    notify.error(`Error generating address: ${addressErrorMessage.value}`)
   } finally {
-    isGenerating.value = false
+    if (currentRequestId === addressRequestId.value) {
+      isGenerating.value = false
+    }
   }
+}
+
+function retryGenerateAddress() {
+  if (selectedFederationId.value === '') {
+    return
+  }
+
+  generateAddressForFederation(selectedFederationId.value).catch((error: unknown) => {
+    logger.error('Failed to retry onchain address generation', error)
+  })
 }
 
 async function shareAddress() {
@@ -329,7 +426,7 @@ async function shareAddress() {
 }
 
 async function goBack() {
-  stopDepositPolling()
+  cleanupDepositWait()
   await router.push({ name: '/' })
 }
 </script>
@@ -338,6 +435,11 @@ async function goBack() {
 .receive-onchain-generating {
   padding: var(--vipr-space-8);
   text-align: center;
+}
+
+.receive-onchain-generating__icon {
+  color: var(--vipr-text-secondary);
+  font-size: 3rem;
 }
 
 .receive-onchain-federation-selector {
@@ -355,6 +457,16 @@ async function goBack() {
 
 .receive-onchain-generating__title {
   margin-top: var(--vipr-space-4);
+}
+
+.receive-onchain-generating__copy {
+  max-width: 420px;
+  margin: var(--vipr-space-3) auto 0;
+  color: var(--vipr-text-secondary);
+}
+
+.receive-onchain-generating__action {
+  margin-top: var(--vipr-space-5);
 }
 
 .receive-onchain-status {

@@ -2,6 +2,7 @@ import { defineComponent } from 'vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import ScanPage from 'src/pages/scan.vue'
+import { buildEcashQrFrames } from 'src/utils/ecashQrFrames'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockUseRoute = vi.hoisted(() => vi.fn())
@@ -218,6 +219,74 @@ describe('ScanPage detection flow', () => {
     expect(mockRouterPush).toHaveBeenCalledWith({
       name: '/receive-ecash',
       query: { token: 'cashuAexample' },
+    })
+    wrapper.unmount()
+  })
+
+  it('collects animated ecash QR frames before routing to receive ecash', async () => {
+    const token = 'cashuAanimated-token-payload'.repeat(10)
+    const frames = buildEcashQrFrames(token, 40)
+    expect(frames.length).toBeGreaterThan(1)
+
+    wrapper = createWrapper()
+    const firstFrame = frames[0]
+    const lastFrame = frames.at(-1)
+    if (firstFrame == null || lastFrame == null) {
+      throw new Error('Expected animated ecash frames')
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).onDetect([{ rawValue: firstFrame }])
+    await flushPromises()
+    expect(mockRouterPush).not.toHaveBeenCalled()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((wrapper.vm as any).detectedContent).toContain('1/')
+
+    /* eslint-disable no-await-in-loop */
+    for (const frame of frames.slice(1, -1)) {
+      if (mockRouterPush.mock.calls.length > 0) {
+        break
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (wrapper.vm as any).onDetect([{ rawValue: frame }])
+      await flushPromises()
+    }
+    /* eslint-enable no-await-in-loop */
+
+    if (mockRouterPush.mock.calls.length === 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (wrapper.vm as any).onDetect([{ rawValue: lastFrame }])
+      await flushPromises()
+    }
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      name: '/receive-ecash',
+      query: { token },
+    })
+    wrapper.unmount()
+  })
+
+  it('keeps non-ecash scan routing immediate after seeing an incomplete animated ecash frame', async () => {
+    const [firstFrame] = buildEcashQrFrames('cashuAanimated-token-payload'.repeat(10), 40)
+    if (firstFrame == null) {
+      throw new Error('Expected animated ecash frames')
+    }
+
+    wrapper = createWrapper()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).onDetect([{ rawValue: firstFrame }])
+    await flushPromises()
+
+    expect(mockRouterPush).not.toHaveBeenCalled()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).onDetect([{ rawValue: 'lightning:lnbc123' }])
+    await flushPromises()
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      name: '/send',
+      query: { invoice: 'lnbc123' },
     })
     wrapper.unmount()
   })

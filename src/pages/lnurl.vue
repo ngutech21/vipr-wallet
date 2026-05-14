@@ -15,15 +15,16 @@ meta:
       <div class="lnurl-content">
         <div class="vipr-flow-center">
           <div class="vipr-flow-panel vipr-flow-panel--padded task-card vipr-surface-card--strong">
-            <div v-if="isLoading" class="lnurl-loading" data-testid="lnurl-loading-state">
+            <div
+              v-if="pageState.type === 'loading'"
+              class="lnurl-loading"
+              data-testid="lnurl-loading-state"
+            >
               <q-spinner-dots />
               <div class="vipr-caption">Loading LNURL request</div>
             </div>
 
-            <div
-              v-else-if="withdrawParams != null && !isComplete"
-              data-testid="lnurl-withdraw-form"
-            >
+            <div v-else-if="pageState.type === 'withdraw'" data-testid="lnurl-withdraw-form">
               <div class="lnurl-heading">
                 <div class="vipr-eyebrow">LNURL Withdraw</div>
                 <h1>Claim Lightning payment</h1>
@@ -70,7 +71,11 @@ meta:
               </q-btn>
             </div>
 
-            <div v-else-if="isComplete" class="lnurl-success" data-testid="lnurl-withdraw-success">
+            <div
+              v-else-if="pageState.type === 'complete'"
+              class="lnurl-success"
+              data-testid="lnurl-withdraw-success"
+            >
               <q-icon name="check_circle" class="lnurl-success__icon" />
               <h1>Withdrawal requested</h1>
               <p class="vipr-caption">
@@ -105,7 +110,7 @@ defineOptions({
   name: 'LnurlPage',
 })
 
-import { computed, ref, watch } from 'vue'
+import { computed, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AmountDisplay from 'src/components/AmountDisplay.vue'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
@@ -122,17 +127,44 @@ const notify = useAppNotify()
 const { createInvoice } = useLightningPayment()
 const { value: amount, setValue, keypadButtons } = useNumericInput(0)
 
-const isLoading = ref(true)
-const isSubmitting = ref(false)
-const isComplete = ref(false)
-const errorMessage = ref('This LNURL type is not supported yet.')
-const withdrawParams = ref<LnurlWithdrawParams | null>(null)
+type LnurlPageState =
+  | {
+      type: 'loading'
+    }
+  | {
+      type: 'withdraw'
+      params: LnurlWithdrawParams
+    }
+  | {
+      type: 'complete'
+    }
+  | {
+      type: 'error'
+      message: string
+    }
+
+const pageState = shallowRef<LnurlPageState>({ type: 'loading' })
+const isSubmitting = shallowRef(false)
+
+function completeWithdrawRequest(params: LnurlWithdrawParams) {
+  if (pageState.value.type === 'withdraw' && pageState.value.params === params) {
+    pageState.value = { type: 'complete' }
+  }
+}
 
 const lnurlValue = computed(() => {
   const rawValue = Array.isArray(route.query.value) ? route.query.value[0] : route.query.value
   return typeof rawValue === 'string' ? stripLightningUriPrefix(rawValue.trim().toLowerCase()) : ''
 })
 
+const withdrawParams = computed(() =>
+  pageState.value.type === 'withdraw' ? pageState.value.params : null,
+)
+const errorMessage = computed(() =>
+  pageState.value.type === 'error'
+    ? pageState.value.message
+    : 'This LNURL type is not supported yet.',
+)
 const minWithdrawSats = computed(() =>
   withdrawParams.value == null ? 0 : Math.ceil(withdrawParams.value.minWithdrawable / 1_000),
 )
@@ -172,15 +204,14 @@ watch(
   lnurlValue,
   async (nextLnurl) => {
     if (nextLnurl === '') {
-      isLoading.value = false
-      errorMessage.value = 'No LNURL request was provided.'
+      pageState.value = {
+        type: 'error',
+        message: 'No LNURL request was provided.',
+      }
       return
     }
 
-    isLoading.value = true
-    isComplete.value = false
-    withdrawParams.value = null
-    errorMessage.value = 'This LNURL type is not supported yet.'
+    pageState.value = { type: 'loading' }
 
     try {
       const params = await resolveLnurl(nextLnurl)
@@ -193,38 +224,42 @@ watch(
         return
       }
 
-      withdrawParams.value = params
       setValue(Math.floor(params.maxWithdrawable / 1_000))
+      pageState.value = {
+        type: 'withdraw',
+        params,
+      }
     } catch (error) {
-      errorMessage.value = getErrorMessage(error)
-      notify.error(`Failed to load LNURL request: ${errorMessage.value}`)
-    } finally {
-      isLoading.value = false
+      const message = getErrorMessage(error)
+      pageState.value = {
+        type: 'error',
+        message,
+      }
+      notify.error(`Failed to load LNURL request: ${message}`)
     }
   },
   { immediate: true },
 )
 
 async function submitWithdraw() {
-  const params = withdrawParams.value
-  if (params == null || amountError.value != null) {
+  if (pageState.value.type !== 'withdraw' || amountError.value != null) {
     return
   }
 
+  const params = pageState.value.params
   isSubmitting.value = true
 
   try {
     const invoiceResult = await createInvoice(amount.value, withdrawDescription.value)
 
-    if (!invoiceResult.success || invoiceResult.invoice == null || invoiceResult.invoice === '') {
-      throw invoiceResult.error ?? new Error('Failed to create invoice')
+    if (invoiceResult.type === 'error') {
+      throw invoiceResult.error
     }
 
     await submitLnurlWithdrawInvoice(params, invoiceResult.invoice)
-    isComplete.value = true
+    completeWithdrawRequest(params)
   } catch (error) {
     const message = getErrorMessage(error)
-    errorMessage.value = message
     notify.error(`Failed to claim LNURL withdraw: ${message}`)
   } finally {
     isSubmitting.value = false

@@ -1,5 +1,4 @@
 import { onMounted, onUnmounted, type Ref } from 'vue'
-import JSConfetti from 'js-confetti'
 
 type ConfettiCelebrationOptions = {
   emojis?: string[]
@@ -11,12 +10,21 @@ type ConfettiCelebrationOptions = {
   stopAfterMs?: number
 }
 
+type JSConfettiInstance = {
+  addConfetti(options: {
+    emojis: string[]
+    emojiSize: number
+    confettiNumber: number
+  }): Promise<unknown>
+}
+
 export function useConfettiCelebration(
   canvasRef: Ref<HTMLCanvasElement | null>,
   options: ConfettiCelebrationOptions = {},
 ) {
-  let jsConfetti: JSConfetti | null = null
+  let jsConfetti: JSConfettiInstance | null = null
   let animationInterval: number | null = null
+  let isUnmounted = false
 
   const emojis = options.emojis ?? ['⚡', '₿', '✨']
   const initialEmojiSize = options.initialEmojiSize ?? 70
@@ -33,24 +41,35 @@ export function useConfettiCelebration(
     }
   }
 
-  onMounted(() => {
+  onMounted(async () => {
     if (canvasRef.value == null) {
       return
     }
 
-    jsConfetti = new JSConfetti({
-      canvas: canvasRef.value,
-    })
+    try {
+      const { default: JSConfetti } = await import('js-confetti')
 
-    jsConfetti
-      .addConfetti({
-        emojis,
-        emojiSize: initialEmojiSize,
-        confettiNumber: initialConfettiNumber,
+      if (isUnmounted || canvasRef.value == null) {
+        return
+      }
+
+      jsConfetti = new JSConfetti({
+        canvas: canvasRef.value,
       })
-      .catch(() => {
-        // Ignore confetti errors; celebration is decorative.
-      })
+
+      jsConfetti
+        .addConfetti({
+          emojis,
+          emojiSize: initialEmojiSize,
+          confettiNumber: initialConfettiNumber,
+        })
+        .catch(() => {
+          // Ignore confetti errors; celebration is decorative.
+        })
+    } catch {
+      // Ignore module loading errors; celebration is decorative.
+      return
+    }
 
     animationInterval = window.setInterval(() => {
       jsConfetti
@@ -68,6 +87,7 @@ export function useConfettiCelebration(
   })
 
   onUnmounted(() => {
+    isUnmounted = true
     stopBursts()
     jsConfetti = null
   })

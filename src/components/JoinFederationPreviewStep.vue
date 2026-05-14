@@ -50,23 +50,13 @@
     </q-card>
 
     <q-card
-      v-if="moduleKinds.length > 0"
+      v-if="moduleCount > 0"
       flat
       class="preview-card vipr-surface-card vipr-surface-card--strong"
     >
       <q-card-section>
         <div class="preview-section-title">Supported modules</div>
-        <div class="preview-chip-row preview-chip-row--compact">
-          <q-chip
-            v-for="moduleKind in moduleKinds"
-            :key="moduleKind"
-            color="positive"
-            text-color="black"
-            size="sm"
-          >
-            {{ moduleKind }}
-          </q-chip>
-        </div>
+        <FederationModuleChips class="preview-module-chips" :modules="federation.modules" />
       </q-card-section>
     </q-card>
 
@@ -106,6 +96,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useFormatters } from 'src/utils/formatter'
+import FederationModuleChips from 'src/components/federation/FederationModuleChips.vue'
 import FederationGuardians from 'src/components/FederationGuardians.vue'
 import type { Federation } from 'src/types/federation'
 
@@ -118,7 +109,6 @@ const { formatNumber } = useFormatters()
 
 const guardianCount = computed(() => props.federation.guardians?.length ?? 0)
 const moduleCount = computed(() => props.federation.modules.length)
-const moduleKinds = computed(() => props.federation.modules.map((module) => module.kind))
 const defaultCurrency = computed(() => props.federation.metadata?.defaultCurrency ?? null)
 const networkLabel = computed(() => props.federation.network ?? null)
 const previewMessage = computed(() => props.federation.metadata?.previewMessage ?? null)
@@ -170,6 +160,10 @@ const previewMessage = computed(() => props.federation.metadata?.previewMessage 
 }
 
 .preview-chip-row--compact {
+  margin-top: var(--vipr-space-2);
+}
+
+.preview-module-chips {
   margin-top: var(--vipr-space-2);
 }
 

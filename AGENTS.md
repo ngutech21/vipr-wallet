@@ -46,6 +46,13 @@ Playwright is configured in `playwright.config.ts` (tests live under `test/e2e`)
 - Do not add ad hoc hardcoded colors, raw pixel radii, or Quasar layout/typography utility classes when an existing token or shared class covers the use case.
 - Always register every Quasar icon name you add or change in templates in `src/boot/icon-map.ts`; otherwise the icon may render as raw text instead of a mapped symbol.
 
+### TypeScript Code Style
+
+- Prefer discriminated unions for result, state, and protocol variants instead of broad objects with `success: boolean` plus optional fields. Model success and failure as separate variants so TypeScript can narrow fields reliably at call sites.
+- Prefer explicit variant tags such as `type: 'success' | 'error'` when a result has more than two states; boolean discriminants like `success: true | false` are acceptable for simple success/failure results.
+- Prefer functional transformations (`map`, `filter`, `reduce`, object/array spreads, pure helper functions) over in-place mutation when deriving data. Keep imperative mutation limited to Vue refs, Pinia state updates, timers/subscriptions, and SDK lifecycle boundaries.
+- When Pinia actions need non-trivial updates, prefer extracting pure helper functions that accept the previous state and return the next state, then assign the result once in the store.
+
 ### Local Federation UI Testing
 
 - Helper scripts live in `scripts/` and should be used for manual Playwright flows against a local Devimint federation.

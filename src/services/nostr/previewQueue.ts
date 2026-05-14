@@ -20,9 +20,12 @@ export type PreviewFederationCandidateResult =
       federation: Federation
     }
   | {
+      type: 'not-found'
+    }
+  | {
       type: 'failed'
-      error?: unknown
-      errorMessage?: string
+      error: unknown
+      errorMessage: string
       isExpectedError: boolean
     }
   | {
@@ -30,7 +33,7 @@ export type PreviewFederationCandidateResult =
       federation: Federation
     }
   | {
-      type: 'timed_out'
+      type: 'timed-out'
     }
 
 const PREVIEW_TIMEOUT_TOKEN = Symbol('preview-timeout')
@@ -141,14 +144,13 @@ export async function previewFederationCandidate({
 
     if (previewResult === PREVIEW_TIMEOUT_TOKEN) {
       return {
-        type: 'timed_out',
+        type: 'timed-out',
       }
     }
 
     if (previewResult == null) {
       return {
-        type: 'failed',
-        isExpectedError: false,
+        type: 'not-found',
       }
     }
 
