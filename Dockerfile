@@ -1,21 +1,30 @@
 # Stage 1: Build the Quasar PWA
-FROM node:24-slim AS builder
+FROM --platform=$BUILDPLATFORM node:24-slim AS builder
+
+ENV PNPM_STORE_PATH=/pnpm/store
+
+RUN corepack enable \
+    && corepack prepare pnpm@10 --activate \
+    && apt-get update \
+    && apt-get install -y python3 make g++ \
+    && pnpm config set store-dir ${PNPM_STORE_PATH} \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml .npmrc index.html quasar.config.ts tsconfig.json ./
+COPY src-pwa/tsconfig.json ./src-pwa/tsconfig.json
+
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    pnpm install --frozen-lockfile --strict-peer-dependencies
+
+COPY . .
 
 ARG COMMITHASH
 ARG APP_VERSION
 ENV COMMITHASH=${COMMITHASH}
 ENV APP_VERSION=${APP_VERSION}
 
-RUN corepack enable \
-    && corepack prepare pnpm@10 --activate \
-    && apt-get update \
-    && apt-get install -y python3 make g++
-
-WORKDIR /app
-
-COPY . .
-
-RUN pnpm install --frozen-lockfile --strict-peer-dependencies
 RUN pnpm build
 
 # Stage 2: Serve the app using Nginx
