@@ -519,29 +519,35 @@ export const useNostrStore = defineStore('nostr', {
             previewFederation: (inviteCode) => walletStore.previewFederation(inviteCode),
             timeoutMs: PREVIEW_TIMEOUT_MS,
           })
-          if (previewResult.type === 'timed_out') {
+          if (previewResult.type === 'timed-out') {
             this.previewStatusByFederation[candidate.federationId] = 'timed_out'
             this.discoveryCandidates = sortDiscoveredFederationCandidates(this.discoveryCandidates)
             logger.warn('Federation preview timed out', { federationId: candidate.federationId })
             continue
           }
 
+          if (previewResult.type === 'not-found') {
+            this.previewStatusByFederation[candidate.federationId] = 'failed'
+            this.discoveryCandidates = sortDiscoveredFederationCandidates(this.discoveryCandidates)
+            continue
+          }
+
           if (previewResult.type === 'failed') {
             this.previewStatusByFederation[candidate.federationId] = 'failed'
-            if (previewResult.error != null && previewResult.isExpectedError) {
+            if (previewResult.isExpectedError) {
               const lastLoggedCreatedAt = this.previewErrorLoggedCreatedAt[candidate.federationId]
               if (lastLoggedCreatedAt == null || lastLoggedCreatedAt < candidate.createdAt) {
                 this.previewErrorLoggedCreatedAt[candidate.federationId] = candidate.createdAt
                 logger.nostr.warn('Skipping federation candidate with unavailable config', {
                   federationId: candidate.federationId,
                   createdAt: candidate.createdAt,
-                  reason: previewResult.errorMessage ?? getErrorMessage(previewResult.error),
+                  reason: previewResult.errorMessage,
                 })
               }
-            } else if (previewResult.error != null) {
+            } else {
               logger.error('Unexpected error while previewing federation candidate', {
                 federationId: candidate.federationId,
-                error: previewResult.errorMessage ?? getErrorMessage(previewResult.error),
+                error: previewResult.errorMessage,
               })
             }
             this.discoveryCandidates = sortDiscoveredFederationCandidates(this.discoveryCandidates)

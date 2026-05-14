@@ -127,8 +127,7 @@ describe('nostr preview queue service', () => {
         timeoutMs: 100,
       }),
     ).resolves.toEqual({
-      type: 'failed',
-      isExpectedError: false,
+      type: 'not-found',
     })
 
     await expect(
@@ -171,7 +170,7 @@ describe('nostr preview queue service', () => {
     await vi.advanceTimersByTimeAsync(100)
 
     await expect(resultPromise).resolves.toEqual({
-      type: 'timed_out',
+      type: 'timed-out',
     })
 
     vi.useRealTimers()
