@@ -1,17 +1,28 @@
-# Node modules and lock files
+# Dependencies and package manager state
 node_modules
+.pnpm-store
+.npm
 npm-debug.log
 yarn.lock
 
-# Dist or build output
+# Build, test, and tool output
+.direnv
+.lighthouseci
+.playwright-mcp
+.quasar
+coverage
 dist
 build
-node_modules
+output
+playwright-report
+test-results
+tmp
 
 # Local environment files
 .env
 .env.local
 .env.*.local
+.envrc
 
 # IDE settings
 .vscode
