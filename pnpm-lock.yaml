@@ -14,11 +14,11 @@ importers:
   .:
     dependencies:
       '@fedimint/core':
-        specifier: 0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5
-        version: 0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5
+        specifier: 0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031
+        version: 0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031
       '@fedimint/transport-web':
-        specifier: 0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5
-        version: 0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5(@fedimint/core@0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5)
+        specifier: 0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031
+        version: 0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031(@fedimint/core@0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031)
       '@getalby/bitcoin-connect':
         specifier: ^3.12.2
         version: 3.12.2(react@19.1.1)(typescript@6.0.3)
@@ -924,19 +924,19 @@ packages:
     resolution: {integrity: sha512-rZAP3aVgB9ds9KOeUSL+zZ21hPmo8dh6fnIFwRQj5EAZl9gzR7wxYbYXYysAM8CTqGmUGyp2S4kUdV17MnGuWQ==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  '@fedimint/core@0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5':
-    resolution: {integrity: sha512-8/2DX1c/2k2wZ0MMYDvwIsN0pXOv/w2kKBf2zePLJn1eQi85Kv5ZgYZtddRG8sd7oKG880qn8xGIaG4XakKbIw==}
+  '@fedimint/core@0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031':
+    resolution: {integrity: sha512-APfSRFmz3/CGiOXQPZbw0mQVUu7jXCZrizJrLAj9d9/xW38tcMTiTBy916OcJk7e4dpwlqeJuu7Jnj1YzaDmkA==}
 
-  '@fedimint/fedimint-client-wasm-bundler@0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5':
-    resolution: {integrity: sha512-lNKjI8KvhK/DX34ydpln0gHuDIGiV6iiSWSTkILW4zFHvfRrAUx5Zh5LAMaJnK3gR5j+ek8FBkHx75cqCvNR4Q==}
+  '@fedimint/fedimint-client-wasm-bundler@0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031':
+    resolution: {integrity: sha512-mVJBEgypIbn1zbbZoi9Mg6nOdodRq+AvNqkOpPq74v5lNGUaydj4TE7o60lvjR6ee4qhTLDL5SRnA4DDWnTTyg==}
 
-  '@fedimint/transport-web@0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5':
-    resolution: {integrity: sha512-SHpDI/Z+lrrneHH2IqCYis3hLw9lrGCDsaa0lKEbm7Wm1DleIAh7Qy+rGDvyjeWVkoJvKNCEHAcQn961wlSlSA==}
+  '@fedimint/transport-web@0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031':
+    resolution: {integrity: sha512-Jeg9s/UfoNMIzYpdCWeZFAa1gMpvLhbDQW5pBsQNR9BAqGiK1jRz3Ye1MKgLwd5fA/2P/OvO+1b2hHtcXmTNDA==}
     peerDependencies:
-      '@fedimint/core': 0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5
+      '@fedimint/core': 0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031
 
-  '@fedimint/types@0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5':
-    resolution: {integrity: sha512-TpxLdePyJJEo78/ptyhwW1e30qnyyKeZUtEvn4Mcld9J+BtjNdW66w8iwnw5MZGEDBaUXkZL0XgWk8QGkjO7TA==}
+  '@fedimint/types@0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031':
+    resolution: {integrity: sha512-JnJ6WG7YFH0m6xb/SzIcf9zZTnJMznmuM/UxvgSggBqzGciofoP6YSCnQy+GDLtwPFo5e/fhRxz6ilef4zJlKg==}
 
   '@formatjs/ecma402-abstract@2.3.6':
     resolution: {integrity: sha512-HJnTFeRM2kVFVr5gr5kH1XP6K0JcJtE7Lzvtr3FS/so5f1kpsqqqxy5JF+FRaO6H2qmcMfAUIox7AJteieRtVw==}
@@ -6667,19 +6667,19 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
-  '@fedimint/core@0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5':
+  '@fedimint/core@0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031':
     dependencies:
-      '@fedimint/types': 0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5
+      '@fedimint/types': 0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031
 
-  '@fedimint/fedimint-client-wasm-bundler@0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5': {}
+  '@fedimint/fedimint-client-wasm-bundler@0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031': {}
 
-  '@fedimint/transport-web@0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5(@fedimint/core@0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5)':
+  '@fedimint/transport-web@0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031(@fedimint/core@0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031)':
     dependencies:
-      '@fedimint/core': 0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5
-      '@fedimint/fedimint-client-wasm-bundler': 0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5
-      '@fedimint/types': 0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5
+      '@fedimint/core': 0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031
+      '@fedimint/fedimint-client-wasm-bundler': 0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031
+      '@fedimint/types': 0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031
 
-  '@fedimint/types@0.0.0-canary-57a3bbf0d242eaa748f315f56adc191caf0ff0e5': {}
+  '@fedimint/types@0.0.0-canary-cf43f9193627f8081b7144f7c057a7a112989031': {}
 
   '@formatjs/ecma402-abstract@2.3.6':
     dependencies:

@@ -150,8 +150,9 @@ async function refreshEstimatedGatewayFee() {
       return
     }
 
-    await wallet.lightning.updateGatewayCache()
-    const gateway = (await wallet.lightning.listGateways())[0]?.info
+    const gateway = await wallet.lightning.getAvailableGateway({
+      invoice: props.decodedInvoice.invoice,
+    })
     const feeMsats = estimateGatewayFeeMsats(gateway?.fees, props.decodedInvoice.amount * 1_000)
     estimatedGatewayFeeMsats.value = feeMsats
   } catch (error) {

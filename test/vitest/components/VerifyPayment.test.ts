@@ -3,13 +3,11 @@ import { flushPromises, mount } from '@vue/test-utils'
 import VerifyPayment from 'src/components/VerifyPayment.vue'
 import type { Bolt11Invoice } from 'src/types/lightning'
 
-const updateGatewayCache = vi.hoisted(() => vi.fn())
-const listGateways = vi.hoisted(() => vi.fn())
+const getAvailableGateway = vi.hoisted(() => vi.fn())
 const walletStoreMock = vi.hoisted(() => ({
   wallet: {
     lightning: {
-      updateGatewayCache,
-      listGateways,
+      getAvailableGateway,
     },
   },
 }))
@@ -32,12 +30,10 @@ describe('VerifyPayment', () => {
     vi.clearAllMocks()
     walletStoreMock.wallet = {
       lightning: {
-        updateGatewayCache,
-        listGateways,
+        getAvailableGateway,
       },
     }
-    updateGatewayCache.mockResolvedValue(undefined)
-    listGateways.mockResolvedValue([])
+    getAvailableGateway.mockResolvedValue(null)
   })
 
   function createWrapper({
@@ -113,35 +109,58 @@ describe('VerifyPayment', () => {
     expect(wrapper.text()).toContain('test payment')
   })
 
-  it('shows the estimated gateway fee from the first gateway', async () => {
-    listGateways.mockResolvedValue([
-      {
-        info: {
-          fees: {
-            base: { msats: 20 },
-            parts_per_million: 20_000,
-          },
-        },
+  it('shows the estimated gateway fee from the selected available gateway', async () => {
+    getAvailableGateway.mockResolvedValue({
+      fees: {
+        base: { msats: 20 },
+        parts_per_million: 20_000,
       },
-    ])
+    })
 
     const wrapper = createWrapper()
     await flushPromises()
 
-    expect(updateGatewayCache).toHaveBeenCalledTimes(1)
-    expect(listGateways).toHaveBeenCalledTimes(1)
+    expect(getAvailableGateway).toHaveBeenCalledWith({ invoice: 'lnbc1test' })
     expect(wrapper.text()).toContain('Gateway fee')
     expect(wrapper.text()).toContain('~0.86 sats')
   })
 
-  it('hides gateway fee when gateway fees cannot be parsed', async () => {
-    listGateways.mockResolvedValue([
-      {
-        info: {
-          fees: {},
-        },
+  it('refreshes the gateway fee estimate when the invoice changes', async () => {
+    getAvailableGateway.mockResolvedValue({
+      fees: {
+        base: { msats: 20 },
+        parts_per_million: 20_000,
       },
-    ])
+    })
+
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.setProps({
+      decodedInvoice: {
+        ...decodedInvoice,
+        invoice: 'lnbc1changed',
+      },
+    })
+    await flushPromises()
+
+    expect(getAvailableGateway).toHaveBeenNthCalledWith(1, { invoice: 'lnbc1test' })
+    expect(getAvailableGateway).toHaveBeenNthCalledWith(2, { invoice: 'lnbc1changed' })
+  })
+
+  it('hides gateway fee when gateway fees cannot be parsed', async () => {
+    getAvailableGateway.mockResolvedValue({
+      fees: {},
+    })
+
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    expect(wrapper.text()).not.toContain('Gateway fee')
+  })
+
+  it('hides gateway fee when no available gateway is returned', async () => {
+    getAvailableGateway.mockResolvedValue(null)
 
     const wrapper = createWrapper()
     await flushPromises()
