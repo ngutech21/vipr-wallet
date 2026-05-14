@@ -285,6 +285,43 @@ export const useWalletStore = defineStore('wallet', {
       }
     },
 
+    async reopenWalletAfterRecovery(federationId: string) {
+      const federationStore = useFederationStore()
+      const federation = federationStore.federations.find(
+        (candidate) => candidate.federationId === federationId,
+      )
+
+      if (federation == null) {
+        throw new Error(`Recovered federation '${federationId}' is no longer available`)
+      }
+
+      const walletName = getWalletNameForFederationId(federationId)
+
+      await fedimintClient.closeActiveWallet()
+      this.wallet = null
+      this.activeWalletName = null
+
+      this.wallet = await fedimintClient.ensureWalletOpen({
+        walletName,
+        federationId,
+        inviteCode: federation.inviteCode,
+        recoverOnJoin: false,
+      })
+
+      this.activeWalletName = walletName
+
+      const noteCounts = await this.wallet.mint.getNotesByDenomination()
+      const balanceMsats = await this.wallet.balance.getBalance()
+      logger.logWalletOperation('Wallet reopened after recovery', {
+        federationId,
+        walletName,
+        noteCounts,
+        denominationCount: Object.keys(noteCounts).length,
+        balanceMsats,
+        balanceSats: (balanceMsats ?? 0) / 1_000,
+      })
+    },
+
     async clearAllWallets() {
       await this.initClients()
       await fedimintClient.clearAllWallets()
@@ -529,6 +566,16 @@ export const useWalletStore = defineStore('wallet', {
           latestProgressByModule: latestProgressSummaryByModule,
           durationMs: Date.now() - startedAt,
         })
+        await this.reopenWalletAfterRecovery(federationId)
+        if (!this.isCurrentRecoveryMonitor(monitorId, walletName)) {
+          logger.logWalletOperation('Wallet recovery reopen ignored for stale monitor', {
+            federationId,
+            walletName,
+            monitorId,
+          })
+          return
+        }
+
         await this.refreshAfterRecovery(federationId)
         this.markFederationRecoveryStatus(federationId, 'restored')
         this.transactionsRefreshVersion += 1

@@ -309,16 +309,11 @@ describe('wallet store', () => {
     federationStore.federations = [federation]
     federationStore.selectedFederationId = federation.federationId
 
-    const wallet = createWalletMock(12_000)
-    wallet.balance.getBalance = vi
-      .fn()
-      .mockResolvedValueOnce(12_000)
-      .mockResolvedValueOnce(34_000)
-      .mockResolvedValueOnce(34_000)
-      .mockResolvedValueOnce(34_000)
-    wallet.recovery.hasPendingRecoveries.mockResolvedValue(true)
-    wallet.recovery.waitForAllRecoveries.mockReturnValue(recoveryDone.promise)
-    wallet.recovery.subscribeToRecoveryProgress.mockImplementation((onSuccess) => {
+    const recoveryWallet = createWalletMock(12_000)
+    const reopenedWallet = createWalletMock(34_000)
+    recoveryWallet.recovery.hasPendingRecoveries.mockResolvedValue(true)
+    recoveryWallet.recovery.waitForAllRecoveries.mockReturnValue(recoveryDone.promise)
+    recoveryWallet.recovery.subscribeToRecoveryProgress.mockImplementation((onSuccess) => {
       onSuccess({
         module_id: 0,
         progress: {
@@ -328,15 +323,17 @@ describe('wallet store', () => {
       })
       return unsubscribe
     })
-    fedimintClientMock.ensureWalletOpen.mockResolvedValue(wallet)
+    fedimintClientMock.ensureWalletOpen
+      .mockResolvedValueOnce(recoveryWallet)
+      .mockResolvedValueOnce(reopenedWallet)
 
     await walletStore.openWallet({ expectRecovery: true })
 
     await vi.waitFor(() => {
-      expect(wallet.recovery.hasPendingRecoveries).toHaveBeenCalledTimes(1)
+      expect(recoveryWallet.recovery.hasPendingRecoveries).toHaveBeenCalledTimes(1)
       expect(walletStore.recoveryInProgress).toBe(true)
     })
-    expect(wallet.recovery.subscribeToRecoveryProgress).toHaveBeenCalledTimes(1)
+    expect(recoveryWallet.recovery.subscribeToRecoveryProgress).toHaveBeenCalledTimes(1)
     expect(walletStore.recoveryStatusByFederationId[federation.federationId]).toBe('restoring')
     expect(walletStore.recoveryProgressByModule[0]).toEqual({
       complete: 1,
@@ -352,6 +349,15 @@ describe('wallet store', () => {
       },
       { timeout: 5_000 },
     )
+    expect(fedimintClientMock.closeActiveWallet).toHaveBeenCalledTimes(1)
+    expect(fedimintClientMock.ensureWalletOpen).toHaveBeenNthCalledWith(2, {
+      walletName: getWalletNameForFederationId(federation.federationId),
+      federationId: federation.federationId,
+      inviteCode: federation.inviteCode,
+      recoverOnJoin: false,
+    })
+    expect(reopenedWallet.mint.getNotesByDenomination).toHaveBeenCalled()
+    expect(reopenedWallet.balance.getBalance).toHaveBeenCalled()
     expect(walletStore.balance).toBe(34)
     expect(walletStore.transactionsRefreshVersion).toBe(1)
     expect(unsubscribe).toHaveBeenCalledTimes(1)
