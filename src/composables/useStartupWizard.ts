@@ -3,8 +3,10 @@ import { useRouter } from 'vue-router'
 import { useAppNotify } from 'src/composables/useAppNotify'
 import { useWalletStore } from 'src/stores/wallet'
 import { useOnboardingStore } from 'src/stores/onboarding'
+import { useFederationStore } from 'src/stores/federation'
 import { logger } from 'src/services/logger'
 import { getErrorMessage } from 'src/utils/error'
+import type { Federation } from 'src/types/federation'
 
 export type WizardStep =
   | 'install'
@@ -13,21 +15,41 @@ export type WizardStep =
   | 'federation'
   | 'backup'
   | 'restore'
+  | 'restore-federations'
   | 'done'
 
 type WizardAction = 'idle' | 'creating' | 'restoring'
+
+export type RestoreFederationEntry = {
+  federationId: string
+  title: string
+  inviteCode: string
+}
 
 export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boolean> }) {
   const router = useRouter()
   const walletStore = useWalletStore()
   const onboardingStore = useOnboardingStore()
+  const federationStore = useFederationStore()
   const notify = useAppNotify()
 
   const currentStep = ref<WizardStep>('welcome')
   const wizardAction = ref<WizardAction>('idle')
+  const isRestoringFederation = ref(false)
   const restoreWords = ref<string[]>(Array.from({ length: 12 }, () => ''))
+  const restoreFederationInviteCode = ref('')
+  const restoreFederationPreview = ref<Federation | null>(null)
+  const restoreFederationEntries = ref<RestoreFederationEntry[]>([])
 
   const mnemonicWords = computed(() => walletStore.mnemonicWords)
+  const restoreFederationStatuses = computed(() =>
+    restoreFederationEntries.value.map((entry) => ({
+      ...entry,
+      status: walletStore.recoveryStatusByFederationId[entry.federationId] ?? 'restoring',
+      error:
+        walletStore.recoveryFederationId === entry.federationId ? walletStore.recoveryError : null,
+    })),
+  )
   const isCreating = computed(() => wizardAction.value === 'creating')
   const isRestoring = computed(() => wizardAction.value === 'restoring')
   const isCreateLocked = computed(
@@ -37,6 +59,9 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
       walletStore.hasMnemonic &&
       walletStore.needsMnemonicBackup,
   )
+  const isRestoreFederationRecoveryRunning = computed(() =>
+    restoreFederationStatuses.value.some((entry) => entry.status === 'restoring'),
+  )
 
   async function initializeWizard() {
     await walletStore.loadMnemonic()
@@ -45,15 +70,20 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
       needsMnemonicBackup: walletStore.needsMnemonicBackup,
     })
 
-    if (walletStore.hasMnemonic && !walletStore.needsMnemonicBackup) {
-      await finishWizardAndEnterApp()
+    if (
+      walletStore.hasMnemonic &&
+      !walletStore.needsMnemonicBackup &&
+      onboardingStore.flow === 'restore' &&
+      onboardingStore.step === 'restore-federations'
+    ) {
+      currentStep.value = 'restore-federations'
+      onboardingStore.markInProgress()
+      onboardingStore.goToStep('restore-federations')
       return
     }
 
-    if (showInstallStep.value && onboardingStore.step === 'install') {
-      currentStep.value = 'install'
-      onboardingStore.markInProgress()
-      onboardingStore.goToStep('install')
+    if (walletStore.hasMnemonic && !walletStore.needsMnemonicBackup) {
+      await finishWizardAndEnterApp()
       return
     }
 
@@ -101,7 +131,11 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
   async function finishWizardAndEnterApp() {
     onboardingStore.complete()
     try {
-      await walletStore.openWallet()
+      if (walletStore.wallet == null) {
+        await walletStore.openWallet()
+      } else if (!walletStore.recoveryInProgress) {
+        await walletStore.updateBalance()
+      }
     } catch (error) {
       logger.warn('Opening wallet after onboarding failed', {
         reason: getErrorMessage(error),
@@ -213,8 +247,11 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
     onboardingStore.goToStep('restore')
     try {
       await walletStore.restoreMnemonic(words)
-      onboardingStore.goToStep('done')
-      currentStep.value = 'done'
+      restoreFederationInviteCode.value = ''
+      restoreFederationPreview.value = null
+      restoreFederationEntries.value = []
+      onboardingStore.goToStep('restore-federations')
+      currentStep.value = 'restore-federations'
     } catch (error) {
       notify.error(`Failed to restore wallet: ${getErrorMessage(error)}`)
     } finally {
@@ -224,6 +261,152 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
     }
   }
 
+  function updateRestoreFederationInviteCode(value: string | number | null) {
+    restoreFederationInviteCode.value = typeof value === 'string' ? value : ''
+    restoreFederationPreview.value = null
+  }
+
+  async function pasteRestoreFederationFromClipboard() {
+    try {
+      restoreFederationInviteCode.value = await navigator.clipboard.readText()
+      restoreFederationPreview.value = null
+    } catch (error) {
+      notify.error(`Unable to access clipboard ${getErrorMessage(error)}`)
+    }
+  }
+
+  async function loadRestoreFederationPreview() {
+    const cleanInviteCode = restoreFederationInviteCode.value.trim()
+    if (cleanInviteCode === '') {
+      notify.warning('Please enter a federation join code.')
+      return
+    }
+
+    isRestoringFederation.value = true
+    try {
+      if (
+        federationStore.federations.some((federation) => federation.inviteCode === cleanInviteCode)
+      ) {
+        notify.warning('Federation already added for restore.')
+        return
+      }
+
+      const federation = await walletStore.previewFederation(cleanInviteCode)
+      if (federation == null) {
+        notify.error('Failed to preview federation.')
+        return
+      }
+
+      if (
+        restoreFederationEntries.value.some(
+          (entry) => entry.federationId === federation.federationId,
+        ) ||
+        federationStore.federations.some((entry) => entry.federationId === federation.federationId)
+      ) {
+        notify.warning('Federation already added for restore.')
+        return
+      }
+
+      restoreFederationPreview.value = federation
+    } catch (error) {
+      notify.error(`Failed to preview federation: ${getErrorMessage(error)}`)
+    } finally {
+      isRestoringFederation.value = false
+    }
+  }
+
+  function backToRestoreFederationInvite() {
+    restoreFederationPreview.value = null
+  }
+
+  async function submitRestoreFederation() {
+    const federation = restoreFederationPreview.value
+    if (federation == null) {
+      return
+    }
+
+    if (isRestoreFederationRecoveryRunning.value) {
+      notify.warning('Please wait until wallet recovery finishes.')
+      return
+    }
+
+    isRestoringFederation.value = true
+    addRestoreFederationEntry(federation)
+    walletStore.markFederationRecoveryStatus(federation.federationId, 'restoring')
+    restoreFederationPreview.value = null
+
+    try {
+      federationStore.addFederation(federation)
+      try {
+        await federationStore.selectFederation(federation, {
+          expectRecovery: true,
+          recoverOnJoin: true,
+        })
+      } catch (error) {
+        federationStore.deleteFederation(federation.federationId)
+        throw error
+      }
+
+      restoreFederationInviteCode.value = ''
+    } catch (error) {
+      removeRestoreFederationEntry(federation.federationId)
+      walletStore.markFederationRecoveryStatus(
+        federation.federationId,
+        'failed',
+        getErrorMessage(error),
+      )
+      notify.error(`Failed to restore federation: ${getErrorMessage(error)}`)
+    } finally {
+      isRestoringFederation.value = false
+    }
+  }
+
+  function addRestoreFederationEntry(federation: Federation) {
+    if (
+      restoreFederationEntries.value.some((entry) => entry.federationId === federation.federationId)
+    ) {
+      return
+    }
+
+    restoreFederationEntries.value = [
+      ...restoreFederationEntries.value,
+      {
+        federationId: federation.federationId,
+        title: federation.title,
+        inviteCode: federation.inviteCode,
+      },
+    ]
+  }
+
+  function removeRestoreFederationEntry(federationId: string) {
+    restoreFederationEntries.value = restoreFederationEntries.value.filter(
+      (entry) => entry.federationId !== federationId,
+    )
+  }
+
+  function backFromRestoreFederations() {
+    onboardingStore.markInProgress()
+    onboardingStore.goToStep('restore')
+    currentStep.value = 'restore'
+    restoreFederationInviteCode.value = ''
+    restoreFederationPreview.value = null
+    restoreFederationEntries.value = []
+  }
+
+  function finishRestoreFederations() {
+    if (isRestoreFederationRecoveryRunning.value) {
+      notify.warning('Please wait until wallet recovery finishes.')
+      return
+    }
+
+    onboardingStore.goToStep('done')
+    currentStep.value = 'done'
+  }
+
+  async function skipRestoreFederations() {
+    await finishWizardAndEnterApp()
+  }
+
   return {
     currentStep,
     finishBackup,
@@ -231,20 +414,33 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
     goToFederationStep,
     isCreating,
     isCreateLocked,
+    isRestoreFederationRecoveryRunning,
     isRestoring,
+    isRestoringFederation,
     mnemonicWords,
+    restoreFederationInviteCode,
+    restoreFederationPreview,
+    restoreFederationStatuses,
     restoreWords,
     backFromBackup,
     backFromRestore,
+    backFromRestoreFederations,
+    backToRestoreFederationInvite,
     backToCustody,
     backToWelcome,
     continueFromFederation,
     continueFromInstall,
+    finishRestoreFederations,
     initializeWizard,
+    loadRestoreFederationPreview,
+    pasteRestoreFederationFromClipboard,
     skipCreateEducation,
+    skipRestoreFederations,
     startCreateFlow,
     startRestoreFlow,
+    submitRestoreFederation,
     submitRestore,
+    updateRestoreFederationInviteCode,
   }
 }
 

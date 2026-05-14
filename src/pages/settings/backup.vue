@@ -44,6 +44,7 @@ meta:
           <ul class="backup-warning-list">
             <li>Write the phrase down with pen and paper.</li>
             <li>Store it somewhere safe and private.</li>
+            <li>Save the join code for each federation you want to restore later.</li>
             <li>Never share it with anyone.</li>
             <li>Do not save it in screenshots, notes or cloud storage.</li>
           </ul>

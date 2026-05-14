@@ -92,7 +92,10 @@ export const useFederationStore = defineStore('federation', {
       })
     },
 
-    async selectFederation(fedi: Federation | undefined) {
+    async selectFederation(
+      fedi: Federation | undefined,
+      options: { expectRecovery?: boolean; recoverOnJoin?: boolean } = {},
+    ) {
       const previousSelectedFederationId = this.selectedFederationId
       const nextFederation = fedi ?? this.ensureValidSelection()
       this.selectedFederationId = nextFederation?.federationId ?? null
@@ -106,7 +109,7 @@ export const useFederationStore = defineStore('federation', {
       }
 
       try {
-        await walletStore.openWallet()
+        await walletStore.openWallet(options)
       } catch (error) {
         this.selectedFederationId = previousSelectedFederationId
         throw error

@@ -25,11 +25,14 @@ function requiresStartupWizard(
   hasMnemonic: boolean,
   onboardingStatus: 'in_progress' | 'complete',
   onboardingFlow: 'create' | 'restore' | null,
+  onboardingStep: string,
   needsMnemonicBackup: boolean,
 ): boolean {
   return (
     !hasMnemonic ||
-    (onboardingStatus === 'in_progress' && onboardingFlow === 'create' && needsMnemonicBackup)
+    (onboardingStatus === 'in_progress' &&
+      ((onboardingFlow === 'create' && needsMnemonicBackup) ||
+        (onboardingFlow === 'restore' && onboardingStep === 'restore-federations')))
   )
 }
 
@@ -99,6 +102,7 @@ export default defineBoot(async ({ app, router }) => {
       walletStore.hasMnemonic,
       onboardingStore.status,
       onboardingStore.flow,
+      onboardingStore.step,
       walletStore.needsMnemonicBackup,
     )
 
@@ -112,6 +116,7 @@ export default defineBoot(async ({ app, router }) => {
           walletStore.hasMnemonic,
           onboardingStore.status,
           onboardingStore.flow,
+          onboardingStore.step,
           walletStore.needsMnemonicBackup,
         )
 

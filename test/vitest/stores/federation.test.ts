@@ -45,6 +45,23 @@ describe('federation store', () => {
     expect(federationStore.selectedFederationId).toBe(federation.federationId)
   })
 
+  it('passes restore join options to the wallet store', async () => {
+    const federationStore = useFederationStore()
+    const federation = createFederation()
+    federationStore.federations = [federation]
+    walletStoreMock.openWallet.mockResolvedValue()
+
+    await federationStore.selectFederation(federation, {
+      expectRecovery: true,
+      recoverOnJoin: true,
+    })
+
+    expect(walletStoreMock.openWallet).toHaveBeenCalledWith({
+      expectRecovery: true,
+      recoverOnJoin: true,
+    })
+  })
+
   it('selects the first federation when selection is missing', () => {
     const federationStore = useFederationStore()
     const first = createFederation({ federationId: 'fed-1' })

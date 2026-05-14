@@ -10,6 +10,7 @@ export type OnboardingStep =
   | 'federation'
   | 'backup'
   | 'restore'
+  | 'restore-federations'
   | 'done'
   | FutureOnboardingStep
 
@@ -62,6 +63,7 @@ function sanitizeStep(value: unknown): OnboardingStep {
     value === 'federation' ||
     value === 'backup' ||
     value === 'restore' ||
+    value === 'restore-federations' ||
     value === 'done'
   ) {
     return value
@@ -199,6 +201,12 @@ export const useOnboardingStore = defineStore('onboarding', {
       if (needsMnemonicBackup && this.flow === 'create') {
         this.status = 'in_progress'
         this.step = 'backup'
+        this.touch()
+        return
+      }
+
+      if (this.flow === 'restore' && this.step === 'restore-federations') {
+        this.status = 'in_progress'
         this.touch()
         return
       }

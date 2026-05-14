@@ -38,6 +38,9 @@ test.describe('Backup Flow', () => {
     )
     await Promise.all(backupWordAssertions)
 
+    await expect(page.getByTestId('backup-federations-card')).toBeVisible()
+    await expect(page.getByTestId('backup-federations-empty')).toBeVisible()
+
     const confirmBackupButton = page.getByTestId('backup-words-confirm-btn')
     await expect(confirmBackupButton).toBeVisible()
     await confirmBackupButton.click()

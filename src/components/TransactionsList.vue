@@ -54,13 +54,9 @@
           :data-testid="emptyTransactionsTestId"
         >
           <q-item-section>
-            <div class="vipr-empty-state__title">No transactions yet</div>
+            <div class="vipr-empty-state__title">{{ emptyTransactionsTitle }}</div>
             <div class="vipr-empty-state__body">
-              {{
-                props.mode === 'home'
-                  ? 'Your latest activity will show up here.'
-                  : 'Transactions for this federation will appear here once you start using it.'
-              }}
+              {{ emptyTransactionsBody }}
             </div>
           </q-item-section>
         </q-item>
@@ -90,8 +86,8 @@
       class="vipr-empty-state vipr-empty-state--compact"
       data-testid="transactions-empty-home"
     >
-      <div class="vipr-empty-state__title">No transactions yet</div>
-      <div class="vipr-empty-state__body">Your latest activity will show up here.</div>
+      <div class="vipr-empty-state__title">{{ emptyTransactionsTitle }}</div>
+      <div class="vipr-empty-state__body">{{ emptyTransactionsBody }}</div>
     </div>
   </div>
 </template>
@@ -138,10 +134,20 @@ let activeLoadRequestId = 0
 
 const pageSize = computed(() => (props.mode === 'history' ? HISTORY_PAGE_SIZE : HOME_PAGE_SIZE))
 const showHomeEmptyState = computed(() => {
-  return props.mode === 'home' && !isInitialLoading.value && transactions.value.length === 0
+  return (
+    props.mode === 'home' &&
+    !walletStore.recoveryInProgress &&
+    !isInitialLoading.value &&
+    transactions.value.length === 0
+  )
 })
 const showTransactionsCard = computed(() => {
-  return props.mode === 'history' || transactions.value.length > 0 || isInitialLoading.value
+  return (
+    props.mode === 'history' ||
+    walletStore.recoveryInProgress ||
+    transactions.value.length > 0 ||
+    isInitialLoading.value
+  )
 })
 const showFullHistoryAction = computed(() => {
   return props.mode === 'home' && hasMore.value
@@ -149,9 +155,21 @@ const showFullHistoryAction = computed(() => {
 const showLoadMoreAction = computed(() => {
   return props.mode === 'history' && transactions.value.length > 0 && hasMore.value
 })
+const emptyTransactionsTitle = computed(() => {
+  return walletStore.recoveryInProgress ? 'Wallet recovery is running' : 'No transactions yet'
+})
+const emptyTransactionsBody = computed(() => {
+  if (walletStore.recoveryInProgress) {
+    return 'History and balance can change while this federation is being restored.'
+  }
+
+  return props.mode === 'home'
+    ? 'Your latest activity will show up here.'
+    : 'Transactions for this federation will appear here once you start using it.'
+})
 
 watch(
-  () => federationStore.selectedFederationId,
+  () => [federationStore.selectedFederationId, walletStore.transactionsRefreshVersion],
   () => {
     loadInitialTransactions().catch((error) => {
       logger.error('Failed to reload transactions after federation change', error)

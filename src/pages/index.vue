@@ -42,6 +42,20 @@
           </q-chip>
         </div>
       </div>
+
+      <div
+        v-if="isActiveFederationRecovering"
+        class="home-recovery vipr-info-card"
+        data-testid="home-recovery-status"
+      >
+        <q-icon name="schedule" class="home-recovery__icon" />
+        <div class="home-recovery__copy">
+          <div class="home-recovery__title">Wallet recovery is running</div>
+          <div class="home-recovery__body">
+            Sending is paused until this federation finishes restoring.
+          </div>
+        </div>
+      </div>
     </section>
 
     <div
@@ -79,7 +93,7 @@
           color="primary"
           class="home-action-btn vipr-btn vipr-btn--primary-soft vipr-btn--lg"
           @click="showSendEcashSelection = true"
-          :disable="totalBalance <= 0"
+          :disable="totalBalance <= 0 || isActiveFederationRecovering"
           :data-testid="'home-send-btn'"
         />
         <q-btn
@@ -129,6 +143,12 @@ const ReceiveEcashSelection = defineAsyncComponent(
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
 const totalBalance = computed(() => walletStore.balance)
+const isActiveFederationRecovering = computed(() => {
+  return (
+    walletStore.recoveryInProgress &&
+    walletStore.recoveryFederationId === federationStore.selectedFederationId
+  )
+})
 const federationJoinFlow = useFederationJoinFlow()
 const showSendEcashSelection = ref(false)
 const showReceiveEcashSelection = ref(false)
@@ -174,6 +194,38 @@ const showReceiveEcashSelection = ref(false)
   border-radius: var(--vipr-radius-card);
   padding: var(--vipr-home-hero-padding);
   text-align: center;
+}
+
+.home-recovery {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--vipr-space-3);
+  text-align: left;
+}
+
+.home-recovery__icon {
+  flex: 0 0 auto;
+  margin-top: var(--vipr-space-1);
+  color: var(--vipr-text-secondary);
+  font-size: var(--vipr-font-size-icon-lg);
+}
+
+.home-recovery__copy {
+  min-width: 0;
+}
+
+.home-recovery__title {
+  color: var(--vipr-text-primary);
+  font-size: var(--vipr-font-size-body);
+  font-weight: 700;
+  line-height: var(--vipr-line-height-tight);
+}
+
+.home-recovery__body {
+  margin-top: var(--vipr-space-1);
+  color: var(--vipr-text-secondary);
+  font-size: var(--vipr-font-size-caption);
+  line-height: var(--vipr-line-height-body);
 }
 
 .hero-balance {
