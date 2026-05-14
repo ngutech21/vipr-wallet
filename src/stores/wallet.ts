@@ -399,7 +399,11 @@ export const useWalletStore = defineStore('wallet', {
     },
 
     cancelRecoveryMonitor() {
+      const federationId = this.recoveryFederationId
       this.recoveryMonitorId += 1
+      if (federationId != null && this.recoveryStatusByFederationId[federationId] === 'restoring') {
+        this.markFederationRecoveryStatus(federationId, 'failed', 'Wallet recovery was interrupted')
+      }
       this.resetActiveRecoveryState()
     },
 

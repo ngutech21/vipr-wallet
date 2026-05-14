@@ -385,6 +385,34 @@ describe('wallet store', () => {
     expect(wallet.recovery.waitForAllRecoveries).not.toHaveBeenCalled()
   })
 
+  it('marks the active restoring federation as failed when canceling its recovery monitor', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    const federation = createFederation()
+    const recoveryDone = createDeferred<void>()
+
+    federationStore.federations = [federation]
+    federationStore.selectedFederationId = federation.federationId
+
+    const wallet = createWalletMock(12_000)
+    wallet.recovery.hasPendingRecoveries.mockResolvedValue(true)
+    wallet.recovery.waitForAllRecoveries.mockReturnValue(recoveryDone.promise)
+    fedimintClientMock.ensureWalletOpen.mockResolvedValue(wallet)
+
+    await walletStore.openWallet({ expectRecovery: true })
+
+    await vi.waitFor(() => {
+      expect(walletStore.recoveryInProgress).toBe(true)
+      expect(walletStore.recoveryStatusByFederationId[federation.federationId]).toBe('restoring')
+    })
+
+    await walletStore.closeWallet()
+
+    expect(walletStore.recoveryInProgress).toBe(false)
+    expect(walletStore.recoveryStatusByFederationId[federation.federationId]).toBe('failed')
+    expect(walletStore.recoveryError).toBe(null)
+  })
+
   it('previews a federation with normalized config and legacy metadata', async () => {
     const walletStore = useWalletStore()
     const fetchMock = vi.fn().mockResolvedValue({
