@@ -91,7 +91,9 @@ async function navigateBack() {
 
 onMounted(async () => {
   try {
-    const operationId = route.params.id
+    const operationId = Array.isArray(route.params.id)
+      ? (route.params.id[0] ?? '')
+      : (route.params.id ?? '')
 
     if (operationId === '') {
       error.value = 'Transaction ID is missing'
