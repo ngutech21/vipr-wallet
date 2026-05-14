@@ -25,7 +25,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 10.28.0
+          version: 11.1.1
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -53,6 +53,9 @@ jobs:
 
       - name: Audit production dependencies
         run: pnpm audit --prod
+
+      - name: Verify dependency signatures
+        run: pnpm audit signatures
 
       - name: Check circular dependencies
         run: pnpm dlx madge src --circular

@@ -6,7 +6,7 @@
     fedimint.url = "github:fedimint/fedimint/v0.11.1";
     nixpkgs.follows = "fedimint/nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
 
   outputs =
@@ -39,14 +39,10 @@
           dejavu_fonts
         ];
         playwrightFontsConf = pkgs.makeFontsConf { fontDirectories = playwrightFonts; };
-        pnpm24 = pkgs.writeShellScriptBin "pnpm" ''
-          exec ${pkgs.nodejs_24}/bin/node \
-            ${pkgs.nodejs_24.pkgs.pnpm}/libexec/pnpm/bin/pnpm.cjs "$@"
-        '';
       in
       {
         devShells.default = pkgs.mkShell {
-          buildInputs =
+          packages =
             with pkgs;
             [
               fedimint.packages.${system}.devimint
@@ -59,7 +55,7 @@
               pkgs.lnd
               pkgs.esplora-electrs
               nodejs_24
-              pnpm24
+              pkgs-unstable.pnpm_11
               nodejs_24.pkgs.typescript
               mkcert
               nettools

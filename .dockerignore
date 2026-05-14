@@ -1,6 +1,6 @@
 # Dependencies and package manager state
 node_modules
-.pnpm-store
+.pnpm-store/
 .npm
 npm-debug.log
 yarn.lock
