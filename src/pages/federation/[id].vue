@@ -60,10 +60,7 @@ meta:
             />
 
             <FederationMetaConsensusCard
-              v-if="
-                showRawMetaConsensusCard &&
-                (isLoadingMetaConsensus || metaConsensusError != null || metaConsensusValue != null)
-              "
+              v-if="shouldShowMetaConsensusCard"
               :metadata="metaConsensusValue"
               :is-loading="isLoadingMetaConsensus"
               :error="metaConsensusError"
@@ -82,7 +79,7 @@ defineOptions({
   name: 'FederationDetailsPage',
 })
 
-import { ref, computed, watch } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFederationStore } from 'src/stores/federation'
 import { getWalletNameForFederationId, useWalletStore } from 'src/stores/wallet'
@@ -105,6 +102,24 @@ const route = useRoute('/federation/[id]')
 const router = useRouter()
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
+const showRawMetaConsensusCard = import.meta.env.DEV || import.meta.env.VITE_E2E_MODE === '1'
+
+type MetaConsensusState =
+  | {
+      type: 'idle'
+    }
+  | {
+      type: 'loading'
+    }
+  | {
+      type: 'ready'
+      value: MetaConsensusValue<JSONObject> | null
+    }
+  | {
+      type: 'error'
+      message: string
+    }
+
 const spendableUtxos = ref<FederationUtxo[]>([])
 const isLoadingUtxos = ref(false)
 const utxoError = ref<string | null>(null)
@@ -112,10 +127,8 @@ const walletGateways = ref<unknown[]>([])
 const isLoadingWalletGateways = ref(false)
 const hasLoadedWalletGateways = ref(false)
 const walletGatewayError = ref<string | null>(null)
-const metaConsensusValue = ref<MetaConsensusValue<JSONObject> | null>(null)
-const isLoadingMetaConsensus = ref(false)
-const metaConsensusError = ref<string | null>(null)
-const showRawMetaConsensusCard = import.meta.env.DEV || import.meta.env.VITE_E2E_MODE === '1'
+const metaConsensusState = shallowRef<MetaConsensusState>({ type: 'idle' })
+let activeDetailsLoadId = 0
 
 const federation = computed(() => {
   return federationStore.federations.find((f) => f.federationId === route.params.id)
@@ -135,6 +148,16 @@ const observerUrl = computed(() => {
     : ''
 })
 
+const metaConsensusValue = computed(() =>
+  metaConsensusState.value.type === 'ready' ? metaConsensusState.value.value : null,
+)
+const isLoadingMetaConsensus = computed(() => metaConsensusState.value.type === 'loading')
+const metaConsensusError = computed(() =>
+  metaConsensusState.value.type === 'error' ? metaConsensusState.value.message : null,
+)
+const shouldShowMetaConsensusCard = computed(
+  () => showRawMetaConsensusCard && metaConsensusState.value.type !== 'idle',
+)
 const gatewayCountLabel = computed(() => {
   const count = walletGateways.value.length
   return count > 0 ? `${count} gateways` : ''
@@ -143,44 +166,75 @@ const gatewayCountLabel = computed(() => {
 watch(
   () => route.params.id,
   async () => {
+    const loadId = ++activeDetailsLoadId
     const currentFederation = federation.value
     spendableUtxos.value = []
     walletGateways.value = []
-    metaConsensusValue.value = null
     utxoError.value = null
     walletGatewayError.value = null
-    metaConsensusError.value = null
     hasLoadedWalletGateways.value = false
+    metaConsensusState.value = { type: 'idle' }
 
     if (currentFederation == null) {
       return
     }
 
-    isLoadingUtxos.value = true
-    isLoadingWalletGateways.value = true
     const shouldLoadMetaConsensus =
       showRawMetaConsensusCard && federationHasModule(currentFederation, 'meta')
-    isLoadingMetaConsensus.value = shouldLoadMetaConsensus
+    isLoadingUtxos.value = true
+    isLoadingWalletGateways.value = true
+    metaConsensusState.value = shouldLoadMetaConsensus ? { type: 'loading' } : { type: 'idle' }
 
     try {
       await ensureFederationWalletOpen(currentFederation)
+    } catch (error) {
+      if (loadId !== activeDetailsLoadId) {
+        return
+      }
 
+      logger.error('Failed to open federation wallet for details', error)
+      utxoError.value = 'Failed to load spendable UTXOs.'
+      walletGatewayError.value = 'Failed to load wallet gateways.'
+      metaConsensusState.value = shouldLoadMetaConsensus
+        ? { type: 'error', message: 'Failed to load consensus metadata.' }
+        : { type: 'idle' }
+      isLoadingUtxos.value = false
+      isLoadingWalletGateways.value = false
+      hasLoadedWalletGateways.value = true
+      return
+    }
+
+    try {
       const [utxos, gateways, metadata] = await Promise.all([
         walletStore.getSpendableUtxos(),
         loadWalletGateways(),
-        shouldLoadMetaConsensus ? loadMetaConsensusValue() : Promise.resolve(null),
+        shouldLoadMetaConsensus
+          ? loadMetaConsensusValue()
+          : Promise.resolve<MetaConsensusState>({
+              type: 'idle',
+            }),
       ])
+
+      if (loadId !== activeDetailsLoadId) {
+        return
+      }
+
       spendableUtxos.value = utxos
       walletGateways.value = gateways
-      metaConsensusValue.value = metadata
+      metaConsensusState.value = metadata
     } catch (error) {
+      if (loadId !== activeDetailsLoadId) {
+        return
+      }
+
       logger.error('Failed to load federation UTXOs', error)
       utxoError.value = 'Failed to load spendable UTXOs.'
     } finally {
-      isLoadingUtxos.value = false
-      isLoadingWalletGateways.value = false
-      isLoadingMetaConsensus.value = false
-      hasLoadedWalletGateways.value = true
+      if (loadId === activeDetailsLoadId) {
+        isLoadingUtxos.value = false
+        isLoadingWalletGateways.value = false
+        hasLoadedWalletGateways.value = true
+      }
     }
   },
   { immediate: true },
@@ -203,6 +257,29 @@ async function loadWalletGateways(): Promise<unknown[]> {
   }
 }
 
+async function loadMetaConsensusValue(): Promise<MetaConsensusState> {
+  const wallet = walletStore.wallet
+  if (wallet == null) {
+    return {
+      type: 'error',
+      message: 'Wallet is not open.',
+    }
+  }
+
+  try {
+    return {
+      type: 'ready',
+      value: await walletStore.getMetaConsensusValue(),
+    }
+  } catch (error) {
+    logger.error('Failed to load federation consensus metadata', error)
+    return {
+      type: 'error',
+      message: 'Failed to load consensus metadata.',
+    }
+  }
+}
+
 async function ensureFederationWalletOpen(currentFederation: NonNullable<typeof federation.value>) {
   const walletName = getWalletNameForFederationId(currentFederation.federationId)
 
@@ -213,22 +290,6 @@ async function ensureFederationWalletOpen(currentFederation: NonNullable<typeof 
 
   if (walletStore.activeWalletName !== walletName || walletStore.wallet == null) {
     await walletStore.openWallet()
-  }
-}
-
-async function loadMetaConsensusValue(): Promise<MetaConsensusValue<JSONObject> | null> {
-  const wallet = walletStore.wallet
-  if (wallet == null) {
-    metaConsensusError.value = 'Wallet is not open.'
-    return null
-  }
-
-  try {
-    return await walletStore.getMetaConsensusValue()
-  } catch (error) {
-    logger.error('Failed to load federation consensus metadata', error)
-    metaConsensusError.value = 'Failed to load consensus metadata.'
-    return null
   }
 }
 
