@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { computed, shallowRef } from 'vue'
 import { Loading } from 'quasar'
 import { useLightningStore } from 'src/stores/lightning'
 import { LightningAddress } from '@getalby/lightning-tools'
@@ -12,89 +12,180 @@ export type LnurlPayLimits = {
   maxSendableMsats: number
 }
 
-export interface InvoiceDecodingResult {
-  decodedInvoice: Bolt11Invoice | null
-  amountRequired: boolean
-  lnAddress: LightningAddress | null
+type InvoiceAmountRequiredState =
+  | {
+      type: 'amount-required'
+      source: 'lightning-address'
+      lnAddress: LightningAddress
+      limits: LnurlPayLimits | null
+    }
+  | {
+      type: 'amount-required'
+      source: 'lnurl'
+      limits: LnurlPayLimits | null
+    }
+
+type InvoiceDecodedState = {
+  type: 'invoice'
+  invoice: Bolt11Invoice
+}
+
+type InvoiceDecodeErrorState = {
+  type: 'error'
+  message: string
+  error: Error
+}
+
+type InvoiceSettledState =
+  | InvoiceAmountRequiredState
+  | InvoiceDecodedState
+  | InvoiceDecodeErrorState
+
+export type InvoiceDecodeState =
+  | {
+      type: 'idle'
+    }
+  | {
+      type: 'processing'
+      previous: InvoiceSettledState | null
+    }
+  | InvoiceSettledState
+
+export type InvoiceDecodeResult = InvoiceSettledState
+
+export type InvoiceFromInputResult =
+  | {
+      type: 'success'
+      invoice: Bolt11Invoice
+    }
+  | {
+      type: 'error'
+      error: Error
+    }
+
+function toError(error: unknown): Error {
+  return error instanceof Error ? error : new Error(getErrorMessage(error))
 }
 
 export function useInvoiceDecoding() {
   const lightningStore = useLightningStore()
   const notify = useAppNotify()
-  const isProcessing = ref(false)
-  const amountRequired = ref(false)
-  const lnAddress = ref<LightningAddress | null>(null)
-  const lnurlPayLimits = ref<LnurlPayLimits | null>(null)
-  const decodedInvoice = ref<Bolt11Invoice | null>(null)
+  const decodeState = shallowRef<InvoiceDecodeState>({ type: 'idle' })
+  const visibleState = computed(() =>
+    decodeState.value.type === 'processing' ? decodeState.value.previous : decodeState.value,
+  )
+  const isProcessing = computed(() => decodeState.value.type === 'processing')
+  const amountRequired = computed(() => visibleState.value?.type === 'amount-required')
+  const lnAddress = computed(() =>
+    visibleState.value?.type === 'amount-required' &&
+    visibleState.value.source === 'lightning-address'
+      ? visibleState.value.lnAddress
+      : null,
+  )
+  const lnurlPayLimits = computed(() =>
+    visibleState.value?.type === 'amount-required' ? visibleState.value.limits : null,
+  )
+  const decodedInvoice = computed(() =>
+    visibleState.value?.type === 'invoice' ? visibleState.value.invoice : null,
+  )
 
-  function resetAmountRequestState() {
-    amountRequired.value = false
-    lnAddress.value = null
-    lnurlPayLimits.value = null
+  function getPreviousSettledState(): InvoiceSettledState | null {
+    return decodeState.value.type === 'processing'
+      ? decodeState.value.previous
+      : decodeState.value.type === 'idle'
+        ? null
+        : decodeState.value
+  }
+
+  function setErrorState(error: unknown): InvoiceDecodeErrorState {
+    const normalizedError = toError(error)
+    const errorState: InvoiceDecodeErrorState = {
+      type: 'error',
+      message: normalizedError.message,
+      error: normalizedError,
+    }
+    decodeState.value = errorState
+    return errorState
+  }
+
+  function clearDecodedInvoice() {
+    if (visibleState.value?.type === 'invoice') {
+      decodeState.value = { type: 'idle' }
+    }
   }
 
   /**
    * Decode a lightning invoice, LNURL, or lightning address
    * @param invoice - The invoice string to decode
-   * @returns The decoded invoice or null if amount is required
+   * @returns A variant describing the decoded invoice, amount request, or error
    */
-  async function decodeInvoice(invoice: string): Promise<Bolt11Invoice | null> {
-    isProcessing.value = true
-    decodedInvoice.value = null
-    resetAmountRequestState()
+  async function decodeInvoice(invoice: string): Promise<InvoiceDecodeResult> {
+    decodeState.value = { type: 'processing', previous: null }
 
-    try {
-      // Lightning address (e.g., user@domain.com)
-      if (invoice.includes('@')) {
-        amountRequired.value = true
-        lnAddress.value = new LightningAddress(invoice)
+    // Lightning address (e.g., user@domain.com)
+    if (invoice.includes('@')) {
+      const lightningAddress = new LightningAddress(invoice)
 
-        try {
-          await lnAddress.value.fetchWithProxy()
-          if (lnAddress.value.lnurlpData == null) {
-            resetAmountRequestState()
-            notify.error('Invalid lightning address')
-            return null
-          }
-          lnurlPayLimits.value = readLightningAddressLimits(lnAddress.value.lnurlpData)
-        } catch (error) {
-          resetAmountRequestState()
-          notify.error(`Failed to fetch lightning address: ${getErrorMessage(error)}`)
-          return null
-        }
-
-        return null // Amount is required, no invoice yet
-      }
-
-      // LNURL
-      if (invoice.toLowerCase().startsWith('lnurl1')) {
-        try {
-          const params = await resolveLnurl(invoice)
-          if (params.tag !== 'payRequest') {
-            notify.error('LNURL is not a payment request')
-            return null
-          }
-
-          amountRequired.value = true
-          lnurlPayLimits.value = readLnurlPayParamsLimits(params)
-        } catch (error) {
-          resetAmountRequestState()
-          notify.error(`Failed to load LNURL payment request: ${getErrorMessage(error)}`)
-          return null
-        }
-        return null // Amount is required, no invoice yet
-      }
-
-      // Regular bolt11 invoice
       try {
-        decodedInvoice.value = lightningStore.decodeInvoice(invoice)
-        return decodedInvoice.value
+        await lightningAddress.fetchWithProxy()
+        if (lightningAddress.lnurlpData == null) {
+          const errorState = setErrorState(new Error('Invalid lightning address'))
+          notify.error(errorState.message)
+          return errorState
+        }
+
+        const amountState: InvoiceAmountRequiredState = {
+          type: 'amount-required',
+          source: 'lightning-address',
+          lnAddress: lightningAddress,
+          limits: readLightningAddressLimits(lightningAddress.lnurlpData),
+        }
+        decodeState.value = amountState
+        return amountState
       } catch (error) {
-        notify.error(`Failed to decode invoice: ${getErrorMessage(error)}`)
-        return null
+        const errorState = setErrorState(error)
+        notify.error(`Failed to fetch lightning address: ${errorState.message}`)
+        return errorState
       }
-    } finally {
-      isProcessing.value = false
+    }
+
+    // LNURL
+    if (invoice.toLowerCase().startsWith('lnurl1')) {
+      try {
+        const params = await resolveLnurl(invoice)
+        if (params.tag !== 'payRequest') {
+          const errorState = setErrorState(new Error('LNURL is not a payment request'))
+          notify.error(errorState.message)
+          return errorState
+        }
+
+        const amountState: InvoiceAmountRequiredState = {
+          type: 'amount-required',
+          source: 'lnurl',
+          limits: readLnurlPayParamsLimits(params),
+        }
+        decodeState.value = amountState
+        return amountState
+      } catch (error) {
+        const errorState = setErrorState(error)
+        notify.error(`Failed to load LNURL payment request: ${errorState.message}`)
+        return errorState
+      }
+    }
+
+    // Regular bolt11 invoice
+    try {
+      const decoded = lightningStore.decodeInvoice(invoice)
+      const decodedState: InvoiceDecodedState = {
+        type: 'invoice',
+        invoice: decoded,
+      }
+      decodeState.value = decodedState
+      return decodedState
+    } catch (error) {
+      const errorState = setErrorState(error)
+      notify.error(`Failed to decode invoice: ${errorState.message}`)
+      return errorState
     }
   }
 
@@ -103,33 +194,43 @@ export function useInvoiceDecoding() {
    * @param input - The LNURL or lightning address
    * @param amountSats - The amount in satoshis
    * @param memo - Optional memo for the invoice
-   * @returns The created invoice string or null on error
+   * @returns The created invoice variant or an error variant
    */
   async function createInvoiceFromInput(
     input: string,
     amountSats: number,
     memo: string,
-  ): Promise<Bolt11Invoice | null> {
-    try {
-      isProcessing.value = true
+  ): Promise<InvoiceFromInputResult> {
+    const previousState = getPreviousSettledState()
+    decodeState.value = { type: 'processing', previous: previousState }
 
+    function failInvoiceCreation(message: string): InvoiceFromInputResult {
+      const errorState = setErrorState(new Error(message))
+      notify.error(message)
+      return {
+        type: 'error',
+        error: errorState.error,
+      }
+    }
+
+    try {
       let invoiceString = ''
 
-      // If we have a lightning address
-      if (lnAddress.value != null) {
-        if (lnAddress.value.lnurlpData == null) {
-          resetAmountRequestState()
-          notify.error('Lightning address could not be loaded. Please try again.')
-          return null
+      if (previousState?.type !== 'amount-required') {
+        return failInvoiceCreation('Decode the payment request before creating an invoice.')
+      }
+
+      if (previousState.source === 'lightning-address') {
+        if (previousState.lnAddress.lnurlpData == null) {
+          return failInvoiceCreation('Lightning address could not be loaded. Please try again.')
         }
 
-        const amountError = getLnurlAmountError(amountSats, lnurlPayLimits.value)
+        const amountError = getLnurlAmountError(amountSats, previousState.limits)
         if (amountError != null) {
-          notify.error(amountError)
-          return null
+          return failInvoiceCreation(amountError)
         }
 
-        const invoice = await lnAddress.value.requestInvoice({
+        const invoice = await previousState.lnAddress.requestInvoice({
           satoshi: amountSats,
           comment: memo,
         })
@@ -137,33 +238,42 @@ export function useInvoiceDecoding() {
         if (invoice != null) {
           invoiceString = invoice.paymentRequest
         }
-      } else {
-        // LNURL
-        const amountError = getLnurlAmountError(amountSats, lnurlPayLimits.value)
+      } else if (previousState.source === 'lnurl') {
+        const amountError = getLnurlAmountError(amountSats, previousState.limits)
         if (amountError != null) {
-          notify.error(amountError)
-          return null
+          return failInvoiceCreation(amountError)
         }
 
         invoiceString = await requestInvoice(input, amountSats)
       }
 
       if (invoiceString !== '') {
-        decodedInvoice.value = lightningStore.decodeInvoice(invoiceString)
-        return decodedInvoice.value
+        const decoded = lightningStore.decodeInvoice(invoiceString)
+        decodeState.value = {
+          type: 'invoice',
+          invoice: decoded,
+        }
+        return {
+          type: 'success',
+          invoice: decoded,
+        }
       }
 
-      return null
+      throw new Error('Failed to create invoice')
     } catch (error) {
-      notify.error(`Failed to create invoice: ${getErrorMessage(error)}`)
-      return null
+      const errorState = setErrorState(error)
+      notify.error(`Failed to create invoice: ${errorState.message}`)
+      return {
+        type: 'error',
+        error: errorState.error,
+      }
     } finally {
-      isProcessing.value = false
       Loading.hide()
     }
   }
 
   return {
+    decodeState,
     isProcessing,
     amountRequired,
     lnAddress,
@@ -171,6 +281,7 @@ export function useInvoiceDecoding() {
     decodedInvoice,
     decodeInvoice,
     createInvoiceFromInput,
+    clearDecodedInvoice,
   }
 }
 

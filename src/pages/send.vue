@@ -167,7 +167,7 @@ meta:
           v-else
           :decoded-invoice="decodedInvoice"
           :balance-error-message="paymentBalanceError"
-          @cancel="decodedInvoice = null"
+          @cancel="clearDecodedInvoice"
           @pay="payInvoice"
         />
       </div>
@@ -222,6 +222,7 @@ const {
   decodedInvoice,
   decodeInvoice: decodeInvoiceFromComposable,
   createInvoiceFromInput,
+  clearDecodedInvoice,
 } = useInvoiceDecoding()
 
 // Use the lightning payment composable
@@ -387,7 +388,7 @@ async function payInvoice() {
 
 async function goBack() {
   if (decodedInvoice.value != null) {
-    decodedInvoice.value = null
+    clearDecodedInvoice()
     return
   }
 
