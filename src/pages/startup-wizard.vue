@@ -265,7 +265,7 @@ meta:
                   unelevated
                   class="vipr-btn vipr-btn--primary-soft vipr-btn--lg"
                   :loading="isRestoringFederation"
-                  :disable="isRestoringFederation"
+                  :disable="isRestoringFederation || isRestoreFederationRecoveryRunning"
                   data-testid="startup-wizard-restore-federations-submit-btn"
                   @click="submitRestoreFederation"
                 />

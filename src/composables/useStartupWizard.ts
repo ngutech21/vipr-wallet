@@ -325,6 +325,11 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
       return
     }
 
+    if (isRestoreFederationRecoveryRunning.value) {
+      notify.warning('Please wait until wallet recovery finishes.')
+      return
+    }
+
     isRestoringFederation.value = true
     addRestoreFederationEntry(federation)
     walletStore.markFederationRecoveryStatus(federation.federationId, 'restoring')

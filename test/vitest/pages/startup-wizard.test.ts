@@ -479,6 +479,64 @@ describe('StartupWizardPage', () => {
     )
   })
 
+  it('restore federation step prevents submitting another federation while recovery is running', async () => {
+    setStandaloneState({ matches: true, standalone: true })
+    walletStoreMock.hasMnemonic = true
+    onboardingStoreMock.flow = 'restore'
+    onboardingStoreMock.step = 'restore-federations'
+    onboardingStoreMock.status = 'in_progress'
+    walletStoreMock.previewFederation
+      .mockResolvedValueOnce({
+        title: 'First Federation',
+        inviteCode: 'fed11first',
+        federationId: 'fed-first',
+        modules: [],
+        metadata: {},
+      })
+      .mockResolvedValueOnce({
+        title: 'Second Federation',
+        inviteCode: 'fed11second',
+        federationId: 'fed-second',
+        modules: [],
+        metadata: {},
+      })
+
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.find('[data-testid="invite-code-input"]').setValue('fed11first')
+    await wrapper
+      .find('[data-testid="startup-wizard-restore-federations-preview-btn"]')
+      .trigger('click')
+    await flushPromises()
+    await wrapper
+      .find('[data-testid="startup-wizard-restore-federations-submit-btn"]')
+      .trigger('click')
+    await flushPromises()
+
+    expect(federationStoreMock.selectFederation).toHaveBeenCalledTimes(1)
+    expect(walletStoreMock.recoveryStatusByFederationId).toMatchObject({
+      'fed-first': 'restoring',
+    })
+
+    await wrapper.find('[data-testid="invite-code-input"]').setValue('fed11second')
+    await wrapper
+      .find('[data-testid="startup-wizard-restore-federations-preview-btn"]')
+      .trigger('click')
+    await flushPromises()
+
+    const secondSubmitButton = wrapper.find(
+      '[data-testid="startup-wizard-restore-federations-submit-btn"]',
+    )
+    expect(secondSubmitButton.attributes('disabled')).toBeDefined()
+
+    await secondSubmitButton.trigger('click')
+    await flushPromises()
+
+    expect(federationStoreMock.selectFederation).toHaveBeenCalledTimes(1)
+    expect(federationStoreMock.addFederation).toHaveBeenCalledTimes(1)
+  })
+
   it('restore federation step allows finish after recovery completes', async () => {
     setStandaloneState({ matches: true, standalone: true })
     walletStoreMock.hasMnemonic = true
