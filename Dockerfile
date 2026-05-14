@@ -4,7 +4,7 @@ FROM --platform=$BUILDPLATFORM node:24-slim AS builder
 ENV PNPM_STORE_PATH=/pnpm/store
 
 RUN corepack enable \
-    && corepack prepare pnpm@10 --activate \
+    && corepack prepare pnpm@11.1.1 --activate \
     && apt-get update \
     && apt-get install -y python3 make g++ \
     && pnpm config set store-dir ${PNPM_STORE_PATH} \
@@ -12,7 +12,7 @@ RUN corepack enable \
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml .npmrc index.html quasar.config.ts tsconfig.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc index.html quasar.config.ts tsconfig.json ./
 COPY src-pwa/tsconfig.json ./src-pwa/tsconfig.json
 
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
