@@ -15,6 +15,8 @@ export type WizardStep =
   | 'restore'
   | 'done'
 
+type WizardAction = 'idle' | 'creating' | 'restoring'
+
 export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boolean> }) {
   const router = useRouter()
   const walletStore = useWalletStore()
@@ -22,11 +24,12 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
   const notify = useAppNotify()
 
   const currentStep = ref<WizardStep>('welcome')
-  const isCreating = ref(false)
-  const isRestoring = ref(false)
+  const wizardAction = ref<WizardAction>('idle')
   const restoreWords = ref<string[]>(Array.from({ length: 12 }, () => ''))
 
   const mnemonicWords = computed(() => walletStore.mnemonicWords)
+  const isCreating = computed(() => wizardAction.value === 'creating')
+  const isRestoring = computed(() => wizardAction.value === 'restoring')
   const isCreateLocked = computed(
     () =>
       onboardingStore.status === 'in_progress' &&
@@ -138,6 +141,10 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
   }
 
   async function continueFromFederation() {
+    if (wizardAction.value !== 'idle') {
+      return
+    }
+
     if (isCreateLocked.value) {
       onboardingStore.markInProgress()
       onboardingStore.goToStep('backup')
@@ -146,7 +153,7 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
     }
 
     if (!(walletStore.hasMnemonic && walletStore.needsMnemonicBackup)) {
-      isCreating.value = true
+      wizardAction.value = 'creating'
       try {
         await walletStore.createMnemonic()
       } catch (error) {
@@ -155,7 +162,9 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
         currentStep.value = 'welcome'
         return
       } finally {
-        isCreating.value = false
+        if (wizardAction.value === 'creating') {
+          wizardAction.value = 'idle'
+        }
       }
     }
 
@@ -188,6 +197,10 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
   }
 
   async function submitRestore() {
+    if (wizardAction.value !== 'idle') {
+      return
+    }
+
     const words = restoreWords.value.map((word) => word.trim().toLowerCase())
 
     if (words.length !== 12 || words.some((word) => word === '')) {
@@ -195,7 +208,7 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
       return
     }
 
-    isRestoring.value = true
+    wizardAction.value = 'restoring'
     onboardingStore.markInProgress()
     onboardingStore.goToStep('restore')
     try {
@@ -205,7 +218,9 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
     } catch (error) {
       notify.error(`Failed to restore wallet: ${getErrorMessage(error)}`)
     } finally {
-      isRestoring.value = false
+      if (wizardAction.value === 'restoring') {
+        wizardAction.value = 'idle'
+      }
     }
   }
 
