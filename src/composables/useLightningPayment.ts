@@ -225,19 +225,13 @@ export function useLightningPayment() {
       }
     } catch (error) {
       logger.error('Failed waiting for invoice payment', error)
+      const normalizedError = toError(error)
 
-      let errorMessage = 'An unknown error occurred.'
-      if (error instanceof Error) {
-        errorMessage = error.message
-      } else if (typeof error === 'string') {
-        errorMessage = error
-      }
-
-      notify.error(`Error receiving payment: ${errorMessage}`)
+      notify.error(`Error receiving payment: ${normalizedError.message}`)
 
       return {
         type: 'error',
-        error: toError(error),
+        error: normalizedError,
       }
     }
   }
