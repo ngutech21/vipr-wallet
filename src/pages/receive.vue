@@ -119,7 +119,7 @@ defineOptions({
   name: 'ReceivePage',
 })
 
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, shallowRef } from 'vue'
 import { Loading } from 'quasar'
 import { useRouter } from 'vue-router'
 import { init, requestProvider } from '@getalby/bitcoin-connect'
@@ -137,21 +137,37 @@ import { useNumericInput } from 'src/composables/useNumericInput'
 import { paymentFlowCopy } from 'src/constants/paymentFlowCopy'
 import { getErrorMessage } from 'src/utils/error'
 
-const qrData = ref('')
 const router = useRouter()
 const lnExpiry = 60 * 59 // 59 minutes
 const countdown = ref(lnExpiry)
-const isWaiting = ref(false)
-const isCreatingInvoice = ref(false)
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
 const notify = useAppNotify()
+
+type LightningReceiveState =
+  | {
+      type: 'idle'
+    }
+  | {
+      type: 'creating'
+    }
+  | {
+      type: 'waiting'
+      invoice: string
+      operationId: string
+      amountSats: number
+    }
+
+const receiveState = shallowRef<LightningReceiveState>({ type: 'idle' })
 
 // Use the lightning payment composable
 const { createInvoice } = useLightningPayment()
 
 // Use the numeric input composable
 const { value: amount, keypadButtons } = useNumericInput(0)
+const qrData = computed(() =>
+  receiveState.value.type === 'waiting' ? receiveState.value.invoice : '',
+)
 const { copyToClipboard, shareValue: shareInvoice } = useCopyShare({
   value: qrData,
   copySuccessMessage: null,
@@ -161,13 +177,13 @@ const { copyToClipboard, shareValue: shareInvoice } = useCopyShare({
 const formattedAmount = computed(() => amount.value.toLocaleString())
 const invoiceMemo = ref('')
 const selectedFederation = computed(() => federationStore.selectedFederation)
+const isCreatingInvoice = computed(() => receiveState.value.type === 'creating')
 const canCreateInvoice = computed(() => {
   return amount.value > 0 && !isCreatingInvoice.value && selectedFederation.value != null
 })
 
 let countdownInterval: ReturnType<typeof setInterval> | null = null
 let unsubscribeReceiveWait: (() => void) | null = null
-let activeReceiveOperationId: string | null = null
 
 function clearCountdownTimer() {
   if (countdownInterval != null) {
@@ -238,40 +254,45 @@ async function onRequest() {
   if (amount.value < 1) {
     return
   }
-  isCreatingInvoice.value = true
 
   try {
     cleanupInvoiceWait()
+    receiveState.value = { type: 'creating' }
     const invoiceResult = await createInvoice(amount.value, invoiceMemo.value.trim(), lnExpiry)
 
     if (invoiceResult.type === 'success') {
       const invoiceAmount = amount.value
-      qrData.value = invoiceResult.invoice
-      isWaiting.value = true
-      activeReceiveOperationId = invoiceResult.operationId
+      receiveState.value = {
+        type: 'waiting',
+        invoice: invoiceResult.invoice,
+        operationId: invoiceResult.operationId,
+        amountSats: invoiceAmount,
+      }
       startCountdownTimer()
-      subscribeToInvoicePayment(invoiceResult.operationId, invoiceAmount)
+      subscribeToInvoicePayment(invoiceResult.operationId)
     }
   } finally {
-    isCreatingInvoice.value = false
+    if (receiveState.value.type === 'creating') {
+      receiveState.value = { type: 'idle' }
+    }
   }
 }
 
-function subscribeToInvoicePayment(operationId: string, invoiceAmount: number) {
+function subscribeToInvoicePayment(operationId: string) {
   unsubscribeReceiveWait =
     walletStore.wallet?.lightning.subscribeLnReceive(
       operationId,
       (state) => {
-        if (state !== 'claimed' || activeReceiveOperationId !== operationId) {
+        if (state !== 'claimed' || !isActiveReceiveOperation(operationId)) {
           return
         }
 
-        handleInvoicePaid(operationId, invoiceAmount).catch((error: unknown) => {
+        handleInvoicePaid(operationId).catch((error: unknown) => {
           logger.error('Failed to handle received Lightning payment', error)
         })
       },
       (error) => {
-        if (activeReceiveOperationId !== operationId) {
+        if (!isActiveReceiveOperation(operationId)) {
           return
         }
 
@@ -281,8 +302,9 @@ function subscribeToInvoicePayment(operationId: string, invoiceAmount: number) {
     ) ?? null
 }
 
-async function handleInvoicePaid(operationId: string, invoiceAmount: number) {
-  if (activeReceiveOperationId !== operationId) {
+async function handleInvoicePaid(operationId: string) {
+  const waitingState = getWaitingReceiveState(operationId)
+  if (waitingState == null) {
     return
   }
 
@@ -290,28 +312,38 @@ async function handleInvoicePaid(operationId: string, invoiceAmount: number) {
   cleanupInvoiceWait()
   await walletStore.updateBalance()
 
-  if (qrData.value === '') {
+  if (waitingState.invoice === '') {
     return
   }
 
   await router.push({
     name: '/received-lightning',
-    query: { amount: invoiceAmount.toString() },
+    query: { amount: waitingState.amountSats.toString() },
   })
+}
+
+function isActiveReceiveOperation(operationId: string): boolean {
+  return getWaitingReceiveState(operationId) != null
+}
+
+function getWaitingReceiveState(
+  operationId: string,
+): Extract<LightningReceiveState, { type: 'waiting' }> | null {
+  return receiveState.value.type === 'waiting' && receiveState.value.operationId === operationId
+    ? receiveState.value
+    : null
 }
 
 function cleanupInvoiceWait() {
   unsubscribeReceiveWait?.()
   unsubscribeReceiveWait = null
-  activeReceiveOperationId = null
-  isWaiting.value = false
+  receiveState.value = { type: 'idle' }
   clearCountdownTimer()
 }
 
 async function goBack() {
   if (qrData.value !== '') {
     cleanupInvoiceWait()
-    qrData.value = ''
     return
   }
 
