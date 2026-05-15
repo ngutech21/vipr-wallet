@@ -93,21 +93,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, shallowRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
-import type {
-  EcashTransaction,
-  LightningTransaction,
-  OperationKey,
-  Transactions,
-  WalletTransaction,
-} from '@fedimint/core'
+import type { EcashTransaction, LightningTransaction, WalletTransaction } from '@fedimint/core'
 import LightningTransactionItem from './LightningTransactionItem.vue'
 import EcashTransactionItem from './EcashTransactionItem.vue'
 import WalletTransactionItem from './WalletTransactionItem.vue'
 import { logger } from 'src/services/logger'
+import {
+  appendTransactionsPage,
+  applyInitialPage,
+  createInitialTransactionsState,
+  failInitialLoad,
+  finishLoadMore,
+  startInitialLoad,
+  startLoadMore,
+} from 'src/utils/transactionsPaginationState'
 
 const props = withDefaults(
   defineProps<{
@@ -124,15 +127,15 @@ const HISTORY_PAGE_SIZE = 20
 const walletStore = useWalletStore()
 const federationStore = useFederationStore()
 const router = useRouter()
-const transactions = ref<Transactions[]>([])
-const isInitialLoading = ref(false)
-const isLoadingMore = ref(false)
-const hasMore = ref(false)
-const nextCursor = shallowRef<OperationKey | null>(null)
+const paginationState = shallowRef(createInitialTransactionsState())
 const emptyTransactionsTestId = 'transactions-empty-state'
-let activeLoadRequestId = 0
 
 const pageSize = computed(() => (props.mode === 'history' ? HISTORY_PAGE_SIZE : HOME_PAGE_SIZE))
+const transactions = computed(() => paginationState.value.transactions)
+const isInitialLoading = computed(() => paginationState.value.phase === 'initial-loading')
+const isLoadingMore = computed(() => paginationState.value.phase === 'loading-more')
+const hasMore = computed(() => paginationState.value.hasMore)
+const nextCursor = computed(() => paginationState.value.nextCursor)
 const showHomeEmptyState = computed(() => {
   return (
     props.mode === 'home' &&
@@ -179,102 +182,63 @@ watch(
 )
 
 async function loadInitialTransactions() {
-  const requestId = ++activeLoadRequestId
+  paginationState.value = startInitialLoad(paginationState.value)
+  const requestId = paginationState.value.requestId
 
   try {
-    isInitialLoading.value = true
-    isLoadingMore.value = false
-
     const page = await walletStore.getTransactionsPage(pageSize.value, undefined, {
       visibleOnly: true,
     })
-    if (requestId !== activeLoadRequestId) {
+    if (requestId !== paginationState.value.requestId) {
       return
     }
 
-    applyInitialPage(page)
+    paginationState.value = applyInitialPage(paginationState.value, page)
   } catch (error) {
-    if (requestId !== activeLoadRequestId) {
+    if (requestId !== paginationState.value.requestId) {
       return
     }
 
     logger.error('Failed to load transactions', error)
-    resetTransactions()
-  } finally {
-    if (requestId === activeLoadRequestId) {
-      finishInitialLoad()
-    }
+    paginationState.value = failInitialLoad(paginationState.value)
   }
 }
 
 async function loadMoreTransactions() {
-  if (
-    props.mode !== 'history' ||
-    isLoadingMore.value ||
-    nextCursor.value == null ||
-    !hasMore.value
-  ) {
+  if (props.mode !== 'history') {
     return
   }
 
-  const requestId = activeLoadRequestId
+  const nextState = startLoadMore(paginationState.value)
+  if (nextState === paginationState.value) {
+    return
+  }
+
+  paginationState.value = nextState
+  const requestId = nextState.requestId
+  const cursor = nextState.nextCursor
+  if (cursor == null) {
+    paginationState.value = finishLoadMore(nextState)
+    return
+  }
 
   try {
-    isLoadingMore.value = true
-
-    const page = await walletStore.getTransactionsPage(pageSize.value, nextCursor.value, {
+    const page = await walletStore.getTransactionsPage(pageSize.value, cursor, {
       visibleOnly: true,
     })
-    if (requestId !== activeLoadRequestId) {
+    if (requestId !== paginationState.value.requestId) {
       return
     }
 
-    appendTransactionsPage(page)
+    paginationState.value = appendTransactionsPage(paginationState.value, page)
   } catch (error) {
-    if (requestId !== activeLoadRequestId) {
+    if (requestId !== paginationState.value.requestId) {
       return
     }
 
     logger.error('Failed to load more transactions', error)
-  } finally {
-    if (requestId === activeLoadRequestId) {
-      finishLoadMore()
-    }
+    paginationState.value = finishLoadMore(paginationState.value)
   }
-}
-
-function applyInitialPage(page: {
-  transactions: Transactions[]
-  nextCursor: OperationKey | null
-  hasMore: boolean
-}) {
-  transactions.value = page.transactions
-  nextCursor.value = page.nextCursor
-  hasMore.value = page.hasMore
-}
-
-function appendTransactionsPage(page: {
-  transactions: Transactions[]
-  nextCursor: OperationKey | null
-  hasMore: boolean
-}) {
-  transactions.value = [...transactions.value, ...page.transactions]
-  nextCursor.value = page.nextCursor
-  hasMore.value = page.hasMore
-}
-
-function resetTransactions() {
-  transactions.value = []
-  nextCursor.value = null
-  hasMore.value = false
-}
-
-function finishInitialLoad() {
-  isInitialLoading.value = false
-}
-
-function finishLoadMore() {
-  isLoadingMore.value = false
 }
 
 async function openFullHistory() {
@@ -292,6 +256,7 @@ async function viewTransactionDetails(id: string) {
 }
 
 defineExpose({
+  paginationState,
   transactions,
   isInitialLoading,
   isLoadingMore,
