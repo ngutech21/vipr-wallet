@@ -210,6 +210,70 @@ describe('pwa update store', () => {
     expect(window.localStorage.getItem(APPLY_INTENT_STORAGE_KEY)).toBeNull()
   })
 
+  it('clears pending apply intent when service workers are unsupported', async () => {
+    const store = usePwaUpdateStore()
+    window.localStorage.setItem(
+      APPLY_INTENT_STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        requestedAt: Date.now(),
+        attempts: 1,
+      }),
+    )
+
+    const result = await store.applyUpdateInternal()
+
+    expect(result).toBe('not-supported')
+    expect(window.localStorage.getItem(APPLY_INTENT_STORAGE_KEY)).toBeNull()
+  })
+
+  it('returns no-update and clears intent when no registration exists during apply', async () => {
+    installServiceWorkerMock(() => undefined)
+    const store = usePwaUpdateStore()
+    window.localStorage.setItem(
+      APPLY_INTENT_STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        requestedAt: Date.now(),
+        attempts: 1,
+      }),
+    )
+
+    const result = await store.applyUpdateInternal()
+
+    expect(result).toBe('no-update')
+    expect(store.state).toBe('idle')
+    expect(window.localStorage.getItem(APPLY_INTENT_STORAGE_KEY)).toBeNull()
+  })
+
+  it('stays checking when apply update finds an installing worker but no waiting worker', async () => {
+    const registration = createRegistration({
+      installing: createWaitingWorker(),
+    })
+    installServiceWorkerMock(() => registration)
+    const store = usePwaUpdateStore()
+
+    const result = await store.applyUpdateInternal()
+
+    expect(result).toBe('checking')
+    expect(store.state).toBe('checking')
+  })
+
+  it('forces reload fallback when apply update check fails', async () => {
+    const registration = createRegistration({
+      update: vi.fn(() => Promise.reject(new Error('update failed'))),
+    })
+    installServiceWorkerMock(() => registration)
+    const store = usePwaUpdateStore()
+
+    const result = await store.applyUpdateInternal()
+
+    expect(result).toBe('error')
+    expect(store.state).toBe('error')
+    expect(store.lastError).toBe('update failed')
+    expect(store.reloadTriggered).toBe(true)
+  })
+
   it('forces reload on apply timeout and preserves apply intent for resume', async () => {
     vi.useFakeTimers()
     const waitingWorker = createWaitingWorker()

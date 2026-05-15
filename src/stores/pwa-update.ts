@@ -1,6 +1,16 @@
 import { defineStore } from 'pinia'
 import { logger } from 'src/services/logger'
 import { getErrorMessage } from 'src/utils/error'
+import {
+  resolveApplyReadiness,
+  resolveForegroundUpdateCheck,
+  resolveResumeApplyIntent,
+  resolveResumeApplyRegistration,
+  resolveUpdateCheckReadiness,
+  sanitizeApplyIntent,
+  snapshotServiceWorkerRegistration,
+  type ApplyIntentState,
+} from 'src/utils/pwaUpdateState'
 
 const UPDATE_APPLY_ALLOWLIST = new Set(['/', '/settings/'])
 const CONTROLLER_CHANGE_TIMEOUT_MS = 10_000
@@ -32,12 +42,6 @@ export type ApplyUpdateResult =
   | 'not-supported'
   | 'error'
 
-type ApplyIntentState = {
-  version: typeof APPLY_INTENT_VERSION
-  requestedAt: number
-  attempts: number
-}
-
 function routeNameToString(routeName: unknown): string {
   if (typeof routeName === 'string') {
     return routeName
@@ -55,37 +59,6 @@ function hasActiveServiceWorkerController(): boolean {
 
 function hasLocalStorageSupport(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
-}
-
-function sanitizeApplyIntent(value: unknown): ApplyIntentState | null {
-  if (value == null || typeof value !== 'object') {
-    return null
-  }
-
-  const record = value as Record<string, unknown>
-  const version = record.version
-  const requestedAt = record.requestedAt
-  const attempts = record.attempts
-
-  if (version !== APPLY_INTENT_VERSION) {
-    return null
-  }
-  if (
-    typeof requestedAt !== 'number' ||
-    Number.isFinite(requestedAt) === false ||
-    requestedAt <= 0
-  ) {
-    return null
-  }
-  if (typeof attempts !== 'number' || Number.isInteger(attempts) === false || attempts < 1) {
-    return null
-  }
-
-  return {
-    version: APPLY_INTENT_VERSION,
-    requestedAt,
-    attempts,
-  }
 }
 
 function waitForServiceWorkerActivation(waitingWorker: ServiceWorker): Promise<void> {
@@ -179,7 +152,7 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
           return null
         }
 
-        const sanitized = sanitizeApplyIntent(JSON.parse(raw))
+        const sanitized = sanitizeApplyIntent(JSON.parse(raw), APPLY_INTENT_VERSION)
         if (sanitized != null) {
           return sanitized
         }
@@ -226,10 +199,6 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
       } catch (error) {
         logger.pwa.warn('Failed to reload app after service worker update', { error, reason })
       }
-    },
-
-    isApplyIntentExpired(intent: ApplyIntentState): boolean {
-      return Date.now() - intent.requestedAt > APPLY_INTENT_TTL_MS
     },
 
     bindRegistration(registration: ServiceWorkerRegistration) {
@@ -285,23 +254,24 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
     },
 
     async checkForUpdatesForeground(): Promise<UpdateCheckResult> {
-      if (!hasServiceWorkerSupport()) {
+      const now = Date.now()
+      const decision = resolveForegroundUpdateCheck({
+        hasServiceWorkerSupport: hasServiceWorkerSupport(),
+        state: this.state,
+        isUpdateReady: this.isUpdateReady,
+        lastForegroundCheckAt: this.lastForegroundCheckAt,
+        now,
+        minIntervalMs: FOREGROUND_CHECK_MIN_INTERVAL_MS,
+      })
+
+      if (decision === 'not-supported') {
         this.setState('idle')
         this.isUpdateReady = false
         return 'not-supported'
       }
 
-      if (this.state === 'checking') {
-        return 'checking'
-      }
-
-      if (this.isUpdateReady) {
-        return 'update-ready'
-      }
-
-      const now = Date.now()
-      if (now - this.lastForegroundCheckAt < FOREGROUND_CHECK_MIN_INTERVAL_MS) {
-        return 'up-to-date'
+      if (decision !== 'run-check') {
+        return decision
       }
 
       this.lastForegroundCheckAt = now
@@ -338,7 +308,10 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
         }
 
         this.bindRegistration(registration)
-        if (registration.waiting != null && hasActiveServiceWorkerController()) {
+        const initialReadiness = resolveUpdateCheckReadiness(
+          snapshotServiceWorkerRegistration(registration, hasActiveServiceWorkerController()),
+        )
+        if (initialReadiness === 'update-ready') {
           return 'update-ready'
         }
 
@@ -347,11 +320,14 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
         const latestRegistration = (await navigator.serviceWorker.getRegistration()) ?? registration
         this.bindRegistration(latestRegistration)
 
-        if (latestRegistration.waiting != null && hasActiveServiceWorkerController()) {
+        const latestReadiness = resolveUpdateCheckReadiness(
+          snapshotServiceWorkerRegistration(latestRegistration, hasActiveServiceWorkerController()),
+        )
+        if (latestReadiness === 'update-ready') {
           return 'update-ready'
         }
 
-        if (latestRegistration.installing != null) {
+        if (latestReadiness === 'checking') {
           this.setState('checking')
           return 'checking'
         }
@@ -411,12 +387,17 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
         latestRegistration = (await navigator.serviceWorker.getRegistration()) ?? latestRegistration
         this.bindRegistration(latestRegistration)
 
-        if (latestRegistration.waiting == null) {
+        const readiness = resolveApplyReadiness(
+          snapshotServiceWorkerRegistration(latestRegistration, hasActiveServiceWorkerController()),
+        )
+        if (readiness === 'checking') {
           this.isUpdateReady = false
-          if (latestRegistration.installing != null) {
-            this.setState('checking')
-            return 'checking'
-          }
+          this.setState('checking')
+          return 'checking'
+        }
+
+        if (readiness === 'no-update') {
+          this.isUpdateReady = false
           this.setState('idle')
           this.clearApplyIntent()
           return 'no-update'
@@ -462,34 +443,35 @@ export const usePwaUpdateStore = defineStore('pwaUpdate', {
         return
       }
 
-      const intent = this.readApplyIntent()
-      if (intent == null) {
+      const intentDecision = resolveResumeApplyIntent({
+        intent: this.readApplyIntent(),
+        now: Date.now(),
+        maxAttempts: APPLY_INTENT_MAX_ATTEMPTS,
+        ttlMs: APPLY_INTENT_TTL_MS,
+      })
+      if (intentDecision.type === 'noop') {
         return
       }
 
-      if (intent.attempts >= APPLY_INTENT_MAX_ATTEMPTS || this.isApplyIntentExpired(intent)) {
+      if (intentDecision.type === 'clear-intent') {
         this.clearApplyIntent()
         return
       }
 
-      const nextIntent: ApplyIntentState = {
-        version: APPLY_INTENT_VERSION,
-        requestedAt: Date.now(),
-        attempts: intent.attempts + 1,
-      }
-      this.writeApplyIntent(nextIntent)
+      this.writeApplyIntent(intentDecision.nextIntent)
 
       const registration =
         this.registration ?? (await navigator.serviceWorker.getRegistration()) ?? null
-      if (registration == null) {
+      const registrationDecision = resolveResumeApplyRegistration(
+        snapshotServiceWorkerRegistration(registration, hasActiveServiceWorkerController()),
+      )
+      if (registrationDecision === 'clear-intent') {
         this.clearApplyIntent()
         return
       }
 
-      this.bindRegistration(registration)
-      if (registration.waiting == null) {
-        this.clearApplyIntent()
-        return
+      if (registration != null) {
+        this.bindRegistration(registration)
       }
 
       await this.applyUpdateInternal()
