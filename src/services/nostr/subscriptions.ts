@@ -54,7 +54,11 @@ type DiscoverySubscriptionHandlers = {
 export async function initializeNdk(
   relayUrls: string[],
   {
-    createNdk = (explicitRelayUrls) => new NDK({ explicitRelayUrls }),
+    createNdk = (explicitRelayUrls) =>
+      new NDK({
+        explicitRelayUrls,
+        aiGuardrails: import.meta.env.DEV || import.meta.env.VITE_E2E_MODE === '1',
+      }),
     connectTimeoutMs = NDK_CONNECT_TIMEOUT_MS,
     relaySettleMs = NDK_RELAY_SETTLE_MS,
   }: InitializeNdkOptions = {},
