@@ -13,6 +13,7 @@
         round
         color="white"
         icon="close"
+        aria-label="Close result"
         class="success-close-btn"
         :to="closeTo"
         :data-testid="closeTestId"

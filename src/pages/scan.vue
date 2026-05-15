@@ -82,6 +82,7 @@ meta:
         flat
         color="white"
         icon="arrow_back"
+        aria-label="Go back"
         @click="goBack"
         class="scan-topbar__back vipr-topbar__back"
         data-testid="scan-back-btn"
@@ -101,6 +102,7 @@ meta:
         color="primary"
         icon="flashlight_on"
         checked-icon="flashlight_off"
+        aria-label="Toggle flashlight"
         :disable="!hasTorch"
         class="scan-utility-card__toggle"
         data-testid="scan-torch-toggle"

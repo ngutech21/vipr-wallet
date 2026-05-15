@@ -23,6 +23,7 @@
             target="_blank"
             rel="noopener noreferrer"
             class="summary-link"
+            aria-label="Open in Fedimint Observer"
             data-testid="federation-details-observer-link"
           >
             <q-tooltip>Open in Fedimint Observer</q-tooltip>

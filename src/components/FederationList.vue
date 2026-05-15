@@ -51,6 +51,7 @@
             color="grey-6"
             size="md"
             class="federation-details-button"
+            :aria-label="`Open details for ${fedi.title}`"
             :to="{ name: '/federation/[id]', params: { id: String(fedi.federationId) } }"
             :data-testid="`federation-list-details-btn-${fedi.federationId}`"
           />

@@ -53,6 +53,7 @@
               dense
               round
               icon="content_copy"
+              aria-label="Copy ecash notes"
               @click="copyNotes"
               class="copy-button"
               data-testid="ecash-transaction-details-copy-notes-btn"

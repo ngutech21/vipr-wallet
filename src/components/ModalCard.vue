@@ -17,6 +17,7 @@
             round
             dense
             class="modal-card__icon-btn"
+            aria-label="Go back"
             data-testid="modal-card-back-btn"
             @click="emit('back')"
           />
@@ -35,6 +36,7 @@
             round
             dense
             class="modal-card__icon-btn"
+            aria-label="Close dialog"
             v-close-popup
             data-testid="modal-card-close-btn"
             @click="emit('close')"

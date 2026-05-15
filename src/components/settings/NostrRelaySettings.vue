@@ -20,6 +20,7 @@
             icon="delete"
             color="negative"
             size="sm"
+            :aria-label="`Remove relay ${relay}`"
             @click="removeRelay(relay)"
             :data-testid="`settings-remove-relay-btn-${index}`"
           />

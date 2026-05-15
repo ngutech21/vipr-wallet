@@ -73,6 +73,7 @@
               dense
               round
               icon="content_copy"
+              aria-label="Copy Bitcoin address"
               @click="copyAddress"
               class="copy-button"
               data-testid="wallet-transaction-details-copy-address-btn"

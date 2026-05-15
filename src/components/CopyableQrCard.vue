@@ -47,12 +47,20 @@
             :data-testid="inputTestId"
             :aria-label="inputAriaLabel"
           />
-          <q-btn icon="content_copy" flat round @click="emit('copy')" :data-testid="copyTestId" />
+          <q-btn
+            icon="content_copy"
+            flat
+            round
+            :aria-label="copyAriaLabel"
+            @click="emit('copy')"
+            :data-testid="copyTestId"
+          />
           <q-btn
             v-if="showShare"
             icon="share"
             flat
             round
+            :aria-label="shareAriaLabel"
             @click="emit('share')"
             :data-testid="shareTestId"
           />
@@ -156,4 +164,6 @@ const zoomTitle = computed(() => {
   return props.label !== '' ? props.label : 'QR code'
 })
 const zoomAriaLabel = computed(() => `Open larger ${zoomTitle.value}`)
+const copyAriaLabel = computed(() => `Copy ${props.inputAriaLabel}`)
+const shareAriaLabel = computed(() => `Share ${props.inputAriaLabel}`)
 </script>

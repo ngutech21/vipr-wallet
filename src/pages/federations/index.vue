@@ -12,6 +12,7 @@
           color="primary"
           unelevated
           class="add-federation-fab__button vipr-fab--primary"
+          aria-label="Add federation"
           :aria-expanded="showSelection"
           @click="federationJoinFlow.openSelection"
           data-testid="add-federation-button"

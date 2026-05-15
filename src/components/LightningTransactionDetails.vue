@@ -71,6 +71,7 @@
               dense
               round
               icon="content_copy"
+              aria-label="Copy Lightning invoice"
               @click="copyInvoice"
               class="copy-button"
               data-testid="lightning-transaction-details-copy-invoice-btn"
