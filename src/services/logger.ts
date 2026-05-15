@@ -9,6 +9,8 @@ interface ViteEnv {
   VITE_LOG_LEVEL?: string
 }
 
+type ConsolaRoot = Pick<typeof consola, 'create'>
+
 // Safe extraction without `any`
 const viteEnv: ViteEnv = (() => {
   try {
@@ -53,8 +55,8 @@ function resolveLogLevel(): number {
  */
 class WalletLogger {
   private logger: ConsolaInstance
-  private readonly isProd: boolean = IS_PROD
-  private readonly isDev: boolean = IS_DEV
+  private readonly isProd: boolean
+  private readonly isDev: boolean
 
   wallet: ConsolaInstance
   transaction: ConsolaInstance
@@ -69,9 +71,19 @@ class WalletLogger {
     return resolveLogLevel()
   }
 
-  constructor() {
-    const logLevel = this.getLogLevel()
-    this.logger = consola.create({
+  constructor(
+    options: {
+      isProd?: boolean
+      isDev?: boolean
+      logLevel?: number
+      consola?: ConsolaRoot
+    } = {},
+  ) {
+    this.isProd = options.isProd ?? IS_PROD
+    this.isDev = options.isDev ?? IS_DEV
+
+    const logLevel = options.logLevel ?? this.getLogLevel()
+    this.logger = (options.consola ?? consola).create({
       level: logLevel,
       formatOptions: {
         date: true,
@@ -192,4 +204,5 @@ class WalletLogger {
   }
 }
 
+export { WalletLogger }
 export const logger = new WalletLogger()

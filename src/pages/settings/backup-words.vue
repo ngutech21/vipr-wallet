@@ -145,7 +145,7 @@ const federationInviteCodes = computed(() =>
     .map((federation) => ({
       federationId: federation.federationId,
       title: federation.title,
-      inviteCode: federation.inviteCode,
+      inviteCode: federation.inviteCode.trim(),
     })),
 )
 

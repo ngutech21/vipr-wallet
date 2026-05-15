@@ -1,11 +1,14 @@
 import type { SyncedNostrContact } from 'src/types/nostr'
 
 export function getNostrContactDisplayName(contact: SyncedNostrContact): string {
-  return contact.displayName ?? contact.name ?? contact.nip05 ?? truncateNpub(contact.npub)
+  return (
+    firstNonEmptyString(contact.displayName, contact.name, contact.nip05) ??
+    truncateNpub(contact.npub)
+  )
 }
 
 export function getNostrContactSubtitle(contact: SyncedNostrContact): string {
-  return contact.lud16 ?? 'LNURL'
+  return firstNonEmptyString(contact.lud16) ?? 'LNURL'
 }
 
 export function truncateNpub(npub: string): string {
@@ -14,4 +17,8 @@ export function truncateNpub(npub: string): string {
   }
 
   return `${npub.slice(0, 8)}...${npub.slice(-8)}`
+}
+
+function firstNonEmptyString(...values: Array<string | undefined>): string | undefined {
+  return values.find((value) => value != null && value.trim().length > 0)
 }

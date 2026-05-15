@@ -80,8 +80,7 @@ onMounted(async () => {
   })
   try {
     const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
-    const sats = Math.floor(invoice.amount / 1000)
-    const fiatValue = await lightningStore.satsToFiat(sats)
+    const fiatValue = await lightningStore.satsToFiat(invoice.amount)
     amountInFiat.value = fiatValue.toFixed(2)
   } catch (error) {
     logger.error('Failed to convert Lightning amount to fiat', error)
