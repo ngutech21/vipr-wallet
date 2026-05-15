@@ -39,9 +39,63 @@ vi.mock('vue-qrcode-reader', () => ({
   QrcodeStream: defineComponent({
     name: 'QrcodeStream',
     emits: ['detect', 'camera-on', 'error'],
-    template: '<div />',
+    template: '<div data-testid="qrcode-stream" />',
   }),
 }))
+
+const QPageStub = {
+  template: '<main><slot /></main>',
+}
+
+const QDialogStub = {
+  props: {
+    modelValue: { type: Boolean, default: false },
+  },
+  emits: ['hide'],
+  template: `
+    <section v-if="modelValue" data-testid="scan-dialog">
+      <slot />
+      <button data-testid="scan-dialog-hide-btn" @click="$emit('hide')" />
+    </section>
+  `,
+}
+
+const QBtnStub = {
+  props: {
+    label: { type: String, required: false, default: '' },
+    icon: { type: String, required: false, default: '' },
+  },
+  emits: ['click'],
+  template: '<button v-bind="$attrs" @click="$emit(\'click\')">{{ label }}{{ icon }}</button>',
+}
+
+const QToggleStub = {
+  template: '<input v-bind="$attrs" type="checkbox" />',
+}
+
+const AddFederationStub = {
+  props: {
+    initialInviteCode: { type: String, required: false, default: '' },
+  },
+  emits: ['close'],
+  template: `
+    <section data-testid="scan-add-federation" :data-invite-code="initialInviteCode">
+      <button data-testid="scan-add-federation-close-btn" @click="$emit('close')" />
+    </section>
+  `,
+}
+
+const BottomSheetOptionCardStub = {
+  props: {
+    title: { type: String, required: false, default: '' },
+  },
+  emits: ['select'],
+  template: '<button v-bind="$attrs" @click="$emit(\'select\')">{{ title }}</button>',
+}
+
+const ModalCardStub = {
+  template: '<section><slot /></section>',
+}
 
 describe('ScanPage detection flow', () => {
   type RouteState = {
@@ -51,6 +105,7 @@ describe('ScanPage detection flow', () => {
       amount?: string
       memo?: string
       target?: string
+      token?: string
     }
   }
 
@@ -61,16 +116,26 @@ describe('ScanPage detection flow', () => {
     return mount(ScanPage, {
       global: {
         stubs: {
-          AddFederation: true,
-          BottomSheetOptionCard: true,
-          ModalCard: true,
-          'q-page': true,
-          'q-dialog': true,
-          'q-btn': true,
-          'q-toggle': true,
+          AddFederation: AddFederationStub,
+          BottomSheetOptionCard: BottomSheetOptionCardStub,
+          ModalCard: ModalCardStub,
+          'q-page': QPageStub,
+          'q-dialog': QDialogStub,
+          'q-btn': QBtnStub,
+          'q-toggle': QToggleStub,
         },
       },
     })
+  }
+
+  async function emitDetected(rawValue: string) {
+    wrapper.findComponent({ name: 'QrcodeStream' }).vm.$emit('detect', [{ rawValue }])
+    await flushPromises()
+  }
+
+  async function clickBackButton() {
+    await wrapper.get('[data-testid="scan-back-btn"]').trigger('click')
+    await flushPromises()
   }
 
   beforeEach(() => {
@@ -84,9 +149,7 @@ describe('ScanPage detection flow', () => {
 
   it('routes lightning invoice scans to send page', async () => {
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onDetect([{ rawValue: 'lightning:lnbc123' }])
-    await flushPromises()
+    await emitDetected('lightning:lnbc123')
 
     expect(mockRouterPush).toHaveBeenCalledWith({
       name: '/send',
@@ -104,9 +167,7 @@ describe('ScanPage detection flow', () => {
     }
 
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).goBack()
-    await flushPromises()
+    await clickBackButton()
 
     expect(mockRouterPush).toHaveBeenCalledWith({
       name: '/send',
@@ -115,6 +176,44 @@ describe('ScanPage detection flow', () => {
         invoice: 'alice@example.com',
         amount: '42',
         memo: 'Dinner',
+      },
+    })
+    wrapper.unmount()
+  })
+
+  it('returns to the onchain send draft when scanner was opened from onchain send', async () => {
+    routeState.query = {
+      returnTo: 'send-onchain',
+      target: 'bitcoin:bc1qexample',
+      amount: '21',
+    }
+
+    wrapper = createWrapper()
+    await clickBackButton()
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      name: '/send-onchain',
+      query: {
+        target: 'bitcoin:bc1qexample',
+        amount: '21',
+      },
+    })
+    wrapper.unmount()
+  })
+
+  it('returns to the receive ecash draft when scanner was opened from receive ecash', async () => {
+    routeState.query = {
+      returnTo: 'receive-ecash',
+      token: 'cashuAdraft',
+    }
+
+    wrapper = createWrapper()
+    await clickBackButton()
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      name: '/receive-ecash',
+      query: {
+        token: 'cashuAdraft',
       },
     })
     wrapper.unmount()
@@ -130,13 +229,12 @@ describe('ScanPage detection flow', () => {
     )
 
     wrapper = createWrapper()
-    const scanPage = wrapper.vm as unknown as {
-      onDetect: (codes: Array<{ rawValue: string }>) => Promise<void>
-    }
+    const stream = wrapper.findComponent({ name: 'QrcodeStream' })
 
-    const firstDetection = scanPage.onDetect([{ rawValue: 'lightning:lnbc123' }])
+    stream.vm.$emit('detect', [{ rawValue: 'lightning:lnbc123' }])
     await Promise.resolve()
-    await scanPage.onDetect([{ rawValue: 'lightning:lnbc123' }])
+    stream.vm.$emit('detect', [{ rawValue: 'lightning:lnbc123' }])
+    await flushPromises()
 
     expect(mockRouterPush).toHaveBeenCalledTimes(1)
     expect(mockRouterPush).toHaveBeenCalledWith({
@@ -145,15 +243,13 @@ describe('ScanPage detection flow', () => {
     })
 
     resolveNavigation?.()
-    await firstDetection
+    await flushPromises()
     wrapper.unmount()
   })
 
   it('routes lightning address scans to send page', async () => {
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onDetect([{ rawValue: 'User@Example.com' }])
-    await flushPromises()
+    await emitDetected('User@Example.com')
 
     expect(mockRouterPush).toHaveBeenCalledWith({
       name: '/send',
@@ -168,9 +264,7 @@ describe('ScanPage detection flow', () => {
     ['web-lightning-prefixed LNURL', 'web+lightning:lnurl1dp68gurn8ghj7m'],
   ])('routes %s scans to the LNURL page', async (_label, rawValue) => {
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onDetect([{ rawValue }])
-    await flushPromises()
+    await emitDetected(rawValue)
 
     expect(mockRouterPush).toHaveBeenCalledWith({
       name: '/lnurl',
@@ -181,40 +275,43 @@ describe('ScanPage detection flow', () => {
 
   it('opens federation dialog for fed invite scans', async () => {
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onDetect([{ rawValue: 'fed1abc' }])
-    await flushPromises()
+    await emitDetected('fed1abc')
 
     expect(mockRouterPush).not.toHaveBeenCalled()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((wrapper.vm as any).detectedContent).toBe('fed1abc')
+    expect(wrapper.get('[data-testid="scan-add-federation"]').attributes('data-invite-code')).toBe(
+      'fed1abc',
+    )
     wrapper.unmount()
   })
 
   it('resumes scanning when the federation dialog is dismissed', async () => {
     wrapper = createWrapper()
-    const scanPage = wrapper.vm as unknown as {
-      onDetect: (codes: Array<{ rawValue: string }>) => Promise<void>
-      onAddFederationHide: () => void
-      scannerPaused: boolean
-    }
+    await emitDetected('fed1abc')
 
-    await scanPage.onDetect([{ rawValue: 'fed1abc' }])
+    await wrapper.get('[data-testid="scan-dialog-hide-btn"]').trigger('click')
+    await emitDetected('lightning:lnbc123')
+
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      name: '/send',
+      query: { invoice: 'lnbc123' },
+    })
+    wrapper.unmount()
+  })
+
+  it('closes the federation flow to the home page', async () => {
+    wrapper = createWrapper()
+    await emitDetected('fed1abc')
+
+    await wrapper.get('[data-testid="scan-add-federation-close-btn"]').trigger('click')
     await flushPromises()
 
-    expect(scanPage.scannerPaused).toBe(true)
-
-    scanPage.onAddFederationHide()
-
-    expect(scanPage.scannerPaused).toBe(false)
+    expect(mockRouterPush).toHaveBeenCalledWith({ name: '/' })
     wrapper.unmount()
   })
 
   it('routes unknown scans to receive ecash page for oob parsing', async () => {
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onDetect([{ rawValue: 'cashuAexample' }])
-    await flushPromises()
+    await emitDetected('cashuAexample')
 
     expect(mockRouterPush).toHaveBeenCalledWith({
       name: '/receive-ecash',
@@ -235,12 +332,9 @@ describe('ScanPage detection flow', () => {
       throw new Error('Expected animated ecash frames')
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onDetect([{ rawValue: firstFrame }])
-    await flushPromises()
+    await emitDetected(firstFrame)
     expect(mockRouterPush).not.toHaveBeenCalled()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((wrapper.vm as any).detectedContent).toContain('1/')
+    expect(wrapper.get('[data-testid="scan-detected-text"]').text()).toContain('1/')
 
     /* eslint-disable no-await-in-loop */
     for (const frame of frames.slice(1, -1)) {
@@ -248,16 +342,12 @@ describe('ScanPage detection flow', () => {
         break
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (wrapper.vm as any).onDetect([{ rawValue: frame }])
-      await flushPromises()
+      await emitDetected(frame)
     }
     /* eslint-enable no-await-in-loop */
 
     if (mockRouterPush.mock.calls.length === 0) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (wrapper.vm as any).onDetect([{ rawValue: lastFrame }])
-      await flushPromises()
+      await emitDetected(lastFrame)
     }
 
     expect(mockRouterPush).toHaveBeenCalledWith({
@@ -274,15 +364,11 @@ describe('ScanPage detection flow', () => {
     }
 
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onDetect([{ rawValue: firstFrame }])
-    await flushPromises()
+    await emitDetected(firstFrame)
 
     expect(mockRouterPush).not.toHaveBeenCalled()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onDetect([{ rawValue: 'lightning:lnbc123' }])
-    await flushPromises()
+    await emitDetected('lightning:lnbc123')
 
     expect(mockRouterPush).toHaveBeenCalledWith({
       name: '/send',
@@ -293,11 +379,7 @@ describe('ScanPage detection flow', () => {
 
   it('routes bitcoin URI scans to the onchain send page', async () => {
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onDetect([
-      { rawValue: 'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021' },
-    ])
-    await flushPromises()
+    await emitDetected('bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021')
 
     expect(mockRouterPush).toHaveBeenCalledWith({
       path: '/send-onchain',
@@ -310,9 +392,7 @@ describe('ScanPage detection flow', () => {
     wrapper = createWrapper()
     const target =
       'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021&label=alice@example.com'
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onDetect([{ rawValue: target }])
-    await flushPromises()
+    await emitDetected(target)
 
     expect(mockRouterPush).toHaveBeenCalledWith({
       path: '/send-onchain',
@@ -325,35 +405,22 @@ describe('ScanPage detection flow', () => {
     wrapper = createWrapper()
     const target =
       'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00000021&label=Lunch&message=For%20lunch%20Tuesday&lightning=lnbc210u'
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onDetect([{ rawValue: target }])
-    await flushPromises()
+    await emitDetected(target)
 
     expect(mockRouterPush).not.toHaveBeenCalled()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((wrapper.vm as any).showBip21PaymentChoice).toBe(true)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((wrapper.vm as any).scannerPaused).toBe(true)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((wrapper.vm as any).bip21PaymentDetails).toEqual([
-      { label: 'Amount', value: '21 sats' },
-      { label: 'Label', value: 'Lunch' },
-      { label: 'Message', value: 'For lunch Tuesday' },
-    ])
+    expect(wrapper.get('[data-testid="scan-bip21-summary"]').text()).toContain('21 sats')
+    expect(wrapper.get('[data-testid="scan-bip21-summary"]').text()).toContain('Lunch')
+    expect(wrapper.get('[data-testid="scan-bip21-summary"]').text()).toContain('For lunch Tuesday')
     wrapper.unmount()
   })
 
   it('routes selected BIP21 lightning payments to the send page', async () => {
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onDetect([
-      {
-        rawValue:
-          'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021&lightning=lnbc210u',
-      },
-    ])
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).payBip21WithLightning()
+    await emitDetected(
+      'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021&lightning=lnbc210u',
+    )
+
+    await wrapper.get('[data-testid="scan-bip21-lightning-card"]').trigger('click')
     await flushPromises()
 
     expect(mockRouterPush).toHaveBeenCalledWith({
@@ -367,10 +434,9 @@ describe('ScanPage detection flow', () => {
     wrapper = createWrapper()
     const target =
       'bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021&lightning=lnbc210u'
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onDetect([{ rawValue: target }])
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).payBip21Onchain()
+    await emitDetected(target)
+
+    await wrapper.get('[data-testid="scan-bip21-onchain-card"]').trigger('click')
     await flushPromises()
 
     expect(mockRouterPush).toHaveBeenCalledWith({
@@ -382,9 +448,7 @@ describe('ScanPage detection flow', () => {
 
   it('routes raw bitcoin address scans to the onchain send page without lowercasing', async () => {
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onDetect([{ rawValue: '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy' }])
-    await flushPromises()
+    await emitDetected('3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy')
 
     expect(mockRouterPush).toHaveBeenCalledWith({
       path: '/send-onchain',

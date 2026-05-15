@@ -7,7 +7,6 @@ const mockCreateInvoice = vi.hoisted(() => vi.fn())
 const mockSubscribeLnReceive = vi.hoisted(() => vi.fn())
 const mockUnsubscribeLnReceive = vi.hoisted(() => vi.fn())
 const mockUpdateBalance = vi.hoisted(() => vi.fn())
-const mockAmountRef = vi.hoisted(() => ({ value: 100, __v_isRef: true }))
 const mockRequestProvider = vi.hoisted(() => vi.fn())
 const mockLoadingShow = vi.hoisted(() => vi.fn())
 const mockLoadingHide = vi.hoisted(() => vi.fn())
@@ -58,13 +57,6 @@ vi.mock('src/stores/wallet', () => ({
   }),
 }))
 
-vi.mock('src/composables/useNumericInput', () => ({
-  useNumericInput: () => ({
-    value: mockAmountRef,
-    keypadButtons: [],
-  }),
-}))
-
 vi.mock('@vueuse/core', () => ({
   useShare: () => ({
     share: vi.fn(),
@@ -90,35 +82,103 @@ vi.mock('quasar', async (importOriginal) => {
   })
 })
 
-describe('ReceivePage timer lifecycle', () => {
-  let wrapper: VueWrapper
+const QPageStub = {
+  template: '<main><slot /></main>',
+}
+
+const QBtnStub = {
+  props: {
+    label: { type: String, required: false, default: '' },
+    icon: { type: String, required: false, default: '' },
+    disable: { type: Boolean, required: false, default: false },
+    loading: { type: Boolean, required: false, default: false },
+  },
+  emits: ['click'],
+  template: `
+    <button
+      v-bind="$attrs"
+      :data-disabled="disable ? 'true' : 'false'"
+      :data-busy="loading ? 'true' : 'false'"
+      @click="$emit('click')"
+    >
+      <slot />
+      {{ label }}{{ icon }}
+    </button>
+  `,
+}
+
+const QInputStub = {
+  props: {
+    modelValue: { type: String, required: false, default: '' },
+  },
+  emits: ['update:modelValue'],
+  template: `
+    <input
+      v-bind="$attrs"
+      :value="modelValue"
+      @input="$emit('update:modelValue', $event.target.value)"
+    />
+  `,
+}
+
+const CopyableQrCardStub = {
+  props: {
+    value: { type: String, required: true },
+    containerTestId: { type: String, required: false, default: '' },
+    inputTestId: { type: String, required: false, default: '' },
+  },
+  template: `
+    <section :data-testid="containerTestId">
+      <input :data-testid="inputTestId" :value="value" readonly />
+    </section>
+  `,
+}
+
+describe('ReceivePage Lightning receive flow', () => {
+  let wrapper: VueWrapper | undefined
 
   function createWrapper(): VueWrapper {
     return mount(ReceivePage, {
       global: {
         stubs: {
           transition: false,
-          CopyableQrCard: true,
-          'q-page': true,
-          'q-toolbar': true,
-          'q-btn': true,
-          'q-toolbar-title': true,
-          'q-input': true,
-          'q-card': true,
-          'q-card-section': true,
-          'q-separator': true,
-          'q-icon': true,
-          'q-spinner': true,
+          CopyableQrCard: CopyableQrCardStub,
+          FederationSelector: true,
+          'q-page': QPageStub,
+          'q-btn': QBtnStub,
+          'q-input': QInputStub,
           'q-spinner-dots': true,
         },
       },
     })
   }
 
+  async function enterAmount(amount: string) {
+    if (wrapper == null) {
+      throw new Error('Receive page wrapper is not mounted')
+    }
+    const activeWrapper = wrapper
+
+    await amount.split('').reduce<Promise<void>>(async (previousClick, digit) => {
+      await previousClick
+      await activeWrapper.get(`[data-testid="receive-keypad-btn-${digit}"]`).trigger('click')
+    }, Promise.resolve())
+    await flushPromises()
+  }
+
+  async function createInvoiceFromUi(options: { amount?: string; memo?: string } = {}) {
+    await enterAmount(options.amount ?? '100')
+    if (options.memo != null) {
+      await wrapper?.get('[data-testid="receive-memo-input"]').setValue(options.memo)
+    }
+
+    await wrapper?.get('[data-testid="receive-create-invoice-btn"]').trigger('click')
+    await flushPromises()
+  }
+
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useFakeTimers()
-    mockAmountRef.value = 100
     federationStoreState.selectedFederation = { federationId: 'fed-1' }
     receiveSubscription.onSuccess = undefined
     receiveSubscription.onError = undefined
@@ -128,10 +188,13 @@ describe('ReceivePage timer lifecycle', () => {
       return mockUnsubscribeLnReceive
     })
     mockUpdateBalance.mockResolvedValue(undefined)
+    mockRouterPush.mockResolvedValue(undefined)
   })
 
   afterEach(() => {
     wrapper?.unmount()
+    wrapper = undefined
+    vi.clearAllTimers()
     vi.useRealTimers()
   })
 
@@ -145,15 +208,17 @@ describe('ReceivePage timer lifecycle', () => {
     })
 
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onRequest()
-    await flushPromises()
+    await createInvoiceFromUi()
 
     expect(mockCreateInvoice).toHaveBeenCalledWith(100, '', 3540)
     expect(mockSubscribeLnReceive).toHaveBeenCalledWith(
       'op-1',
       expect.any(Function),
       expect.any(Function),
+    )
+    expect(wrapper.get('[data-testid="receive-invoice-input"]').element).toHaveProperty(
+      'value',
+      'lnbc123',
     )
     expect(mockRouterPush).not.toHaveBeenCalled()
 
@@ -176,11 +241,7 @@ describe('ReceivePage timer lifecycle', () => {
     })
 
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(wrapper.vm as any).invoiceMemo = '  invoice memo  '
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onRequest()
-    await flushPromises()
+    await createInvoiceFromUi({ memo: '  invoice memo  ' })
 
     expect(mockCreateInvoice).toHaveBeenCalledWith(100, 'invoice memo', 3540)
   })
@@ -189,9 +250,7 @@ describe('ReceivePage timer lifecycle', () => {
     federationStoreState.selectedFederation = undefined
 
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onRequest()
-    await flushPromises()
+    await createInvoiceFromUi()
 
     expect(mockCreateInvoice).not.toHaveBeenCalled()
     expect(mockSubscribeLnReceive).not.toHaveBeenCalled()
@@ -207,12 +266,11 @@ describe('ReceivePage timer lifecycle', () => {
     mockCreateInvoice.mockResolvedValue({ type: 'error', error: new Error('Creation failed') })
 
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onRequest()
-    await flushPromises()
+    await createInvoiceFromUi()
 
     expect(mockSubscribeLnReceive).not.toHaveBeenCalled()
     expect(mockRouterPush).not.toHaveBeenCalled()
+    expect(wrapper.find('[data-testid="receive-invoice-input"]').exists()).toBe(false)
   })
 
   it('clears countdown timer and subscription on unmount while invoice is waiting', async () => {
@@ -225,9 +283,7 @@ describe('ReceivePage timer lifecycle', () => {
     })
 
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onRequest()
-    await flushPromises()
+    await createInvoiceFromUi()
 
     const clearCallsBeforeUnmount = clearIntervalSpy.mock.calls.length
     wrapper.unmount()
@@ -237,11 +293,17 @@ describe('ReceivePage timer lifecycle', () => {
   })
 
   it('always hides loading when bitcoin provider lookup fails', async () => {
+    mockCreateInvoice.mockResolvedValue({
+      type: 'success',
+      invoice: 'lnbc123',
+      operationId: 'op-1',
+      amountMsats: 100_000,
+    })
     mockRequestProvider.mockRejectedValueOnce(new Error('Provider unavailable'))
 
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).payWithBitcoinConnect()
+    await createInvoiceFromUi()
+    await wrapper.get('[data-testid="receive-pay-with-wallet-btn"]').trigger('click')
     await flushPromises()
 
     expect(mockLoadingShow).toHaveBeenCalledWith({
@@ -253,14 +315,20 @@ describe('ReceivePage timer lifecycle', () => {
 
   it('always hides loading when provider payment fails', async () => {
     const sendPayment = vi.fn().mockRejectedValueOnce(new Error('Payment failed'))
+    mockCreateInvoice.mockResolvedValue({
+      type: 'success',
+      invoice: 'lnbc123',
+      operationId: 'op-1',
+      amountMsats: 100_000,
+    })
     mockRequestProvider.mockResolvedValueOnce({ sendPayment })
 
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).payWithBitcoinConnect()
+    await createInvoiceFromUi()
+    await wrapper.get('[data-testid="receive-pay-with-wallet-btn"]').trigger('click')
     await flushPromises()
 
-    expect(sendPayment).toHaveBeenCalledWith('')
+    expect(sendPayment).toHaveBeenCalledWith('lnbc123')
     expect(mockLoadingHide).toHaveBeenCalledTimes(1)
     expect(mockNotifyCreate).toHaveBeenCalledTimes(1)
   })
@@ -275,19 +343,15 @@ describe('ReceivePage timer lifecycle', () => {
     })
 
     wrapper = createWrapper()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).onRequest()
+    await createInvoiceFromUi()
+
+    expect(wrapper.find('[data-testid="receive-invoice-input"]').exists()).toBe(true)
+
+    await wrapper.get('[data-testid="receive-back-btn"]').trigger('click')
     await flushPromises()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((wrapper.vm as any).qrData).toBe('lnbc123')
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).goBack()
-    await flushPromises()
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((wrapper.vm as any).qrData).toBe('')
+    expect(wrapper.find('[data-testid="receive-invoice-input"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="receive-create-invoice-btn"]').exists()).toBe(true)
     expect(mockRouterPush).not.toHaveBeenCalledWith({ name: '/' })
     expect(clearIntervalSpy).toHaveBeenCalled()
     expect(mockUnsubscribeLnReceive).toHaveBeenCalled()
@@ -299,5 +363,16 @@ describe('ReceivePage timer lifecycle', () => {
       name: '/received-lightning',
       query: { amount: '100' },
     })
+  })
+
+  it('returns home when the receive flow is idle', async () => {
+    wrapper = createWrapper()
+
+    const backClick = wrapper.get('[data-testid="receive-back-btn"]').trigger('click')
+    await vi.advanceTimersByTimeAsync(500)
+    await backClick
+    await flushPromises()
+
+    expect(mockRouterPush).toHaveBeenCalledWith({ name: '/' })
   })
 })
