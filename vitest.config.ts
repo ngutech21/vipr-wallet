@@ -36,6 +36,6 @@ export default defineConfig({
     }),
     quasar({
       sassVariables: 'src/css/quasar.variables.scss',
-    }) as any,
+    }),
   ],
 })
