@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import { reactive, ref } from 'vue'
 import SendPage from 'src/pages/send.vue'
+import { PassthroughStub, QBtnStub, QInputStub } from '../mocks/quasar-stubs'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockDecodeInvoiceFromComposable = vi.hoisted(() => vi.fn())
@@ -102,53 +103,28 @@ describe('SendPage query invoice handling', () => {
     template: '<button v-bind="$attrs" type="button" @click="$emit(\'click\')"><slot /></button>',
   }
 
-  const SlotStub = {
-    template: '<div v-bind="$attrs"><slot /></div>',
-  }
-
-  const QBtnStub = {
-    props: {
-      disable: { type: Boolean, default: false },
-      icon: { type: String, required: false, default: undefined },
-      label: { type: String, required: false, default: undefined },
-      loading: { type: Boolean, default: false },
-    },
-    emits: ['click'],
-    template:
-      '<button v-bind="$attrs" type="button" :disabled="disable || loading" :icon="icon" :label="label" @click="!disable && !loading && $emit(\'click\')"><slot>{{ label }}</slot></button>',
-  }
-
-  const QInputStub = {
-    props: {
-      modelValue: { type: [String, Number], required: false, default: '' },
-    },
-    emits: ['update:modelValue'],
-    template:
-      '<input v-bind="$attrs" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" /><slot name="append" />',
-  }
-
   const baseStubs = {
     transition: false,
     VerifyPayment: true,
-    'q-page': SlotStub,
-    'q-toolbar': SlotStub,
+    'q-page': PassthroughStub,
+    'q-toolbar': PassthroughStub,
     'q-btn': QBtnStub,
-    'q-toolbar-title': SlotStub,
-    'q-card': SlotStub,
-    'q-card-section': SlotStub,
+    'q-toolbar-title': PassthroughStub,
+    'q-card': PassthroughStub,
+    'q-card-section': PassthroughStub,
     'q-input': QInputStub,
-    'q-slide-transition': SlotStub,
-    'q-spinner-dots': SlotStub,
-    'q-spinner': SlotStub,
-    'q-dialog': SlotStub,
-    ModalCard: SlotStub,
+    'q-slide-transition': PassthroughStub,
+    'q-spinner-dots': PassthroughStub,
+    'q-spinner': PassthroughStub,
+    'q-dialog': PassthroughStub,
+    ModalCard: PassthroughStub,
     FederationAvatar: true,
-    'q-list': SlotStub,
+    'q-list': PassthroughStub,
     'q-item': QItemStub,
-    'q-item-section': SlotStub,
-    'q-item-label': SlotStub,
-    'q-icon': SlotStub,
-    'q-avatar': SlotStub,
+    'q-item-section': PassthroughStub,
+    'q-item-label': PassthroughStub,
+    'q-icon': PassthroughStub,
+    'q-avatar': PassthroughStub,
   }
 
   function createWrapper(stubs: Record<string, unknown> = {}) {

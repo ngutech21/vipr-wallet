@@ -2,6 +2,7 @@ import { reactive } from 'vue'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import LnurlPage from 'src/pages/lnurl.vue'
+import { PassthroughStub, QBtnStub } from '../mocks/quasar-stubs'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockUseRoute = vi.hoisted(() => vi.fn())
@@ -15,16 +16,6 @@ const mockSetValue = vi.hoisted(() =>
     amountRef.value = nextValue
   }),
 )
-
-const qBtnStub = {
-  props: {
-    disable: { type: Boolean, required: false, default: false },
-    loading: { type: Boolean, required: false, default: false },
-  },
-  emits: ['click'],
-  template:
-    '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
-}
 
 vi.mock('vue-router', () => ({
   useRoute: (...args: unknown[]) => mockUseRoute(...args),
@@ -74,13 +65,9 @@ describe('LnurlPage', () => {
           transition: false,
           AmountDisplay: true,
           NumericKeypad: true,
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-btn': qBtnStub,
-          'q-icon': {
-            template: '<span><slot /></span>',
-          },
+          'q-page': PassthroughStub,
+          'q-btn': QBtnStub,
+          'q-icon': PassthroughStub,
           'q-spinner-dots': true,
         },
       },

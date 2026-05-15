@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import ScanPage from 'src/pages/scan.vue'
 import { buildEcashQrFrames } from 'src/utils/ecashQrFrames'
+import { QBtnStub, QPageStub } from '../mocks/quasar-stubs'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockUseRoute = vi.hoisted(() => vi.fn())
@@ -43,10 +44,6 @@ vi.mock('vue-qrcode-reader', () => ({
   }),
 }))
 
-const QPageStub = {
-  template: '<main><slot /></main>',
-}
-
 const QDialogStub = {
   props: {
     modelValue: { type: Boolean, default: false },
@@ -58,18 +55,6 @@ const QDialogStub = {
       <button data-testid="scan-dialog-hide-btn" @click="$emit('hide')" />
     </section>
   `,
-}
-
-const QBtnStub = {
-  props: {
-    label: { type: String, required: false, default: '' },
-    icon: { type: String, required: false, default: '' },
-    disable: { type: Boolean, required: false, default: false },
-    loading: { type: Boolean, required: false, default: false },
-  },
-  emits: ['click'],
-  template:
-    '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')">{{ label }}{{ icon }}</button>',
 }
 
 const QToggleStub = {

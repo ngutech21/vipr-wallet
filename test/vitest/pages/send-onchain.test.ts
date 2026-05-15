@@ -3,6 +3,7 @@ import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import { reactive } from 'vue'
 import SendOnchainPage from 'src/pages/send-onchain.vue'
 import { MIN_ONCHAIN_SEND_SATS } from 'src/utils/onchainPolicy'
+import { PassthroughStub, QBtnStub, QInputStub } from '../mocks/quasar-stubs'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockUseRoute = vi.hoisted(() => vi.fn())
@@ -13,33 +14,6 @@ const mockNotify = vi.hoisted(() => vi.fn())
 const walletStoreState = vi.hoisted(() => ({
   balance: 500_000,
 }))
-
-const qBtnStub = {
-  props: {
-    disable: { type: Boolean, default: false },
-    loading: { type: Boolean, default: false },
-    label: { type: String, required: false, default: undefined },
-  },
-  emits: ['click'],
-  template:
-    '<button v-bind="$attrs" type="button" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot>{{ label }}</slot></button>',
-}
-
-const qInputStub = {
-  props: {
-    modelValue: {
-      type: [String, Number],
-      default: '',
-    },
-    errorMessage: {
-      type: String,
-      default: '',
-    },
-  },
-  emits: ['update:modelValue'],
-  template:
-    '<div><textarea v-bind="$attrs" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)"></textarea><slot name="append" /><div v-if="errorMessage">{{ errorMessage }}</div></div>',
-}
 
 vi.mock('vue-router', () => ({
   useRoute: (...args: unknown[]) => mockUseRoute(...args),
@@ -87,36 +61,20 @@ describe('SendOnchainPage', () => {
       global: {
         stubs: {
           transition: false,
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-toolbar': {
-            template: '<div><slot /></div>',
-          },
-          'q-toolbar-title': {
-            template: '<div><slot /></div>',
-          },
-          'q-card': {
-            template: '<div><slot /></div>',
-          },
-          'q-card-section': {
-            template: '<div><slot /></div>',
-          },
+          'q-page': PassthroughStub,
+          'q-toolbar': PassthroughStub,
+          'q-toolbar-title': PassthroughStub,
+          'q-card': PassthroughStub,
+          'q-card-section': PassthroughStub,
           'q-spinner-dots': true,
           'q-spinner': true,
-          'q-dialog': {
-            template: '<div><slot /></div>',
-          },
-          ModalCard: {
-            template: '<div><slot /></div>',
-          },
+          'q-dialog': PassthroughStub,
+          ModalCard: PassthroughStub,
           FederationAvatar: true,
           'q-img': true,
-          'q-icon': {
-            template: '<span><slot /></span>',
-          },
-          'q-btn': qBtnStub,
-          'q-input': qInputStub,
+          'q-icon': PassthroughStub,
+          'q-btn': QBtnStub,
+          'q-input': QInputStub,
         },
       },
     })
@@ -150,10 +108,8 @@ describe('SendOnchainPage', () => {
 
     expect(wrapper.get('[data-testid="send-onchain-amount-input"]').text()).toContain('21,000')
     expect(
-      (
-        wrapper.get('[data-testid="send-onchain-target-input"] textarea')
-          .element as HTMLTextAreaElement
-      ).value,
+      (wrapper.get('[data-testid="send-onchain-target-input"]').element as HTMLTextAreaElement)
+        .value,
     ).toBe('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080')
     expect(wrapper.text()).toContain('Label: Vipr')
     wrapper.unmount()
@@ -172,7 +128,7 @@ describe('SendOnchainPage', () => {
     await flushPromises()
 
     await wrapper
-      .get('[data-testid="send-onchain-target-input"] textarea')
+      .get('[data-testid="send-onchain-target-input"]')
       .setValue('bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021')
     await flushPromises()
 
@@ -216,7 +172,7 @@ describe('SendOnchainPage', () => {
     await flushPromises()
 
     await wrapper
-      .get('[data-testid="send-onchain-target-input"] textarea')
+      .get('[data-testid="send-onchain-target-input"]')
       .setValue('3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy')
     await enterAmount('21000')
     await wrapper.get('[data-testid="send-onchain-open-scanner-btn"]').trigger('click')

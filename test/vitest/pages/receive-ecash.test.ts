@@ -7,6 +7,7 @@ import ReceiveEcashPage from 'src/pages/receive-ecash.vue'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore, type EcashInspection } from 'src/stores/wallet'
 import type { Federation } from 'src/types/federation'
+import { PassthroughStub, QBtnStub, QInputStub } from '../mocks/quasar-stubs'
 
 type RouteState = {
   query: Record<string, string>
@@ -40,57 +41,10 @@ vi.mock('quasar', async (importOriginal) => {
   })
 })
 
-const passthrough = defineComponent({
-  template: '<div><slot /></div>',
-})
-
-const qBtnStub = defineComponent({
-  name: 'QBtn',
-  props: {
-    label: {
-      type: String,
-      default: '',
-    },
-    disable: {
-      type: Boolean,
-      default: false,
-    },
-    loading: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['click'],
-  template:
-    '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')">{{ label }}<slot /></button>',
-})
-
 const modalCardStub = defineComponent({
   name: 'ModalCard',
   emits: ['close'],
   template: '<div data-testid="modal-card-stub"><slot /><slot name="footer" /></div>',
-})
-
-const qInputStub = defineComponent({
-  name: 'QInput',
-  inheritAttrs: false,
-  props: {
-    modelValue: {
-      type: [String, Number],
-      default: '',
-    },
-  },
-  emits: ['update:modelValue'],
-  template: `
-    <label>
-      <textarea
-        v-bind="$attrs"
-        :value="modelValue"
-        @input="$emit('update:modelValue', $event.target.value)"
-      />
-      <slot name="append" />
-    </label>
-  `,
 })
 
 const joinFederationPreviewStepStub = defineComponent({
@@ -145,17 +99,17 @@ describe('ReceiveEcashPage', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'q-page': passthrough,
-          'q-toolbar': passthrough,
-          'q-toolbar-title': passthrough,
-          'q-card': passthrough,
-          'q-card-section': passthrough,
-          'q-dialog': passthrough,
-          'q-icon': passthrough,
-          'q-btn': qBtnStub,
-          'q-input': qInputStub,
-          'q-spinner': passthrough,
-          'q-spinner-dots': passthrough,
+          'q-page': PassthroughStub,
+          'q-toolbar': PassthroughStub,
+          'q-toolbar-title': PassthroughStub,
+          'q-card': PassthroughStub,
+          'q-card-section': PassthroughStub,
+          'q-dialog': PassthroughStub,
+          'q-icon': PassthroughStub,
+          'q-btn': QBtnStub,
+          'q-input': QInputStub,
+          'q-spinner': PassthroughStub,
+          'q-spinner-dots': PassthroughStub,
           FederationAvatar: federationAvatarStub,
           ModalCard: modalCardStub,
           JoinFederationPreviewStep: joinFederationPreviewStepStub,

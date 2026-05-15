@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import ReceivePage from 'src/pages/receive.vue'
+import { QBtnStub, QInputStub, QPageStub } from '../mocks/quasar-stubs'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockCreateInvoice = vi.hoisted(() => vi.fn())
@@ -81,46 +82,6 @@ vi.mock('quasar', async (importOriginal) => {
     },
   })
 })
-
-const QPageStub = {
-  template: '<main><slot /></main>',
-}
-
-const QBtnStub = {
-  props: {
-    label: { type: String, required: false, default: '' },
-    icon: { type: String, required: false, default: '' },
-    disable: { type: Boolean, required: false, default: false },
-    loading: { type: Boolean, required: false, default: false },
-  },
-  emits: ['click'],
-  template: `
-    <button
-      v-bind="$attrs"
-      :disabled="disable || loading"
-      :data-disabled="disable ? 'true' : 'false'"
-      :data-busy="loading ? 'true' : 'false'"
-      @click="!disable && !loading && $emit('click')"
-    >
-      <slot />
-      {{ label }}{{ icon }}
-    </button>
-  `,
-}
-
-const QInputStub = {
-  props: {
-    modelValue: { type: String, required: false, default: '' },
-  },
-  emits: ['update:modelValue'],
-  template: `
-    <input
-      v-bind="$attrs"
-      :value="modelValue"
-      @input="$emit('update:modelValue', $event.target.value)"
-    />
-  `,
-}
 
 const CopyableQrCardStub = {
   props: {
