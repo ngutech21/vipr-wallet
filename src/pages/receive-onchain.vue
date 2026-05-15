@@ -117,6 +117,12 @@ import { useFederationStore } from 'src/stores/federation'
 import { logger } from 'src/services/logger'
 import { useWalletStore } from 'src/stores/wallet'
 import { getErrorMessage } from 'src/utils/error'
+import {
+  getCompletedDepositAmount,
+  getDepositConfirmationInfo,
+  getDepositStatusText,
+  normalizeDepositState,
+} from 'src/utils/onchainDepositState'
 
 const bitcoinAddress = ref('')
 const operationId = ref('')
@@ -168,49 +174,8 @@ const emptyStateCopy = computed(() => {
   return ''
 })
 
-const depositStatusText = computed(() => {
-  if (depositState.value === null || depositState.value === 'WaitingForTransaction') {
-    return 'Waiting for Bitcoin'
-  }
-
-  if (typeof depositState.value === 'object' && 'WaitingForConfirmation' in depositState.value) {
-    return 'Transaction detected'
-  }
-
-  if (typeof depositState.value === 'object' && 'Confirmed' in depositState.value) {
-    return 'Bitcoin received'
-  }
-
-  if (typeof depositState.value === 'object' && 'Claimed' in depositState.value) {
-    return 'Bitcoin received'
-  }
-
-  if (typeof depositState.value === 'object' && 'Failed' in depositState.value) {
-    return 'Deposit failed'
-  }
-
-  return 'Processing deposit...'
-})
-
-const confirmationInfo = computed(() => {
-  if (
-    depositState.value != null &&
-    typeof depositState.value === 'object' &&
-    'WaitingForConfirmation' in depositState.value
-  ) {
-    return `Received ${depositState.value.WaitingForConfirmation.btc_deposited} sats - confirming...`
-  }
-
-  if (
-    depositState.value != null &&
-    typeof depositState.value === 'object' &&
-    'Failed' in depositState.value
-  ) {
-    return depositState.value.Failed
-  }
-
-  return ''
-})
+const depositStatusText = computed(() => getDepositStatusText(depositState.value))
+const confirmationInfo = computed(() => getDepositConfirmationInfo(depositState.value))
 
 onUnmounted(() => {
   addressRequestId.value += 1
@@ -269,56 +234,31 @@ async function completeDeposit(amountSats: number) {
   })
 }
 
-function normalizeDepositState(outcome: unknown): WalletDepositState | null {
-  if (outcome === 'WaitingForTransaction') {
-    return outcome
-  }
-
-  if (typeof outcome !== 'object' || outcome == null) {
-    return null
-  }
-
-  if (
-    'WaitingForConfirmation' in outcome ||
-    'Confirmed' in outcome ||
-    'Claimed' in outcome ||
-    'Failed' in outcome
-  ) {
-    return outcome as WalletDepositState
-  }
-
-  return null
-}
-
 function handleDepositState(state: WalletDepositState, activeOperationId: string) {
+  const normalizedState = normalizeDepositState(state)
+
   if (
     activeOperationId !== operationId.value ||
     hasCompletedDeposit.value ||
-    normalizeDepositState(state) == null
+    normalizedState == null
   ) {
     return
   }
 
-  depositState.value = state
-  logger.logTransaction('Deposit state update', { state })
+  depositState.value = normalizedState
+  logger.logTransaction('Deposit state update', { state: normalizedState })
 
-  if (typeof state === 'object' && 'Confirmed' in state) {
-    completeDeposit(state.Confirmed.btc_deposited).catch((error: unknown) => {
-      logger.error('Failed to handle confirmed onchain deposit', error)
+  const completedAmount = getCompletedDepositAmount(normalizedState)
+  if (completedAmount != null) {
+    completeDeposit(completedAmount).catch((error: unknown) => {
+      logger.error('Failed to handle completed onchain deposit', error)
     })
     return
   }
 
-  if (typeof state === 'object' && 'Claimed' in state) {
-    completeDeposit(state.Claimed.btc_deposited).catch((error: unknown) => {
-      logger.error('Failed to handle claimed onchain deposit', error)
-    })
-    return
-  }
-
-  if (typeof state === 'object' && 'Failed' in state) {
+  if (typeof normalizedState === 'object' && 'Failed' in normalizedState) {
     cleanupDepositWait()
-    notify.error(`Deposit monitoring failed: ${state.Failed}`)
+    notify.error(`Deposit monitoring failed: ${normalizedState.Failed}`)
   }
 }
 
