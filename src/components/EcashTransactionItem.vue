@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useLightningStore } from 'src/stores/lightning'
 import type { EcashTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
@@ -63,16 +63,20 @@ const transactionDirection = computed<'send' | 'receive'>(() => {
   return props.transaction.type === 'spend_oob' ? 'send' : 'receive'
 })
 
-onMounted(async () => {
-  try {
-    const sats = Math.floor(props.transaction.amountMsats / 1000)
-    const fiatValue = await lightningStore.satsToFiat(sats)
-    amountInFiat.value = fiatValue.toFixed(2)
-  } catch (error) {
-    logger.error('Failed to convert ecash amount to fiat', error)
-    amountInFiat.value = '0.00'
-  }
-})
+watch(
+  () => props.transaction.amountMsats,
+  async (amountMsats) => {
+    try {
+      const sats = Math.floor(amountMsats / 1000)
+      const fiatValue = await lightningStore.satsToFiat(sats)
+      amountInFiat.value = fiatValue.toFixed(2)
+    } catch (error) {
+      logger.error('Failed to convert ecash amount to fiat', error)
+      amountInFiat.value = '0.00'
+    }
+  },
+  { immediate: true },
+)
 
 function getTransactionLabel(): string {
   switch (props.transaction.type) {
