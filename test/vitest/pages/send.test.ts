@@ -18,7 +18,7 @@ const mockDecodedInvoiceRef = vi.hoisted(() => ({
   __v_isRef: true,
 }))
 const mockAmountRequiredRef = vi.hoisted(() => ({ value: false, __v_isRef: true }))
-const mockAmountRef = vi.hoisted(() => ({ value: 0, __v_isRef: true }))
+const mockLnAddressRef = vi.hoisted(() => ({ value: '', __v_isRef: true }))
 const mockLnurlPayLimitsRef = vi.hoisted(() => ({
   value: null as { minSendableMsats: number; maxSendableMsats: number } | null,
   __v_isRef: true,
@@ -49,7 +49,7 @@ vi.mock('src/composables/useInvoiceDecoding', () => ({
   useInvoiceDecoding: () => ({
     isProcessing: ref(false),
     amountRequired: mockAmountRequiredRef,
-    lnAddress: ref(''),
+    lnAddress: mockLnAddressRef,
     lnurlPayLimits: mockLnurlPayLimitsRef,
     decodedInvoice: mockDecodedInvoiceRef,
     decodeInvoice: mockDecodeInvoiceFromComposable,
@@ -67,13 +67,6 @@ vi.mock('src/composables/useLightningPayment', () => ({
 vi.mock('src/composables/useAppNotify', () => ({
   useAppNotify: () => ({
     error: mockNotifyError,
-  }),
-}))
-
-vi.mock('src/composables/useNumericInput', () => ({
-  useNumericInput: () => ({
-    value: mockAmountRef,
-    keypadButtons: [],
   }),
 }))
 
@@ -113,44 +106,68 @@ describe('SendPage query invoice handling', () => {
     template: '<div v-bind="$attrs"><slot /></div>',
   }
 
+  const QBtnStub = {
+    props: {
+      disable: { type: Boolean, default: false },
+      icon: { type: String, required: false, default: undefined },
+      label: { type: String, required: false, default: undefined },
+      loading: { type: Boolean, default: false },
+    },
+    emits: ['click'],
+    template:
+      '<button v-bind="$attrs" type="button" :disabled="disable || loading" :icon="icon" :label="label" @click="$emit(\'click\')"><slot>{{ label }}</slot></button>',
+  }
+
   const QInputStub = {
     props: {
       modelValue: { type: [String, Number], required: false, default: '' },
     },
     emits: ['update:modelValue'],
     template:
-      '<input v-bind="$attrs" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+      '<input v-bind="$attrs" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" /><slot name="append" />',
   }
 
-  function createWrapper() {
+  const baseStubs = {
+    transition: false,
+    VerifyPayment: true,
+    'q-page': SlotStub,
+    'q-toolbar': SlotStub,
+    'q-btn': QBtnStub,
+    'q-toolbar-title': SlotStub,
+    'q-card': SlotStub,
+    'q-card-section': SlotStub,
+    'q-input': QInputStub,
+    'q-slide-transition': SlotStub,
+    'q-spinner-dots': SlotStub,
+    'q-spinner': SlotStub,
+    'q-dialog': SlotStub,
+    ModalCard: SlotStub,
+    FederationAvatar: true,
+    'q-list': SlotStub,
+    'q-item': QItemStub,
+    'q-item-section': SlotStub,
+    'q-item-label': SlotStub,
+    'q-icon': SlotStub,
+    'q-avatar': SlotStub,
+  }
+
+  function createWrapper(stubs: Record<string, unknown> = {}) {
     return mount(SendPage, {
       global: {
         stubs: {
-          transition: false,
-          VerifyPayment: true,
-          'q-page': SlotStub,
-          'q-toolbar': SlotStub,
-          'q-btn': SlotStub,
-          'q-toolbar-title': SlotStub,
-          'q-card': SlotStub,
-          'q-card-section': SlotStub,
-          'q-input': QInputStub,
-          NumericKeypad: true,
-          'q-slide-transition': SlotStub,
-          'q-spinner-dots': SlotStub,
-          'q-spinner': SlotStub,
-          'q-dialog': SlotStub,
-          ModalCard: SlotStub,
-          FederationAvatar: true,
-          'q-list': SlotStub,
-          'q-item': QItemStub,
-          'q-item-section': SlotStub,
-          'q-item-label': SlotStub,
-          'q-icon': SlotStub,
-          'q-avatar': SlotStub,
+          ...baseStubs,
+          ...stubs,
         },
       },
     })
+  }
+
+  async function enterAmount(amount: string) {
+    await amount.split('').reduce(async (previousDigit, digit) => {
+      await previousDigit
+      await wrapper.get(`[data-testid="receive-keypad-btn-${digit}"]`).trigger('click')
+    }, Promise.resolve())
+    await flushPromises()
   }
 
   beforeEach(() => {
@@ -169,8 +186,8 @@ describe('SendPage query invoice handling', () => {
     mockPayInvoiceFromComposable.mockResolvedValue({ type: 'success', amountSats: 1, fee: 0 })
     mockDecodedInvoiceRef.value = null
     mockAmountRequiredRef.value = false
+    mockLnAddressRef.value = ''
     mockLnurlPayLimitsRef.value = null
-    mockAmountRef.value = 0
     walletStoreState.balance = 500_000
     mockNostrStore.contacts = []
     mockNostrStore.getSuggestedContacts.mockReturnValue([])
@@ -269,10 +286,10 @@ describe('SendPage query invoice handling', () => {
 
   it('uses the keypad amount when creating an invoice for lightning addresses', async () => {
     mockAmountRequiredRef.value = true
-    mockAmountRef.value = 42
 
     wrapper = createWrapper()
     await flushPromises()
+    await enterAmount('42')
 
     expect(wrapper.text()).toContain('Review the payment details before sending.')
     expect(wrapper.get('[data-testid="send-continue-btn"]').attributes('label')).toBe(
@@ -301,8 +318,7 @@ describe('SendPage query invoice handling', () => {
     wrapper = createWrapper()
     await flushPromises()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).goBack()
+    await wrapper.get('[data-testid="send-back-btn"]').trigger('click')
     await flushPromises()
 
     expect(mockDecodedInvoiceRef.value).toBe(null)
@@ -312,16 +328,15 @@ describe('SendPage query invoice handling', () => {
 
   it('passes the send draft to the scanner return context', async () => {
     mockAmountRequiredRef.value = true
-    mockAmountRef.value = 42
+    mockLnAddressRef.value = 'alice@example.com'
 
     wrapper = createWrapper()
     await flushPromises()
 
     await wrapper.get('[data-testid="send-invoice-input"]').setValue('alice@example.com')
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(wrapper.vm as any).invoiceMemo = 'Dinner'
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).openScanner()
+    await enterAmount('42')
+    await wrapper.get('[data-testid="send-memo-input"]').setValue('Dinner')
+    await wrapper.get('[data-testid="send-open-scanner-btn"]').trigger('click')
 
     expect(mockRouterPush).toHaveBeenCalledWith({
       name: '/scan',
@@ -339,14 +354,17 @@ describe('SendPage query invoice handling', () => {
     routeState.query.invoice = 'alice@example.com'
     routeState.query.amount = '42'
     routeState.query.memo = 'Dinner'
+    mockAmountRequiredRef.value = true
+    mockLnAddressRef.value = 'alice@example.com'
 
     wrapper = createWrapper()
     await flushPromises()
 
     expect(mockDecodeInvoiceFromComposable).toHaveBeenCalledWith('alice@example.com')
-    expect(mockAmountRef.value).toBe(42)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((wrapper.vm as any).invoiceMemo).toBe('Dinner')
+    expect(wrapper.get('[data-testid="send-amount-input"]').text()).toContain('42')
+    expect((wrapper.get('[data-testid="send-memo-input"]').element as HTMLInputElement).value).toBe(
+      'Dinner',
+    )
     wrapper.unmount()
   })
 
@@ -358,20 +376,19 @@ describe('SendPage query invoice handling', () => {
     await flushPromises()
 
     expect(mockDecodeInvoiceFromComposable).not.toHaveBeenCalled()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((wrapper.vm as any).lightningInvoice).toBe('lnbc1pastedinvoice')
+    expect(
+      (wrapper.get('[data-testid="send-invoice-input"]').element as HTMLInputElement).value,
+    ).toBe('lnbc1pastedinvoice')
     wrapper.unmount()
   })
 
   it('blocks lightning address invoice creation above the active federation balance', async () => {
     mockAmountRequiredRef.value = true
-    mockAmountRef.value = 501_000
     walletStoreState.balance = 500_000
 
     wrapper = createWrapper()
     await flushPromises()
-
-    await wrapper.get('[data-testid="send-continue-btn"]').trigger('click')
+    await enterAmount('501000')
     await flushPromises()
 
     expect(wrapper.text()).toContain('Amount must be 500,000 sats or less')
@@ -395,7 +412,6 @@ describe('SendPage query invoice handling', () => {
 
   it('blocks LNURL invoice creation below the advertised minimum amount', async () => {
     mockAmountRequiredRef.value = true
-    mockAmountRef.value = 9
     mockLnurlPayLimitsRef.value = {
       minSendableMsats: 10_000,
       maxSendableMsats: 39_000,
@@ -403,8 +419,7 @@ describe('SendPage query invoice handling', () => {
 
     wrapper = createWrapper()
     await flushPromises()
-
-    await wrapper.get('[data-testid="send-continue-btn"]').trigger('click')
+    await enterAmount('9')
     await flushPromises()
 
     expect(wrapper.text()).toContain('Amount must be at least 10 sats')
@@ -414,7 +429,6 @@ describe('SendPage query invoice handling', () => {
 
   it('blocks LNURL invoice creation above the advertised maximum amount', async () => {
     mockAmountRequiredRef.value = true
-    mockAmountRef.value = 40
     mockLnurlPayLimitsRef.value = {
       minSendableMsats: 10_000,
       maxSendableMsats: 39_000,
@@ -422,8 +436,7 @@ describe('SendPage query invoice handling', () => {
 
     wrapper = createWrapper()
     await flushPromises()
-
-    await wrapper.get('[data-testid="send-continue-btn"]').trigger('click')
+    await enterAmount('40')
     await flushPromises()
 
     expect(wrapper.text()).toContain('Amount must be 39 sats or less')
@@ -444,30 +457,10 @@ describe('SendPage query invoice handling', () => {
     wrapper = mount(SendPage, {
       global: {
         stubs: {
-          transition: false,
+          ...baseStubs,
           VerifyPayment: {
             template: '<button data-testid="verify-pay" @click="$emit(\'pay\')">pay</button>',
           },
-          'q-page': SlotStub,
-          'q-toolbar': SlotStub,
-          'q-btn': SlotStub,
-          'q-toolbar-title': SlotStub,
-          'q-card': SlotStub,
-          'q-card-section': SlotStub,
-          'q-input': QInputStub,
-          NumericKeypad: true,
-          'q-slide-transition': SlotStub,
-          'q-spinner-dots': SlotStub,
-          'q-spinner': SlotStub,
-          'q-dialog': SlotStub,
-          ModalCard: SlotStub,
-          FederationAvatar: true,
-          'q-list': SlotStub,
-          'q-item': QItemStub,
-          'q-item-section': SlotStub,
-          'q-item-label': SlotStub,
-          'q-icon': SlotStub,
-          'q-avatar': SlotStub,
         },
       },
     })
@@ -500,32 +493,12 @@ describe('SendPage query invoice handling', () => {
     wrapper = mount(SendPage, {
       global: {
         stubs: {
-          transition: false,
+          ...baseStubs,
           VerifyPayment: {
             props: ['balanceErrorMessage'],
             template:
               '<div><div data-testid="balance-error">{{ balanceErrorMessage }}</div><button data-testid="verify-pay" @click="$emit(\'pay\')">pay</button></div>',
           },
-          'q-page': SlotStub,
-          'q-toolbar': SlotStub,
-          'q-btn': SlotStub,
-          'q-toolbar-title': SlotStub,
-          'q-card': SlotStub,
-          'q-card-section': SlotStub,
-          'q-input': QInputStub,
-          NumericKeypad: true,
-          'q-slide-transition': SlotStub,
-          'q-spinner-dots': SlotStub,
-          'q-spinner': SlotStub,
-          'q-dialog': SlotStub,
-          ModalCard: SlotStub,
-          FederationAvatar: true,
-          'q-list': SlotStub,
-          'q-item': QItemStub,
-          'q-item-section': SlotStub,
-          'q-item-label': SlotStub,
-          'q-icon': SlotStub,
-          'q-avatar': SlotStub,
         },
       },
     })
