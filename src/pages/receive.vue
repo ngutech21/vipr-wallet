@@ -106,8 +106,14 @@ meta:
             icon="account_balance_wallet"
             class="vipr-btn vipr-btn--primary vipr-btn--lg"
             @click="payWithBitcoinConnect"
+            :loading="isPayingWithBitcoinConnect"
+            :disable="isPayingWithBitcoinConnect"
             data-testid="receive-pay-with-wallet-btn"
-          />
+          >
+            <template #loading>
+              <q-spinner-dots color="white" />
+            </template>
+          </q-btn>
         </div>
       </div>
     </q-page>
@@ -119,13 +125,13 @@ defineOptions({
   name: 'ReceivePage',
 })
 
-import { ref, onMounted, onUnmounted, computed, shallowRef } from 'vue'
+import { ref, onUnmounted, computed, shallowRef } from 'vue'
 import { Loading } from 'quasar'
 import { useRouter } from 'vue-router'
-import { init, requestProvider } from '@getalby/bitcoin-connect'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import { logger } from 'src/services/logger'
+import { initBitcoinConnect } from 'src/services/bitcoinConnect'
 import AmountEntryGroup from 'src/components/AmountEntryGroup.vue'
 import CopyableQrCard from 'src/components/CopyableQrCard.vue'
 import FederationSelector from 'src/components/FederationSelector.vue'
@@ -178,6 +184,7 @@ const formattedAmount = computed(() => amount.value.toLocaleString())
 const invoiceMemo = ref('')
 const selectedFederation = computed(() => federationStore.selectedFederation)
 const isCreatingInvoice = computed(() => receiveState.value.type === 'creating')
+const isPayingWithBitcoinConnect = ref(false)
 const canCreateInvoice = computed(() => {
   return amount.value > 0 && !isCreatingInvoice.value && selectedFederation.value != null
 })
@@ -210,19 +217,23 @@ const formattedCountdown = computed(() => {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 })
 
-onMounted(() => {
-  init({
-    appName: 'Vipr Wallet',
-  })
-})
-
 onUnmounted(() => {
   cleanupInvoiceWait()
 })
 
+function setBitcoinConnectPaymentLoading(value: boolean) {
+  isPayingWithBitcoinConnect.value = value
+}
+
 async function payWithBitcoinConnect() {
+  if (isPayingWithBitcoinConnect.value) {
+    return
+  }
+
+  setBitcoinConnectPaymentLoading(true)
   Loading.show({ message: 'Paying with connected Bitcoin wallet' })
   try {
+    const { requestProvider } = await initBitcoinConnect()
     const provider = await requestProvider()
 
     if (provider == null) {
@@ -235,6 +246,7 @@ async function payWithBitcoinConnect() {
     logger.error('Failed to pay with Bitcoin Connect', error)
     notify.error(`Failed to pay with connected wallet: ${getErrorMessage(error)}`)
   } finally {
+    setBitcoinConnectPaymentLoading(false)
     Loading.hide()
   }
 }

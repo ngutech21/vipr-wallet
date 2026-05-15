@@ -40,6 +40,8 @@
           unelevated
           class="settings-action-btn"
           @click="configureBitcoinConnect"
+          :loading="isConfiguring"
+          :disable="isConfiguring"
           :flat="!!connectedProvider"
           :outline="!!connectedProvider"
           data-testid="settings-bitcoin-connect-btn"
@@ -54,36 +56,87 @@ defineOptions({
   name: 'LightningConnectionSettings',
 })
 
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import SettingsSection from 'src/components/settings/SettingsSection.vue'
-import {
-  getConnectorConfig,
-  launchModal,
-  onConnected,
-  onDisconnected,
-} from '@getalby/bitcoin-connect'
+import { initBitcoinConnect } from 'src/services/bitcoinConnect'
+import { logger } from 'src/services/logger'
+import { getErrorMessage } from 'src/utils/error'
 
 const connectedProvider = ref('')
+const isConfiguring = ref(false)
 const hasConnectedProvider = computed(() => connectedProvider.value !== '')
 const connectionStatusLabel = computed(() =>
   hasConnectedProvider.value ? 'Connected' : 'Not connected',
 )
 const connectionStatusTone = computed(() => (hasConnectedProvider.value ? 'positive' : 'neutral'))
+const unsubscribeListeners: Array<() => void> = []
+let isUnmounted = false
 
-function updateConnectedProvider() {
+function updateConnectedProvider(
+  getConnectorConfig: () => { connectorName?: string | undefined } | undefined,
+) {
   const config = getConnectorConfig()
   connectedProvider.value = config?.connectorName ?? ''
 }
 
-onDisconnected(() => {
-  updateConnectedProvider()
+onMounted(() => {
+  isUnmounted = false
+  initBitcoinConnect()
+    .then(({ getConnectorConfig, onConnected, onDisconnected }) => {
+      if (isUnmounted) {
+        return
+      }
+
+      updateConnectedProvider(getConnectorConfig)
+      const unsubscribeDisconnected = onDisconnected(() => {
+        updateConnectedProvider(getConnectorConfig)
+      })
+      const unsubscribeConnected = onConnected(() => {
+        updateConnectedProvider(getConnectorConfig)
+      })
+
+      if (isUnmounted) {
+        unsubscribeDisconnected()
+        unsubscribeConnected()
+        return
+      }
+
+      unsubscribeListeners.push(unsubscribeDisconnected, unsubscribeConnected)
+    })
+    .catch((error: unknown) => {
+      logger.warn('Failed to initialize Bitcoin Connect settings', {
+        error: getErrorMessage(error),
+      })
+    })
 })
 
-onConnected(() => {
-  updateConnectedProvider()
+onUnmounted(() => {
+  isUnmounted = true
+  for (const unsubscribe of unsubscribeListeners) {
+    unsubscribe()
+  }
+  unsubscribeListeners.length = 0
 })
 
-function configureBitcoinConnect() {
-  launchModal()
+function setConfiguring(value: boolean) {
+  isConfiguring.value = value
+}
+
+async function configureBitcoinConnect() {
+  if (isConfiguring.value) {
+    return
+  }
+
+  setConfiguring(true)
+  try {
+    const { launchModal } = await initBitcoinConnect()
+    launchModal()
+  } catch (error) {
+    logger.warn('Failed to launch Bitcoin Connect settings modal', {
+      error: getErrorMessage(error),
+    })
+  } finally {
+    setConfiguring(false)
+  }
 }
 </script>
