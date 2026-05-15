@@ -92,6 +92,21 @@ describe('AddFederation.vue', () => {
     await wrapper?.get('[data-testid="invite-code-input"]').setValue(value)
   }
 
+  function createDeferred<T>() {
+    let resolve!: (value: T) => void
+    let reject!: (error: unknown) => void
+    const promise = new Promise<T>((promiseResolve, promiseReject) => {
+      resolve = promiseResolve
+      reject = promiseReject
+    })
+
+    return {
+      promise,
+      resolve,
+      reject,
+    }
+  }
+
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.clear()
@@ -175,6 +190,41 @@ describe('AddFederation.vue', () => {
     expect(wrapper.text()).toContain('Review this federation before you join')
     expect(wrapper.find('[data-testid="modal-back-btn"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="add-federation-submit-btn"]').exists()).toBe(true)
+  })
+
+  it('ignores stale preview results when the invite code changes before the request resolves', async () => {
+    const walletStore = useWalletStore()
+    const previewFederationMock = walletStore.previewFederation as Mock
+    const oldPreview = createDeferred<Federation | null>()
+    const newFederation = {
+      ...federation,
+      inviteCode: 'fed11new',
+      federationId: 'new-fed-id',
+      title: 'New Federation',
+    }
+
+    previewFederationMock.mockImplementation((inviteCode: string) => {
+      return inviteCode === 'fed11old' ? oldPreview.promise : Promise.resolve(newFederation)
+    })
+
+    wrapper = createWrapper()
+    await enterInviteCode('fed11old')
+    await wrapper.get('[data-testid="add-federation-preview-btn"]').trigger('click')
+    await enterInviteCode('fed11new')
+
+    oldPreview.resolve(federation)
+    await flushPromises()
+
+    expect(wrapper.find('[data-testid="join-federation-preview-step"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="join-federation-invite-step"]').exists()).toBe(true)
+
+    await wrapper.get('[data-testid="add-federation-preview-btn"]').trigger('click')
+    await flushPromises()
+
+    expect(previewFederationMock).toHaveBeenNthCalledWith(1, 'fed11old')
+    expect(previewFederationMock).toHaveBeenNthCalledWith(2, 'fed11new')
+    expect(wrapper.find('[data-testid="join-federation-preview-step"]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('New Federation')
   })
 
   it('returns to the invite step when back is pressed from the review step', async () => {
