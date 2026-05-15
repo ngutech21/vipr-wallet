@@ -69,32 +69,6 @@ describe('ReceiveOnchainPage', () => {
     federationStoreState.selectedFederation = { federationId: 'fed-1' }
   })
 
-  it('navigates to the onchain success route when a deposit completes', async () => {
-    const wrapper = mount(ReceiveOnchainPage, {
-      global: {
-        stubs: {
-          transition: false,
-          CopyableQrCard: true,
-          FederationSelector: true,
-          ViprTopbar: true,
-          'q-page': SlotStub,
-          'q-btn': SlotStub,
-          'q-spinner': SlotStub,
-        },
-      },
-    })
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).completeDeposit(21_000)
-    await flushPromises()
-
-    expect(mockUpdateBalance).toHaveBeenCalledTimes(1)
-    expect(mockRouterPush).toHaveBeenCalledWith({
-      name: '/received-onchain',
-      query: { amount: '21000' },
-    })
-  })
-
   it('subscribes to the deposit and navigates when the wallet reports confirmation', async () => {
     mount(ReceiveOnchainPage, {
       global: {

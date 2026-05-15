@@ -77,32 +77,4 @@ describe('TransactionsPage.vue', () => {
 
     expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/' })
   })
-
-  it('uses the same navigation path for the swipe handler', async () => {
-    const wrapper = mount(TransactionsPage, {
-      global: {
-        stubs: {
-          transition: false,
-          TransactionsList: true,
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-btn': {
-            props: {
-              disable: { type: Boolean, required: false, default: false },
-              loading: { type: Boolean, required: false, default: false },
-            },
-            emits: ['click'],
-            template:
-              '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
-          },
-        },
-      },
-    })
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).goBack()
-
-    expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/' })
-  })
 })

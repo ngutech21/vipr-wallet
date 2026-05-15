@@ -199,8 +199,7 @@ describe('DiscoverFederations.vue', () => {
     await flushPromises()
 
     const initialTarget = nostrStore.previewTargetCount
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(wrapper.vm as any).loadMoreFederations()
+    await wrapper.get('[data-testid="discover-federations-load-more-btn"]').trigger('click')
     await flushPromises()
 
     expect(nostrStore.previewTargetCount).toBeGreaterThan(initialTarget)
@@ -213,9 +212,13 @@ describe('DiscoverFederations.vue', () => {
     const previewFederationMock = vi
       .spyOn(walletStore, 'previewFederation')
       .mockResolvedValue(previewFederation)
+    const nostrStore = useNostrStore()
+    nostrStore.discoveryCandidates = [candidate]
+    await flushPromises()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).openFederationPreview(candidate)
+    await wrapper
+      .get(`[data-testid="discover-federation-action-${candidate.federationId}"]`)
+      .trigger('click')
     await flushPromises()
 
     expect(mockLoadingShow).toHaveBeenCalledWith({ message: 'Loading federation preview' })
@@ -235,10 +238,12 @@ describe('DiscoverFederations.vue', () => {
     expect(wrapper.emitted('close')).toEqual([[]])
   })
 
-  it('does not open preview for federations that already exist', async () => {
+  it('disables preview for federations that already exist', async () => {
     wrapper = createWrapper()
     const candidate = createCandidate()
+    const nostrStore = useNostrStore()
     const federationStore = useFederationStore()
+    nostrStore.discoveryCandidates = [candidate]
     federationStore.federations = [
       {
         title: candidate.displayName ?? 'Existing Federation',
@@ -248,19 +253,17 @@ describe('DiscoverFederations.vue', () => {
         metadata: {},
       },
     ]
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(wrapper.vm as any).openFederationPreview(candidate)
     await flushPromises()
 
-    expect(mockNotify).toHaveBeenCalledWith(
-      expect.objectContaining({
-        message: 'Federation already exists',
-        color: 'negative',
-        icon: 'error',
-        position: 'top',
-      }),
+    const action = wrapper.get(
+      `[data-testid="discover-federation-action-${candidate.federationId}"]`,
     )
+    expect(action.attributes('disabled')).toBeDefined()
+
+    await action.trigger('click')
+    await flushPromises()
+
+    expect(mockNotify).not.toHaveBeenCalled()
     expect(wrapper.emitted('close')).toBeFalsy()
     expect(wrapper.emitted('showAdd')).toBeFalsy()
   })
@@ -270,8 +273,8 @@ describe('DiscoverFederations.vue', () => {
     const nostrStore = useNostrStore()
     vi.spyOn(nostrStore, 'discoverFederations').mockRejectedValue(new Error('boom'))
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).discoverFederations()
+    await wrapper.get('[data-testid="discover-federations-toggle-btn"]').trigger('click')
+    await flushPromises()
 
     expect(mockNotify).toHaveBeenCalledWith(
       expect.objectContaining({

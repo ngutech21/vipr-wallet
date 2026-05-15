@@ -64,39 +64,6 @@ describe('TransactionDetailsPage', () => {
     expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/' })
   })
 
-  it('uses the same navigation path for the swipe handler', async () => {
-    const wrapper = mount(TransactionDetailsPage, {
-      global: {
-        stubs: {
-          transition: false,
-          LightningTransactionDetails: true,
-          EcashTransactionDetails: true,
-          WalletTransactionDetails: true,
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-btn': {
-            props: {
-              disable: { type: Boolean, required: false, default: false },
-              loading: { type: Boolean, required: false, default: false },
-            },
-            emits: ['click'],
-            template:
-              '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
-          },
-          'q-spinner': true,
-          'q-icon': true,
-        },
-      },
-    })
-
-    await flushPromises()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).navigateBack()
-
-    expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/' })
-  })
-
   it('navigates back to transaction history when opened from the history page', async () => {
     mockUseRoute.mockReturnValue({
       params: {
