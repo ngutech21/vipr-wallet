@@ -87,6 +87,7 @@ function createMetaModule() {
 
 describe('FederationDetailsPage', () => {
   beforeEach(() => {
+    vi.useRealTimers()
     vi.clearAllMocks()
     routeState.params.id = 'fed-1'
     federationStoreState.selectedFederationId = 'fed-1'
@@ -98,8 +99,11 @@ describe('FederationDetailsPage', () => {
         listGateways,
       },
     }
+    walletStoreState.closeWallet.mockResolvedValue(undefined)
+    walletStoreState.deleteFederationData.mockResolvedValue(undefined)
     walletStoreState.openWallet.mockResolvedValue(undefined)
     selectFederation.mockResolvedValue(undefined)
+    federationStoreState.deleteFederation.mockReturnValue(undefined)
     getSpendableUtxos.mockResolvedValue([])
     getMetaConsensusValue.mockResolvedValue({
       revision: 1,
@@ -244,5 +248,48 @@ describe('FederationDetailsPage', () => {
     expect(wrapper.text()).toContain('Failed to load consensus metadata.')
 
     wrapper.unmount()
+  })
+
+  it('leaves a federation by closing the wallet, deleting local data, and returning to federations', async () => {
+    vi.useFakeTimers()
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.get('[data-testid="federation-details-leave-btn"]').trigger('click')
+    await wrapper.get('[data-testid="federation-details-leave-confirm-btn"]').trigger('click')
+    await flushPromises()
+    await vi.advanceTimersByTimeAsync(100)
+    await flushPromises()
+
+    expect(walletStoreState.closeWallet).toHaveBeenCalledTimes(1)
+    expect(walletStoreState.deleteFederationData).toHaveBeenCalledWith('fed-1')
+    expect(federationStoreState.deleteFederation).toHaveBeenCalledWith('fed-1')
+    expect(walletStoreState.openWallet).toHaveBeenCalledTimes(1)
+    expect(mockRouterPush).toHaveBeenCalledWith({ name: '/federations/' })
+
+    wrapper.unmount()
+    vi.useRealTimers()
+  })
+
+  it('returns to federations without deleting the store entry when local federation data deletion fails', async () => {
+    vi.useFakeTimers()
+    walletStoreState.deleteFederationData.mockRejectedValue(new Error('delete failed'))
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.get('[data-testid="federation-details-leave-btn"]').trigger('click')
+    await wrapper.get('[data-testid="federation-details-leave-confirm-btn"]').trigger('click')
+    await flushPromises()
+    await vi.advanceTimersByTimeAsync(100)
+    await flushPromises()
+
+    expect(walletStoreState.closeWallet).toHaveBeenCalledTimes(1)
+    expect(walletStoreState.deleteFederationData).toHaveBeenCalledWith('fed-1')
+    expect(federationStoreState.deleteFederation).not.toHaveBeenCalled()
+    expect(walletStoreState.openWallet).not.toHaveBeenCalled()
+    expect(mockRouterPush).toHaveBeenCalledWith({ name: '/federations/' })
+
+    wrapper.unmount()
+    vi.useRealTimers()
   })
 })

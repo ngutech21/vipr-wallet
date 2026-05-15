@@ -178,6 +178,18 @@ describe('federation store', () => {
     expect(federationStore.selectedFederationId).toBe(second.federationId)
   })
 
+  it('clears the selection when the last federation is deleted', () => {
+    const federationStore = useFederationStore()
+    const federation = createFederation()
+    federationStore.federations = [federation]
+    federationStore.selectedFederationId = federation.federationId
+
+    federationStore.deleteFederation(federation.federationId)
+
+    expect(federationStore.federations).toEqual([])
+    expect(federationStore.selectedFederationId).toBeNull()
+  })
+
   it('restores previous selected federation when wallet open fails', async () => {
     const federationStore = useFederationStore()
     const first = createFederation({ federationId: 'fed-1' })
