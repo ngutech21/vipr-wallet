@@ -1,4 +1,3 @@
-/* eslint-disable vue/one-component-per-file */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import { Quasar } from 'quasar'
@@ -8,6 +7,7 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import FederationsPage from 'src/pages/federations/index.vue'
 import type { Federation } from 'src/types/federation'
 import type { FederationJoinFlow } from 'src/composables/useFederationJoinFlow'
+import { PassthroughStub, QBtnStub } from '../mocks/quasar-stubs'
 
 const createMockFederation = (overrides: Partial<Federation> = {}): Federation => ({
   title: 'Test Federation',
@@ -84,20 +84,8 @@ describe('FederationsPage.vue', () => {
         stubs: {
           FederationJoinDialogs: FederationJoinDialogsStub,
           FederationList: true,
-          QPage: defineComponent({
-            name: 'QPage',
-            template: '<div><slot /></div>',
-          }),
-          QBtn: defineComponent({
-            name: 'QBtn',
-            props: {
-              disable: { type: Boolean, required: false, default: false },
-              loading: { type: Boolean, required: false, default: false },
-            },
-            emits: ['click'],
-            template:
-              '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
-          }),
+          QPage: PassthroughStub,
+          QBtn: QBtnStub,
         },
       },
     })

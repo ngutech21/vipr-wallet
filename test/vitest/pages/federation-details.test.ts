@@ -4,6 +4,7 @@ import { nextTick } from 'vue'
 import { Quasar } from 'quasar'
 import FederationDetailsPage from 'src/pages/federation/[id].vue'
 import type { Federation } from 'src/types/federation'
+import { PassthroughStub, QBtnStub } from '../mocks/quasar-stubs'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const routeState = vi.hoisted(() => ({
@@ -133,15 +134,15 @@ describe('FederationDetailsPage', () => {
           FederationGuardians: true,
           FederationUtxos: true,
           CopyableQrCard: true,
-          'q-page': { template: '<div><slot /></div>' },
-          'q-card': { template: '<div><slot /></div>' },
-          'q-card-section': { template: '<div><slot /></div>' },
-          'q-card-actions': { template: '<div><slot /></div>' },
-          'q-btn': { template: '<button v-bind="$attrs"><slot /></button>' },
-          'q-avatar': { template: '<div><slot /></div>' },
+          'q-page': PassthroughStub,
+          'q-card': PassthroughStub,
+          'q-card-section': PassthroughStub,
+          'q-card-actions': PassthroughStub,
+          'q-btn': QBtnStub,
+          'q-avatar': PassthroughStub,
           'q-img': true,
-          'q-icon': { template: '<span><slot /></span>' },
-          'q-chip': { template: '<span><slot /></span>' },
+          'q-icon': PassthroughStub,
+          'q-chip': PassthroughStub,
           'q-separator': true,
           'q-dialog': { template: '<div><slot /></div>' },
           'q-list': { template: '<div><slot /></div>' },

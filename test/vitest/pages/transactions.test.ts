@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import TransactionsPage from 'src/pages/transactions.vue'
+import { PassthroughStub, QBtnStub } from '../mocks/quasar-stubs'
 
 const mockRouterReplace = vi.hoisted(() => vi.fn())
 
@@ -29,18 +30,8 @@ describe('TransactionsPage.vue', () => {
             },
             template: '<div data-testid="transactions-list-stub" :data-mode="mode" />',
           }),
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-btn': {
-            props: {
-              disable: { type: Boolean, required: false, default: false },
-              loading: { type: Boolean, required: false, default: false },
-            },
-            emits: ['click'],
-            template:
-              '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
-          },
+          'q-page': PassthroughStub,
+          'q-btn': QBtnStub,
         },
       },
     })
@@ -57,18 +48,8 @@ describe('TransactionsPage.vue', () => {
         stubs: {
           transition: false,
           TransactionsList: true,
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-btn': {
-            props: {
-              disable: { type: Boolean, required: false, default: false },
-              loading: { type: Boolean, required: false, default: false },
-            },
-            emits: ['click'],
-            template:
-              '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
-          },
+          'q-page': PassthroughStub,
+          'q-btn': QBtnStub,
         },
       },
     })

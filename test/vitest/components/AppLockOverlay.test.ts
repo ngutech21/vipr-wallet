@@ -5,13 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 
 import AppLockOverlay from 'src/components/AppLockOverlay.vue'
 import { useAppLockStore } from 'src/stores/app-lock'
-
-const QBtnStub = {
-  props: ['label', 'disable', 'loading'],
-  emits: ['click'],
-  template:
-    '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')">{{ label }}</button>',
-}
+import { QBtnStub } from '../mocks/quasar-stubs'
 
 const QIconStub = {
   template: '<span v-bind="$attrs" />',

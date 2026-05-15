@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
-import { defineComponent, reactive } from 'vue'
+import { reactive } from 'vue'
 import SentOnchainPage from 'src/pages/sent-onchain.vue'
 import type { WalletTransaction } from '@fedimint/core'
+import { PassthroughStub, QBtnStub } from '../mocks/quasar-stubs'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockUseRoute = vi.hoisted(() => vi.fn())
@@ -53,27 +54,12 @@ describe('SentOnchainPage', () => {
     return mount(SentOnchainPage, {
       global: {
         stubs: {
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-card': {
-            template: '<div><slot /></div>',
-          },
-          'q-badge': {
-            template: '<div><slot /></div>',
-          },
+          'q-page': PassthroughStub,
+          'q-card': PassthroughStub,
+          'q-badge': PassthroughStub,
           'q-icon': true,
           'q-separator': true,
-          'q-btn': defineComponent({
-            name: 'QBtn',
-            props: {
-              disable: { type: Boolean, required: false, default: false },
-              loading: { type: Boolean, required: false, default: false },
-            },
-            emits: ['click'],
-            template:
-              '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
-          }),
+          'q-btn': QBtnStub,
         },
       },
     })

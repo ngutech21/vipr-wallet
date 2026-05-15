@@ -16,6 +16,7 @@ export const QBtnStub = defineComponent({
   props: {
     label: { type: String, required: false, default: '' },
     icon: { type: String, required: false, default: '' },
+    color: { type: String, required: false, default: '' },
     disable: { type: Boolean, required: false, default: false },
     loading: { type: Boolean, required: false, default: false },
     to: { type: [String, Object], required: false, default: undefined },
@@ -28,12 +29,15 @@ export const QBtnStub = defineComponent({
       :disabled="disable || loading"
       :label="label"
       :icon="icon"
+      :data-label="label"
+      :data-icon="icon"
+      :data-color="color"
       :data-disabled="disable ? 'true' : 'false'"
       :data-busy="loading ? 'true' : 'false'"
       :data-to="to == null ? '' : typeof to === 'string' ? to : JSON.stringify(to)"
       @click="!disable && !loading && $emit('click')"
     >
-      <slot>{{ label }}{{ icon }}</slot>
+      <slot>{{ label }}</slot>
     </button>
   `,
 })
@@ -44,11 +48,13 @@ export const QInputStub = defineComponent({
   props: {
     modelValue: { type: [String, Number], required: false, default: '' },
     type: { type: String, required: false, default: 'text' },
+    label: { type: String, required: false, default: '' },
     errorMessage: { type: String, required: false, default: '' },
   },
   emits: ['update:modelValue'],
   template: `
     <label>
+      <span v-if="label">{{ label }}</span>
       <textarea
         v-if="type === 'textarea'"
         v-bind="$attrs"
@@ -58,6 +64,7 @@ export const QInputStub = defineComponent({
       <input
         v-else
         v-bind="$attrs"
+        :type="type"
         :value="modelValue"
         @input="$emit('update:modelValue', $event.target.value)"
       />

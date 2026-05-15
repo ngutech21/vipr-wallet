@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import TransactionDetailsPage from 'src/pages/transaction/[id].vue'
+import { PassthroughStub, QBtnStub } from '../mocks/quasar-stubs'
 
 const mockRouterReplace = vi.hoisted(() => vi.fn())
 const mockGetTransactionByOperationId = vi.hoisted(() => vi.fn())
@@ -40,18 +41,8 @@ describe('TransactionDetailsPage', () => {
           LightningTransactionDetails: true,
           EcashTransactionDetails: true,
           WalletTransactionDetails: true,
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-btn': {
-            props: {
-              disable: { type: Boolean, required: false, default: false },
-              loading: { type: Boolean, required: false, default: false },
-            },
-            emits: ['click'],
-            template:
-              '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
-          },
+          'q-page': PassthroughStub,
+          'q-btn': QBtnStub,
           'q-spinner': true,
           'q-icon': true,
         },
@@ -81,18 +72,8 @@ describe('TransactionDetailsPage', () => {
           LightningTransactionDetails: true,
           EcashTransactionDetails: true,
           WalletTransactionDetails: true,
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-btn': {
-            props: {
-              disable: { type: Boolean, required: false, default: false },
-              loading: { type: Boolean, required: false, default: false },
-            },
-            emits: ['click'],
-            template:
-              '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
-          },
+          'q-page': PassthroughStub,
+          'q-btn': QBtnStub,
           'q-spinner': true,
           'q-icon': true,
         },

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import NostrRelaySettings from 'src/components/settings/NostrRelaySettings.vue'
+import { PassthroughStub, QBtnStub, QInputStub } from '../../mocks/quasar-stubs'
 
 const mockNotifyCreate = vi.hoisted(() => vi.fn())
 
@@ -24,34 +25,16 @@ vi.mock('quasar', async (importOriginal) => {
   })
 })
 
-const QBtnStub = {
-  props: ['label', 'disable'],
-  emits: ['click'],
-  template:
-    '<button v-bind="$attrs" :disabled="disable" @click="!disable && $emit(\'click\')">{{ label }}<slot /></button>',
-}
-
-const QInputStub = {
-  props: ['modelValue', 'label', 'placeholder'],
-  emits: ['update:modelValue'],
-  template:
-    '<label v-bind="$attrs"><span>{{ label }}</span><input :value="modelValue" :placeholder="placeholder" @input="$emit(\'update:modelValue\', $event.target.value)" /></label>',
-}
-
-const SlotStub = {
-  template: '<div><slot /></div>',
-}
-
 describe('NostrRelaySettings', () => {
   function createWrapper() {
     return mount(NostrRelaySettings, {
       global: {
         stubs: {
-          SettingsSection: SlotStub,
-          'q-list': SlotStub,
-          'q-item': SlotStub,
-          'q-item-section': SlotStub,
-          'q-item-label': SlotStub,
+          SettingsSection: PassthroughStub,
+          'q-list': PassthroughStub,
+          'q-item': PassthroughStub,
+          'q-item-section': PassthroughStub,
+          'q-item-label': PassthroughStub,
           'q-input': QInputStub,
           'q-btn': QBtnStub,
         },
@@ -70,9 +53,7 @@ describe('NostrRelaySettings', () => {
   it('adds a valid relay', async () => {
     const wrapper = createWrapper()
 
-    await wrapper
-      .find('[data-testid="settings-new-relay-input"] input')
-      .setValue('wss://new.example')
+    await wrapper.find('[data-testid="settings-new-relay-input"]').setValue('wss://new.example')
     await wrapper.find('[data-testid="settings-add-relay-btn"]').trigger('click')
     await flushPromises()
 

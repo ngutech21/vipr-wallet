@@ -2,18 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import AmountEntryGroup from 'src/components/AmountEntryGroup.vue'
 import type { KeypadButton } from 'src/composables/useNumericInput'
-
-const QBtnStub = {
-  props: {
-    label: { type: String, required: false, default: '' },
-    icon: { type: String, required: false, default: '' },
-    disable: { type: Boolean, required: false, default: false },
-    loading: { type: Boolean, required: false, default: false },
-  },
-  emits: ['click'],
-  template:
-    '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')">{{ label }}{{ icon }}</button>',
-}
+import { QBtnStub } from '../mocks/quasar-stubs'
 
 const buttons: KeypadButton[] = [
   {

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import NostrContactsSettings from 'src/components/settings/NostrContactsSettings.vue'
+import { PassthroughStub, QBtnStub, QInputStub } from '../../mocks/quasar-stubs'
 
 const mockNotifyCreate = vi.hoisted(() => vi.fn())
 
@@ -44,36 +45,18 @@ vi.mock('quasar', async (importOriginal) => {
   })
 })
 
-const QBtnStub = {
-  props: ['label', 'disable', 'loading'],
-  emits: ['click'],
-  template:
-    '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')">{{ label }}</button>',
-}
-
-const QInputStub = {
-  props: ['modelValue', 'label', 'placeholder'],
-  emits: ['update:modelValue'],
-  template:
-    '<label v-bind="$attrs"><span>{{ label }}</span><input :value="modelValue" :placeholder="placeholder" @input="$emit(\'update:modelValue\', $event.target.value)" /></label>',
-}
-
-const SlotStub = {
-  template: '<div><slot /></div>',
-}
-
 describe('NostrContactsSettings', () => {
   function createWrapper() {
     return mount(NostrContactsSettings, {
       global: {
         stubs: {
-          SettingsSection: SlotStub,
-          'q-list': SlotStub,
-          'q-item': SlotStub,
-          'q-item-section': SlotStub,
-          'q-item-label': SlotStub,
-          'q-avatar': SlotStub,
-          'q-icon': SlotStub,
+          SettingsSection: PassthroughStub,
+          'q-list': PassthroughStub,
+          'q-item': PassthroughStub,
+          'q-item-section': PassthroughStub,
+          'q-item-label': PassthroughStub,
+          'q-avatar': PassthroughStub,
+          'q-icon': PassthroughStub,
           'q-input': QInputStub,
           'q-btn': QBtnStub,
         },

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import DangerZoneSettings from 'src/components/settings/DangerZoneSettings.vue'
+import { QBtnStub } from '../../mocks/quasar-stubs'
 
 const mockRouterReplace = vi.hoisted(() => vi.fn())
 const mockNotifyCreate = vi.hoisted(() => vi.fn())
@@ -67,13 +68,6 @@ vi.mock('quasar', async (importOriginal) => {
     },
   })
 })
-
-const QBtnStub = {
-  props: ['label', 'disable'],
-  emits: ['click'],
-  template:
-    '<button v-bind="$attrs" :disabled="disable" @click="!disable && $emit(\'click\')">{{ label }}</button>',
-}
 
 const QCheckboxStub = {
   props: ['modelValue'],

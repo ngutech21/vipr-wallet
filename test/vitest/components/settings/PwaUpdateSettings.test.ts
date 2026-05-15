@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import PwaUpdateSettings from 'src/components/settings/PwaUpdateSettings.vue'
+import { PassthroughStub, QBtnStub } from '../../mocks/quasar-stubs'
 
 type MockRoute = {
   name: string | null
@@ -43,24 +44,13 @@ vi.mock('quasar', async (importOriginal) => {
   })
 })
 
-const QBtnStub = {
-  props: ['label', 'disable', 'loading'],
-  emits: ['click'],
-  template:
-    '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')">{{ label }}</button>',
-}
-
-const SlotStub = {
-  template: '<div><slot /></div>',
-}
-
 describe('PwaUpdateSettings', () => {
   function createWrapper() {
     return mount(PwaUpdateSettings, {
       global: {
         stubs: {
           BuildInfo: true,
-          SettingsSection: SlotStub,
+          SettingsSection: PassthroughStub,
           'q-btn': QBtnStub,
         },
       },

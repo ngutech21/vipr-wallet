@@ -1,37 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SuccessResultLayout from 'src/components/SuccessResultLayout.vue'
+import { PassthroughStub, QBtnStub } from '../mocks/quasar-stubs'
 
 const useConfettiCelebrationMock = vi.hoisted(() => vi.fn())
 
 vi.mock('src/composables/useConfettiCelebration', () => ({
   useConfettiCelebration: useConfettiCelebrationMock,
 }))
-
-const SlotStub = {
-  template: '<div><slot /></div>',
-}
-
-const QBtnStub = {
-  props: {
-    label: { type: String, required: false, default: '' },
-    to: { type: [String, Object], required: false, default: undefined },
-    disable: { type: Boolean, required: false, default: false },
-    loading: { type: Boolean, required: false, default: false },
-  },
-  emits: ['click'],
-  template: `
-    <button
-      v-bind="$attrs"
-      :disabled="disable || loading"
-      :data-label="label"
-      :data-to="to == null ? '' : JSON.stringify(to)"
-      @click="!disable && !loading && $emit('click')"
-    >
-      <slot />{{ label }}
-    </button>
-  `,
-}
 
 describe('SuccessResultLayout', () => {
   it('renders the result contract and default home action', async () => {
@@ -53,7 +29,7 @@ describe('SuccessResultLayout', () => {
       },
       global: {
         stubs: {
-          'q-page': SlotStub,
+          'q-page': PassthroughStub,
           'q-btn': QBtnStub,
           'q-icon': true,
         },
@@ -86,7 +62,7 @@ describe('SuccessResultLayout', () => {
       },
       global: {
         stubs: {
-          'q-page': SlotStub,
+          'q-page': PassthroughStub,
           'q-btn': QBtnStub,
           'q-icon': true,
         },

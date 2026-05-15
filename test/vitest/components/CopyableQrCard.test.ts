@@ -1,20 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import CopyableQrCard from 'src/components/CopyableQrCard.vue'
-
-const SlotStub = {
-  template: '<div><slot /></div>',
-}
-
-const QBtnStub = {
-  props: {
-    disable: { type: Boolean, required: false, default: false },
-    loading: { type: Boolean, required: false, default: false },
-  },
-  emits: ['click'],
-  template:
-    '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
-}
+import { PassthroughStub, QBtnStub } from '../mocks/quasar-stubs'
 
 const QDialogStub = {
   props: ['modelValue'],
@@ -43,8 +30,8 @@ describe('CopyableQrCard', () => {
             props: ['value'],
             template: '<div data-testid="qr-code-stub">{{ value }}</div>',
           },
-          'q-card': SlotStub,
-          'q-card-section': SlotStub,
+          'q-card': PassthroughStub,
+          'q-card-section': PassthroughStub,
           'q-dialog': QDialogStub,
           'q-separator': true,
           'q-btn': QBtnStub,
@@ -79,8 +66,8 @@ describe('CopyableQrCard', () => {
       global: {
         stubs: {
           QrcodeVue: true,
-          'q-card': SlotStub,
-          'q-card-section': SlotStub,
+          'q-card': PassthroughStub,
+          'q-card-section': PassthroughStub,
           'q-dialog': QDialogStub,
           'q-separator': true,
           'q-btn': QBtnStub,
@@ -105,8 +92,8 @@ describe('CopyableQrCard', () => {
       global: {
         stubs: {
           QrcodeVue: true,
-          'q-card': SlotStub,
-          'q-card-section': SlotStub,
+          'q-card': PassthroughStub,
+          'q-card-section': PassthroughStub,
           'q-dialog': QDialogStub,
           'q-separator': true,
           'q-btn': QBtnStub,
@@ -139,8 +126,8 @@ describe('CopyableQrCard', () => {
             props: ['value'],
             template: '<div data-testid="qr-code-stub">{{ value }}</div>',
           },
-          'q-card': SlotStub,
-          'q-card-section': SlotStub,
+          'q-card': PassthroughStub,
+          'q-card-section': PassthroughStub,
           'q-dialog': QDialogStub,
           'q-separator': true,
           'q-btn': QBtnStub,

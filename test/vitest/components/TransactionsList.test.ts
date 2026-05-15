@@ -9,6 +9,7 @@ import type {
   WalletTransaction,
 } from '@fedimint/core'
 import TransactionsList from 'src/components/TransactionsList.vue'
+import { PassthroughStub, QBtnStub } from '../mocks/quasar-stubs'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockGetTransactionsPage = vi.hoisted(() => vi.fn())
@@ -143,23 +144,9 @@ function createWrapper(mode: 'home' | 'history' = 'home') {
           template:
             '<button data-testid="wallet-transaction-item" @click="$emit(\'click\', transaction.operationId)">{{ transaction.operationId }}</button>',
         },
-        'q-item': {
-          template: '<div v-bind="$attrs"><slot /></div>',
-        },
-        'q-item-section': {
-          template: '<div><slot /></div>',
-        },
-        'q-btn': {
-          name: 'QBtn',
-          props: {
-            disable: { type: Boolean, default: false },
-            loading: { type: Boolean, default: false },
-            label: { type: String, default: '' },
-          },
-          emits: ['click'],
-          template:
-            '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')">{{ loading ? "loading" : label }}<slot /></button>',
-        },
+        'q-item': PassthroughStub,
+        'q-item-section': PassthroughStub,
+        'q-btn': QBtnStub,
         'q-spinner-dots': true,
       },
     },
