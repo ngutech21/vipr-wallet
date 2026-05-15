@@ -11,7 +11,13 @@ vi.mock('src/stores/wallet', () => ({
   useWalletStore: () => walletStoreMock,
 }))
 
-import { useFederationStore } from 'src/stores/federation'
+import {
+  deleteFederationById,
+  resolveSelectedFederationId,
+  updateFederationMetadataInList,
+  upsertFederation,
+  useFederationStore,
+} from 'src/stores/federation'
 
 function createFederation(overrides: Partial<Federation> = {}): Federation {
   return {
@@ -215,5 +221,97 @@ describe('federation store', () => {
 
     expect(walletStoreMock.openWallet).toHaveBeenCalledTimes(1)
     expect(federationStore.selectedFederationId).toBe(federation.federationId)
+  })
+})
+
+describe('federation state helpers', () => {
+  it('upserts federations immutably and preserves list order for replacements', () => {
+    const first = createFederation({ federationId: 'fed-1', title: 'Original Federation' })
+    const second = createFederation({ federationId: 'fed-2', title: 'Second Federation' })
+    const updatedFirst = createFederation({
+      federationId: 'fed-1',
+      title: 'Updated Federation',
+      inviteCode: 'fed11updated',
+    })
+    const federations = [first, second]
+
+    expect(upsertFederation(federations, updatedFirst)).toEqual([updatedFirst, second])
+    expect(federations).toEqual([first, second])
+
+    expect(upsertFederation(federations, createFederation({ federationId: 'fed-3' }))).toEqual([
+      first,
+      second,
+      createFederation({ federationId: 'fed-3' }),
+    ])
+  })
+
+  it('normalizes federation metadata during upsert', () => {
+    expect(
+      upsertFederation(
+        [],
+        createFederation({
+          title: 'Fallback Federation',
+          metadata: {
+            federation_name: 'Normalized Federation',
+            federation_icon_url: 'https://legacy.example/icon.png',
+            max_invoice_msats: '50000',
+            chat_server_domain: 'chat.example.com',
+          } as never,
+        }),
+      )[0],
+    ).toMatchObject({
+      title: 'Normalized Federation',
+      metadata: {
+        federationName: 'Normalized Federation',
+        iconUrl: 'https://legacy.example/icon.png',
+        maxInvoiceMsats: 50_000,
+      },
+    })
+  })
+
+  it('deletes federations immutably and resolves valid selections', () => {
+    const first = createFederation({ federationId: 'fed-1' })
+    const second = createFederation({ federationId: 'fed-2' })
+    const federations = [first, second]
+    const nextFederations = deleteFederationById(federations, first.federationId)
+
+    expect(nextFederations).toEqual([second])
+    expect(federations).toEqual([first, second])
+    expect(resolveSelectedFederationId(nextFederations, first.federationId)).toBe(
+      second.federationId,
+    )
+    expect(resolveSelectedFederationId([], second.federationId)).toBeNull()
+    expect(resolveSelectedFederationId(federations, second.federationId)).toBe(second.federationId)
+  })
+
+  it('updates federation metadata immutably and returns the same list for missing federations', () => {
+    const first = createFederation({
+      federationId: 'fed-1',
+      title: 'Fallback Federation',
+      metadata: {
+        iconUrl: 'https://legacy.example/icon.png',
+      },
+    })
+    const second = createFederation({ federationId: 'fed-2', title: 'Second Federation' })
+    const federations = [first, second]
+
+    const nextFederations = updateFederationMetadataInList(federations, first.federationId, {
+      federationName: 'Meta Federation',
+      iconUrl: 'https://meta.example/icon.png',
+    })
+
+    expect(nextFederations).toEqual([
+      {
+        ...first,
+        title: 'Meta Federation',
+        metadata: {
+          federationName: 'Meta Federation',
+          iconUrl: 'https://meta.example/icon.png',
+        },
+      },
+      second,
+    ])
+    expect(federations).toEqual([first, second])
+    expect(updateFederationMetadataInList(federations, 'missing-fed', {})).toBe(federations)
   })
 })
