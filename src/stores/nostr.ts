@@ -17,7 +17,6 @@ import {
   applyRecommendationTargetsToDiscoveryState,
   extractFederationCandidate,
   extractRecommendationTargets,
-  sortDiscoveredFederationCandidates,
   type DiscoveredFederationCandidate,
 } from 'src/services/nostr/discovery'
 import {
@@ -44,6 +43,14 @@ import {
   waitUntilPreviewQueueIdle,
   type PreviewStatus,
 } from 'src/services/nostr/previewQueue'
+import {
+  applyPreviewResultToDiscoveryState,
+  clearPreviewStateForFederation,
+  markPreviewLoading,
+  markPreviewReady,
+  type PreviewDiscoveryEffect,
+  type PreviewDiscoveryState,
+} from 'src/services/nostr/previewDiscoveryState'
 import {
   initializeNdk,
   stopDiscoverySubscriptions,
@@ -405,8 +412,12 @@ export const useNostrStore = defineStore('nostr', {
         if (update.shouldRemoveCachedPreview) {
           this.removeCachedPreview(update.invalidatedFederationId)
         }
-        delete this.previewAttemptedCreatedAt[update.invalidatedFederationId]
-        delete this.previewStatusByFederation[update.invalidatedFederationId]
+        this.applyPreviewDiscoveryState(
+          clearPreviewStateForFederation(
+            this.getPreviewDiscoveryState(),
+            update.invalidatedFederationId,
+          ),
+        )
       }
     },
 
@@ -505,12 +516,15 @@ export const useNostrStore = defineStore('nostr', {
 
           const cachedPreview = this.getCachedPreviewForCandidate(candidate)
           if (cachedPreview != null) {
-            this.previewStatusByFederation[candidate.federationId] = 'ready'
+            this.applyPreviewDiscoveryState(
+              markPreviewReady(this.getPreviewDiscoveryState(), candidate),
+            )
             continue
           }
 
-          this.previewAttemptedCreatedAt[candidate.federationId] = candidate.createdAt
-          this.previewStatusByFederation[candidate.federationId] = 'loading'
+          this.applyPreviewDiscoveryState(
+            markPreviewLoading(this.getPreviewDiscoveryState(), candidate),
+          )
 
           // Sequential previews avoid overloading wallet I/O and keep join UX responsive.
           // eslint-disable-next-line no-await-in-loop
@@ -519,58 +533,13 @@ export const useNostrStore = defineStore('nostr', {
             previewFederation: (inviteCode) => walletStore.previewFederation(inviteCode),
             timeoutMs: PREVIEW_TIMEOUT_MS,
           })
-          if (previewResult.type === 'timed-out') {
-            this.previewStatusByFederation[candidate.federationId] = 'timed_out'
-            this.discoveryCandidates = sortDiscoveredFederationCandidates(this.discoveryCandidates)
-            logger.warn('Federation preview timed out', { federationId: candidate.federationId })
-            continue
-          }
-
-          if (previewResult.type === 'not-found') {
-            this.previewStatusByFederation[candidate.federationId] = 'failed'
-            this.discoveryCandidates = sortDiscoveredFederationCandidates(this.discoveryCandidates)
-            continue
-          }
-
-          if (previewResult.type === 'failed') {
-            this.previewStatusByFederation[candidate.federationId] = 'failed'
-            if (previewResult.isExpectedError) {
-              const lastLoggedCreatedAt = this.previewErrorLoggedCreatedAt[candidate.federationId]
-              if (lastLoggedCreatedAt == null || lastLoggedCreatedAt < candidate.createdAt) {
-                this.previewErrorLoggedCreatedAt[candidate.federationId] = candidate.createdAt
-                logger.nostr.warn('Skipping federation candidate with unavailable config', {
-                  federationId: candidate.federationId,
-                  createdAt: candidate.createdAt,
-                  reason: previewResult.errorMessage,
-                })
-              }
-            } else {
-              logger.error('Unexpected error while previewing federation candidate', {
-                federationId: candidate.federationId,
-                error: previewResult.errorMessage,
-              })
-            }
-            this.discoveryCandidates = sortDiscoveredFederationCandidates(this.discoveryCandidates)
-            continue
-          }
-
-          if (previewResult.type === 'mismatched') {
-            this.previewStatusByFederation[candidate.federationId] = 'failed'
-            this.removeCachedPreview(candidate.federationId)
-            this.discoveryCandidates = sortDiscoveredFederationCandidates(this.discoveryCandidates)
-            logger.nostr.warn(
-              'Skipping federation candidate with mismatched preview federation id',
-              {
-                federationId: candidate.federationId,
-                resolvedFederationId: previewResult.federation.federationId,
-                createdAt: candidate.createdAt,
-              },
-            )
-            continue
-          }
-
-          this.previewStatusByFederation[candidate.federationId] = 'ready'
-          this.cacheFederationPreview(candidate, previewResult.federation)
+          const previewUpdate = applyPreviewResultToDiscoveryState(
+            this.getPreviewDiscoveryState(),
+            candidate,
+            previewResult,
+          )
+          this.applyPreviewDiscoveryState(previewUpdate.state)
+          this.applyPreviewDiscoveryEffects(previewUpdate.effects)
         }
       } catch (error) {
         logger.error('Error processing federation preview queue', error)
@@ -585,6 +554,64 @@ export const useNostrStore = defineStore('nostr', {
         timeoutMs,
         pollMs: PREVIEW_QUEUE_IDLE_POLL_MS,
       })
+    },
+
+    getPreviewDiscoveryState(): PreviewDiscoveryState {
+      return {
+        discoveryCandidates: this.discoveryCandidates,
+        previewAttemptedCreatedAt: this.previewAttemptedCreatedAt,
+        previewErrorLoggedCreatedAt: this.previewErrorLoggedCreatedAt,
+        previewStatusByFederation: this.previewStatusByFederation,
+      }
+    },
+
+    applyPreviewDiscoveryState(state: PreviewDiscoveryState) {
+      this.discoveryCandidates = state.discoveryCandidates
+      this.previewAttemptedCreatedAt = state.previewAttemptedCreatedAt
+      this.previewErrorLoggedCreatedAt = state.previewErrorLoggedCreatedAt
+      this.previewStatusByFederation = state.previewStatusByFederation
+    },
+
+    applyPreviewDiscoveryEffects(effects: PreviewDiscoveryEffect[]) {
+      for (const effect of effects) {
+        if (effect.type === 'cache-preview') {
+          this.cacheFederationPreview(effect.candidate, effect.federation)
+          continue
+        }
+
+        if (effect.type === 'remove-cached-preview') {
+          this.removeCachedPreview(effect.federationId)
+          continue
+        }
+
+        if (effect.type === 'log-timeout') {
+          logger.warn('Federation preview timed out', { federationId: effect.federationId })
+          continue
+        }
+
+        if (effect.type === 'log-expected-error') {
+          logger.nostr.warn('Skipping federation candidate with unavailable config', {
+            federationId: effect.federationId,
+            createdAt: effect.createdAt,
+            reason: effect.errorMessage,
+          })
+          continue
+        }
+
+        if (effect.type === 'log-unexpected-error') {
+          logger.error('Unexpected error while previewing federation candidate', {
+            federationId: effect.federationId,
+            error: effect.errorMessage,
+          })
+          continue
+        }
+
+        logger.nostr.warn('Skipping federation candidate with mismatched preview federation id', {
+          federationId: effect.federationId,
+          resolvedFederationId: effect.resolvedFederationId,
+          createdAt: effect.createdAt,
+        })
+      }
     },
 
     stopDiscoveringFederations() {
