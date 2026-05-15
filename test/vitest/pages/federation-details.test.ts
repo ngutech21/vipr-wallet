@@ -168,7 +168,7 @@ describe('FederationDetailsPage', () => {
     const wrapper = createWrapper()
     await flushPromises()
 
-    expect(updateGatewayCache).toHaveBeenCalledTimes(1)
+    expect(updateGatewayCache).not.toHaveBeenCalled()
     expect(listGateways).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).toContain('Gateways')
     expect(wrapper.text()).toContain('gateway-1')
@@ -218,7 +218,7 @@ describe('FederationDetailsPage', () => {
 
     expect(walletStoreState.openWallet).toHaveBeenCalledTimes(1)
     expect(getSpendableUtxos).toHaveBeenCalledTimes(1)
-    expect(updateGatewayCache).toHaveBeenCalledTimes(1)
+    expect(updateGatewayCache).not.toHaveBeenCalled()
     expect(listGateways).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).not.toContain('Wallet is not open.')
 

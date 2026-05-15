@@ -207,6 +207,7 @@ export const useWalletStore = defineStore('wallet', {
       })
 
       this.activeWalletName = walletName
+      await this.updateGatewayCache(selectedFederation.federationId)
       await this.updateBalance()
       await this.refreshFederationMetadata(selectedFederation)
       logger.logWalletOperation('Wallet open completed before recovery monitor', {
@@ -309,6 +310,7 @@ export const useWalletStore = defineStore('wallet', {
       })
 
       this.activeWalletName = walletName
+      await this.updateGatewayCache(federationId)
 
       const noteCounts = await this.wallet.mint.getNotesByDenomination()
       const balanceMsats = await this.wallet.balance.getBalance()
@@ -320,6 +322,21 @@ export const useWalletStore = defineStore('wallet', {
         balanceMsats,
         balanceSats: (balanceMsats ?? 0) / 1_000,
       })
+    },
+
+    async updateGatewayCache(federationId: string) {
+      if (this.wallet == null) {
+        return
+      }
+
+      try {
+        await this.wallet.lightning.updateGatewayCache()
+      } catch (error) {
+        logger.warn('Failed to update Lightning gateway cache', {
+          federationId,
+          error: getErrorMessage(error),
+        })
+      }
     },
 
     async clearAllWallets() {

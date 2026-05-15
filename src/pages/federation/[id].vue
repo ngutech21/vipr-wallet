@@ -229,7 +229,6 @@ async function loadWalletGateways(): Promise<unknown[]> {
   }
 
   try {
-    await wallet.lightning.updateGatewayCache()
     return await wallet.lightning.listGateways()
   } catch (error) {
     logger.error('Failed to load wallet gateways', error)

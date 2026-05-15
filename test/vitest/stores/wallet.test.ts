@@ -81,7 +81,9 @@ function createWalletMock(balanceMsats: number) {
       subscribeSpendNotes: vi.fn(),
       getNotesByDenomination: vi.fn(() => Promise.resolve({})),
     },
-    lightning: {},
+    lightning: {
+      updateGatewayCache: vi.fn(() => Promise.resolve()),
+    },
     balance: {
       getBalance: vi.fn(() => Promise.resolve(balanceMsats)),
     },
@@ -192,6 +194,26 @@ describe('wallet store', () => {
     })
     expect(walletStore.activeWalletName).toBe(getWalletNameForFederationId(federation.federationId))
     expect(walletStore.balance).toBe(12)
+    expect(wallet.lightning.updateGatewayCache).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps opening the wallet when gateway cache refresh fails', async () => {
+    const walletStore = useWalletStore()
+    const federationStore = useFederationStore()
+    const federation = createFederation()
+
+    federationStore.federations = [federation]
+    federationStore.selectedFederationId = federation.federationId
+
+    const wallet = createWalletMock(12_000)
+    wallet.lightning.updateGatewayCache.mockRejectedValue(new Error('gateway unavailable'))
+    fedimintClientMock.ensureWalletOpen.mockResolvedValue(wallet)
+
+    await walletStore.openWallet()
+
+    expect(walletStore.activeWalletName).toBe(getWalletNameForFederationId(federation.federationId))
+    expect(walletStore.balance).toBe(12)
+    expect(wallet.lightning.updateGatewayCache).toHaveBeenCalledTimes(1)
   })
 
   it('passes recoverOnJoin to the Fedimint client only when requested', async () => {
