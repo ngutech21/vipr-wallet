@@ -148,7 +148,12 @@ describe('FederationDetailsPage', () => {
           'q-icon': PassthroughStub,
           'q-chip': PassthroughStub,
           'q-separator': true,
-          'q-dialog': { template: '<div><slot /></div>' },
+          'q-dialog': {
+            props: {
+              modelValue: { type: Boolean, required: false, default: false },
+            },
+            template: '<div v-if="modelValue"><slot /></div>',
+          },
           'q-list': { template: '<div><slot /></div>' },
           'q-item': { template: '<div><slot /></div>' },
           'q-item-section': { template: '<div><slot /></div>' },
@@ -255,7 +260,11 @@ describe('FederationDetailsPage', () => {
     const wrapper = createWrapper()
     await flushPromises()
 
+    expect(wrapper.find('[data-testid="federation-details-leave-confirm-btn"]').exists()).toBe(
+      false,
+    )
     await wrapper.get('[data-testid="federation-details-leave-btn"]').trigger('click')
+    expect(wrapper.find('[data-testid="federation-details-leave-confirm-btn"]').exists()).toBe(true)
     await wrapper.get('[data-testid="federation-details-leave-confirm-btn"]').trigger('click')
     await flushPromises()
     await vi.advanceTimersByTimeAsync(100)
@@ -277,7 +286,11 @@ describe('FederationDetailsPage', () => {
     const wrapper = createWrapper()
     await flushPromises()
 
+    expect(wrapper.find('[data-testid="federation-details-leave-confirm-btn"]').exists()).toBe(
+      false,
+    )
     await wrapper.get('[data-testid="federation-details-leave-btn"]').trigger('click')
+    expect(wrapper.find('[data-testid="federation-details-leave-confirm-btn"]').exists()).toBe(true)
     await wrapper.get('[data-testid="federation-details-leave-confirm-btn"]').trigger('click')
     await flushPromises()
     await vi.advanceTimersByTimeAsync(100)
