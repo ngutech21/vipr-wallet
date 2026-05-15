@@ -30,8 +30,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
-          cache: 'pnpm'
+          node-version: "24"
+          cache: "pnpm"
 
       - name: Install dependencies
         # Enforce deterministic installs from pnpm-lock.yaml:
@@ -62,7 +62,7 @@ jobs:
 
       - name: Build frontend
         run: pnpm build
-      
+
       - name: Run unit tests
         run: pnpm test:unit:ci
 
@@ -73,7 +73,7 @@ jobs:
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
+          fail_ci_if_error: true
           verbose: true
 
   docker-build-pr:
