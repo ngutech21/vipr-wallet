@@ -22,18 +22,23 @@ export type OnboardingState = {
   updatedAt: number
 }
 
+export type WalletOnboardingState = {
+  hasMnemonic: boolean
+  needsMnemonicBackup: boolean
+}
+
 export const ONBOARDING_STATE_KEY = 'vipr.onboarding.state'
 export const LEGACY_ONBOARDING_FLOW_KEY = 'vipr.onboarding.flow'
 export const LEGACY_ONBOARDING_STEP_KEY = 'vipr.onboarding.step'
 const ONBOARDING_STATE_VERSION = 1 as const
 
-function createDefaultOnboardingState(): OnboardingState {
+function createDefaultOnboardingState(now = Date.now()): OnboardingState {
   return {
     version: ONBOARDING_STATE_VERSION,
     flow: null,
     step: 'welcome',
     status: 'complete',
-    updatedAt: Date.now(),
+    updatedAt: now,
   }
 }
 
@@ -128,90 +133,157 @@ export function writeOnboardingState(state: OnboardingState): void {
   localStorage.setItem(ONBOARDING_STATE_KEY, JSON.stringify(state))
 }
 
+export function resolveOnboardingTouch(state: OnboardingState, now: number): OnboardingState {
+  return {
+    ...state,
+    updatedAt: now,
+  }
+}
+
+export function resolveOnboardingStart(
+  state: OnboardingState,
+  flow: Exclude<OnboardingFlow, null>,
+  now: number,
+): OnboardingState {
+  return {
+    ...state,
+    flow,
+    step: flow === 'create' ? 'welcome' : 'restore',
+    status: 'in_progress',
+    updatedAt: now,
+  }
+}
+
+export function resolveOnboardingStep(
+  state: OnboardingState,
+  step: OnboardingStep,
+  now: number,
+): OnboardingState {
+  return {
+    ...state,
+    step,
+    updatedAt: now,
+  }
+}
+
+export function resolveOnboardingInProgress(state: OnboardingState, now: number): OnboardingState {
+  return {
+    ...state,
+    status: 'in_progress',
+    updatedAt: now,
+  }
+}
+
+export function resolveOnboardingComplete(state: OnboardingState, now: number): OnboardingState {
+  return {
+    ...state,
+    flow: null,
+    step: 'welcome',
+    status: 'complete',
+    updatedAt: now,
+  }
+}
+
+export function resolveOnboardingReset(now: number): OnboardingState {
+  return createDefaultOnboardingState(now)
+}
+
+export function resolveOnboardingForWalletState(
+  state: OnboardingState,
+  walletState: WalletOnboardingState,
+  now: number,
+): OnboardingState {
+  if (!walletState.hasMnemonic) {
+    if (state.flow === 'create' && state.step === 'backup') {
+      return {
+        ...state,
+        flow: null,
+        step: 'welcome',
+        status: 'in_progress',
+        updatedAt: now,
+      }
+    }
+
+    if (state.status === 'complete') {
+      return resolveOnboardingInProgress(state, now)
+    }
+
+    return state
+  }
+
+  if (walletState.needsMnemonicBackup && state.flow === 'create') {
+    return {
+      ...state,
+      status: 'in_progress',
+      step: 'backup',
+      updatedAt: now,
+    }
+  }
+
+  if (state.flow === 'restore' && state.step === 'restore-federations') {
+    return {
+      ...state,
+      status: 'in_progress',
+      updatedAt: now,
+    }
+  }
+
+  return resolveOnboardingComplete(state, now)
+}
+
 export const useOnboardingStore = defineStore('onboarding', {
   state: (): OnboardingState => readOnboardingState(),
 
   actions: {
-    touch() {
-      this.updatedAt = Date.now()
-      writeOnboardingState({
+    getState(): OnboardingState {
+      return {
         version: ONBOARDING_STATE_VERSION,
         flow: this.flow,
         step: this.step,
         status: this.status,
         updatedAt: this.updatedAt,
-      })
+      }
+    },
+
+    applyState(state: OnboardingState) {
+      this.flow = state.flow
+      this.step = state.step
+      this.status = state.status
+      this.updatedAt = state.updatedAt
+      writeOnboardingState(state)
+    },
+
+    touch() {
+      this.applyState(resolveOnboardingTouch(this.getState(), Date.now()))
     },
 
     start(flow: Exclude<OnboardingFlow, null>) {
-      this.flow = flow
-      this.status = 'in_progress'
-      this.step = flow === 'create' ? 'welcome' : 'restore'
-      this.touch()
+      this.applyState(resolveOnboardingStart(this.getState(), flow, Date.now()))
     },
 
     goToStep(step: OnboardingStep) {
-      this.step = step
-      this.touch()
+      this.applyState(resolveOnboardingStep(this.getState(), step, Date.now()))
     },
 
     markInProgress() {
-      this.status = 'in_progress'
-      this.touch()
+      this.applyState(resolveOnboardingInProgress(this.getState(), Date.now()))
     },
 
     complete() {
-      this.flow = null
-      this.step = 'welcome'
-      this.status = 'complete'
-      this.touch()
+      this.applyState(resolveOnboardingComplete(this.getState(), Date.now()))
     },
 
     reset() {
-      const defaults = createDefaultOnboardingState()
-      this.flow = defaults.flow
-      this.step = defaults.step
-      this.status = defaults.status
-      this.updatedAt = defaults.updatedAt
-      writeOnboardingState(defaults)
+      this.applyState(resolveOnboardingReset(Date.now()))
     },
 
-    normalizeForWalletState({
-      hasMnemonic,
-      needsMnemonicBackup,
-    }: {
-      hasMnemonic: boolean
-      needsMnemonicBackup: boolean
-    }) {
-      if (!hasMnemonic) {
-        if (this.flow === 'create' && this.step === 'backup') {
-          this.flow = null
-          this.step = 'welcome'
-          this.status = 'in_progress'
-          this.touch()
-          return
-        }
-        if (this.status === 'complete') {
-          this.status = 'in_progress'
-          this.touch()
-        }
+    normalizeForWalletState(walletState: WalletOnboardingState) {
+      const currentState = this.getState()
+      const nextState = resolveOnboardingForWalletState(currentState, walletState, Date.now())
+      if (nextState === currentState) {
         return
       }
-
-      if (needsMnemonicBackup && this.flow === 'create') {
-        this.status = 'in_progress'
-        this.step = 'backup'
-        this.touch()
-        return
-      }
-
-      if (this.flow === 'restore' && this.step === 'restore-federations') {
-        this.status = 'in_progress'
-        this.touch()
-        return
-      }
-
-      this.complete()
+      this.applyState(nextState)
     },
   },
 })
