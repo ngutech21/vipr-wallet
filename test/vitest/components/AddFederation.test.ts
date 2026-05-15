@@ -88,6 +88,10 @@ describe('AddFederation.vue', () => {
     })
   }
 
+  async function enterInviteCode(value: string) {
+    await wrapper?.get('[data-testid="invite-code-input"]').setValue(value)
+  }
+
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.clear()
@@ -162,9 +166,7 @@ describe('AddFederation.vue', () => {
     previewFederationMock.mockResolvedValue(federation)
 
     wrapper = createWrapper()
-    await wrapper
-      .findComponent({ name: 'JoinFederationInviteStep' })
-      .vm.$emit('update:inviteCode', federation.inviteCode)
+    await enterInviteCode(federation.inviteCode)
     await wrapper.get('[data-testid="add-federation-preview-btn"]').trigger('click')
     await flushPromises()
 
@@ -180,9 +182,7 @@ describe('AddFederation.vue', () => {
     ;(walletStore.previewFederation as Mock).mockResolvedValue(federation)
 
     wrapper = createWrapper()
-    await wrapper
-      .findComponent({ name: 'JoinFederationInviteStep' })
-      .vm.$emit('update:inviteCode', federation.inviteCode)
+    await enterInviteCode(federation.inviteCode)
     await wrapper.get('[data-testid="add-federation-preview-btn"]').trigger('click')
     await flushPromises()
     await wrapper.get('[data-testid="modal-back-btn"]').trigger('click')
@@ -233,9 +233,7 @@ describe('AddFederation.vue', () => {
     selectFederationMock.mockResolvedValue(undefined)
 
     wrapper = createWrapper()
-    await wrapper
-      .findComponent({ name: 'JoinFederationInviteStep' })
-      .vm.$emit('update:inviteCode', federation.inviteCode)
+    await enterInviteCode(federation.inviteCode)
     await wrapper.get('[data-testid="add-federation-preview-btn"]').trigger('click')
     await flushPromises()
     await wrapper.get('[data-testid="add-federation-submit-btn"]').trigger('click')
@@ -258,9 +256,7 @@ describe('AddFederation.vue', () => {
     selectFederationMock.mockRejectedValue(new Error('Selection failed'))
 
     wrapper = createWrapper()
-    await wrapper
-      .findComponent({ name: 'JoinFederationInviteStep' })
-      .vm.$emit('update:inviteCode', federation.inviteCode)
+    await enterInviteCode(federation.inviteCode)
     await wrapper.get('[data-testid="add-federation-preview-btn"]').trigger('click')
     await flushPromises()
     await wrapper.get('[data-testid="add-federation-submit-btn"]').trigger('click')
