@@ -6,7 +6,7 @@ import FederationDetailsPage from 'src/pages/federation/[id].vue'
 import type { Federation } from 'src/types/federation'
 import { PassthroughStub, QBtnStub } from '../mocks/quasar-stubs'
 
-const mockRouterPush = vi.hoisted(() => vi.fn())
+const mockRouterReplace = vi.hoisted(() => vi.fn())
 const routeState = vi.hoisted(() => ({
   params: {
     id: 'fed-1',
@@ -43,7 +43,7 @@ const walletStoreState = vi.hoisted(() => ({
 vi.mock('vue-router', () => ({
   useRoute: () => routeState,
   useRouter: () => ({
-    push: mockRouterPush,
+    replace: mockRouterReplace,
   }),
 }))
 
@@ -102,6 +102,7 @@ describe('FederationDetailsPage', () => {
     walletStoreState.closeWallet.mockResolvedValue(undefined)
     walletStoreState.deleteFederationData.mockResolvedValue(undefined)
     walletStoreState.openWallet.mockResolvedValue(undefined)
+    mockRouterReplace.mockResolvedValue(undefined)
     selectFederation.mockResolvedValue(undefined)
     federationStoreState.deleteFederation.mockReturnValue(undefined)
     getSpendableUtxos.mockResolvedValue([])
@@ -274,7 +275,7 @@ describe('FederationDetailsPage', () => {
     expect(walletStoreState.deleteFederationData).toHaveBeenCalledWith('fed-1')
     expect(federationStoreState.deleteFederation).toHaveBeenCalledWith('fed-1')
     expect(walletStoreState.openWallet).toHaveBeenCalledTimes(1)
-    expect(mockRouterPush).toHaveBeenCalledWith({ name: '/federations/' })
+    expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/federations/' })
 
     wrapper.unmount()
     vi.useRealTimers()
@@ -300,7 +301,36 @@ describe('FederationDetailsPage', () => {
     expect(walletStoreState.deleteFederationData).toHaveBeenCalledWith('fed-1')
     expect(federationStoreState.deleteFederation).not.toHaveBeenCalled()
     expect(walletStoreState.openWallet).not.toHaveBeenCalled()
-    expect(mockRouterPush).toHaveBeenCalledWith({ name: '/federations/' })
+    expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/federations/' })
+
+    wrapper.unmount()
+    vi.useRealTimers()
+  })
+
+  it('returns to federations before opening the next selected wallet', async () => {
+    vi.useFakeTimers()
+    const openNextWallet = new Promise<void>(() => {
+      // Keep the next wallet open pending so navigation order remains observable.
+    })
+    walletStoreState.openWallet.mockReturnValue(openNextWallet)
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    await wrapper.get('[data-testid="federation-details-leave-btn"]').trigger('click')
+    await wrapper.get('[data-testid="federation-details-leave-confirm-btn"]').trigger('click')
+    await flushPromises()
+    await vi.advanceTimersByTimeAsync(100)
+    await flushPromises()
+
+    expect(walletStoreState.deleteFederationData).toHaveBeenCalledWith('fed-1')
+    expect(federationStoreState.deleteFederation).toHaveBeenCalledWith('fed-1')
+    expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/federations/' })
+    expect(walletStoreState.openWallet).toHaveBeenCalledTimes(1)
+    const navigationCallOrder = mockRouterReplace.mock.invocationCallOrder[0]
+    const openWalletCallOrder = walletStoreState.openWallet.mock.invocationCallOrder[0]
+    expect(navigationCallOrder).toBeDefined()
+    expect(openWalletCallOrder).toBeDefined()
+    expect(navigationCallOrder as number).toBeLessThan(openWalletCallOrder as number)
 
     wrapper.unmount()
     vi.useRealTimers()

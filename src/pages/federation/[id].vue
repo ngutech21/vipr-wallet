@@ -18,7 +18,7 @@ meta:
         :back-to="{ name: '/federations/' }"
       />
 
-      <div class="federation-details-content">
+      <div v-if="federation != null" class="federation-details-content">
         <FederationSummaryCard
           :federation="federation"
           :observer-url="observerUrl"
@@ -221,6 +221,19 @@ watch(
   { immediate: true },
 )
 
+function resetWalletBackedDetails() {
+  spendableUtxos.value = []
+  walletGateways.value = []
+  metaConsensusValue.value = null
+  utxoError.value = null
+  walletGatewayError.value = null
+  metaConsensusError.value = null
+  isLoadingUtxos.value = false
+  isLoadingWalletGateways.value = false
+  isLoadingMetaConsensus.value = false
+  hasLoadedWalletGateways.value = false
+}
+
 async function loadWalletGateways(): Promise<unknown[]> {
   const wallet = walletStore.wallet
   if (wallet == null) {
@@ -267,20 +280,29 @@ async function ensureFederationWalletOpen(currentFederation: NonNullable<typeof 
 }
 
 async function leaveFederation() {
-  if (federation.value == null) return
+  const federationId = federation.value?.federationId
+  if (federationId == null) return
+
+  activeDetailsLoadId += 1
+  resetWalletBackedDetails()
 
   try {
     await walletStore.closeWallet()
     await new Promise((resolve) => {
       setTimeout(resolve, 100)
     })
-    await walletStore.deleteFederationData(federation.value.federationId)
-    federationStore.deleteFederation(federation.value.federationId)
-    await walletStore.openWallet()
-    await router.push({ name: '/federations/' })
+    await walletStore.deleteFederationData(federationId)
+    federationStore.deleteFederation(federationId)
+    await router.replace({ name: '/federations/' })
+
+    try {
+      await walletStore.openWallet()
+    } catch (error) {
+      logger.error('Failed to open next federation wallet after leaving federation', error)
+    }
   } catch (error) {
     logger.error('Failed to leave federation', error)
-    await router.push({ name: '/federations/' })
+    await router.replace({ name: '/federations/' })
   }
 }
 </script>
