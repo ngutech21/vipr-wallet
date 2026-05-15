@@ -7,24 +7,19 @@ import { useFederationStore } from 'src/stores/federation'
 import { logger } from 'src/services/logger'
 import { getErrorMessage } from 'src/utils/error'
 import type { Federation } from 'src/types/federation'
+import {
+  addRestoreFederationEntry as appendRestoreFederationEntry,
+  mapRestoreFederationStatuses,
+  normalizeRestoreWords,
+  removeRestoreFederationEntry as removeRestoreFederationEntryById,
+  resolveStartupWizardStep,
+  type RestoreFederationEntry,
+  type StartupWizardStep,
+} from 'src/utils/startupWizardState'
 
-export type WizardStep =
-  | 'install'
-  | 'welcome'
-  | 'custody'
-  | 'federation'
-  | 'backup'
-  | 'restore'
-  | 'restore-federations'
-  | 'done'
+export type WizardStep = StartupWizardStep
 
 type WizardAction = 'idle' | 'creating' | 'restoring'
-
-export type RestoreFederationEntry = {
-  federationId: string
-  title: string
-  inviteCode: string
-}
 
 export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boolean> }) {
   const router = useRouter()
@@ -43,12 +38,11 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
 
   const mnemonicWords = computed(() => walletStore.mnemonicWords)
   const restoreFederationStatuses = computed(() =>
-    restoreFederationEntries.value.map((entry) => ({
-      ...entry,
-      status: walletStore.recoveryStatusByFederationId[entry.federationId] ?? 'restoring',
-      error:
-        walletStore.recoveryFederationId === entry.federationId ? walletStore.recoveryError : null,
-    })),
+    mapRestoreFederationStatuses(restoreFederationEntries.value, {
+      recoveryStatusByFederationId: walletStore.recoveryStatusByFederationId,
+      recoveryFederationId: walletStore.recoveryFederationId,
+      recoveryError: walletStore.recoveryError,
+    }),
   )
   const isCreating = computed(() => wizardAction.value === 'creating')
   const isRestoring = computed(() => wizardAction.value === 'restoring')
@@ -70,56 +64,27 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
       needsMnemonicBackup: walletStore.needsMnemonicBackup,
     })
 
-    if (
-      walletStore.hasMnemonic &&
-      !walletStore.needsMnemonicBackup &&
-      onboardingStore.flow === 'restore' &&
-      onboardingStore.step === 'restore-federations'
-    ) {
-      currentStep.value = 'restore-federations'
-      onboardingStore.markInProgress()
-      onboardingStore.goToStep('restore-federations')
-      return
-    }
+    const resolution = resolveStartupWizardStep(
+      {
+        hasMnemonic: walletStore.hasMnemonic,
+        needsMnemonicBackup: walletStore.needsMnemonicBackup,
+      },
+      {
+        flow: onboardingStore.flow,
+        step: onboardingStore.step,
+        status: onboardingStore.status,
+      },
+      showInstallStep.value,
+    )
 
-    if (walletStore.hasMnemonic && !walletStore.needsMnemonicBackup) {
+    if (resolution.type === 'enter-app') {
       await finishWizardAndEnterApp()
       return
     }
 
-    if (onboardingStore.step === 'backup' && walletStore.needsMnemonicBackup) {
-      currentStep.value = 'backup'
-      onboardingStore.markInProgress()
-      onboardingStore.goToStep('backup')
-      return
-    }
-
-    if (!walletStore.hasMnemonic && onboardingStore.step === 'restore') {
-      currentStep.value = 'restore'
-      onboardingStore.markInProgress()
-      onboardingStore.goToStep('restore')
-      return
-    }
-
-    const resumedStep = getResumableCreateStep(onboardingStore.step)
-
-    if (onboardingStore.flow === 'create' && resumedStep != null) {
-      currentStep.value = resumedStep
-      onboardingStore.markInProgress()
-      onboardingStore.goToStep(resumedStep)
-      return
-    }
-
-    if (showInstallStep.value) {
-      currentStep.value = 'install'
-      onboardingStore.markInProgress()
-      onboardingStore.goToStep('install')
-      return
-    }
-
-    currentStep.value = 'welcome'
+    currentStep.value = resolution.step
     onboardingStore.markInProgress()
-    onboardingStore.goToStep('welcome')
+    onboardingStore.goToStep(resolution.step)
   }
 
   function continueFromInstall() {
@@ -235,7 +200,7 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
       return
     }
 
-    const words = restoreWords.value.map((word) => word.trim().toLowerCase())
+    const words = normalizeRestoreWords(restoreWords.value)
 
     if (words.length !== 12 || words.some((word) => word === '')) {
       notify.warning('Please enter all 12 recovery words.')
@@ -368,19 +333,16 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
       return
     }
 
-    restoreFederationEntries.value = [
-      ...restoreFederationEntries.value,
-      {
-        federationId: federation.federationId,
-        title: federation.title,
-        inviteCode: federation.inviteCode,
-      },
-    ]
+    restoreFederationEntries.value = appendRestoreFederationEntry(
+      restoreFederationEntries.value,
+      federation,
+    )
   }
 
   function removeRestoreFederationEntry(federationId: string) {
-    restoreFederationEntries.value = restoreFederationEntries.value.filter(
-      (entry) => entry.federationId !== federationId,
+    restoreFederationEntries.value = removeRestoreFederationEntryById(
+      restoreFederationEntries.value,
+      federationId,
     )
   }
 
@@ -442,14 +404,4 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
     submitRestore,
     updateRestoreFederationInviteCode,
   }
-}
-
-function getResumableCreateStep(
-  step: string,
-): Extract<WizardStep, 'welcome' | 'custody' | 'federation' | 'done'> | null {
-  if (step === 'welcome' || step === 'custody' || step === 'federation' || step === 'done') {
-    return step
-  }
-
-  return null
 }
