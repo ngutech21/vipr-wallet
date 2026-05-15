@@ -7,15 +7,18 @@ const QBtnStub = {
     to: { type: [String, Object], required: false, default: undefined },
     color: { type: String, required: false, default: undefined },
     icon: { type: String, required: false, default: '' },
+    disable: { type: Boolean, required: false, default: false },
+    loading: { type: Boolean, required: false, default: false },
   },
   emits: ['click'],
   template: `
     <button
       v-bind="$attrs"
+      :disabled="disable || loading"
       :data-to="to == null ? '' : JSON.stringify(to)"
       :data-color="color ?? ''"
       :data-icon="icon"
-      @click="$emit('click')"
+      @click="!disable && !loading && $emit('click')"
     >
       <slot />
     </button>

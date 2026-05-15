@@ -64,9 +64,12 @@ describe('IndexPage.vue', () => {
             name: 'QBtn',
             props: {
               to: { type: [String, Object], required: false, default: '' },
+              disable: { type: Boolean, required: false, default: false },
+              loading: { type: Boolean, required: false, default: false },
             },
+            emits: ['click'],
             template:
-              '<button v-bind="$attrs" :data-to="typeof to === \'string\' ? to : JSON.stringify(to)" @click="$emit(\'click\')"><slot /></button>',
+              '<button v-bind="$attrs" :disabled="disable || loading" :data-to="typeof to === \'string\' ? to : JSON.stringify(to)" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
           }),
         },
       },
@@ -111,9 +114,12 @@ describe('IndexPage.vue', () => {
             name: 'QBtn',
             props: {
               to: { type: [String, Object], required: false, default: '' },
+              disable: { type: Boolean, required: false, default: false },
+              loading: { type: Boolean, required: false, default: false },
             },
+            emits: ['click'],
             template:
-              '<button v-bind="$attrs" :data-to="typeof to === \'string\' ? to : JSON.stringify(to)" @click="$emit(\'click\')"><slot /></button>',
+              '<button v-bind="$attrs" :disabled="disable || loading" :data-to="typeof to === \'string\' ? to : JSON.stringify(to)" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
           }),
         },
       },

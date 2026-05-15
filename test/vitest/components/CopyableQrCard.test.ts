@@ -7,8 +7,13 @@ const SlotStub = {
 }
 
 const QBtnStub = {
+  props: {
+    disable: { type: Boolean, required: false, default: false },
+    loading: { type: Boolean, required: false, default: false },
+  },
   emits: ['click'],
-  template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
+  template:
+    '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
 }
 
 const QDialogStub = {

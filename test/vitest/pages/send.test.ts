@@ -115,7 +115,7 @@ describe('SendPage query invoice handling', () => {
     },
     emits: ['click'],
     template:
-      '<button v-bind="$attrs" type="button" :disabled="disable || loading" :icon="icon" :label="label" @click="$emit(\'click\')"><slot>{{ label }}</slot></button>',
+      '<button v-bind="$attrs" type="button" :disabled="disable || loading" :icon="icon" :label="label" @click="!disable && !loading && $emit(\'click\')"><slot>{{ label }}</slot></button>',
   }
 
   const QInputStub = {

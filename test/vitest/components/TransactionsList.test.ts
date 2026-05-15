@@ -158,7 +158,7 @@ function createWrapper(mode: 'home' | 'history' = 'home') {
           },
           emits: ['click'],
           template:
-            '<button v-bind="$attrs" :disabled="disable" @click="$emit(\'click\')">{{ loading ? "loading" : label }}<slot /></button>',
+            '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')">{{ loading ? "loading" : label }}<slot /></button>',
         },
         'q-spinner-dots': true,
       },

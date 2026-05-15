@@ -95,7 +95,7 @@ describe('SendEcashPage.vue', () => {
             },
             emits: ['click'],
             template:
-              '<button v-bind="$attrs" :disabled="disable" @click="$emit(\'click\')"><slot /></button>',
+              '<button v-bind="$attrs" :disabled="disable" @click="!disable && $emit(\'click\')"><slot /></button>',
           },
           'q-input': {
             props: {

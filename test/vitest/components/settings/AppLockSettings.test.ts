@@ -31,7 +31,9 @@ vi.mock('quasar', async (importOriginal) => {
 
 const QBtnStub = {
   props: ['label', 'disable', 'loading'],
-  template: '<button v-bind="$attrs" :disabled="disable || loading">{{ label }}</button>',
+  emits: ['click'],
+  template:
+    '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')">{{ label }}</button>',
 }
 
 const QDialogStub = {

@@ -28,7 +28,7 @@ const QBtnStub = {
   props: ['label', 'disable'],
   emits: ['click'],
   template:
-    '<button v-bind="$attrs" :disabled="disable" @click="$emit(\'click\')">{{ label }}<slot /></button>',
+    '<button v-bind="$attrs" :disabled="disable" @click="!disable && $emit(\'click\')">{{ label }}<slot /></button>',
 }
 
 const QInputStub = {

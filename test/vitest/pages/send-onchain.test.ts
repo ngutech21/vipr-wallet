@@ -22,7 +22,7 @@ const qBtnStub = {
   },
   emits: ['click'],
   template:
-    '<button v-bind="$attrs" type="button" :disabled="disable || loading" @click="$emit(\'click\')"><slot>{{ label }}</slot></button>',
+    '<button v-bind="$attrs" type="button" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot>{{ label }}</slot></button>',
 }
 
 const qInputStub = {

@@ -16,14 +16,17 @@ const QBtnStub = {
   props: {
     label: { type: String, required: false, default: '' },
     to: { type: [String, Object], required: false, default: undefined },
+    disable: { type: Boolean, required: false, default: false },
+    loading: { type: Boolean, required: false, default: false },
   },
   emits: ['click'],
   template: `
     <button
       v-bind="$attrs"
+      :disabled="disable || loading"
       :data-label="label"
       :data-to="to == null ? '' : JSON.stringify(to)"
-      @click="$emit('click')"
+      @click="!disable && !loading && $emit('click')"
     >
       <slot />{{ label }}
     </button>

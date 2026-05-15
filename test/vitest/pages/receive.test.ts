@@ -97,9 +97,10 @@ const QBtnStub = {
   template: `
     <button
       v-bind="$attrs"
+      :disabled="disable || loading"
       :data-disabled="disable ? 'true' : 'false'"
       :data-busy="loading ? 'true' : 'false'"
-      @click="$emit('click')"
+      @click="!disable && !loading && $emit('click')"
     >
       <slot />
       {{ label }}{{ icon }}
@@ -250,16 +251,17 @@ describe('ReceivePage Lightning receive flow', () => {
     federationStoreState.selectedFederation = undefined
 
     wrapper = createWrapper()
-    await createInvoiceFromUi()
+    await enterAmount('100')
+    const createInvoiceButton = wrapper.get('[data-testid="receive-create-invoice-btn"]')
+
+    expect(createInvoiceButton.attributes('disabled')).toBeDefined()
+
+    await createInvoiceButton.trigger('click')
+    await flushPromises()
 
     expect(mockCreateInvoice).not.toHaveBeenCalled()
     expect(mockSubscribeLnReceive).not.toHaveBeenCalled()
-    expect(mockNotifyCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        color: 'negative',
-        message: 'Select a federation before creating an invoice',
-      }),
-    )
+    expect(mockNotifyCreate).not.toHaveBeenCalled()
   })
 
   it('does not subscribe for payment when invoice creation fails', async () => {

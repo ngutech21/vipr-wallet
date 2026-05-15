@@ -51,9 +51,18 @@ const qBtnStub = defineComponent({
       type: String,
       default: '',
     },
+    disable: {
+      type: Boolean,
+      default: false,
+    },
+    loading: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ['click'],
-  template: '<button @click="$emit(\'click\')">{{ label }}<slot /></button>',
+  template:
+    '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')">{{ label }}<slot /></button>',
 })
 
 const modalCardStub = defineComponent({

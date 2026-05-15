@@ -7,9 +7,12 @@ const QBtnStub = {
   props: {
     label: { type: String, required: false, default: '' },
     icon: { type: String, required: false, default: '' },
+    disable: { type: Boolean, required: false, default: false },
+    loading: { type: Boolean, required: false, default: false },
   },
   emits: ['click'],
-  template: '<button v-bind="$attrs" @click="$emit(\'click\')">{{ label }}{{ icon }}</button>',
+  template:
+    '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')">{{ label }}{{ icon }}</button>',
 }
 
 const buttons: KeypadButton[] = [

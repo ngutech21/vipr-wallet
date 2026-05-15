@@ -47,7 +47,7 @@ const QBtnStub = {
   props: ['label', 'disable', 'loading'],
   emits: ['click'],
   template:
-    '<button v-bind="$attrs" :disabled="disable || loading" @click="$emit(\'click\')">{{ label }}</button>',
+    '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')">{{ label }}</button>',
 }
 
 const SlotStub = {

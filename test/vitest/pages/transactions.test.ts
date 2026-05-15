@@ -33,7 +33,13 @@ describe('TransactionsPage.vue', () => {
             template: '<div><slot /></div>',
           },
           'q-btn': {
-            template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
+            props: {
+              disable: { type: Boolean, required: false, default: false },
+              loading: { type: Boolean, required: false, default: false },
+            },
+            emits: ['click'],
+            template:
+              '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
           },
         },
       },
@@ -55,7 +61,13 @@ describe('TransactionsPage.vue', () => {
             template: '<div><slot /></div>',
           },
           'q-btn': {
-            template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
+            props: {
+              disable: { type: Boolean, required: false, default: false },
+              loading: { type: Boolean, required: false, default: false },
+            },
+            emits: ['click'],
+            template:
+              '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
           },
         },
       },
@@ -76,7 +88,13 @@ describe('TransactionsPage.vue', () => {
             template: '<div><slot /></div>',
           },
           'q-btn': {
-            template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
+            props: {
+              disable: { type: Boolean, required: false, default: false },
+              loading: { type: Boolean, required: false, default: false },
+            },
+            emits: ['click'],
+            template:
+              '<button v-bind="$attrs" :disabled="disable || loading" @click="!disable && !loading && $emit(\'click\')"><slot /></button>',
           },
         },
       },
