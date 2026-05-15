@@ -1,10 +1,10 @@
-/* eslint-disable vue/one-component-per-file */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { computed, defineComponent, type PropType } from 'vue'
 import { createTestingPinia } from '@pinia/testing'
 import IndexPage from 'src/pages/index.vue'
 import type { FederationJoinFlow } from 'src/composables/useFederationJoinFlow'
+import { PassthroughStub, QBtnStub } from '../mocks/quasar-stubs'
 
 const FederationJoinDialogsStub = defineComponent({
   name: 'FederationJoinDialogs',
@@ -55,19 +55,12 @@ describe('IndexPage.vue', () => {
             template: '<div data-testid="send-ecash-selection-stub" />',
           },
           ReceiveEcashSelection: true,
-          'q-page': { template: '<div><slot /></div>' },
-          'q-dialog': { template: '<div><slot /></div>' },
-          'q-chip': { template: '<div><slot /></div>' },
+          'q-page': PassthroughStub,
+          'q-dialog': PassthroughStub,
+          'q-chip': PassthroughStub,
           'q-icon': { template: '<i />' },
-          'q-page-sticky': { template: '<div><slot /></div>' },
-          QBtn: defineComponent({
-            name: 'QBtn',
-            props: {
-              to: { type: [String, Object], required: false, default: '' },
-            },
-            template:
-              '<button v-bind="$attrs" :data-to="typeof to === \'string\' ? to : JSON.stringify(to)" @click="$emit(\'click\')"><slot /></button>',
-          }),
+          'q-page-sticky': PassthroughStub,
+          QBtn: QBtnStub,
         },
       },
     })
@@ -103,18 +96,11 @@ describe('IndexPage.vue', () => {
           FederationJoinDialogs: FederationJoinDialogsStub,
           SendEcashSelection: true,
           ReceiveEcashSelection: true,
-          'q-page': { template: '<div><slot /></div>' },
-          'q-chip': { template: '<div><slot /></div>' },
+          'q-page': PassthroughStub,
+          'q-chip': PassthroughStub,
           'q-icon': { template: '<i />' },
-          'q-page-sticky': { template: '<div><slot /></div>' },
-          QBtn: defineComponent({
-            name: 'QBtn',
-            props: {
-              to: { type: [String, Object], required: false, default: '' },
-            },
-            template:
-              '<button v-bind="$attrs" :data-to="typeof to === \'string\' ? to : JSON.stringify(to)" @click="$emit(\'click\')"><slot /></button>',
-          }),
+          'q-page-sticky': PassthroughStub,
+          QBtn: QBtnStub,
         },
       },
     })

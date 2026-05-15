@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import ReceivedOnchainPage from 'src/pages/received-onchain.vue'
+import { PassthroughStub, QBtnStub } from '../mocks/quasar-stubs'
 
 const useConfettiCelebrationMock = vi.hoisted(() => vi.fn())
 
@@ -16,24 +17,15 @@ vi.mock('src/composables/useConfettiCelebration', () => ({
   useConfettiCelebration: useConfettiCelebrationMock,
 }))
 
-const SlotStub = {
-  template: '<div><slot /></div>',
-}
-
 describe('ReceivedOnchainPage', () => {
   it('renders an onchain-specific success state', () => {
     const wrapper = mount(ReceivedOnchainPage, {
       global: {
         stubs: {
-          'q-page': SlotStub,
-          'q-card': SlotStub,
-          'q-card-section': SlotStub,
-          'q-btn': {
-            props: {
-              label: { type: String, required: false, default: '' },
-            },
-            template: '<button v-bind="$attrs"><slot />{{ label }}</button>',
-          },
+          'q-page': PassthroughStub,
+          'q-card': PassthroughStub,
+          'q-card-section': PassthroughStub,
+          'q-btn': QBtnStub,
           'q-icon': true,
         },
       },

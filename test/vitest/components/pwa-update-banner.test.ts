@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import PwaUpdateBanner from 'src/components/PwaUpdateBanner.vue'
+import { QBtnStub } from '../mocks/quasar-stubs'
 
 type MockRoute = {
   name: string | null
@@ -38,13 +39,6 @@ vi.mock('quasar', async (importOriginal) => {
     },
   })
 })
-
-const QBtnStub = {
-  props: ['label', 'disable', 'loading'],
-  emits: ['click'],
-  template:
-    '<button v-bind="$attrs" :disabled="disable || loading" @click="$emit(\'click\')">{{ label }}</button>',
-}
 
 const QBannerStub = {
   template: '<div v-bind="$attrs"><slot /></div>',

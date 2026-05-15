@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import AppLockSettings from 'src/components/settings/AppLockSettings.vue'
+import { QBtnStub } from '../../mocks/quasar-stubs'
 
 const mockNotifyCreate = vi.hoisted(() => vi.fn())
 const mockAppLockIsBiometricAvailable = vi.hoisted(() => vi.fn())
@@ -28,11 +29,6 @@ vi.mock('quasar', async (importOriginal) => {
     },
   })
 })
-
-const QBtnStub = {
-  props: ['label', 'disable', 'loading'],
-  template: '<button v-bind="$attrs" :disabled="disable || loading">{{ label }}</button>',
-}
 
 const QDialogStub = {
   props: {

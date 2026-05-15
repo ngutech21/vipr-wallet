@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import NumericKeypad from 'src/components/NumericKeypad.vue'
 import type { KeypadButton } from 'src/composables/useNumericInput'
+import { QBtnStub } from '../mocks/quasar-stubs'
 
 describe('NumericKeypad.vue', () => {
   it('renders provided keypad buttons and delegates clicks', async () => {
@@ -18,10 +19,7 @@ describe('NumericKeypad.vue', () => {
       },
       global: {
         stubs: {
-          'q-btn': {
-            emits: ['click'],
-            template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
-          },
+          'q-btn': QBtnStub,
         },
       },
     })

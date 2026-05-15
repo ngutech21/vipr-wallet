@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import SendEcashPage from 'src/pages/send-ecash.vue'
+import { PassthroughStub, QBtnStub, QInputStub } from '../mocks/quasar-stubs'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockSpendEcashOffline = vi.hoisted(() => vi.fn())
@@ -71,12 +72,12 @@ describe('SendEcashPage.vue', () => {
       global: {
         stubs: {
           transition: false,
-          'q-page': { template: '<div><slot /></div>' },
-          'q-toolbar': { template: '<div><slot /></div>' },
-          'q-toolbar-title': { template: '<div><slot /></div>' },
-          'q-card': { template: '<div><slot /></div>' },
-          'q-card-section': { template: '<div><slot /></div>' },
-          'q-card-actions': { template: '<div><slot /></div>' },
+          'q-page': PassthroughStub,
+          'q-toolbar': PassthroughStub,
+          'q-toolbar-title': PassthroughStub,
+          'q-card': PassthroughStub,
+          'q-card-section': PassthroughStub,
+          'q-card-actions': PassthroughStub,
           'q-separator': { template: '<hr />' },
           'q-space': { template: '<span />' },
           'q-spinner-dots': { template: '<span />' },
@@ -89,39 +90,8 @@ describe('SendEcashPage.vue', () => {
           FederationSelector: {
             template: '<div data-testid="federation-selector-stub" />',
           },
-          'q-btn': {
-            props: {
-              disable: { type: Boolean, required: false, default: false },
-            },
-            emits: ['click'],
-            template:
-              '<button v-bind="$attrs" :disabled="disable" @click="$emit(\'click\')"><slot /></button>',
-          },
-          'q-input': {
-            props: {
-              modelValue: { type: [String, Number, null], required: false, default: '' },
-              type: { type: String, required: false, default: 'text' },
-              readonly: { type: Boolean, required: false, default: false },
-            },
-            emits: ['update:modelValue'],
-            template: `
-              <label v-bind="$attrs">
-                <textarea
-                  v-if="type === 'textarea'"
-                  :value="modelValue"
-                  :readonly="readonly"
-                  @input="$emit('update:modelValue', $event.target.value)"
-                />
-                <input
-                  v-else
-                  :type="type"
-                  :value="modelValue"
-                  :readonly="readonly"
-                  @input="$emit('update:modelValue', $event.target.value)"
-                />
-              </label>
-            `,
-          },
+          'q-btn': QBtnStub,
+          'q-input': QInputStub,
         },
       },
     })

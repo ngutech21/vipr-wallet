@@ -39,6 +39,16 @@ Playwright is configured in `playwright.config.ts` (tests live under `test/e2e`)
 - After any updates (code, config, or dependencies), run tests and ensure they pass before finalizing changes.
 - For UI verification/debugging tasks, use the Codex Playwright/Browser plugin and Playwright MCP tooling first (`browser_snapshot` first, then interactions/assertions). Use Playwright via CLI only as a fallback when the plugin is unavailable, cannot reach the target, or when running the committed E2E suite itself.
 
+#### Test Authoring Best Practices
+
+- Prefer behavior-focused tests over implementation-focused tests. Exercise components through public user-like interactions such as clicks, input updates, emitted child-component events, router navigation, Pinia actions, and visible DOM state.
+- Treat `wrapper.vm` as a test smell in page and component tests. Avoid calling private component methods, reading local refs, or casting `wrapper.vm as any`; this couples tests to `<script setup>` internals and makes harmless refactors break tests.
+- Use `wrapper.vm` only when intentionally testing a documented public component instance API, such as methods exposed via `defineExpose` and consumed by a parent component. Do not use it as a shortcut to trigger ordinary UI behavior.
+- Use `data-testid` selectors for stable interaction points and state assertions. Avoid broad text assertions unless the copy itself is the behavior under test, such as a user-facing validation or error message.
+- Keep business logic in pure utilities, services, or composables when possible, and test those with direct input/output unit tests. Page tests should then verify wiring: DOM event in, store/composable/router effect out.
+- When stubbing child components, make the stub preserve the public contract the parent relies on: props, `v-model` events, click events, slots, and relevant emitted events. Avoid inert `true` stubs for children whose events drive the flow under test.
+- For wallet/payment flows, assert functional outcomes rather than presentation details: invoice creation arguments, subscription lifecycle, balance refresh, route targets, cleanup behavior, and error handling.
+
 ### Design System
 
 - Vipr has a mandatory design system documented in `docs/design-system.md`.

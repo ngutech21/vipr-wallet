@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import StartupWizardPage from 'src/pages/startup-wizard.vue'
+import { PassthroughStub, QBtnStub, QInputStub } from '../mocks/quasar-stubs'
 
 type OnboardingStoreMock = {
   flow: 'create' | 'restore' | null
@@ -107,28 +108,6 @@ vi.mock('quasar', async (importOriginal) => {
   })
 })
 
-const SlotStub = {
-  template: '<div><slot /></div>',
-}
-
-const QBtnStub = {
-  props: ['label', 'disable', 'loading', 'to'],
-  emits: ['click'],
-  template:
-    '<button v-bind="$attrs" :disabled="disable || loading" @click="$emit(\'click\')">{{ label }}<slot /></button>',
-}
-
-const QInputStub = {
-  props: ['modelValue'],
-  emits: ['update:modelValue'],
-  template:
-    '<input v-bind="$attrs" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
-}
-
-const QIconStub = {
-  template: '<span><slot /></span>',
-}
-
 const JoinFederationInviteStepStub = {
   props: ['inviteCode'],
   emits: ['update:inviteCode', 'paste'],
@@ -178,12 +157,12 @@ function createWrapper() {
     global: {
       stubs: {
         transition: false,
-        'q-page': SlotStub,
-        'q-card': SlotStub,
-        'q-card-section': SlotStub,
+        'q-page': PassthroughStub,
+        'q-card': PassthroughStub,
+        'q-card-section': PassthroughStub,
         'q-btn': QBtnStub,
         'q-input': QInputStub,
-        'q-icon': QIconStub,
+        'q-icon': PassthroughStub,
         'q-separator': true,
         JoinFederationInviteStep: JoinFederationInviteStepStub,
         JoinFederationPreviewStep: JoinFederationPreviewStepStub,

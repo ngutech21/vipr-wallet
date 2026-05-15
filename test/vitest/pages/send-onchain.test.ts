@@ -3,6 +3,7 @@ import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import { reactive } from 'vue'
 import SendOnchainPage from 'src/pages/send-onchain.vue'
 import { MIN_ONCHAIN_SEND_SATS } from 'src/utils/onchainPolicy'
+import { PassthroughStub, QBtnStub, QInputStub } from '../mocks/quasar-stubs'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const mockUseRoute = vi.hoisted(() => vi.fn())
@@ -10,36 +11,9 @@ const mockSendOnchain = vi.hoisted(() => vi.fn())
 const mockLoadingShow = vi.hoisted(() => vi.fn())
 const mockLoadingHide = vi.hoisted(() => vi.fn())
 const mockNotify = vi.hoisted(() => vi.fn())
-const amountRef = vi.hoisted(() => ({ value: 0, __v_isRef: true }))
 const walletStoreState = vi.hoisted(() => ({
   balance: 500_000,
 }))
-const mockSetValue = vi.hoisted(() =>
-  vi.fn((nextValue: number) => {
-    amountRef.value = nextValue
-  }),
-)
-
-const qBtnStub = {
-  emits: ['click'],
-  template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
-}
-
-const qInputStub = {
-  props: {
-    modelValue: {
-      type: [String, Number],
-      default: '',
-    },
-    errorMessage: {
-      type: String,
-      default: '',
-    },
-  },
-  emits: ['update:modelValue'],
-  template:
-    '<div><textarea v-bind="$attrs" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)"></textarea><div v-if="errorMessage">{{ errorMessage }}</div></div>',
-}
 
 vi.mock('vue-router', () => ({
   useRoute: (...args: unknown[]) => mockUseRoute(...args),
@@ -76,14 +50,6 @@ vi.mock('src/stores/wallet', () => ({
   }),
 }))
 
-vi.mock('src/composables/useNumericInput', () => ({
-  useNumericInput: () => ({
-    value: amountRef,
-    keypadButtons: [],
-    setValue: mockSetValue,
-  }),
-}))
-
 describe('SendOnchainPage', () => {
   type RouteState = { query: { target?: string | string[]; amount?: string } }
 
@@ -95,37 +61,20 @@ describe('SendOnchainPage', () => {
       global: {
         stubs: {
           transition: false,
-          NumericKeypad: true,
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-toolbar': {
-            template: '<div><slot /></div>',
-          },
-          'q-toolbar-title': {
-            template: '<div><slot /></div>',
-          },
-          'q-card': {
-            template: '<div><slot /></div>',
-          },
-          'q-card-section': {
-            template: '<div><slot /></div>',
-          },
+          'q-page': PassthroughStub,
+          'q-toolbar': PassthroughStub,
+          'q-toolbar-title': PassthroughStub,
+          'q-card': PassthroughStub,
+          'q-card-section': PassthroughStub,
           'q-spinner-dots': true,
           'q-spinner': true,
-          'q-dialog': {
-            template: '<div><slot /></div>',
-          },
-          ModalCard: {
-            template: '<div><slot /></div>',
-          },
+          'q-dialog': PassthroughStub,
+          ModalCard: PassthroughStub,
           FederationAvatar: true,
           'q-img': true,
-          'q-icon': {
-            template: '<span><slot /></span>',
-          },
-          'q-btn': qBtnStub,
-          'q-input': qInputStub,
+          'q-icon': PassthroughStub,
+          'q-btn': QBtnStub,
+          'q-input': QInputStub,
         },
       },
     })
@@ -137,11 +86,18 @@ describe('SendOnchainPage', () => {
       query: {},
     })
     walletStoreState.balance = 500_000
-    amountRef.value = 0
     mockUseRoute.mockImplementation(() => routeState)
     mockSendOnchain.mockResolvedValue({ operationId: 'withdraw-op-1' })
     mockRouterPush.mockResolvedValue(undefined)
   })
+
+  async function enterAmount(amount: string) {
+    await amount.split('').reduce(async (previousDigit, digit) => {
+      await previousDigit
+      await wrapper.get(`[data-testid="receive-keypad-btn-${digit}"]`).trigger('click')
+    }, Promise.resolve())
+    await flushPromises()
+  }
 
   it('prefills the amount from a bitcoin URI query parameter', async () => {
     routeState.query.target =
@@ -150,10 +106,11 @@ describe('SendOnchainPage', () => {
     wrapper = createWrapper()
     await flushPromises()
 
-    expect(mockSetValue).toHaveBeenCalledWith(21_000)
-    expect(amountRef.value).toBe(21_000)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((wrapper.vm as any).paymentTarget).toBe('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080')
+    expect(wrapper.get('[data-testid="send-onchain-amount-input"]').text()).toContain('21,000')
+    expect(
+      (wrapper.get('[data-testid="send-onchain-target-input"]').element as HTMLTextAreaElement)
+        .value,
+    ).toBe('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080')
     expect(wrapper.text()).toContain('Label: Vipr')
     wrapper.unmount()
   })
@@ -171,7 +128,7 @@ describe('SendOnchainPage', () => {
     await flushPromises()
 
     await wrapper
-      .get('[data-testid="send-onchain-target-input"] textarea')
+      .get('[data-testid="send-onchain-target-input"]')
       .setValue('bitcoin:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kygt080?amount=0.00021')
     await flushPromises()
 
@@ -184,10 +141,10 @@ describe('SendOnchainPage', () => {
 
   it('submits an onchain transfer and routes to the pending screen', async () => {
     routeState.query.target = '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy'
-    amountRef.value = 21_000
 
     wrapper = createWrapper()
     await flushPromises()
+    await enterAmount('21000')
     await wrapper.get('[data-testid="send-onchain-submit-btn"]').trigger('click')
     await flushPromises()
 
@@ -211,16 +168,14 @@ describe('SendOnchainPage', () => {
   })
 
   it('passes the onchain draft to the scanner return context', async () => {
-    amountRef.value = 21_000
-
     wrapper = createWrapper()
     await flushPromises()
 
     await wrapper
-      .get('[data-testid="send-onchain-target-input"] textarea')
+      .get('[data-testid="send-onchain-target-input"]')
       .setValue('3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy')
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).openScanner()
+    await enterAmount('21000')
+    await wrapper.get('[data-testid="send-onchain-open-scanner-btn"]').trigger('click')
 
     expect(mockRouterPush).toHaveBeenCalledWith({
       name: '/scan',
@@ -235,10 +190,10 @@ describe('SendOnchainPage', () => {
 
   it('does not submit amounts below the configured onchain minimum', async () => {
     routeState.query.target = '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy'
-    amountRef.value = MIN_ONCHAIN_SEND_SATS - 1
 
     wrapper = createWrapper()
     await flushPromises()
+    await enterAmount(String(MIN_ONCHAIN_SEND_SATS - 1))
     await wrapper.get('[data-testid="send-onchain-submit-btn"]').trigger('click')
     await flushPromises()
 

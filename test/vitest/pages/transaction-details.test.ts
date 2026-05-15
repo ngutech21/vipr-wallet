@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import TransactionDetailsPage from 'src/pages/transaction/[id].vue'
+import { PassthroughStub, QBtnStub } from '../mocks/quasar-stubs'
 
 const mockRouterReplace = vi.hoisted(() => vi.fn())
 const mockGetTransactionByOperationId = vi.hoisted(() => vi.fn())
@@ -40,12 +41,8 @@ describe('TransactionDetailsPage', () => {
           LightningTransactionDetails: true,
           EcashTransactionDetails: true,
           WalletTransactionDetails: true,
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-btn': {
-            template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
-          },
+          'q-page': PassthroughStub,
+          'q-btn': QBtnStub,
           'q-spinner': true,
           'q-icon': true,
         },
@@ -54,33 +51,6 @@ describe('TransactionDetailsPage', () => {
 
     await flushPromises()
     await wrapper.get('[data-testid="transaction-details-back-btn"]').trigger('click')
-
-    expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/' })
-  })
-
-  it('uses the same navigation path for the swipe handler', async () => {
-    const wrapper = mount(TransactionDetailsPage, {
-      global: {
-        stubs: {
-          transition: false,
-          LightningTransactionDetails: true,
-          EcashTransactionDetails: true,
-          WalletTransactionDetails: true,
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-btn': {
-            template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
-          },
-          'q-spinner': true,
-          'q-icon': true,
-        },
-      },
-    })
-
-    await flushPromises()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).navigateBack()
 
     expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/' })
   })
@@ -102,12 +72,8 @@ describe('TransactionDetailsPage', () => {
           LightningTransactionDetails: true,
           EcashTransactionDetails: true,
           WalletTransactionDetails: true,
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-btn': {
-            template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
-          },
+          'q-page': PassthroughStub,
+          'q-btn': QBtnStub,
           'q-spinner': true,
           'q-icon': true,
         },

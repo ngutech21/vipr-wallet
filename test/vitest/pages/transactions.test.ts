@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import TransactionsPage from 'src/pages/transactions.vue'
+import { PassthroughStub, QBtnStub } from '../mocks/quasar-stubs'
 
 const mockRouterReplace = vi.hoisted(() => vi.fn())
 
@@ -29,12 +30,8 @@ describe('TransactionsPage.vue', () => {
             },
             template: '<div data-testid="transactions-list-stub" :data-mode="mode" />',
           }),
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-btn': {
-            template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
-          },
+          'q-page': PassthroughStub,
+          'q-btn': QBtnStub,
         },
       },
     })
@@ -51,39 +48,13 @@ describe('TransactionsPage.vue', () => {
         stubs: {
           transition: false,
           TransactionsList: true,
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-btn': {
-            template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
-          },
+          'q-page': PassthroughStub,
+          'q-btn': QBtnStub,
         },
       },
     })
 
     await wrapper.get('[data-testid="transactions-back-btn"]').trigger('click')
-
-    expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/' })
-  })
-
-  it('uses the same navigation path for the swipe handler', async () => {
-    const wrapper = mount(TransactionsPage, {
-      global: {
-        stubs: {
-          transition: false,
-          TransactionsList: true,
-          'q-page': {
-            template: '<div><slot /></div>',
-          },
-          'q-btn': {
-            template: '<button v-bind="$attrs" @click="$emit(\'click\')"><slot /></button>',
-          },
-        },
-      },
-    })
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (wrapper.vm as any).goBack()
 
     expect(mockRouterReplace).toHaveBeenCalledWith({ name: '/' })
   })

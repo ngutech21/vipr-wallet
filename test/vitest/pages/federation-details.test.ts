@@ -4,6 +4,7 @@ import { nextTick } from 'vue'
 import { Quasar } from 'quasar'
 import FederationDetailsPage from 'src/pages/federation/[id].vue'
 import type { Federation } from 'src/types/federation'
+import { PassthroughStub, QBtnStub } from '../mocks/quasar-stubs'
 
 const mockRouterPush = vi.hoisted(() => vi.fn())
 const routeState = vi.hoisted(() => ({
@@ -86,6 +87,7 @@ function createMetaModule() {
 
 describe('FederationDetailsPage', () => {
   beforeEach(() => {
+    vi.useRealTimers()
     vi.clearAllMocks()
     routeState.params.id = 'fed-1'
     federationStoreState.selectedFederationId = 'fed-1'
@@ -97,8 +99,11 @@ describe('FederationDetailsPage', () => {
         listGateways,
       },
     }
+    walletStoreState.closeWallet.mockResolvedValue(undefined)
+    walletStoreState.deleteFederationData.mockResolvedValue(undefined)
     walletStoreState.openWallet.mockResolvedValue(undefined)
     selectFederation.mockResolvedValue(undefined)
+    federationStoreState.deleteFederation.mockReturnValue(undefined)
     getSpendableUtxos.mockResolvedValue([])
     getMetaConsensusValue.mockResolvedValue({
       revision: 1,
@@ -133,17 +138,22 @@ describe('FederationDetailsPage', () => {
           FederationGuardians: true,
           FederationUtxos: true,
           CopyableQrCard: true,
-          'q-page': { template: '<div><slot /></div>' },
-          'q-card': { template: '<div><slot /></div>' },
-          'q-card-section': { template: '<div><slot /></div>' },
-          'q-card-actions': { template: '<div><slot /></div>' },
-          'q-btn': { template: '<button v-bind="$attrs"><slot /></button>' },
-          'q-avatar': { template: '<div><slot /></div>' },
+          'q-page': PassthroughStub,
+          'q-card': PassthroughStub,
+          'q-card-section': PassthroughStub,
+          'q-card-actions': PassthroughStub,
+          'q-btn': QBtnStub,
+          'q-avatar': PassthroughStub,
           'q-img': true,
-          'q-icon': { template: '<span><slot /></span>' },
-          'q-chip': { template: '<span><slot /></span>' },
+          'q-icon': PassthroughStub,
+          'q-chip': PassthroughStub,
           'q-separator': true,
-          'q-dialog': { template: '<div><slot /></div>' },
+          'q-dialog': {
+            props: {
+              modelValue: { type: Boolean, required: false, default: false },
+            },
+            template: '<div v-if="modelValue"><slot /></div>',
+          },
           'q-list': { template: '<div><slot /></div>' },
           'q-item': { template: '<div><slot /></div>' },
           'q-item-section': { template: '<div><slot /></div>' },
@@ -243,5 +253,56 @@ describe('FederationDetailsPage', () => {
     expect(wrapper.text()).toContain('Failed to load consensus metadata.')
 
     wrapper.unmount()
+  })
+
+  it('leaves a federation by closing the wallet, deleting local data, and returning to federations', async () => {
+    vi.useFakeTimers()
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    expect(wrapper.find('[data-testid="federation-details-leave-confirm-btn"]').exists()).toBe(
+      false,
+    )
+    await wrapper.get('[data-testid="federation-details-leave-btn"]').trigger('click')
+    expect(wrapper.find('[data-testid="federation-details-leave-confirm-btn"]').exists()).toBe(true)
+    await wrapper.get('[data-testid="federation-details-leave-confirm-btn"]').trigger('click')
+    await flushPromises()
+    await vi.advanceTimersByTimeAsync(100)
+    await flushPromises()
+
+    expect(walletStoreState.closeWallet).toHaveBeenCalledTimes(1)
+    expect(walletStoreState.deleteFederationData).toHaveBeenCalledWith('fed-1')
+    expect(federationStoreState.deleteFederation).toHaveBeenCalledWith('fed-1')
+    expect(walletStoreState.openWallet).toHaveBeenCalledTimes(1)
+    expect(mockRouterPush).toHaveBeenCalledWith({ name: '/federations/' })
+
+    wrapper.unmount()
+    vi.useRealTimers()
+  })
+
+  it('returns to federations without deleting the store entry when local federation data deletion fails', async () => {
+    vi.useFakeTimers()
+    walletStoreState.deleteFederationData.mockRejectedValue(new Error('delete failed'))
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    expect(wrapper.find('[data-testid="federation-details-leave-confirm-btn"]').exists()).toBe(
+      false,
+    )
+    await wrapper.get('[data-testid="federation-details-leave-btn"]').trigger('click')
+    expect(wrapper.find('[data-testid="federation-details-leave-confirm-btn"]').exists()).toBe(true)
+    await wrapper.get('[data-testid="federation-details-leave-confirm-btn"]').trigger('click')
+    await flushPromises()
+    await vi.advanceTimersByTimeAsync(100)
+    await flushPromises()
+
+    expect(walletStoreState.closeWallet).toHaveBeenCalledTimes(1)
+    expect(walletStoreState.deleteFederationData).toHaveBeenCalledWith('fed-1')
+    expect(federationStoreState.deleteFederation).not.toHaveBeenCalled()
+    expect(walletStoreState.openWallet).not.toHaveBeenCalled()
+    expect(mockRouterPush).toHaveBeenCalledWith({ name: '/federations/' })
+
+    wrapper.unmount()
+    vi.useRealTimers()
   })
 })

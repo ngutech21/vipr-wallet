@@ -1,26 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import ViprTopbar from 'src/components/ViprTopbar.vue'
-
-const QBtnStub = {
-  props: {
-    to: { type: [String, Object], required: false, default: undefined },
-    color: { type: String, required: false, default: undefined },
-    icon: { type: String, required: false, default: '' },
-  },
-  emits: ['click'],
-  template: `
-    <button
-      v-bind="$attrs"
-      :data-to="to == null ? '' : JSON.stringify(to)"
-      :data-color="color ?? ''"
-      :data-icon="icon"
-      @click="$emit('click')"
-    >
-      <slot />
-    </button>
-  `,
-}
+import { QBtnStub } from '../mocks/quasar-stubs'
 
 describe('ViprTopbar', () => {
   it('renders a reusable back button contract', async () => {

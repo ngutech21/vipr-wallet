@@ -2,13 +2,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 
 import AppLockPinEntry from 'src/components/AppLockPinEntry.vue'
-
-const QBtnStub = {
-  props: ['label', 'disable', 'loading'],
-  emits: ['click'],
-  template:
-    '<button v-bind="$attrs" :disabled="disable || loading" @click="$emit(\'click\')">{{ label }}</button>',
-}
+import { QBtnStub } from '../mocks/quasar-stubs'
 
 const QIconStub = {
   template: '<span v-bind="$attrs"></span>',

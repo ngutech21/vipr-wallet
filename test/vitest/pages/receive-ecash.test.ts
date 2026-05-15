@@ -7,6 +7,7 @@ import ReceiveEcashPage from 'src/pages/receive-ecash.vue'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore, type EcashInspection } from 'src/stores/wallet'
 import type { Federation } from 'src/types/federation'
+import { PassthroughStub, QBtnStub, QInputStub } from '../mocks/quasar-stubs'
 
 type RouteState = {
   query: Record<string, string>
@@ -38,22 +39,6 @@ vi.mock('quasar', async (importOriginal) => {
       hide: mockLoadingHide,
     },
   })
-})
-
-const passthrough = defineComponent({
-  template: '<div><slot /></div>',
-})
-
-const qBtnStub = defineComponent({
-  name: 'QBtn',
-  props: {
-    label: {
-      type: String,
-      default: '',
-    },
-  },
-  emits: ['click'],
-  template: '<button @click="$emit(\'click\')">{{ label }}<slot /></button>',
 })
 
 const modalCardStub = defineComponent({
@@ -114,17 +99,17 @@ describe('ReceiveEcashPage', () => {
       global: {
         plugins: [pinia],
         stubs: {
-          'q-page': passthrough,
-          'q-toolbar': passthrough,
-          'q-toolbar-title': passthrough,
-          'q-card': passthrough,
-          'q-card-section': passthrough,
-          'q-dialog': passthrough,
-          'q-icon': passthrough,
-          'q-btn': qBtnStub,
-          'q-input': passthrough,
-          'q-spinner': passthrough,
-          'q-spinner-dots': passthrough,
+          'q-page': PassthroughStub,
+          'q-toolbar': PassthroughStub,
+          'q-toolbar-title': PassthroughStub,
+          'q-card': PassthroughStub,
+          'q-card-section': PassthroughStub,
+          'q-dialog': PassthroughStub,
+          'q-icon': PassthroughStub,
+          'q-btn': QBtnStub,
+          'q-input': QInputStub,
+          'q-spinner': PassthroughStub,
+          'q-spinner-dots': PassthroughStub,
           FederationAvatar: federationAvatarStub,
           ModalCard: modalCardStub,
           JoinFederationPreviewStep: joinFederationPreviewStepStub,
@@ -139,18 +124,24 @@ describe('ReceiveEcashPage', () => {
     mockRouterPush.mockResolvedValue(undefined)
   })
 
-  function setEcashToken(value: string) {
-    ;(wrapper.vm as unknown as { ecashToken: string }).ecashToken = value
+  async function setEcashToken(value: string) {
+    await wrapper.get('[data-testid="receive-ecash-token-input"]').setValue(value)
+    await flushPromises()
   }
 
   async function redeemEcash() {
-    await (wrapper.vm as unknown as { redeemEcash: () => Promise<void> }).redeemEcash()
+    await wrapper.get('[data-testid="receive-ecash-submit-btn"]').trigger('click')
+    await flushPromises()
   }
 
   async function pasteFromClipboard() {
-    await (
-      wrapper.vm as unknown as { pasteFromClipboard: () => Promise<void> }
-    ).pasteFromClipboard()
+    await wrapper.get('[data-testid="receive-ecash-paste-btn"]').trigger('click')
+    await flushPromises()
+  }
+
+  async function joinFederationAndRedeem() {
+    await wrapper.get('[data-testid="receive-ecash-join-submit-btn"]').trigger('click')
+    await flushPromises()
   }
 
   function mockClipboardText(value: string) {
@@ -191,7 +182,10 @@ describe('ReceiveEcashPage', () => {
     wrapper = createWrapper()
     await flushPromises()
 
-    expect((wrapper.vm as unknown as { ecashToken: string }).ecashToken).toBe('cashuAquery')
+    expect(
+      (wrapper.get('[data-testid="receive-ecash-token-input"]').element as HTMLTextAreaElement)
+        .value,
+    ).toBe('cashuAquery')
     wrapper.unmount()
   })
 
@@ -274,7 +268,7 @@ describe('ReceiveEcashPage', () => {
 
     vi.spyOn(walletStore, 'inspectEcash').mockResolvedValue(createInspection())
     const redeemEcashSpy = vi.spyOn(walletStore, 'redeemEcash').mockResolvedValue(12_000)
-    setEcashToken('notes-1')
+    await setEcashToken('notes-1')
 
     await redeemEcash()
 
@@ -293,7 +287,7 @@ describe('ReceiveEcashPage', () => {
 
     vi.spyOn(walletStore, 'inspectEcash').mockResolvedValue(createInspection())
     vi.spyOn(walletStore, 'redeemEcash').mockResolvedValue(0)
-    setEcashToken('notes-1')
+    await setEcashToken('notes-1')
 
     await redeemEcash()
 
@@ -308,7 +302,7 @@ describe('ReceiveEcashPage', () => {
 
     vi.spyOn(walletStore, 'inspectEcash').mockResolvedValue(createInspection())
     vi.spyOn(walletStore, 'redeemEcash').mockRejectedValue(new Error('invalid notes'))
-    setEcashToken('bad-notes')
+    await setEcashToken('bad-notes')
 
     await redeemEcash()
     await flushPromises()
@@ -331,7 +325,7 @@ describe('ReceiveEcashPage', () => {
       new TypeError('this.director.parseOobNotes is not a function'),
     )
     const redeemEcashSpy = vi.spyOn(walletStore, 'redeemEcash').mockResolvedValue(12_000)
-    setEcashToken('unknown-fed-notes')
+    await setEcashToken('unknown-fed-notes')
 
     await redeemEcash()
     await flushPromises()
@@ -378,7 +372,7 @@ describe('ReceiveEcashPage', () => {
         return Promise.resolve()
       })
 
-    setEcashToken('new-fed-notes')
+    await setEcashToken('new-fed-notes')
 
     await redeemEcash()
     await flushPromises()
@@ -388,10 +382,7 @@ describe('ReceiveEcashPage', () => {
     })
     expect(redeemEcashSpy).not.toHaveBeenCalled()
 
-    await (
-      wrapper.vm as unknown as { joinFederationAndRedeem: () => Promise<void> }
-    ).joinFederationAndRedeem()
-    await flushPromises()
+    await joinFederationAndRedeem()
 
     expect(federationStore.federations).toContainEqual({
       ...newFederation,
