@@ -48,11 +48,14 @@ const QDialogStub = {
   props: {
     modelValue: { type: Boolean, default: false },
   },
-  emits: ['hide'],
+  emits: ['hide', 'update:modelValue'],
   template: `
     <section v-if="modelValue" data-testid="scan-dialog">
       <slot />
-      <button data-testid="scan-dialog-hide-btn" @click="$emit('hide')" />
+      <button
+        data-testid="scan-dialog-hide-btn"
+        @click="$emit('update:modelValue', false); $emit('hide')"
+      />
     </section>
   `,
 }
