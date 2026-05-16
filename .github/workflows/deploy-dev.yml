@@ -123,6 +123,19 @@ jobs:
             docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:${{ steps.sha.outputs.sha }}-alpine
             docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:dev-latest
 
+      - name: Scan Docker image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:${{ steps.sha.outputs.sha }}-alpine
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+        env:
+          TRIVY_USERNAME: ${{ secrets.DOCKER_NAME }}
+          TRIVY_PASSWORD: ${{ secrets.DOCKER_PAT }}
+
       - name: Deploy to DigitalOcean
         env:
           VIPR_DIGEST: ${{ steps.build-image.outputs.digest }}
