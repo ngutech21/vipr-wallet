@@ -1,8 +1,6 @@
 import { computed, shallowRef } from 'vue'
-import { Loading } from 'quasar'
 import { useLightningStore } from 'src/stores/lightning'
 import { LightningAddress } from '@getalby/lightning-tools'
-import { useAppNotify } from 'src/composables/useAppNotify'
 import { requestInvoice, resolveLnurl, type LnurlPayParams } from 'src/utils/lnurl'
 import { getErrorMessage } from 'src/utils/error'
 import type { Bolt11Invoice } from 'src/types/lightning'
@@ -69,7 +67,6 @@ function toError(error: unknown): Error {
 
 export function useInvoiceDecoding() {
   const lightningStore = useLightningStore()
-  const notify = useAppNotify()
   const decodeState = shallowRef<InvoiceDecodeState>({ type: 'idle' })
   const visibleState = computed(() =>
     decodeState.value.type === 'processing' ? decodeState.value.previous : decodeState.value,
@@ -130,7 +127,6 @@ export function useInvoiceDecoding() {
         await lightningAddress.fetchWithProxy()
         if (lightningAddress.lnurlpData == null) {
           const errorState = setErrorState(new Error('Invalid lightning address'))
-          notify.error(errorState.message)
           return errorState
         }
 
@@ -144,7 +140,6 @@ export function useInvoiceDecoding() {
         return amountState
       } catch (error) {
         const errorState = setErrorState(error)
-        notify.error(`Failed to fetch lightning address: ${errorState.message}`)
         return errorState
       }
     }
@@ -155,7 +150,6 @@ export function useInvoiceDecoding() {
         const params = await resolveLnurl(invoice)
         if (params.tag !== 'payRequest') {
           const errorState = setErrorState(new Error('LNURL is not a payment request'))
-          notify.error(errorState.message)
           return errorState
         }
 
@@ -168,7 +162,6 @@ export function useInvoiceDecoding() {
         return amountState
       } catch (error) {
         const errorState = setErrorState(error)
-        notify.error(`Failed to load LNURL payment request: ${errorState.message}`)
         return errorState
       }
     }
@@ -184,7 +177,6 @@ export function useInvoiceDecoding() {
       return decodedState
     } catch (error) {
       const errorState = setErrorState(error)
-      notify.error(`Failed to decode invoice: ${errorState.message}`)
       return errorState
     }
   }
@@ -206,7 +198,6 @@ export function useInvoiceDecoding() {
 
     function failInvoiceCreation(message: string): InvoiceFromInputResult {
       const errorState = setErrorState(new Error(message))
-      notify.error(message)
       return {
         type: 'error',
         error: errorState.error,
@@ -262,13 +253,10 @@ export function useInvoiceDecoding() {
       throw new Error('Failed to create invoice')
     } catch (error) {
       const errorState = setErrorState(error)
-      notify.error(`Failed to create invoice: ${errorState.message}`)
       return {
         type: 'error',
         error: errorState.error,
       }
-    } finally {
-      Loading.hide()
     }
   }
 
@@ -289,6 +277,30 @@ export function getLnurlAmountError(
   amountSats: number,
   limits: LnurlPayLimits | null,
 ): string | null {
+  const satsLimits = getLnurlLimitSats(limits)
+
+  if (limits != null && satsLimits == null) {
+    return 'Invalid LNURL amount limits'
+  }
+
+  if (satsLimits == null) {
+    return null
+  }
+
+  if (amountSats < satsLimits.minSats) {
+    return `Amount must be at least ${satsLimits.minSats.toLocaleString()} sats`
+  }
+
+  if (amountSats > satsLimits.maxSats) {
+    return `Amount must be ${satsLimits.maxSats.toLocaleString()} sats or less`
+  }
+
+  return null
+}
+
+export function getLnurlLimitSats(
+  limits: LnurlPayLimits | null,
+): { minSats: number; maxSats: number } | null {
   if (limits == null) {
     return null
   }
@@ -297,18 +309,13 @@ export function getLnurlAmountError(
   const maxSats = Math.floor(limits.maxSendableMsats / 1_000)
 
   if (!Number.isFinite(minSats) || !Number.isFinite(maxSats) || minSats > maxSats) {
-    return 'Invalid LNURL amount limits'
+    return null
   }
 
-  if (amountSats < minSats) {
-    return `Amount must be at least ${minSats.toLocaleString()} sats`
+  return {
+    minSats,
+    maxSats,
   }
-
-  if (amountSats > maxSats) {
-    return `Amount must be ${maxSats.toLocaleString()} sats or less`
-  }
-
-  return null
 }
 
 function readLnurlPayParamsLimits(params: LnurlPayParams): LnurlPayLimits | null {

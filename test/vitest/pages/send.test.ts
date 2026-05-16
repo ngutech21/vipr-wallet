@@ -47,6 +47,28 @@ vi.mock('vue-router', () => ({
 }))
 
 vi.mock('src/composables/useInvoiceDecoding', () => ({
+  getLnurlAmountError: (
+    amountSats: number,
+    limits: { minSendableMsats: number; maxSendableMsats: number } | null,
+  ) => {
+    if (limits == null) return null
+    const minSats = Math.ceil(limits.minSendableMsats / 1_000)
+    const maxSats = Math.floor(limits.maxSendableMsats / 1_000)
+    if (!Number.isFinite(minSats) || !Number.isFinite(maxSats) || minSats > maxSats) {
+      return 'Invalid LNURL amount limits'
+    }
+    if (amountSats < minSats) return `Amount must be at least ${minSats.toLocaleString()} sats`
+    if (amountSats > maxSats) return `Amount must be ${maxSats.toLocaleString()} sats or less`
+    return null
+  },
+  getLnurlLimitSats: (limits: { minSendableMsats: number; maxSendableMsats: number } | null) => {
+    if (limits == null) return null
+    const minSats = Math.ceil(limits.minSendableMsats / 1_000)
+    const maxSats = Math.floor(limits.maxSendableMsats / 1_000)
+    return Number.isFinite(minSats) && Number.isFinite(maxSats) && minSats <= maxSats
+      ? { minSats, maxSats }
+      : null
+  },
   useInvoiceDecoding: () => ({
     isProcessing: ref(false),
     amountRequired: mockAmountRequiredRef,
@@ -154,8 +176,20 @@ describe('SendPage query invoice handling', () => {
       },
     })
     mockUseRoute.mockImplementation(() => routeState)
-    mockDecodeInvoiceFromComposable.mockResolvedValue(undefined)
-    mockCreateInvoiceFromInput.mockResolvedValue(undefined)
+    mockDecodeInvoiceFromComposable.mockResolvedValue({
+      type: 'invoice',
+      invoice: {
+        invoice: 'lnbc1',
+        amount: 1,
+      },
+    })
+    mockCreateInvoiceFromInput.mockResolvedValue({
+      type: 'success',
+      invoice: {
+        invoice: 'lnbc1',
+        amount: 1,
+      },
+    })
     mockClearDecodedInvoice.mockImplementation(() => {
       mockDecodedInvoiceRef.value = null
     })

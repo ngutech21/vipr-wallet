@@ -1,51 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { useInvoiceDecoding } from 'src/composables/useInvoiceDecoding'
+import { getLnurlLimitSats, useInvoiceDecoding } from 'src/composables/useInvoiceDecoding'
 
-const {
-  mockDecodeInvoice,
-  mockLightningAddress,
-  mockRequestInvoice,
-  mockResolveLnurl,
-  mockNotifyError,
-} = vi.hoisted(() => ({
-  mockDecodeInvoice: vi.fn((invoice: string) => ({
-    invoice,
-    amount: 1000,
-    description: 'test',
-  })),
-  mockLightningAddress: vi.fn(),
-  mockRequestInvoice: vi.fn(() => Promise.resolve('lnbc1000n1...')),
-  mockResolveLnurl: vi.fn<() => Promise<unknown>>(() =>
-    Promise.resolve({
-      tag: 'payRequest',
-      callback: 'https://example.com/callback',
-      minSendable: 1_000,
-      maxSendable: 100_000,
-    }),
-  ),
-  mockNotifyError: vi.fn(),
-}))
+const { mockDecodeInvoice, mockLightningAddress, mockRequestInvoice, mockResolveLnurl } =
+  vi.hoisted(() => ({
+    mockDecodeInvoice: vi.fn((invoice: string) => ({
+      invoice,
+      amount: 1000,
+      description: 'test',
+    })),
+    mockLightningAddress: vi.fn(),
+    mockRequestInvoice: vi.fn(() => Promise.resolve('lnbc1000n1...')),
+    mockResolveLnurl: vi.fn<() => Promise<unknown>>(() =>
+      Promise.resolve({
+        tag: 'payRequest',
+        callback: 'https://example.com/callback',
+        minSendable: 1_000,
+        maxSendable: 100_000,
+      }),
+    ),
+  }))
 
 // Mock the lightning store
 vi.mock('src/stores/lightning', () => ({
   useLightningStore: vi.fn(() => ({
     decodeInvoice: mockDecodeInvoice,
-  })),
-}))
-
-// Mock Quasar
-vi.mock('quasar', () => ({
-  useQuasar: vi.fn(() => ({
-    notify: vi.fn(),
-  })),
-  Loading: {
-    hide: vi.fn(),
-  },
-}))
-
-vi.mock('src/composables/useAppNotify', () => ({
-  useAppNotify: vi.fn(() => ({
-    error: mockNotifyError,
   })),
 }))
 
@@ -121,9 +99,6 @@ describe('useInvoiceDecoding', () => {
       expect(decodeState.value.type).toBe('error')
       expect(amountRequired.value).toBe(false)
       expect(lnAddress.value).toBeNull()
-      expect(mockNotifyError).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to fetch lightning address'),
-      )
     })
 
     it('should detect LNURL, set amountRequired, and expose limits', async () => {
@@ -157,7 +132,6 @@ describe('useInvoiceDecoding', () => {
       expect(result.type).toBe('error')
       expect(amountRequired.value).toBe(false)
       expect(lnurlPayLimits.value).toBeNull()
-      expect(mockNotifyError).toHaveBeenCalledWith('LNURL is not a payment request')
     })
 
     it('should set isProcessing to false after decoding', async () => {
@@ -192,7 +166,6 @@ describe('useInvoiceDecoding', () => {
 
       expect(result.type).toBe('error')
       expect(mockRequestInvoice).not.toHaveBeenCalled()
-      expect(mockNotifyError).toHaveBeenCalledWith('Amount must be at least 1 sats')
     })
 
     it('should not request an LNURL invoice above the maximum amount', async () => {
@@ -203,7 +176,6 @@ describe('useInvoiceDecoding', () => {
 
       expect(result.type).toBe('error')
       expect(mockRequestInvoice).not.toHaveBeenCalled()
-      expect(mockNotifyError).toHaveBeenCalledWith('Amount must be 100 sats or less')
     })
 
     it('should not request an invoice when the lightning address data is missing', async () => {
@@ -226,7 +198,29 @@ describe('useInvoiceDecoding', () => {
       expect(mockRequestInvoice).not.toHaveBeenCalled()
       expect(amountRequired.value).toBe(false)
       expect(lnAddress.value).toBeNull()
-      expect(mockNotifyError).toHaveBeenCalledWith('Invalid lightning address')
+    })
+  })
+
+  describe('getLnurlLimitSats', () => {
+    it('converts millsat LNURL limits into sats', () => {
+      expect(
+        getLnurlLimitSats({
+          minSendableMsats: 10_001,
+          maxSendableMsats: 39_999,
+        }),
+      ).toEqual({
+        minSats: 11,
+        maxSats: 39,
+      })
+    })
+
+    it('returns null for invalid limits', () => {
+      expect(
+        getLnurlLimitSats({
+          minSendableMsats: 40_000,
+          maxSendableMsats: 39_000,
+        }),
+      ).toBeNull()
     })
   })
 })

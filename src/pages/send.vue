@@ -187,7 +187,11 @@ import FederationSelector from 'src/components/FederationSelector.vue'
 import ViprTopbar from 'src/components/ViprTopbar.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppNotify } from 'src/composables/useAppNotify'
-import { useInvoiceDecoding } from 'src/composables/useInvoiceDecoding'
+import {
+  getLnurlAmountError as getLnurlAmountErrorForLimits,
+  getLnurlLimitSats,
+  useInvoiceDecoding,
+} from 'src/composables/useInvoiceDecoding'
 import { useLightningPayment } from 'src/composables/useLightningPayment'
 import { useNumericInput } from 'src/composables/useNumericInput'
 import { paymentFlowCopy } from 'src/constants/paymentFlowCopy'
@@ -253,7 +257,7 @@ const amountError = computed(() => {
     return null
   }
 
-  const lnurlError = getLnurlAmountError(invoiceAmount.value)
+  const lnurlError = getLnurlAmountErrorForLimits(invoiceAmount.value, lnurlPayLimits.value)
   if (lnurlError != null) {
     return lnurlError
   }
@@ -295,7 +299,7 @@ const sendBottomHint = computed(() =>
     : paymentFlowCopy.sendLightning.inputHint,
 )
 const lnurlAmountHint = computed(() => {
-  const limits = getLnurlLimitSats()
+  const limits = getLnurlLimitSats(lnurlPayLimits.value)
   if (limits == null) {
     return ''
   }
@@ -330,7 +334,10 @@ watch(
 )
 
 async function decodeInvoice() {
-  await decodeInvoiceFromComposable(lightningInvoice.value)
+  const result = await decodeInvoiceFromComposable(lightningInvoice.value)
+  if (result.type === 'error') {
+    notify.error(`Failed to decode payment request: ${result.message}`)
+  }
 }
 
 async function pastePaymentRequest() {
@@ -359,7 +366,14 @@ async function createInvoice() {
     return
   }
 
-  await createInvoiceFromInput(lightningInvoice.value, invoiceAmount.value, invoiceMemo.value)
+  const result = await createInvoiceFromInput(
+    lightningInvoice.value,
+    invoiceAmount.value,
+    invoiceMemo.value,
+  )
+  if (result.type === 'error') {
+    notify.error(`Failed to create invoice: ${result.error.message}`)
+  }
 }
 
 async function selectContact(paymentTarget: string) {
@@ -435,42 +449,6 @@ function getContactDisplayName(contact: SyncedNostrContact): string {
 
 function getContactSubtitle(contact: SyncedNostrContact): string {
   return getNostrContactSubtitle(contact)
-}
-
-function getLnurlAmountError(amountSats: number): string | null {
-  const limits = getLnurlLimitSats()
-  if (limits == null) {
-    return null
-  }
-
-  if (amountSats < limits.minSats) {
-    return `Amount must be at least ${limits.minSats.toLocaleString()} sats`
-  }
-
-  if (amountSats > limits.maxSats) {
-    return `Amount must be ${limits.maxSats.toLocaleString()} sats or less`
-  }
-
-  return null
-}
-
-function getLnurlLimitSats(): { minSats: number; maxSats: number } | null {
-  const limits = lnurlPayLimits.value
-  if (limits == null) {
-    return null
-  }
-
-  const minSats = Math.ceil(limits.minSendableMsats / 1_000)
-  const maxSats = Math.floor(limits.maxSendableMsats / 1_000)
-
-  if (!Number.isFinite(minSats) || !Number.isFinite(maxSats) || minSats > maxSats) {
-    return null
-  }
-
-  return {
-    minSats,
-    maxSats,
-  }
 }
 </script>
 

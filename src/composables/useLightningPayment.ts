@@ -30,15 +30,6 @@ export type InvoiceCreationResult =
       error: Error
     }
 
-export type InvoiceWaitResult =
-  | {
-      type: 'success'
-    }
-  | {
-      type: 'error'
-      error: Error
-    }
-
 function toError(error: unknown): Error {
   return error instanceof Error ? error : new Error(getErrorMessage(error))
 }
@@ -202,45 +193,9 @@ export function useLightningPayment() {
     }
   }
 
-  /**
-   * Wait for a lightning invoice to be paid
-   * @param operationId - The operation ID from invoice creation
-   * @param timeoutMs - Timeout in milliseconds
-   * @returns Wait result with success or error variant
-   */
-  async function waitForInvoicePayment(
-    operationId: string,
-    timeoutMs: number,
-  ): Promise<InvoiceWaitResult> {
-    try {
-      logger.logTransaction('Waiting for Lightning payment')
-
-      await walletStore.wallet?.lightning.waitForReceive(operationId, timeoutMs)
-
-      logger.logTransaction('Lightning payment received successfully')
-
-      await walletStore.updateBalance()
-
-      return {
-        type: 'success',
-      }
-    } catch (error) {
-      logger.error('Failed waiting for invoice payment', error)
-      const normalizedError = toError(error)
-
-      notify.error(`Error receiving payment: ${normalizedError.message}`)
-
-      return {
-        type: 'error',
-        error: normalizedError,
-      }
-    }
-  }
-
   return {
     isProcessing,
     payInvoice,
     createInvoice,
-    waitForInvoicePayment,
   }
 }

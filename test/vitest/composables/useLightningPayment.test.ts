@@ -7,7 +7,6 @@ const mockPayInvoice = vi.fn()
 const mockWaitForPay = vi.fn()
 const mockSubscribeInternalPayment = vi.fn()
 const mockCreateInvoice = vi.fn()
-const mockWaitForReceive = vi.fn()
 const mockAssertCanSpendDuringRecovery = vi.fn()
 
 vi.mock('src/stores/wallet', () => ({
@@ -18,7 +17,6 @@ vi.mock('src/stores/wallet', () => ({
         waitForPay: mockWaitForPay,
         subscribeInternalPayment: mockSubscribeInternalPayment,
         createInvoice: mockCreateInvoice,
-        waitForReceive: mockWaitForReceive,
       },
     },
     updateBalance: mockUpdateBalance,
@@ -170,34 +168,6 @@ describe('useLightningPayment', () => {
       expect(result.type).toBe('error')
       if (result.type !== 'error') {
         throw new Error('Expected invoice creation error result')
-      }
-      expect(result.error).toBeDefined()
-    })
-  })
-
-  describe('waitForInvoicePayment', () => {
-    it('should successfully wait for payment', async () => {
-      mockWaitForReceive.mockResolvedValue(undefined)
-
-      const { waitForInvoicePayment } = useLightningPayment()
-
-      const result = await waitForInvoicePayment('op-123', 120000)
-
-      expect(result.type).toBe('success')
-      expect(mockWaitForReceive).toHaveBeenCalledWith('op-123', 120000)
-      expect(mockUpdateBalance).toHaveBeenCalled()
-    })
-
-    it('should handle timeout errors', async () => {
-      mockWaitForReceive.mockRejectedValue(new Error('Timeout'))
-
-      const { waitForInvoicePayment } = useLightningPayment()
-
-      const result = await waitForInvoicePayment('op-123', 120000)
-
-      expect(result.type).toBe('error')
-      if (result.type !== 'error') {
-        throw new Error('Expected invoice wait error result')
       }
       expect(result.error).toBeDefined()
     })
