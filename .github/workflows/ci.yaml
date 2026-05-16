@@ -85,5 +85,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
       - name: Build Docker image
-        run: docker build --file Dockerfile --tag vipr-wallet:pr-check .
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: false
+          tags: vipr-wallet:pr-check
+          cache-from: type=gha,scope=vipr-wallet-pr
+          cache-to: type=gha,mode=max,scope=vipr-wallet-pr
