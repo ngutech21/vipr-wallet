@@ -194,6 +194,7 @@ describe('wallet store', () => {
     })
     expect(walletStore.activeWalletName).toBe(getWalletNameForFederationId(federation.federationId))
     expect(walletStore.balance).toBe(12)
+    expect(walletStore.transactionsRefreshVersion).toBe(1)
     expect(wallet.lightning.updateGatewayCache).toHaveBeenCalledTimes(1)
   })
 
@@ -381,7 +382,7 @@ describe('wallet store', () => {
     expect(reopenedWallet.mint.getNotesByDenomination).toHaveBeenCalled()
     expect(reopenedWallet.balance.getBalance).toHaveBeenCalled()
     expect(walletStore.balance).toBe(34)
-    expect(walletStore.transactionsRefreshVersion).toBe(1)
+    expect(walletStore.transactionsRefreshVersion).toBe(2)
     expect(unsubscribe).toHaveBeenCalledTimes(1)
   })
 

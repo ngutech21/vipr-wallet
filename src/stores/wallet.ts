@@ -209,6 +209,7 @@ export const useWalletStore = defineStore('wallet', {
       this.activeWalletName = walletName
       await this.updateGatewayCache(selectedFederation.federationId)
       await this.updateBalance()
+      this.transactionsRefreshVersion += 1
       await this.refreshFederationMetadata(selectedFederation)
       logger.logWalletOperation('Wallet open completed before recovery monitor', {
         federationId: selectedFederation.federationId,
