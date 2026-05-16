@@ -171,7 +171,7 @@ describe('DiscoverFederations.vue', () => {
   it('shows load more when more candidates are available than visible', async () => {
     wrapper = createWrapper()
     const nostrStore = useNostrStore()
-    nostrStore.previewTargetCount = 5
+    nostrStore.discoveryVisibleCount = 5
     nostrStore.discoveryCandidates = Array.from({ length: 7 }, (_, index) =>
       createCandidate({
         federationId: `fed-${index}`,
@@ -188,7 +188,7 @@ describe('DiscoverFederations.vue', () => {
   it('increases the visible target when load more is triggered', async () => {
     wrapper = createWrapper()
     const nostrStore = useNostrStore()
-    nostrStore.previewTargetCount = 5
+    nostrStore.discoveryVisibleCount = 5
     nostrStore.discoveryCandidates = Array.from({ length: 7 }, (_, index) =>
       createCandidate({
         federationId: `fed-${index}`,
@@ -198,11 +198,11 @@ describe('DiscoverFederations.vue', () => {
     )
     await flushPromises()
 
-    const initialTarget = nostrStore.previewTargetCount
+    const initialTarget = nostrStore.discoveryVisibleCount
     await wrapper.get('[data-testid="discover-federations-load-more-btn"]').trigger('click')
     await flushPromises()
 
-    expect(nostrStore.previewTargetCount).toBeGreaterThan(initialTarget)
+    expect(nostrStore.discoveryVisibleCount).toBeGreaterThan(initialTarget)
   })
 
   it('loads the preview before opening the add federation dialog', async () => {

@@ -118,7 +118,7 @@ import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
 import ModalCard from 'src/components/ModalCard.vue'
 import { useAppNotify } from 'src/composables/useAppNotify'
-import type { DiscoverySelectionPayload, Federation } from 'src/types/federation'
+import type { DiscoverySelectionPayload } from 'src/types/federation'
 import { getErrorMessage } from 'src/utils/error'
 import { logger } from 'src/services/logger'
 
@@ -127,7 +127,6 @@ type DiscoveryListItem = {
   federationId: string
   inviteCode: string
   recommendationCount: number
-  prefetchedFederation?: Federation
   about?: string
   pictureUrl?: string
 }
@@ -139,19 +138,17 @@ const notify = useAppNotify()
 const isPreviewingSelection = ref(false)
 const isDiscovering = computed(() => nostr.isDiscoveringFederations)
 const visibleFederations = computed<DiscoveryListItem[]>(() => {
-  return nostr.discoveryCandidates.slice(0, nostr.previewTargetCount).map((candidate) => {
+  return nostr.discoveryCandidates.slice(0, nostr.discoveryVisibleCount).map((candidate) => {
     const recommendationCount = Math.max(
       candidate.recommendationCount ?? 0,
       nostr.getRecommendationCountForFederationId(candidate.federationId),
     )
-    const prefetchedFederation = nostr.getCachedPreviewForCandidate(candidate)
 
     return {
       title: candidate.displayName ?? `Federation ${truncateFederationId(candidate.federationId)}`,
       federationId: candidate.federationId,
       inviteCode: candidate.inviteCode,
       recommendationCount,
-      ...(prefetchedFederation != null ? { prefetchedFederation } : {}),
       ...(candidate.about != null ? { about: candidate.about } : {}),
       ...(candidate.pictureUrl != null ? { pictureUrl: candidate.pictureUrl } : {}),
     }
@@ -165,7 +162,7 @@ const discoveryStatusText = computed(() => {
   return `${loaded} loaded, updates paused`
 })
 const canLoadMore = computed(() => {
-  return nostr.discoveryCandidates.length > nostr.previewTargetCount
+  return nostr.discoveryCandidates.length > nostr.discoveryVisibleCount
 })
 
 const props = defineProps({
@@ -216,7 +213,7 @@ async function discoverFederations(reset = false) {
 }
 
 function loadMoreFederations() {
-  nostr.increasePreviewTarget()
+  nostr.increaseDiscoveryVisibleCount()
 }
 
 function stopDiscovery() {
@@ -255,15 +252,6 @@ async function openFederationPreview(federation: DiscoveryListItem) {
       color: 'negative',
       icon: 'error',
       timeout: 5000,
-    })
-    return
-  }
-
-  if (federation.prefetchedFederation != null) {
-    emit('close')
-    emit('showAdd', {
-      inviteCode: federation.inviteCode,
-      prefetchedFederation: federation.prefetchedFederation,
     })
     return
   }

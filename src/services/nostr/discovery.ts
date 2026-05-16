@@ -1,5 +1,4 @@
 import type { NDKEvent } from '@nostr-dev-kit/ndk'
-import type { Federation } from 'src/types/federation'
 import { Nip87Kinds } from 'src/types/nip87'
 import { getErrorMessage } from 'src/utils/error'
 
@@ -19,7 +18,6 @@ export type RecommendationVotersByFederation = Record<string, Record<string, num
 export type FederationCandidateUpdate = {
   candidates: DiscoveredFederationCandidate[]
   invalidatedFederationId?: string
-  shouldRemoveCachedPreview: boolean
 }
 
 export type RecommendationStateUpdate = {
@@ -103,13 +101,6 @@ export function isExpectedDiscoveryError(error: unknown): boolean {
   return EXPECTED_DISCOVERY_ERROR_PATTERNS.some((pattern) => pattern.test(message))
 }
 
-export function doesPreviewMatchCandidate(
-  candidate: DiscoveredFederationCandidate,
-  federation: Federation,
-): boolean {
-  return federation.federationId === candidate.federationId
-}
-
 export function applyFederationCandidateToDiscoveryState({
   candidates,
   candidate,
@@ -137,14 +128,12 @@ export function applyFederationCandidateToDiscoveryState({
         maxCandidates,
       ),
       invalidatedFederationId: candidate.federationId,
-      shouldRemoveCachedPreview: false,
     }
   }
 
   if (existing.inviteCode === candidate.inviteCode && existing.createdAt === candidate.createdAt) {
     return {
       candidates,
-      shouldRemoveCachedPreview: false,
     }
   }
 
@@ -166,7 +155,6 @@ export function applyFederationCandidateToDiscoveryState({
       maxCandidates,
     ),
     invalidatedFederationId: candidate.federationId,
-    shouldRemoveCachedPreview: true,
   }
 }
 

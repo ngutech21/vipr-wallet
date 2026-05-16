@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { NDKEvent } from '@nostr-dev-kit/ndk'
 import { Nip87Kinds } from 'src/types/nip87'
-import type { Federation } from 'src/types/federation'
 import {
   applyFederationCandidateToDiscoveryState,
   applyRecommendationCountsToDiscoveryCandidates,
   applyRecommendationTargetsToDiscoveryState,
-  doesPreviewMatchCandidate,
   extractFederationCandidate,
   extractRecommendationTargets,
   isExpectedDiscoveryError,
@@ -129,28 +127,6 @@ describe('nostr discovery service', () => {
     expect(isExpectedDiscoveryError('')).toBe(false)
   })
 
-  it('matches previews by federation id only', () => {
-    const federation: Federation = {
-      federationId: 'fed-1',
-      inviteCode: 'invite-from-preview',
-      title: 'Preview',
-      modules: [],
-    }
-
-    expect(
-      doesPreviewMatchCandidate(
-        { federationId: 'fed-1', inviteCode: 'invite-from-event', createdAt: 1 },
-        federation,
-      ),
-    ).toBe(true)
-    expect(
-      doesPreviewMatchCandidate(
-        { federationId: 'fed-2', inviteCode: 'invite-from-preview', createdAt: 1 },
-        federation,
-      ),
-    ).toBe(false)
-  })
-
   it('adds new federation candidates immutably with recommendation counts', () => {
     const existing = [createCandidate('fed-old', 10)]
 
@@ -170,7 +146,6 @@ describe('nostr discovery service', () => {
         createCandidate('fed-old', 10),
       ],
       invalidatedFederationId: 'fed-new',
-      shouldRemoveCachedPreview: false,
     })
   })
 
@@ -197,7 +172,6 @@ describe('nostr discovery service', () => {
         },
       ],
       invalidatedFederationId: 'fed-1',
-      shouldRemoveCachedPreview: true,
     })
   })
 
@@ -213,7 +187,6 @@ describe('nostr discovery service', () => {
       }),
     ).toEqual({
       candidates,
-      shouldRemoveCachedPreview: false,
     })
   })
 

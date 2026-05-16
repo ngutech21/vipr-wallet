@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { useLocalStorage } from '@vueuse/core'
 import type { NDKEvent } from '@nostr-dev-kit/ndk'
-import type { Federation } from 'src/types/federation'
 import type {
   NostrContactSource,
   NostrContactSyncMeta,
@@ -9,7 +8,6 @@ import type {
   SyncedNostrContact,
 } from 'src/types/nostr'
 import { Nip87Kinds } from 'src/types/nip87'
-import { useWalletStore } from './wallet'
 import { logger } from 'src/services/logger'
 import { getErrorMessage } from 'src/utils/error'
 import {
@@ -29,29 +27,6 @@ import {
 } from 'src/services/nostr/contacts'
 import { syncNostrContacts } from 'src/services/nostr/contactSync'
 import {
-  createCachedFederationPreview,
-  isCachedPreviewValid,
-  removeCachedPreview as removeCachedPreviewFromCache,
-  syncDiscoveredFederationsFromCache as buildDiscoveredFederationsFromCache,
-  trimPreviewCache as trimPreviewCacheEntries,
-  type CachedFederationPreview,
-} from 'src/services/nostr/previewCache'
-import {
-  buildPreviewQueue,
-  previewFederationCandidate,
-  takeNextPreviewCandidate,
-  waitUntilPreviewQueueIdle,
-  type PreviewStatus,
-} from 'src/services/nostr/previewQueue'
-import {
-  applyPreviewResultToDiscoveryState,
-  clearPreviewStateForFederation,
-  markPreviewLoading,
-  markPreviewReady,
-  type PreviewDiscoveryEffect,
-  type PreviewDiscoveryState,
-} from 'src/services/nostr/previewDiscoveryState'
-import {
   initializeNdk,
   stopDiscoverySubscriptions,
   subscribeToFederationDiscovery,
@@ -64,14 +39,6 @@ function createInitialNostrSyncStatus(): NostrContactSyncStatus {
 }
 
 function createRecommendationVotersByFederation(): Record<string, Record<string, number>> {
-  return {}
-}
-
-function createNumberLookup(): Record<string, number> {
-  return {}
-}
-
-function createPreviewStatusLookup(): Record<string, PreviewStatus> {
   return {}
 }
 
@@ -97,9 +64,6 @@ const DEFAULT_RELAYS = [
 
 const DISCOVERY_PAGE_SIZE = 5
 const MAX_DISCOVERY_CACHE_SIZE = 50
-const PREVIEW_QUEUE_OVERSCAN = 3
-const PREVIEW_TIMEOUT_MS = 7_000
-const PREVIEW_QUEUE_IDLE_POLL_MS = 50
 const DEFAULT_CONTACT_SOURCE: NostrContactSource = {
   sourceType: 'nip05',
   sourceValue: '',
@@ -124,11 +88,6 @@ export const useNostrStore = defineStore('nostr', {
     ),
     syncStatus: createInitialNostrSyncStatus(),
     ndk: null as NostrNdkClient | null,
-    discoveredFederations: useLocalStorage<Federation[]>('vipr.nostr.discovery.federations', []),
-    previewCacheByFederation: useLocalStorage<Record<string, CachedFederationPreview>>(
-      'vipr.nostr.discovery.preview-cache',
-      {},
-    ),
     discoveryCandidates: useLocalStorage<DiscoveredFederationCandidate[]>(
       'vipr.nostr.discovery.candidates',
       [],
@@ -146,13 +105,8 @@ export const useNostrStore = defineStore('nostr', {
     isDiscoveringFederations: false,
     federationSubscription: null as NostrEventSubscription | null,
     recommendationSubscription: null as NostrEventSubscription | null,
-    previewTargetCount: DISCOVERY_PAGE_SIZE,
-    previewQueue: [] as string[],
-    isPreviewQueueRunning: false,
+    discoveryVisibleCount: DISCOVERY_PAGE_SIZE,
     isJoinInProgress: false,
-    previewAttemptedCreatedAt: createNumberLookup(),
-    previewErrorLoggedCreatedAt: createNumberLookup(),
-    previewStatusByFederation: createPreviewStatusLookup(),
   }),
 
   getters: {},
@@ -300,43 +254,24 @@ export const useNostrStore = defineStore('nostr', {
       return this.recommendationCountsByFederation[federationId] ?? 0
     },
 
-    getCachedPreviewForCandidate(candidate: DiscoveredFederationCandidate): Federation | undefined {
-      const cached = this.previewCacheByFederation[candidate.federationId]
-      if (!isCachedPreviewValid(cached, candidate)) {
-        return undefined
-      }
-
-      return cached.federation
-    },
-
-    getPreviewStatusForFederationId(federationId: string): PreviewStatus | undefined {
-      return this.previewStatusByFederation[federationId]
-    },
-
     setJoinInProgress(isInProgress: boolean) {
       this.isJoinInProgress = isInProgress
     },
 
-    setPreviewTargetCount(count: number) {
-      this.previewTargetCount = Math.max(DISCOVERY_PAGE_SIZE, count)
+    setDiscoveryVisibleCount(count: number) {
+      this.discoveryVisibleCount = Math.max(DISCOVERY_PAGE_SIZE, count)
     },
 
-    increasePreviewTarget(count = DISCOVERY_PAGE_SIZE) {
-      this.setPreviewTargetCount(this.previewTargetCount + count)
+    increaseDiscoveryVisibleCount(count = DISCOVERY_PAGE_SIZE) {
+      this.setDiscoveryVisibleCount(this.discoveryVisibleCount + count)
     },
 
-    resetPreviewTargetCount() {
-      this.setPreviewTargetCount(DISCOVERY_PAGE_SIZE)
+    resetDiscoveryVisibleCount() {
+      this.setDiscoveryVisibleCount(DISCOVERY_PAGE_SIZE)
     },
 
     clearDiscoveryCache() {
-      this.discoveredFederations = []
-      this.previewCacheByFederation = {}
       this.discoveryCandidates = []
-      this.previewQueue = []
-      this.previewAttemptedCreatedAt = {}
-      this.previewErrorLoggedCreatedAt = {}
-      this.previewStatusByFederation = {}
       this.lastDiscoveryCreatedAt = 0
       this.lastRecommendationCreatedAt = 0
       this.recommendationCountsByFederation = {}
@@ -359,11 +294,7 @@ export const useNostrStore = defineStore('nostr', {
       }
 
       this.isDiscoveringFederations = true
-      this.discoveredFederations = buildDiscoveredFederationsFromCache(
-        this.previewCacheByFederation,
-        this.discoveryCandidates,
-      )
-      this.resetPreviewTargetCount()
+      this.resetDiscoveryVisibleCount()
 
       if (this.ndk != null) {
         const subscriptions = subscribeToFederationDiscovery(
@@ -409,15 +340,9 @@ export const useNostrStore = defineStore('nostr', {
 
       this.discoveryCandidates = update.candidates
       if (update.invalidatedFederationId != null) {
-        if (update.shouldRemoveCachedPreview) {
-          this.removeCachedPreview(update.invalidatedFederationId)
-        }
-        this.applyPreviewDiscoveryState(
-          clearPreviewStateForFederation(
-            this.getPreviewDiscoveryState(),
-            update.invalidatedFederationId,
-          ),
-        )
+        logger.nostr.debug('Federation discovery candidate updated', {
+          federationId: update.invalidatedFederationId,
+        })
       }
     },
 
@@ -447,173 +372,6 @@ export const useNostrStore = defineStore('nostr', {
       this.lastRecommendationCreatedAt = update.lastRecommendationCreatedAt
     },
 
-    cacheFederationPreview(candidate: DiscoveredFederationCandidate, federation: Federation) {
-      this.previewCacheByFederation = trimPreviewCacheEntries(
-        {
-          ...this.previewCacheByFederation,
-          [candidate.federationId]: createCachedFederationPreview(candidate, federation),
-        },
-        MAX_DISCOVERY_CACHE_SIZE,
-      )
-      this.discoveredFederations = buildDiscoveredFederationsFromCache(
-        this.previewCacheByFederation,
-        this.discoveryCandidates,
-      )
-    },
-
-    removeCachedPreview(federationId: string) {
-      this.previewCacheByFederation = removeCachedPreviewFromCache(
-        this.previewCacheByFederation,
-        federationId,
-      )
-      this.discoveredFederations = this.discoveredFederations.filter(
-        (federation) => federation.federationId !== federationId,
-      )
-    },
-
-    enqueueCandidatesForPreview() {
-      const nextPreviewState = buildPreviewQueue({
-        currentQueue: this.previewQueue,
-        discoveryCandidates: this.discoveryCandidates,
-        previewTargetCount: this.previewTargetCount,
-        previewQueueOverscan: PREVIEW_QUEUE_OVERSCAN,
-        previewAttemptedCreatedAt: this.previewAttemptedCreatedAt,
-        previewStatusByFederation: this.previewStatusByFederation,
-        hasCachedPreview: (candidate) => this.getCachedPreviewForCandidate(candidate) != null,
-      })
-      this.previewQueue = nextPreviewState.previewQueue
-      this.previewStatusByFederation = nextPreviewState.previewStatusByFederation
-    },
-
-    async processPreviewQueue() {
-      if (this.isPreviewQueueRunning || this.isJoinInProgress || !this.isDiscoveringFederations) {
-        return
-      }
-
-      this.isPreviewQueueRunning = true
-      const walletStore = useWalletStore()
-
-      try {
-        await walletStore.initClients()
-
-        while (!this.isJoinInProgress && this.isDiscoveringFederations) {
-          if (this.previewQueue.length === 0) {
-            this.enqueueCandidatesForPreview()
-            if (this.previewQueue.length === 0) {
-              break
-            }
-          }
-
-          const nextCandidate = takeNextPreviewCandidate({
-            previewQueue: this.previewQueue,
-            discoveryCandidates: this.discoveryCandidates,
-          })
-          this.previewQueue = nextCandidate.previewQueue
-          const candidate = nextCandidate.candidate
-          if (candidate == null) {
-            continue
-          }
-
-          const cachedPreview = this.getCachedPreviewForCandidate(candidate)
-          if (cachedPreview != null) {
-            this.applyPreviewDiscoveryState(
-              markPreviewReady(this.getPreviewDiscoveryState(), candidate),
-            )
-            continue
-          }
-
-          this.applyPreviewDiscoveryState(
-            markPreviewLoading(this.getPreviewDiscoveryState(), candidate),
-          )
-
-          // Sequential previews avoid overloading wallet I/O and keep join UX responsive.
-          // eslint-disable-next-line no-await-in-loop
-          const previewResult = await previewFederationCandidate({
-            candidate,
-            previewFederation: (inviteCode) => walletStore.previewFederation(inviteCode),
-            timeoutMs: PREVIEW_TIMEOUT_MS,
-          })
-          const previewUpdate = applyPreviewResultToDiscoveryState(
-            this.getPreviewDiscoveryState(),
-            candidate,
-            previewResult,
-          )
-          this.applyPreviewDiscoveryState(previewUpdate.state)
-          this.applyPreviewDiscoveryEffects(previewUpdate.effects)
-        }
-      } catch (error) {
-        logger.error('Error processing federation preview queue', error)
-      } finally {
-        this.isPreviewQueueRunning = false
-      }
-    },
-
-    async waitForPreviewQueueIdle(timeoutMs = PREVIEW_TIMEOUT_MS + 500) {
-      return waitUntilPreviewQueueIdle({
-        isPreviewQueueRunning: () => this.isPreviewQueueRunning,
-        timeoutMs,
-        pollMs: PREVIEW_QUEUE_IDLE_POLL_MS,
-      })
-    },
-
-    getPreviewDiscoveryState(): PreviewDiscoveryState {
-      return {
-        discoveryCandidates: this.discoveryCandidates,
-        previewAttemptedCreatedAt: this.previewAttemptedCreatedAt,
-        previewErrorLoggedCreatedAt: this.previewErrorLoggedCreatedAt,
-        previewStatusByFederation: this.previewStatusByFederation,
-      }
-    },
-
-    applyPreviewDiscoveryState(state: PreviewDiscoveryState) {
-      this.discoveryCandidates = state.discoveryCandidates
-      this.previewAttemptedCreatedAt = state.previewAttemptedCreatedAt
-      this.previewErrorLoggedCreatedAt = state.previewErrorLoggedCreatedAt
-      this.previewStatusByFederation = state.previewStatusByFederation
-    },
-
-    applyPreviewDiscoveryEffects(effects: PreviewDiscoveryEffect[]) {
-      for (const effect of effects) {
-        if (effect.type === 'cache-preview') {
-          this.cacheFederationPreview(effect.candidate, effect.federation)
-          continue
-        }
-
-        if (effect.type === 'remove-cached-preview') {
-          this.removeCachedPreview(effect.federationId)
-          continue
-        }
-
-        if (effect.type === 'log-timeout') {
-          logger.warn('Federation preview timed out', { federationId: effect.federationId })
-          continue
-        }
-
-        if (effect.type === 'log-expected-error') {
-          logger.nostr.warn('Skipping federation candidate with unavailable config', {
-            federationId: effect.federationId,
-            createdAt: effect.createdAt,
-            reason: effect.errorMessage,
-          })
-          continue
-        }
-
-        if (effect.type === 'log-unexpected-error') {
-          logger.error('Unexpected error while previewing federation candidate', {
-            federationId: effect.federationId,
-            error: effect.errorMessage,
-          })
-          continue
-        }
-
-        logger.nostr.warn('Skipping federation candidate with mismatched preview federation id', {
-          federationId: effect.federationId,
-          resolvedFederationId: effect.resolvedFederationId,
-          createdAt: effect.createdAt,
-        })
-      }
-    },
-
     stopDiscoveringFederations() {
       logger.nostr.debug('Stopping federation discovery')
       stopDiscoverySubscriptions({
@@ -622,10 +380,6 @@ export const useNostrStore = defineStore('nostr', {
       })
       this.federationSubscription = null
       this.recommendationSubscription = null
-      this.previewQueue = []
-      this.previewAttemptedCreatedAt = {}
-      this.previewErrorLoggedCreatedAt = {}
-      this.previewStatusByFederation = {}
       this.isDiscoveringFederations = false
     },
   },
