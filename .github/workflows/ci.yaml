@@ -63,10 +63,7 @@ jobs:
       - name: Build frontend
         run: pnpm build
 
-      - name: Run unit tests
-        run: pnpm test:unit:ci
-
-      - name: Generate coverage report
+      - name: Run unit tests with coverage
         run: pnpm coverage
 
       - name: Upload coverage to Codecov
