@@ -6,7 +6,6 @@ on:
       - CI
     types:
       - completed
-  workflow_dispatch: {}
 
 permissions: read-all
 
@@ -17,28 +16,28 @@ concurrency:
 jobs:
   changes:
     if: >
-      github.event_name == 'workflow_dispatch' ||
-      (
-        github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.head_branch == 'master'
-      )
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'master'
     runs-on: ubuntu-latest
     outputs:
-      deploy: ${{ steps.manual.outputs.deploy || steps.filter.outputs.deploy }}
+      deploy: ${{ steps.filter.outputs.deploy }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: refs/heads/master
           fetch-depth: 0
 
-      - name: Mark manual deployment as deploy-relevant
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        id: manual
-        run: echo "deploy=true" >> "$GITHUB_OUTPUT"
+      - name: Verify checked-out commit
+        run: |
+          checked_out_sha="$(git rev-parse HEAD)"
+          if [ "$checked_out_sha" != "${{ github.event.workflow_run.head_sha }}" ]; then
+            echo "Checked out ${checked_out_sha}, expected ${{ github.event.workflow_run.head_sha }}"
+            exit 1
+          fi
 
       - name: Detect deploy-relevant changes
-        if: ${{ github.event_name == 'workflow_run' }}
         id: filter
         uses: dorny/paths-filter@v4
         with:
@@ -61,8 +60,7 @@ jobs:
 
   deploy:
     needs: changes
-    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.deploy ==
-      'true'
+    if: needs.changes.outputs.deploy == 'true'
     runs-on: ubuntu-latest
     env:
       DO_DEV_APP_NAME: ${{ secrets.DO_DEV_APP_NAME }}
@@ -78,7 +76,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: refs/heads/master
+
+      - name: Verify checked-out commit
+        run: |
+          checked_out_sha="$(git rev-parse HEAD)"
+          if [ "$checked_out_sha" != "${{ github.event.workflow_run.head_sha }}" ]; then
+            echo "Checked out ${checked_out_sha}, expected ${{ github.event.workflow_run.head_sha }}"
+            exit 1
+          fi
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
