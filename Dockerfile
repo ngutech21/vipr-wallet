@@ -30,7 +30,7 @@ RUN pnpm build
 # Stage 2: Serve the app using Nginx
 FROM alpine:3.23
 
-RUN apk add --no-cache nginx nginx-mod-http-brotli \
+RUN apk add --no-cache --upgrade nginx nginx-mod-http-brotli \
     && mkdir -p /usr/share/nginx/html /run/nginx /etc/nginx/http.d
 
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
