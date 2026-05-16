@@ -235,3 +235,12 @@ jobs:
         with:
           token: ${{ secrets.DO_TOKEN }}
           app_spec_location: .do/app.dev.yaml
+
+      - name: Update Docker Hub overview
+        uses: peter-evans/dockerhub-description@v5
+        with:
+          username: ${{ secrets.DOCKER_NAME }}
+          password: ${{ secrets.DOCKER_PAT }}
+          repository: ${{ secrets.DOCKER_NAME }}/vipr-wallet
+          short-description: Fedimint ecash wallet PWA for private Lightning payments
+          readme-filepath: ./docs/dockerhub.md
