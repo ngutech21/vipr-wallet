@@ -1,9 +1,11 @@
-name: Build docker image and deploy to Dev
+name: Deploy Dev
 
 on:
-  push:
-    branches:
-      - master
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
   workflow_dispatch: {}
 
 permissions: read-all
@@ -14,17 +16,34 @@ concurrency:
 
 jobs:
   changes:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'master'
+      )
     runs-on: ubuntu-latest
     outputs:
-      deploy: ${{ steps.filter.outputs.deploy }}
+      deploy: ${{ steps.manual.outputs.deploy || steps.filter.outputs.deploy }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Mark manual deployment as deploy-relevant
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        id: manual
+        run: echo "deploy=true" >> "$GITHUB_OUTPUT"
 
       - name: Detect deploy-relevant changes
+        if: ${{ github.event_name == 'workflow_run' }}
         id: filter
         uses: dorny/paths-filter@v4
         with:
+          base: ${{ github.event.workflow_run.head_sha }}^
+          ref: ${{ github.event.workflow_run.head_sha }}
           filters: |
             deploy:
               - 'src/**'
@@ -40,7 +59,7 @@ jobs:
               - 'tsconfig*.json'
               - 'vite.config.*'
 
-  build-and-push:
+  deploy:
     needs: changes
     if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.deploy ==
       'true'
@@ -58,6 +77,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4

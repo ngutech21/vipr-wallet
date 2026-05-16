@@ -1,4 +1,4 @@
-name: Release docker image and deploy to Production
+name: Deploy Production
 
 on:
   workflow_dispatch:
@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy-production:
+  deploy:
     runs-on: ubuntu-latest
     environment: production
     env:

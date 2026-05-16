@@ -1,4 +1,4 @@
-name: Run e2e Tests
+name: E2E
 
 on:
   push:
@@ -16,7 +16,7 @@ concurrency:
 permissions: read-all
 
 jobs:
-  e2e-test:
+  e2e:
     runs-on: self-hosted
 
     steps:

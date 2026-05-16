@@ -12,8 +12,8 @@ The production workflow does not build again. It reuses the Docker image that wa
 ## Normal Flow
 
 1. Merge the release PR created by `release-please`.
-2. Wait until the `dockerhub.yml` workflow has built and pushed the image for that commit.
-3. Open the GitHub Actions workflow `Release docker image and deploy to Production`.
+2. Wait until the `Deploy Dev` workflow has built and pushed the image for that commit.
+3. Open the GitHub Actions workflow `Deploy Production`.
 4. Run the workflow manually with `target_ref` set to the release commit SHA or ref.
 5. Wait for the workflow to:
    - resolve the existing Docker digest
@@ -31,7 +31,7 @@ The easiest way is:
 2. Copy the merge commit SHA from the PR timeline or the commit list.
 3. Use that SHA as `target_ref` when running the production workflow.
 
-You can also open the last successful `Build docker image and push to DockerHub & DigitalOcean Dev` workflow run and copy the commit SHA from that run.
+You can also open the last successful `Deploy Dev` workflow run and copy the commit SHA from that run.
 
 ## Important Notes
 
