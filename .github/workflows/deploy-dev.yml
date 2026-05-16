@@ -114,6 +114,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: mode=max
+          sbom: true
           build-args: |
             COMMITHASH=${{ steps.sha.outputs.short_sha }}
             APP_VERSION=${{ steps.version.outputs.version }}

@@ -94,7 +94,17 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
-          load: false
+          load: true
           tags: vipr-wallet:pr-check
           cache-from: type=gha,scope=vipr-wallet-pr
           cache-to: type=gha,mode=max,scope=vipr-wallet-pr
+
+      - name: Scan Docker image
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: vipr-wallet:pr-check
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
