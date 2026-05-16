@@ -14,53 +14,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  changes:
+  deploy:
     if: >
       github.event.workflow_run.event == 'push' &&
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.head_branch == 'master'
-    runs-on: ubuntu-latest
-    outputs:
-      deploy: ${{ steps.filter.outputs.deploy }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          ref: refs/heads/master
-          fetch-depth: 0
-
-      - name: Verify checked-out commit
-        run: |
-          checked_out_sha="$(git rev-parse HEAD)"
-          if [ "$checked_out_sha" != "${{ github.event.workflow_run.head_sha }}" ]; then
-            echo "Checked out ${checked_out_sha}, expected ${{ github.event.workflow_run.head_sha }}"
-            exit 1
-          fi
-
-      - name: Detect deploy-relevant changes
-        id: filter
-        uses: dorny/paths-filter@v4
-        with:
-          base: ${{ github.event.workflow_run.head_sha }}^
-          ref: ${{ github.event.workflow_run.head_sha }}
-          filters: |
-            deploy:
-              - 'src/**'
-              - 'src-pwa/**'
-              - 'public/**'
-              - '.do/app.dev.yaml'
-              - 'Dockerfile'
-              - 'docker/**'
-              - '.dockerignore'
-              - 'package.json'
-              - 'pnpm-lock.yaml'
-              - 'quasar.config.ts'
-              - 'tsconfig*.json'
-              - 'vite.config.*'
-
-  deploy:
-    needs: changes
-    if: needs.changes.outputs.deploy == 'true'
     runs-on: ubuntu-latest
     env:
       DO_DEV_APP_NAME: ${{ secrets.DO_DEV_APP_NAME }}
