@@ -42,7 +42,6 @@ publishes Docker Buildx provenance and SBOM attestations.
 - App: https://app.vipr.cash
 - Source: https://github.com/ngutech21/vipr-wallet
 
-
 ## Disclaimer
 
 Vipr Wallet is experimental software. Do not use it with significant amounts of
