@@ -6,7 +6,7 @@ ENV PNPM_STORE_PATH=/pnpm/store
 RUN corepack enable \
     && corepack prepare pnpm@11.1.2 --activate \
     && apt-get update \
-    && apt-get install -y python3 make g++ \
+    && apt-get install -y --no-install-recommends python3 make g++ \
     && pnpm config set store-dir ${PNPM_STORE_PATH} \
     && rm -rf /var/lib/apt/lists/*
 
@@ -31,16 +31,21 @@ RUN pnpm build
 FROM alpine:3.23
 
 RUN apk add --no-cache --upgrade nginx nginx-mod-http-brotli \
-    && mkdir -p /usr/share/nginx/html /run/nginx /etc/nginx/http.d
+    && mkdir -p /usr/share/nginx/html /run/nginx /etc/nginx/http.d /var/lib/nginx/tmp \
+    && addgroup -S app \
+    && adduser -S -D -H -G app -s /sbin/nologin app \
+    && chown -R app:app /usr/share/nginx/html /run/nginx /var/lib/nginx /var/log/nginx
 
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
-
-# Create a non-root user and group
-RUN addgroup -S app && adduser -S -D -H -G app -s /sbin/nologin app
 
 # Copy the built files from builder stage
 COPY --from=builder /app/dist/pwa /usr/share/nginx/html
 
-EXPOSE 80
+USER app
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

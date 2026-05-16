@@ -17,7 +17,7 @@ ingress:
 name: ${DO_DEV_APP_NAME}
 region: ${DO_DEV_REGION}
 services:
-  - http_port: 80
+  - http_port: 8080
     image:
       digest: ${VIPR_DIGEST}
       registry: ${DOCKER_NAME}

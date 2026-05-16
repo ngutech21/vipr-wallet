@@ -22,7 +22,7 @@ docker pull ngutech21/vipr-wallet:latest
 ## Run
 
 ```bash
-docker run --rm -p 8080:80 ngutech21/vipr-wallet:latest
+docker run --rm -p 8080:8080 ngutech21/vipr-wallet:latest
 ```
 
 Then open `http://localhost:8080`.

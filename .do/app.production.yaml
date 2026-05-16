@@ -19,7 +19,7 @@ maintenance:
 name: ${DO_PRODUCTION_APP_NAME}
 region: ${DO_PRODUCTION_REGION}
 services:
-  - http_port: 80
+  - http_port: 8080
     image:
       digest: ${VIPR_DIGEST}
       registry: ${DOCKER_NAME}

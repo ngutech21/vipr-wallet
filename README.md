@@ -92,7 +92,7 @@ Run the latest container from dockerhub locally:
 
 ```bash
 docker run -d \
-  -p 8080:80 \
+  -p 8080:8080 \
   --name vipr-wallet \
   ngutech21/vipr-wallet:latest
 ```
