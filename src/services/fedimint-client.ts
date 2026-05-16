@@ -232,10 +232,6 @@ class FedimintClientAdapter {
     }
   }
 
-  getActiveWallet(): FedimintWallet | null {
-    return this.activeWallet
-  }
-
   async closeActiveWallet(): Promise<void> {
     if (this.activeWallet != null) {
       // The SDK documents cleanup() as terminal for the wallet/transport lifecycle.
