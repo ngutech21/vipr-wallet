@@ -29,7 +29,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 11.1.1
+          version: 11.1.2
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -74,7 +74,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 11.1.1
+          version: 11.1.2
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -98,7 +98,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 11.1.1
+          version: 11.1.2
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -146,7 +146,7 @@ jobs:
         with:
           image-ref: vipr-wallet:pr-check
           format: table
-          exit-code: '1'
+          exit-code: "1"
           ignore-unfixed: true
           vuln-type: os,library
           severity: CRITICAL,HIGH
@@ -220,7 +220,7 @@ jobs:
         with:
           image-ref: docker.io/${{ secrets.DOCKER_NAME }}/vipr-wallet:${{ steps.sha.outputs.sha }}-alpine
           format: table
-          exit-code: '1'
+          exit-code: "1"
           ignore-unfixed: true
           vuln-type: os,library
           severity: CRITICAL,HIGH
