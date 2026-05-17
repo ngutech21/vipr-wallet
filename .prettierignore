@@ -1,2 +1,3 @@
 src/route-map.d.ts
 CHANGELOG.md
+.cache/trivy
