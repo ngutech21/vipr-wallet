@@ -5,6 +5,9 @@ domains:
   - domain: ${DO_DEV_DOMAIN}
     type: PRIMARY
     zone: ${DO_DEV_DOMAIN_ZONE}
+  - domain: beta.vipr.cash
+    type: ALIAS
+    zone: ${DO_DEV_DOMAIN_ZONE}
 features:
   - buildpack-stack=ubuntu-22
 ingress:
