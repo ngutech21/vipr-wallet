@@ -23,7 +23,7 @@ By using this wallet, you acknowledge and accept these risks.
 The production release of the wallet is available at
 [app.vipr.cash](https://app.vipr.cash).
 
-For development and testing, [beta.vipr.cash](https://beta.vipr.cash) always
+For development and testing, [dev.vipr.cash](https://dev.vipr.cash) always
 tracks the current `master` branch.
 
 Learn more about the project at [vipr.cash](https://vipr.cash).
