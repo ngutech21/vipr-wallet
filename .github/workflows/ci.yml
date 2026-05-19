@@ -117,6 +117,7 @@ jobs:
         run: pnpm coverage
 
       - name: Upload coverage to Codecov
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
