@@ -12,3 +12,8 @@ overrides:
 shamefullyHoist: true
 strictPeerDependencies: false
 resolutionMode: highest
+minimumReleaseAgeExclude:
+  - '@fedimint/core@0.0.0-canary-69fdcb1e726a49e7bb7e6e83a2b7e8525abda10f'
+  - '@fedimint/fedimint-client-wasm-bundler@0.0.0-canary-69fdcb1e726a49e7bb7e6e83a2b7e8525abda10f'
+  - '@fedimint/transport-web@0.0.0-canary-69fdcb1e726a49e7bb7e6e83a2b7e8525abda10f'
+  - '@fedimint/types@0.0.0-canary-69fdcb1e726a49e7bb7e6e83a2b7e8525abda10f'
