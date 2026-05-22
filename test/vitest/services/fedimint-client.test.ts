@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 type MockWalletLike = {
   openMock: ReturnType<typeof vi.fn>
   joinMock: ReturnType<typeof vi.fn>
-  transportJoinMock: ReturnType<typeof vi.fn>
   isOpen: () => boolean
 }
 
@@ -73,31 +72,30 @@ vi.mock('@fedimint/core', () => {
       }
       return Promise.resolve(this.joined)
     })
-    readonly joinMock = vi.fn((_inviteCode: string, _clientName?: string) => {
-      if (coreMockState.joinFederationErrorOnce != null) {
-        const error = coreMockState.joinFederationErrorOnce
-        coreMockState.joinFederationErrorOnce = null
-        return Promise.reject(error)
-      }
-      this.joined = true
-      return Promise.resolve(true)
-    })
-    readonly transportJoinMock = vi.fn((_type: string, _payload?: Record<string, unknown>) => {
-      if (coreMockState.joinFederationErrorOnce != null) {
-        const error = coreMockState.joinFederationErrorOnce
-        coreMockState.joinFederationErrorOnce = null
-        return Promise.reject(error)
-      }
-      this.joined = true
-      return Promise.resolve(true)
-    })
+    readonly joinMock = vi.fn(
+      (
+        _inviteCode: string,
+        _clientNameOrOptions?: string | { clientName?: string; forceRecover?: boolean },
+      ) => {
+        if (coreMockState.joinFederationErrorOnce != null) {
+          const error = coreMockState.joinFederationErrorOnce
+          coreMockState.joinFederationErrorOnce = null
+          return Promise.reject(error)
+        }
+        this.joined = true
+        return Promise.resolve(true)
+      },
+    )
 
     open(clientName?: string) {
       return this.openMock(clientName)
     }
 
-    joinFederation(inviteCode: string, _clientName?: string) {
-      return this.joinMock(inviteCode, _clientName)
+    joinFederation(
+      inviteCode: string,
+      clientNameOrOptions?: string | { clientName?: string; forceRecover?: boolean },
+    ) {
+      return this.joinMock(inviteCode, clientNameOrOptions)
     }
 
     cleanup = vi.fn(() => Promise.resolve())
@@ -113,10 +111,7 @@ vi.mock('@fedimint/core', () => {
 
   class MockWalletDirector {
     protected _client = {
-      sendSingleMessage: vi.fn((type: string, payload?: Record<string, unknown>) => {
-        const activeWallet = coreMockState.activeWallet as MockFedimintWallet | null
-        return activeWallet?.transportJoinMock(type, payload) ?? Promise.resolve(true)
-      }),
+      sendSingleMessage: vi.fn(() => Promise.resolve(true)),
     }
 
     constructor() {
@@ -229,11 +224,13 @@ describe('fedimint client adapter', () => {
     })
 
     const mockedWallet = wallet as unknown as MockWalletLike
-    expect(mockedWallet.joinMock).toHaveBeenCalledWith(
-      'invite-1',
-      expect.stringMatching(UUID_V5_PATTERN),
-    )
-    expect(mockedWallet.joinMock.mock.calls[0]?.[1]).not.toBe('wallet-fed-1')
+    expect(mockedWallet.joinMock).toHaveBeenCalledWith('invite-1', {
+      clientName: expect.stringMatching(UUID_V5_PATTERN),
+      forceRecover: false,
+    })
+    expect(mockedWallet.joinMock.mock.calls[0]?.[1]).not.toMatchObject({
+      clientName: 'wallet-fed-1',
+    })
     expect(mockedWallet.openMock).not.toHaveBeenCalled()
     expect(mockedWallet.isOpen()).toBe(true)
   })
@@ -248,7 +245,7 @@ describe('fedimint client adapter', () => {
     expect(coreMockState.directorInstances).toHaveLength(2)
   })
 
-  it('joins federation with force_recover for restore opens', async () => {
+  it('joins federation with forceRecover for restore opens', async () => {
     const wallet = await fedimintClient.ensureWalletOpen({
       walletName: 'wallet-fed-1',
       federationId: 'fed-1',
@@ -257,11 +254,9 @@ describe('fedimint client adapter', () => {
     })
 
     const mockedWallet = wallet as unknown as MockWalletLike
-    expect(mockedWallet.joinMock).not.toHaveBeenCalled()
-    expect(mockedWallet.transportJoinMock).toHaveBeenCalledWith('join_federation', {
-      invite_code: 'invite-1',
-      client_name: expect.stringMatching(UUID_V5_PATTERN),
-      force_recover: true,
+    expect(mockedWallet.joinMock).toHaveBeenCalledWith('invite-1', {
+      clientName: expect.stringMatching(UUID_V5_PATTERN),
+      forceRecover: true,
     })
     expect(mockedWallet.isOpen()).toBe(true)
   })
@@ -272,7 +267,11 @@ describe('fedimint client adapter', () => {
       federationId: 'fed-1',
       inviteCode: 'invite-1',
     })) as unknown as MockWalletLike
-    const firstClientName = wallet.joinMock.mock.calls[0]?.[1]
+    const firstJoinOptions = wallet.joinMock.mock.calls[0]?.[1]
+    const firstClientName =
+      typeof firstJoinOptions === 'object' && firstJoinOptions != null
+        ? firstJoinOptions.clientName
+        : firstJoinOptions
     expect(firstClientName).toEqual(expect.stringMatching(UUID_V5_PATTERN))
     wallet.openMock.mockResolvedValue(true)
     wallet.joinMock.mockClear()
