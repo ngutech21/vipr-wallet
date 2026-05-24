@@ -4,7 +4,7 @@ FROM --platform=$BUILDPLATFORM node:24-slim AS builder
 ENV PNPM_STORE_PATH=/pnpm/store
 
 RUN corepack enable \
-    && corepack prepare pnpm@11.2.2 --activate \
+    && corepack prepare pnpm@11.3.0 --activate \
     && apt-get update \
     && apt-get install -y --no-install-recommends python3 make g++ \
     && pnpm config set store-dir ${PNPM_STORE_PATH} \

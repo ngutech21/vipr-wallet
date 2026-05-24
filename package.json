@@ -6,7 +6,7 @@
   "author": "ngutech21 <ngutech21@pm.me>",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@11.2.2",
+  "packageManager": "pnpm@11.3.0",
   "scripts": {
     "lint": "eslint -c ./eslint.config.js \"{src,test}/**/*.{ts,js,cjs,mjs,vue}\" --max-warnings 0",
     "lint:fix": "eslint -c ./eslint.config.js \"{src,test}/**/*.{ts,js,cjs,mjs,vue}\" --fix --max-warnings 0",
