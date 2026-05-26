@@ -32,7 +32,7 @@
   "dependencies": {
     "@fedimint/core": "0.0.0-canary-69fdcb1e726a49e7bb7e6e83a2b7e8525abda10f",
     "@fedimint/transport-web": "0.0.0-canary-69fdcb1e726a49e7bb7e6e83a2b7e8525abda10f",
-    "@getalby/bitcoin-connect": "^3.12.2",
+    "@getalby/bitcoin-connect": "^3.12.3",
     "@getalby/lightning-tools": "^8.1.1",
     "@nostr-dev-kit/ndk": "^3.0.3",
     "@quasar/extras": "^1.18.0",
