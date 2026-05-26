@@ -20,8 +20,8 @@ importers:
         specifier: 0.0.0-canary-69fdcb1e726a49e7bb7e6e83a2b7e8525abda10f
         version: 0.0.0-canary-69fdcb1e726a49e7bb7e6e83a2b7e8525abda10f(@fedimint/core@0.0.0-canary-69fdcb1e726a49e7bb7e6e83a2b7e8525abda10f)
       '@getalby/bitcoin-connect':
-        specifier: ^3.12.2
-        version: 3.12.2(react@19.1.1)(typescript@6.0.3)
+        specifier: ^3.12.3
+        version: 3.12.3(typescript@6.0.3)
       '@getalby/lightning-tools':
         specifier: ^8.1.1
         version: 8.1.1
@@ -1109,20 +1109,16 @@ packages:
   '@formatjs/intl-localematcher@0.6.2':
     resolution: {integrity: sha512-XOMO2Hupl0wdd172Y06h6kLpBz6Dv+J4okPLl4LPtzbr8f66WbIoy4ev98EBuZ6ZK4h5ydTN6XneT4QVpD7cdA==}
 
-  '@getalby/bitcoin-connect@3.12.2':
-    resolution: {integrity: sha512-qtKKSE7gEVmCyc1AJR5cD9dxD83PvQotG7U7SvERXz1z9fEuKzKpXc16olVZhLiJjTLeQo1P2Zqv0d6lISKhBQ==}
-
-  '@getalby/lightning-tools@6.1.0':
-    resolution: {integrity: sha512-rGurar9X4Gm+9xwoNYS8s9YLK7ZYqvbqv4KbHLYV0LEeB0HxZHRgmxblGqg+fYfp6iiYHx+edIgUpt9rS3VwFw==}
-    engines: {node: '>=14'}
+  '@getalby/bitcoin-connect@3.12.3':
+    resolution: {integrity: sha512-2d+tNHBCZBoImKJgZwTUOyK9ypXaTg/hwvtQ8EHbgSKKkuycOrks7SzlUc0iJHthD3JGFVMWZEgOgw4AQVVE4w==}
 
   '@getalby/lightning-tools@8.1.1':
     resolution: {integrity: sha512-gB+3fvTGz9bbl31JNgKMWqG4dZWgCxSB51fYn+F4tZ3x2h5oI/yHjvb6W9GBo2Zscr5gMP64gs0LlzKYoETlvQ==}
     engines: {node: '>=14'}
 
-  '@getalby/sdk@6.0.2':
-    resolution: {integrity: sha512-Q7fKMlHXFdbT8w1O+khOVhg4FnPwdB1ltvmeoYI6Ec6RKc4qUVwx6vEM6xl8NumOboUMmA1YO5WDxm6WLTJ52w==}
-    engines: {node: '>=14'}
+  '@getalby/sdk@8.0.3':
+    resolution: {integrity: sha512-vPEogAWwLHbL55COeXrRN7yRBXMDGDxX1M2A+o3Lqw60FFng6fa9FK9sw8ptdILMD1dQZq8FzPXuabQ7seoDBA==}
+    engines: {node: '>=22'}
 
   '@hono/node-server@1.19.14':
     resolution: {integrity: sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw==}
@@ -1318,11 +1314,11 @@ packages:
   '@lhci/utils@0.15.1':
     resolution: {integrity: sha512-WclJnUQJeOMY271JSuaOjCv/aA0pgvuHZS29NFNdIeI14id8eiFsjith85EGKYhljgoQhJ2SiW4PsVfFiakNNw==}
 
-  '@lightninglabs/lnc-core@0.3.4-alpha':
-    resolution: {integrity: sha512-S/L1gNHqF8jW3DVXBvzVX8zyJO4O2FRfKFNE5U3rtRBaczX+fSVpK3yz/CdgBqhBzyZ+1un6nVZE/tftnfjQwA==}
+  '@lightninglabs/lnc-core@0.3.6-alpha':
+    resolution: {integrity: sha512-ObzY5wi+PS0GQduFHYDjGJpYZxKD27vtMf3fUVne2gGNMej1mvvJAOwATgef8YV/IZodAzy73Z/F2zfaQ+iE4Q==}
 
-  '@lightninglabs/lnc-web@0.3.4-alpha':
-    resolution: {integrity: sha512-ARTsCm71ewJ3sWaW4DEauEXr9wG4qPpCMWGGVjbjvvo5Jvd3svLO610JLYoV7LvQhyW6dKLlAooLxYws2y9FLA==}
+  '@lightninglabs/lnc-web@0.3.6-alpha':
+    resolution: {integrity: sha512-oiL1mKlbEjb1lcmNAHA0Gn+mlx5oQOJ8YVONJR/vgo4QLmL/48EyA12QbZ71mP9li45hGOoGqpYMRwBYtIeFog==}
 
   '@napi-rs/wasm-runtime@1.1.4':
     resolution: {integrity: sha512-3NQNNgA1YSlJb/kMH1ildASP9HW7/7kYnRI2szWJaofaS1hWmbGI4H+d3+22aGzXXN9IJ+n+GiFVcGipJP18ow==}
@@ -4688,10 +4684,6 @@ packages:
     resolution: {integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==}
     hasBin: true
 
-  react@19.1.1:
-    resolution: {integrity: sha512-w8nqGImo45dmMIfljjMwOGtbmC/mk4CMYhWIicdSflH91J9TyCyczcPFXJzrZ/ZXcgGRFeP6BU0BEJTw6tZdfQ==}
-    engines: {node: '>=0.10.0'}
-
   readable-stream@2.3.8:
     resolution: {integrity: sha512-8p0AUk4XODgIewSi0l8Epjs+EVnWiK7NoDIEGU0HhE7+ZyY8D1IMY7odu5lRrFXGg71L15KG8QrPmum45RTtdA==}
 
@@ -5541,11 +5533,6 @@ packages:
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
-  use-sync-external-store@1.6.0:
-    resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
@@ -5999,19 +5986,22 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zustand@4.5.7:
-    resolution: {integrity: sha512-CHOUy7mu3lbD6o6LJLfllpjkzhHXSBlX8B9+qPddUsIfeF5S/UZ5q0kmCsnRqT1UHFQZchNFDDzMbQsuesHWlw==}
-    engines: {node: '>=12.7.0'}
+  zustand@5.0.13:
+    resolution: {integrity: sha512-efI2tVaVQPqtOh114loML/Z80Y4NP3yc+Ff0fYiZJPauNeWZeIp/bRFD7I9bfmCOYBh/PHxlglQ9+wvlwnPikQ==}
+    engines: {node: '>=12.20.0'}
     peerDependencies:
-      '@types/react': '>=16.8'
+      '@types/react': '>=18.0.0'
       immer: '>=9.0.6'
-      react: '>=16.8'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
     peerDependenciesMeta:
       '@types/react':
         optional: true
       immer:
         optional: true
       react:
+        optional: true
+      use-sync-external-store:
         optional: true
 
   zwitch@2.0.4:
@@ -6977,26 +6967,25 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@getalby/bitcoin-connect@3.12.2(react@19.1.1)(typescript@6.0.3)':
+  '@getalby/bitcoin-connect@3.12.3(typescript@6.0.3)':
     dependencies:
-      '@getalby/lightning-tools': 6.1.0
-      '@getalby/sdk': 6.0.2(typescript@6.0.3)
-      '@lightninglabs/lnc-web': 0.3.4-alpha
+      '@getalby/lightning-tools': 8.1.1
+      '@getalby/sdk': 8.0.3(typescript@6.0.3)
+      '@lightninglabs/lnc-web': 0.3.6-alpha
       qrcode-generator: 1.4.4
-      zustand: 4.5.7(react@19.1.1)
+      zustand: 5.0.13
     transitivePeerDependencies:
       - '@types/react'
       - immer
       - react
       - typescript
-
-  '@getalby/lightning-tools@6.1.0': {}
+      - use-sync-external-store
 
   '@getalby/lightning-tools@8.1.1': {}
 
-  '@getalby/sdk@6.0.2(typescript@6.0.3)':
+  '@getalby/sdk@8.0.3(typescript@6.0.3)':
     dependencies:
-      '@getalby/lightning-tools': 6.1.0
+      '@getalby/lightning-tools': 8.1.1
       nostr-tools: 2.23.5(typescript@6.0.3)
     transitivePeerDependencies:
       - typescript
@@ -7217,11 +7206,11 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@lightninglabs/lnc-core@0.3.4-alpha': {}
+  '@lightninglabs/lnc-core@0.3.6-alpha': {}
 
-  '@lightninglabs/lnc-web@0.3.4-alpha':
+  '@lightninglabs/lnc-web@0.3.6-alpha':
     dependencies:
-      '@lightninglabs/lnc-core': 0.3.4-alpha
+      '@lightninglabs/lnc-core': 0.3.6-alpha
       crypto-js: 4.2.0
 
   '@napi-rs/wasm-runtime@1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
@@ -10794,8 +10783,6 @@ snapshots:
       minimist: 1.2.8
       strip-json-comments: 2.0.1
 
-  react@19.1.1: {}
-
   readable-stream@2.3.8:
     dependencies:
       core-util-is: 1.0.3
@@ -11748,10 +11735,6 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  use-sync-external-store@1.6.0(react@19.1.1):
-    dependencies:
-      react: 19.1.1
-
   util-deprecate@1.0.2: {}
 
   utils-merge@1.0.1: {}
@@ -12243,11 +12226,7 @@ snapshots:
 
   zod@3.25.76: {}
 
-  zustand@4.5.7(react@19.1.1):
-    dependencies:
-      use-sync-external-store: 1.6.0(react@19.1.1)
-    optionalDependencies:
-      react: 19.1.1
+  zustand@5.0.13: {}
 
   zwitch@2.0.4: {}
 
