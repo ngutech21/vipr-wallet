@@ -37,6 +37,7 @@ import { federationHasModule } from 'src/utils/federationModules'
 
 const WALLET_NAME_PREFIX = 'wallet-'
 const RECOVERY_BALANCE_REFRESH_DELAYS_MS = [0, 1_000, 3_000] as const
+const RESTORED_EVENT_LOG_CURSOR_PREFIX = 'vipr-restored-eventlog:'
 
 let walletOpenQueue: Promise<void> | null = null
 
@@ -93,6 +94,10 @@ type TransactionsBatchResult = {
   entries: TransactionsBatchEntry[]
   nextCursor: OperationKey | null
   hasMore: boolean
+}
+
+type RestoredEventLogCursor = {
+  operationId: string
 }
 
 type TransactionHistoryWallet = {
@@ -974,6 +979,17 @@ export const useWalletStore = defineStore('wallet', {
         }
       }
 
+      const eventLogCursor = readRestoredEventLogCursor(lastSeen)
+      if (eventLogCursor != null) {
+        return this.wasRestoredFromMnemonic
+          ? this.getRestoredEventLogPage(pageSize, eventLogCursor)
+          : {
+              transactions: [],
+              nextCursor: null,
+              hasMore: false,
+            }
+      }
+
       try {
         const collected: TransactionsBatchEntry[] = []
         const visibleLimit = pageSize + 1
@@ -1040,30 +1056,52 @@ export const useWalletStore = defineStore('wallet', {
         return page
       }
 
-      try {
-        const restoredTransactions = await fetchRestoredTransactionsFromEventLog(
-          this.wallet,
-          pageSize,
-        )
+      return this.getRestoredEventLogPage(pageSize)
+    },
 
-        if (restoredTransactions.length === 0) {
-          return page
-        }
-
-        logger.logWalletOperation('Restored transaction history loaded from event log', {
-          restoredTransactionCount: restoredTransactions.length,
-        })
-
+    async getRestoredEventLogPage(
+      pageSize: number,
+      cursor?: RestoredEventLogCursor,
+    ): Promise<TransactionsPageResult> {
+      if (this.wallet == null) {
         return {
-          transactions: restoredTransactions,
+          transactions: [],
           nextCursor: null,
           hasMore: false,
         }
+      }
+
+      try {
+        const restoredPage = await fetchRestoredTransactionsFromEventLog(
+          this.wallet,
+          pageSize,
+          cursor,
+        )
+
+        if (restoredPage.transactions.length === 0) {
+          return {
+            transactions: [],
+            nextCursor: null,
+            hasMore: false,
+          }
+        }
+
+        logger.logWalletOperation('Restored transaction history loaded from event log', {
+          restoredTransactionCount: restoredPage.transactions.length,
+          hasMore: restoredPage.hasMore,
+        })
+
+        return restoredPage
       } catch (error) {
         logger.warn('Failed to load restored transaction history from event log', {
           reason: getErrorMessage(error),
         })
-        return page
+
+        return {
+          transactions: [],
+          nextCursor: null,
+          hasMore: false,
+        }
       }
     },
 
@@ -1313,13 +1351,68 @@ async function fetchTransactionsBatch(
 async function fetchRestoredTransactionsFromEventLog(
   wallet: TransactionHistoryWallet,
   pageSize: number,
-): Promise<Transactions[]> {
+  cursor?: RestoredEventLogCursor,
+): Promise<TransactionsPageResult> {
   if (typeof wallet.federation.getEventLog !== 'function') {
-    return []
+    return {
+      transactions: [],
+      nextCursor: null,
+      hasMore: false,
+    }
   }
 
   const eventLog = await wallet.federation.getEventLog({ pos: 0, limit: 10_000 })
-  return mapRestoredTransactionsFromEventLog(eventLog).slice(0, pageSize)
+  const restoredTransactions = mapRestoredTransactionsFromEventLog(eventLog)
+  const startIndex =
+    cursor == null
+      ? 0
+      : Math.max(
+          0,
+          restoredTransactions.findIndex(
+            (transaction) => transaction.operationId === cursor.operationId,
+          ) + 1,
+        )
+  const pageTransactions = restoredTransactions.slice(startIndex, startIndex + pageSize)
+  const hasMore = startIndex + pageSize < restoredTransactions.length
+
+  return {
+    transactions: pageTransactions,
+    nextCursor: hasMore ? createRestoredEventLogCursor(pageTransactions.at(-1)) : null,
+    hasMore,
+  }
+}
+
+function createRestoredEventLogCursor(transaction: Transactions | undefined): OperationKey | null {
+  if (transaction == null) {
+    return null
+  }
+
+  const timestampMs = Number.isFinite(transaction.timestamp) ? transaction.timestamp : 0
+  const secsSinceEpoch = Math.floor(timestampMs / 1_000)
+  const nanosSinceEpoch = Math.max(0, Math.floor((timestampMs % 1_000) * 1_000_000))
+
+  return {
+    operation_id: `${RESTORED_EVENT_LOG_CURSOR_PREFIX}${transaction.operationId}`,
+    creation_time: {
+      secs_since_epoch: secsSinceEpoch,
+      nanos_since_epoch: nanosSinceEpoch,
+    },
+  }
+}
+
+function readRestoredEventLogCursor(
+  lastSeen: OperationKey | undefined,
+): RestoredEventLogCursor | null {
+  if (lastSeen == null || !lastSeen.operation_id.startsWith(RESTORED_EVENT_LOG_CURSOR_PREFIX)) {
+    return null
+  }
+
+  const operationId = lastSeen.operation_id.slice(RESTORED_EVENT_LOG_CURSOR_PREFIX.length)
+  if (operationId === '') {
+    return null
+  }
+
+  return { operationId }
 }
 
 function mapRestoredTransactionsFromEventLog(

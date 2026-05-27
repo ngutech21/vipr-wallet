@@ -1476,6 +1476,63 @@ describe('wallet store', () => {
     expect(page.nextCursor).toBeNull()
   })
 
+  it('getTransactionsPage paginates restored event log fallback with an internal cursor', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+
+    wallet.federation.listTransactions.mockResolvedValue([])
+    wallet.federation.listOperations.mockResolvedValue([])
+    wallet.federation.getEventLog.mockResolvedValue([
+      createEventLogEntry({
+        module: 'lnv2',
+        kind: 'payment-receive',
+        payload: {
+          operation_id: 'ln-restored-newest',
+          amount: 21_000,
+        },
+        tsUsecs: 3_000_000,
+      }),
+      createEventLogEntry({
+        module: 'lnv2',
+        kind: 'payment-receive',
+        payload: {
+          operation_id: 'ln-restored-middle',
+          amount: 22_000,
+        },
+        tsUsecs: 2_000_000,
+      }),
+      createEventLogEntry({
+        module: 'lnv2',
+        kind: 'payment-receive',
+        payload: {
+          operation_id: 'ln-restored-oldest',
+          amount: 23_000,
+        },
+        tsUsecs: 1_000_000,
+      }),
+    ])
+    walletStore.wallet = wallet as never
+    walletStore.wasRestoredFromMnemonic = true
+
+    const firstPage = await walletStore.getTransactionsPage(2)
+    const secondPage = await walletStore.getTransactionsPage(2, firstPage.nextCursor ?? undefined)
+
+    expect(firstPage.transactions.map((transaction) => transaction.operationId)).toEqual([
+      'ln-restored-newest',
+      'ln-restored-middle',
+    ])
+    expect(firstPage.hasMore).toBe(true)
+    expect(firstPage.nextCursor?.operation_id).toBe('vipr-restored-eventlog:ln-restored-middle')
+    expect(secondPage.transactions.map((transaction) => transaction.operationId)).toEqual([
+      'ln-restored-oldest',
+    ])
+    expect(secondPage.hasMore).toBe(false)
+    expect(secondPage.nextCursor).toBeNull()
+    expect(wallet.federation.listTransactions).toHaveBeenCalledTimes(1)
+    expect(wallet.federation.listOperations).toHaveBeenCalledTimes(1)
+    expect(wallet.federation.getEventLog).toHaveBeenCalledTimes(2)
+  })
+
   it('getTransactionsPage does not read event log when restored wallet has normal transactions', async () => {
     const walletStore = useWalletStore()
     const wallet = createWalletMock(0)
