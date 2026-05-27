@@ -128,4 +128,20 @@ describe('LightningTransactionItem.vue', () => {
     expect(wrapper.text()).toContain('≈ $0.00 usd')
     expect(satsToFiat).not.toHaveBeenCalled()
   })
+
+  it('renders restored event log amount without decoding an invoice', async () => {
+    const transaction = createTransaction({
+      invoice: '',
+      type: 'receive',
+      amountMsats: 21_000,
+    } as Partial<LightningTransaction> & { amountMsats: number })
+    const { wrapper, decodeInvoice, satsToFiat } = mountComponent(transaction)
+
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Received Lightning')
+    expect(wrapper.text()).toMatch(/\+\s+21 sats/)
+    expect(decodeInvoice).not.toHaveBeenCalled()
+    expect(satsToFiat).toHaveBeenCalledWith(21)
+  })
 })

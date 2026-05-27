@@ -65,6 +65,15 @@ const formattedTimestamp = computed(() => {
 })
 
 const amountInSats = computed(() => {
+  const restoredAmountSats = getLightningTransactionAmountSats(props.transaction)
+  if (restoredAmountSats != null) {
+    return restoredAmountSats.toLocaleString()
+  }
+
+  if (props.transaction.invoice.trim() === '') {
+    return '0'
+  }
+
   try {
     const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
     return invoice.amount.toLocaleString()
@@ -79,12 +88,26 @@ onMounted(async () => {
     invoice: `${props.transaction.invoice.substring(0, 20)}...`,
   })
   try {
-    const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
-    const fiatValue = await lightningStore.satsToFiat(invoice.amount)
+    const restoredAmountSats = getLightningTransactionAmountSats(props.transaction)
+    if (restoredAmountSats == null && props.transaction.invoice.trim() === '') {
+      amountInFiat.value = '0.00'
+      return
+    }
+
+    const amountSats =
+      restoredAmountSats ?? lightningStore.decodeInvoice(props.transaction.invoice).amount
+    const fiatValue = await lightningStore.satsToFiat(amountSats)
     amountInFiat.value = fiatValue.toFixed(2)
   } catch (error) {
     logger.error('Failed to convert Lightning amount to fiat', error)
     amountInFiat.value = '0.00'
   }
 })
+
+function getLightningTransactionAmountSats(transaction: LightningTransaction): number | null {
+  const amountMsats = (transaction as LightningTransaction & { amountMsats?: unknown }).amountMsats
+  return typeof amountMsats === 'number' && Number.isFinite(amountMsats) && amountMsats > 0
+    ? Math.floor(amountMsats / 1_000)
+    : null
+}
 </script>

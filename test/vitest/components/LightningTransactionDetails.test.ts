@@ -220,6 +220,29 @@ describe('LightningTransactionDetails.vue', () => {
       expect(wrapper.text()).toContain('gateway.example.com')
     })
 
+    it('should render restored amount and hide missing gateway and invoice fields', async () => {
+      const transaction = createMockTransaction({
+        invoice: '',
+        gateway: '',
+        txId: '',
+        type: 'receive',
+        amountMsats: 21_000,
+      } as Partial<LightningTransaction> & { amountMsats: number })
+
+      wrapper = createWrapper(transaction)
+      await flushPromises()
+
+      const lightningStore = useLightningStore()
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(lightningStore.decodeInvoice).not.toHaveBeenCalled()
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(lightningStore.satsToFiat).toHaveBeenCalledWith(21)
+      expect(wrapper.text()).toContain('+21')
+      expect(wrapper.text()).not.toContain('Gateway')
+      expect(wrapper.text()).not.toContain('Lightning Invoice')
+      expect(wrapper.text()).not.toContain('Transaction ID')
+    })
+
     it('should display gateway alias when it matches the wallet gateway cache', async () => {
       const updateGatewayCache = vi.fn().mockResolvedValue(undefined)
       const listGateways = vi.fn().mockResolvedValue([

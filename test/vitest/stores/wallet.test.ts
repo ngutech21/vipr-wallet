@@ -26,6 +26,7 @@ import {
   FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY,
   FEDIMINT_STORAGE_SCHEMA_KEY,
   FEDIMINT_STORAGE_SCHEMA_VERSION,
+  FEDIMINT_WALLET_RESTORED_KEY,
   getWalletNameForFederationId,
   mapTxOutputSummaryToFederationUtxo,
   parseOutpoint,
@@ -72,6 +73,7 @@ function createWalletMock(balanceMsats: number) {
       getMetaConsensusValue: vi.fn<() => Promise<unknown>>(() => Promise.resolve(null)),
       listTransactions: vi.fn(),
       listOperations: vi.fn(),
+      getEventLog: vi.fn(),
     },
     mint: {
       parseNotes: vi.fn(() => Promise.resolve(12_000)),
@@ -121,6 +123,26 @@ function createHiddenTransaction(operationId: string): Transactions {
     operationId,
     timestamp: 1,
   } as unknown as Transactions
+}
+
+function createEventLogEntry({
+  module,
+  kind,
+  payload,
+  tsUsecs = 1_234_567_890_000_000,
+}: {
+  module: string
+  kind: string
+  payload: Record<string, unknown>
+  tsUsecs?: number
+}) {
+  return {
+    id: tsUsecs,
+    kind,
+    module: [module, 0],
+    ts_usecs: tsUsecs,
+    payload,
+  }
 }
 
 describe('wallet store', () => {
@@ -531,6 +553,8 @@ describe('wallet store', () => {
     expect(federationStore.selectedFederationId).toBeNull()
     expect(localStorage.getItem(FEDIMINT_STORAGE_SCHEMA_KEY)).toBe(FEDIMINT_STORAGE_SCHEMA_VERSION)
     expect(localStorage.getItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY)).toBe('0')
+    expect(localStorage.getItem(FEDIMINT_WALLET_RESTORED_KEY)).toBe('0')
+    expect(walletStore.wasRestoredFromMnemonic).toBe(false)
 
     const migratedAgain = await walletStore.ensureStorageSchema()
 
@@ -547,6 +571,8 @@ describe('wallet store', () => {
     expect(walletStore.mnemonicWords).toHaveLength(12)
     expect(walletStore.needsMnemonicBackup).toBe(true)
     expect(localStorage.getItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY)).toBe('0')
+    expect(localStorage.getItem(FEDIMINT_WALLET_RESTORED_KEY)).toBe('0')
+    expect(walletStore.wasRestoredFromMnemonic).toBe(false)
   })
 
   it('restoreMnemonic uses setMnemonic and marks backup as confirmed', async () => {
@@ -575,6 +601,8 @@ describe('wallet store', () => {
     expect(walletStore.hasMnemonic).toBe(true)
     expect(walletStore.needsMnemonicBackup).toBe(false)
     expect(localStorage.getItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY)).toBe('1')
+    expect(localStorage.getItem(FEDIMINT_WALLET_RESTORED_KEY)).toBe('1')
+    expect(walletStore.wasRestoredFromMnemonic).toBe(true)
   })
 
   it('loadMnemonic returns false when no mnemonic is set', async () => {
@@ -1398,6 +1426,256 @@ describe('wallet store', () => {
     })
     expect(page.nextCursor).toBeNull()
     expect(page.hasMore).toBe(false)
+  })
+
+  it('getTransactionsPage does not read event log when a non-restored wallet has no transactions', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+
+    wallet.federation.listTransactions.mockResolvedValue([])
+    wallet.federation.listOperations.mockResolvedValue([])
+    walletStore.wallet = wallet as never
+
+    const page = await walletStore.getTransactionsPage(10)
+
+    expect(page.transactions).toEqual([])
+    expect(wallet.federation.getEventLog).not.toHaveBeenCalled()
+  })
+
+  it('getTransactionsPage uses event log fallback when a restored wallet has no normal transactions', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+
+    wallet.federation.listTransactions.mockResolvedValue([])
+    wallet.federation.listOperations.mockResolvedValue([])
+    wallet.federation.getEventLog.mockResolvedValue([
+      createEventLogEntry({
+        module: 'lnv2',
+        kind: 'payment-receive',
+        payload: {
+          operation_id: 'ln-restored-receive',
+          amount: 21_000,
+        },
+      }),
+    ])
+    walletStore.wallet = wallet as never
+    walletStore.wasRestoredFromMnemonic = true
+
+    const page = await walletStore.getTransactionsPage(10)
+
+    expect(wallet.federation.getEventLog).toHaveBeenCalledWith({ pos: 0, limit: 10_000 })
+    expect(page.transactions).toHaveLength(1)
+    expect(page.transactions[0]).toMatchObject({
+      kind: 'ln',
+      operationId: 'ln-restored-receive',
+      type: 'receive',
+      amountMsats: 21_000,
+      outcome: 'claimed',
+    })
+    expect(page.hasMore).toBe(false)
+    expect(page.nextCursor).toBeNull()
+  })
+
+  it('getTransactionsPage does not read event log when restored wallet has normal transactions', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+
+    wallet.federation.listTransactions.mockResolvedValue([
+      {
+        kind: 'mint',
+        operationId: 'mint-op-1',
+        type: 'reissue',
+        amountMsats: 21_000,
+        timestamp: 1,
+      },
+    ])
+    wallet.federation.listOperations.mockResolvedValue([
+      [
+        {
+          operation_id: 'mint-op-1',
+          creation_time: {
+            secs_since_epoch: 1,
+            nanos_since_epoch: 0,
+          },
+        },
+        { meta: {} },
+      ],
+    ])
+    walletStore.wallet = wallet as never
+    walletStore.wasRestoredFromMnemonic = true
+
+    const page = await walletStore.getTransactionsPage(10)
+
+    expect(page.transactions.map((transaction) => transaction.operationId)).toEqual(['mint-op-1'])
+    expect(wallet.federation.getEventLog).not.toHaveBeenCalled()
+  })
+
+  it('getTransactionsPage maps known payment event log entries and ignores unknown entries', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+
+    wallet.federation.listTransactions.mockResolvedValue([])
+    wallet.federation.listOperations.mockResolvedValue([])
+    wallet.federation.getEventLog.mockResolvedValue([
+      createEventLogEntry({
+        module: 'ln',
+        kind: 'payment-send',
+        payload: {
+          operation_id: 'ln-send',
+          amount: 11_000,
+          fee: 1_000,
+        },
+        tsUsecs: 1_000_000,
+      }),
+      createEventLogEntry({
+        module: 'ln',
+        kind: 'payment-send-update',
+        payload: {
+          operation_id: 'ln-send',
+          status: {
+            Success: Array.from({ length: 32 }, (_value, index) => index),
+          },
+        },
+        tsUsecs: 1_100_000,
+      }),
+      createEventLogEntry({
+        module: 'mintv2',
+        kind: 'payment-send',
+        payload: {
+          operation_id: 'mint-send',
+          amount: 22_000,
+          ecash: 'cashu-test',
+        },
+        tsUsecs: 2_000_000,
+      }),
+      createEventLogEntry({
+        module: 'mint',
+        kind: 'payment-receive',
+        payload: {
+          operation_id: 'mint-receive',
+          amount: 33_000,
+        },
+        tsUsecs: 3_000_000,
+      }),
+      createEventLogEntry({
+        module: 'mint',
+        kind: 'payment-receive-update',
+        payload: {
+          operation_id: 'mint-receive',
+          status: 'Success',
+        },
+        tsUsecs: 3_100_000,
+      }),
+      createEventLogEntry({
+        module: 'wallet',
+        kind: 'payment-receive',
+        payload: {
+          operation_id: 'wallet-receive',
+          amount: 44_000,
+          txid: 'wallet-receive-txid',
+        },
+        tsUsecs: 4_000_000,
+      }),
+      createEventLogEntry({
+        module: 'walletv2',
+        kind: 'payment-send',
+        payload: {
+          operation_id: 'wallet-send',
+          address: 'bcrt1qsend',
+          value: 55,
+          fee: 2,
+        },
+        tsUsecs: 5_000_000,
+      }),
+      createEventLogEntry({
+        module: 'walletv2',
+        kind: 'payment-send-update',
+        payload: {
+          operation_id: 'wallet-send',
+          status: {
+            Success: 'wallet-send-txid',
+          },
+        },
+        tsUsecs: 5_100_000,
+      }),
+      createEventLogEntry({
+        module: 'walletv2',
+        kind: 'payment-receive',
+        payload: {
+          operation_id: 'walletv2-receive',
+          address: 'bcrt1qreceive',
+          value: 66,
+          fee: 1,
+        },
+        tsUsecs: 6_000_000,
+      }),
+      createEventLogEntry({
+        module: 'walletv2',
+        kind: 'payment-receive-update',
+        payload: {
+          operation_id: 'walletv2-receive',
+          status: 'Success',
+        },
+        tsUsecs: 6_100_000,
+      }),
+      createEventLogEntry({
+        module: 'lnv2',
+        kind: 'unknown-event',
+        payload: {
+          operation_id: 'ignored',
+          amount: 77_000,
+        },
+        tsUsecs: 7_000_000,
+      }),
+      createEventLogEntry({
+        module: 'lnv2',
+        kind: 'payment-receive',
+        payload: {
+          operation_id: 'missing-amount',
+        },
+        tsUsecs: 8_000_000,
+      }),
+    ])
+    walletStore.wallet = wallet as never
+    walletStore.wasRestoredFromMnemonic = true
+
+    const page = await walletStore.getTransactionsPage(20)
+
+    expect(page.transactions.map((transaction) => transaction.operationId)).toEqual([
+      'walletv2-receive',
+      'wallet-send',
+      'wallet-receive',
+      'mint-receive',
+      'mint-send',
+      'ln-send',
+    ])
+    expect(
+      page.transactions.find((transaction) => transaction.operationId === 'ln-send'),
+    ).toMatchObject({
+      kind: 'ln',
+      type: 'send',
+      amountMsats: 11_000,
+      fee: 1_000,
+      outcome: 'success',
+    })
+    expect(
+      page.transactions.find((transaction) => transaction.operationId === 'mint-send'),
+    ).toMatchObject({
+      kind: 'mint',
+      type: 'spend_oob',
+      amountMsats: 22_000,
+      notes: 'cashu-test',
+    })
+    expect(
+      page.transactions.find((transaction) => transaction.operationId === 'wallet-send'),
+    ).toMatchObject({
+      kind: 'wallet',
+      type: 'withdraw',
+      amountMsats: 55_000,
+      fee: 2_000,
+      onchainAddress: 'bcrt1qsend',
+      txId: 'wallet-send-txid',
+    })
   })
 
   it('getTransactionsPage keeps wallet normalization in paged mode', async () => {

@@ -44,7 +44,7 @@
           <div class="label">Federation</div>
           <div class="value">{{ federationTitle }}</div>
         </div>
-        <div class="detail-row detail-row--separated">
+        <div v-if="transaction.gateway !== ''" class="detail-row detail-row--separated">
           <div class="label">Gateway</div>
           <div class="value" :title="transaction.gateway">{{ gatewayDisplayName }}</div>
         </div>
@@ -55,7 +55,7 @@
           <div class="label">Fee</div>
           <div class="value">{{ Math.round(transaction.fee / 1000) }} sats</div>
         </div>
-        <div class="detail-row detail-row--separated">
+        <div v-if="transaction.txId !== ''" class="detail-row detail-row--separated">
           <div class="label">Transaction ID</div>
           <div class="value value--transaction-id">{{ transaction.txId }}</div>
         </div>
@@ -63,7 +63,10 @@
           <div class="label">Preimage</div>
           <div class="value value--transaction-id">{{ transaction.preimage }}</div>
         </div>
-        <div class="detail-row detail-row--separated detail-row--block">
+        <div
+          v-if="transaction.invoice !== ''"
+          class="detail-row detail-row--separated detail-row--block"
+        >
           <div class="detail-row__heading">
             <div class="label">Lightning Invoice</div>
             <q-btn
@@ -114,6 +117,15 @@ const amountInFiat = ref<string>('0.00')
 const gatewayDisplayName = ref(props.transaction.gateway)
 
 const amountInSats = computed(() => {
+  const restoredAmountSats = getLightningTransactionAmountSats(props.transaction)
+  if (restoredAmountSats != null) {
+    return restoredAmountSats.toLocaleString()
+  }
+
+  if (props.transaction.invoice.trim() === '') {
+    return '0'
+  }
+
   try {
     const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
     return invoice.amount.toLocaleString()
@@ -146,8 +158,15 @@ onMounted(() => {
 
 async function refreshFiatAmount() {
   try {
-    const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
-    const fiatValue = await lightningStore.satsToFiat(invoice.amount)
+    const restoredAmountSats = getLightningTransactionAmountSats(props.transaction)
+    if (restoredAmountSats == null && props.transaction.invoice.trim() === '') {
+      amountInFiat.value = '0.00'
+      return
+    }
+
+    const amountSats =
+      restoredAmountSats ?? lightningStore.decodeInvoice(props.transaction.invoice).amount
+    const fiatValue = await lightningStore.satsToFiat(amountSats)
     amountInFiat.value = fiatValue.toFixed(2)
   } catch (error) {
     logger.error('Failed to convert amount to fiat', error)
@@ -202,6 +221,13 @@ function readGatewayInfo(gateway: unknown): { alias: string | null; gatewayId: s
 
 function readNonEmptyString(value: unknown): string | null {
   return typeof value === 'string' && value.length > 0 ? value : null
+}
+
+function getLightningTransactionAmountSats(transaction: LightningTransaction): number | null {
+  const amountMsats = (transaction as LightningTransaction & { amountMsats?: unknown }).amountMsats
+  return typeof amountMsats === 'number' && Number.isFinite(amountMsats) && amountMsats > 0
+    ? Math.floor(amountMsats / 1_000)
+    : null
 }
 
 function formatDate(timestamp: number): string {
