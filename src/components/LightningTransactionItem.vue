@@ -45,6 +45,7 @@ import { useLightningStore } from 'src/stores/lightning'
 import type { LightningTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
 import { formatTransactionListTimestamp } from 'src/utils/formatter'
+import { getLightningTransactionAmountSats } from 'src/utils/lightningTransactionPresentation'
 import TransactionRailIcon from 'src/components/TransactionRailIcon.vue'
 
 interface Props {
@@ -103,11 +104,4 @@ onMounted(async () => {
     amountInFiat.value = '0.00'
   }
 })
-
-function getLightningTransactionAmountSats(transaction: LightningTransaction): number | null {
-  const amountMsats = (transaction as LightningTransaction & { amountMsats?: unknown }).amountMsats
-  return typeof amountMsats === 'number' && Number.isFinite(amountMsats) && amountMsats > 0
-    ? Math.floor(amountMsats / 1_000)
-    : null
-}
 </script>

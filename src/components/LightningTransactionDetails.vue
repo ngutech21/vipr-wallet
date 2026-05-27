@@ -101,6 +101,7 @@ import { useLightningStore } from 'src/stores/lightning'
 import { useWalletStore } from 'src/stores/wallet'
 import type { LightningTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
+import { getLightningTransactionAmountSats } from 'src/utils/lightningTransactionPresentation'
 import TransactionRailIcon from 'src/components/TransactionRailIcon.vue'
 
 interface Props {
@@ -221,13 +222,6 @@ function readGatewayInfo(gateway: unknown): { alias: string | null; gatewayId: s
 
 function readNonEmptyString(value: unknown): string | null {
   return typeof value === 'string' && value.length > 0 ? value : null
-}
-
-function getLightningTransactionAmountSats(transaction: LightningTransaction): number | null {
-  const amountMsats = (transaction as LightningTransaction & { amountMsats?: unknown }).amountMsats
-  return typeof amountMsats === 'number' && Number.isFinite(amountMsats) && amountMsats > 0
-    ? Math.floor(amountMsats / 1_000)
-    : null
 }
 
 function formatDate(timestamp: number): string {
