@@ -1533,6 +1533,57 @@ describe('wallet store', () => {
     expect(wallet.federation.getEventLog).toHaveBeenCalledTimes(2)
   })
 
+  it('getTransactionsPage reads subsequent event log windows for restored fallback', async () => {
+    const walletStore = useWalletStore()
+    const wallet = createWalletMock(0)
+
+    wallet.federation.listTransactions.mockResolvedValue([])
+    wallet.federation.listOperations.mockResolvedValue([])
+    wallet.federation.getEventLog
+      .mockResolvedValueOnce(
+        Array.from({ length: 10_000 }, (_value, index) =>
+          createEventLogEntry({
+            module: 'lnv2',
+            kind: 'ignored-event',
+            payload: {
+              operation_id: `ignored-${index}`,
+              amount: 1_000,
+            },
+            tsUsecs: index + 1,
+          }),
+        ),
+      )
+      .mockResolvedValueOnce([
+        createEventLogEntry({
+          module: 'lnv2',
+          kind: 'payment-receive',
+          payload: {
+            operation_id: 'ln-restored-after-first-window',
+            amount: 21_000,
+          },
+          tsUsecs: 10_001,
+        }),
+      ])
+    walletStore.wallet = wallet as never
+    walletStore.wasRestoredFromMnemonic = true
+
+    const page = await walletStore.getTransactionsPage(10)
+
+    expect(wallet.federation.getEventLog).toHaveBeenNthCalledWith(1, {
+      pos: 0,
+      limit: 10_000,
+    })
+    expect(wallet.federation.getEventLog).toHaveBeenNthCalledWith(2, {
+      pos: 10_000,
+      limit: 10_000,
+    })
+    expect(page.transactions.map((transaction) => transaction.operationId)).toEqual([
+      'ln-restored-after-first-window',
+    ])
+    expect(page.hasMore).toBe(false)
+    expect(page.nextCursor).toBeNull()
+  })
+
   it('getTransactionsPage does not read event log when restored wallet has normal transactions', async () => {
     const walletStore = useWalletStore()
     const wallet = createWalletMock(0)

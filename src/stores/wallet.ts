@@ -38,6 +38,7 @@ import { federationHasModule } from 'src/utils/federationModules'
 const WALLET_NAME_PREFIX = 'wallet-'
 const RECOVERY_BALANCE_REFRESH_DELAYS_MS = [0, 1_000, 3_000] as const
 const RESTORED_EVENT_LOG_CURSOR_PREFIX = 'vipr-restored-eventlog:'
+const RESTORED_EVENT_LOG_PAGE_LIMIT = 10_000
 
 let walletOpenQueue: Promise<void> | null = null
 
@@ -1361,7 +1362,7 @@ async function fetchRestoredTransactionsFromEventLog(
     }
   }
 
-  const eventLog = await wallet.federation.getEventLog({ pos: 0, limit: 10_000 })
+  const eventLog = await fetchCompleteRestoredEventLog(wallet)
   const restoredTransactions = mapRestoredTransactionsFromEventLog(eventLog)
   const startIndex =
     cursor == null
@@ -1379,6 +1380,34 @@ async function fetchRestoredTransactionsFromEventLog(
     transactions: pageTransactions,
     nextCursor: hasMore ? createRestoredEventLogCursor(pageTransactions.at(-1)) : null,
     hasMore,
+  }
+}
+
+async function fetchCompleteRestoredEventLog(
+  wallet: TransactionHistoryWallet,
+): Promise<PersistedLogEntry[]> {
+  const eventLog: PersistedLogEntry[] = []
+  let pos = 0
+
+  while (true) {
+    // Event-log paging is sequential because the next offset depends on the previous window size.
+    // eslint-disable-next-line no-await-in-loop
+    const page = await wallet.federation.getEventLog?.({
+      pos,
+      limit: RESTORED_EVENT_LOG_PAGE_LIMIT,
+    })
+
+    if (page == null || page.length === 0) {
+      return eventLog
+    }
+
+    eventLog.push(...page)
+
+    if (page.length < RESTORED_EVENT_LOG_PAGE_LIMIT) {
+      return eventLog
+    }
+
+    pos += page.length
   }
 }
 
