@@ -30,8 +30,8 @@
     "final-check": "pnpm format:check && pnpm lint && pnpm peers check && pnpm typecheck && pnpm typecheck:pwa && pnpm build && pnpm test:unit:ci && pnpm audit --prod"
   },
   "dependencies": {
-    "@fedimint/core": "0.0.0-canary-69fdcb1e726a49e7bb7e6e83a2b7e8525abda10f",
-    "@fedimint/transport-web": "0.0.0-canary-69fdcb1e726a49e7bb7e6e83a2b7e8525abda10f",
+    "@fedimint/core": "0.0.0-canary-bdba63f3b69629f2b7bff73cf25589bd16332838",
+    "@fedimint/transport-web": "0.0.0-canary-bdba63f3b69629f2b7bff73cf25589bd16332838",
     "@getalby/bitcoin-connect": "^3.12.3",
     "@getalby/lightning-tools": "^8.1.1",
     "@nostr-dev-kit/ndk": "^3.0.3",
@@ -78,7 +78,7 @@
     "vite-plugin-top-level-await": "^1.6.0",
     "vite-plugin-wasm": "^3.6.0",
     "vitest": "^4.1.7",
-    "vue-tsc": "^3.3.1",
+    "vue-tsc": "^3.3.2",
     "workbox-build": "^7.4.1",
     "workbox-cacheable-response": "^7.4.1",
     "workbox-core": "^7.4.1",
