@@ -1621,7 +1621,7 @@ function mapRestoredLightningTransaction(
     invoice: '',
     outcome,
     gateway: '',
-    txId: operationId,
+    txId: update?.txId ?? '',
     fee,
     preimage: update?.preimage,
     amountMsats,

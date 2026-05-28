@@ -1770,6 +1770,7 @@ describe('wallet store', () => {
       amountMsats: 11_000,
       fee: 1_000,
       outcome: 'success',
+      txId: '',
     })
     expect(
       page.transactions.find((transaction) => transaction.operationId === 'mint-send'),
