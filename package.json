@@ -27,7 +27,8 @@
     "test:e2e:headed": "playwright test --headed",
     "typecheck": "exec vue-tsc --noEmit",
     "typecheck:pwa": "exec tsc -p src-pwa/tsconfig.json --noEmit",
-    "final-check": "pnpm format:check && pnpm lint && pnpm peers check && pnpm typecheck && pnpm typecheck:pwa && pnpm build && pnpm test:unit:ci && pnpm audit --prod"
+    "check:circular": "madge src --circular",
+    "final-check": "pnpm format:check && pnpm lint && pnpm peers check && pnpm typecheck && pnpm typecheck:pwa && pnpm audit --prod && pnpm audit signatures && pnpm check:circular && pnpm build && pnpm test:unit:ci"
   },
   "dependencies": {
     "@fedimint/core": "0.0.0-canary-bdba63f3b69629f2b7bff73cf25589bd16332838",
@@ -69,6 +70,7 @@
     "eslint-plugin-vue": "^10.9.1",
     "globals": "^17.6.0",
     "happy-dom": "^20.9.0",
+    "madge": "^8.0.0",
     "pinia": "^3.0.4",
     "prettier": "^3.8.3",
     "tsx": "^4.22.3",

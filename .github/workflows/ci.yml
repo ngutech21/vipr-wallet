@@ -57,6 +57,9 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Check peer dependencies
+        run: pnpm peers check
+
       - name: Type check
         run: pnpm typecheck
 
@@ -70,7 +73,7 @@ jobs:
         run: pnpm audit signatures
 
       - name: Check circular dependencies
-        run: pnpm dlx madge src --circular
+        run: pnpm check:circular
 
   build:
     runs-on: ubuntu-latest
