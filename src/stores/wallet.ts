@@ -1561,7 +1561,7 @@ function mapRestoredLightningTransaction(
       invoice: '',
       outcome: 'claimed',
       gateway: '',
-      txId: operationId,
+      txId: update?.txId ?? '',
       amountMsats,
     } as Transactions
   }

@@ -1471,6 +1471,7 @@ describe('wallet store', () => {
       type: 'receive',
       amountMsats: 21_000,
       outcome: 'claimed',
+      txId: '',
     })
     expect(page.hasMore).toBe(false)
     expect(page.nextCursor).toBeNull()
