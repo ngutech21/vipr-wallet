@@ -564,12 +564,14 @@ describe('wallet store', () => {
 
   it('createMnemonic sets words and backup-required flag', async () => {
     const walletStore = useWalletStore()
+    walletStore.restoredTransactionsCache = new Map([['wallet-fed-1', []]])
 
     await walletStore.createMnemonic()
 
     expect(walletStore.hasMnemonic).toBe(true)
     expect(walletStore.mnemonicWords).toHaveLength(12)
     expect(walletStore.needsMnemonicBackup).toBe(true)
+    expect(walletStore.restoredTransactionsCache).toBeNull()
     expect(localStorage.getItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY)).toBe('0')
     expect(localStorage.getItem(FEDIMINT_WALLET_RESTORED_KEY)).toBe('0')
     expect(walletStore.wasRestoredFromMnemonic).toBe(false)
@@ -577,6 +579,7 @@ describe('wallet store', () => {
 
   it('restoreMnemonic uses setMnemonic and marks backup as confirmed', async () => {
     const walletStore = useWalletStore()
+    walletStore.restoredTransactionsCache = new Map([['wallet-fed-1', []]])
 
     await walletStore.restoreMnemonic([
       'abandon',
@@ -600,6 +603,7 @@ describe('wallet store', () => {
     expect(fedimintClientMock.setMnemonic).toHaveBeenCalledTimes(1)
     expect(walletStore.hasMnemonic).toBe(true)
     expect(walletStore.needsMnemonicBackup).toBe(false)
+    expect(walletStore.restoredTransactionsCache).toBeNull()
     expect(localStorage.getItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY)).toBe('1')
     expect(localStorage.getItem(FEDIMINT_WALLET_RESTORED_KEY)).toBe('1')
     expect(walletStore.wasRestoredFromMnemonic).toBe(true)

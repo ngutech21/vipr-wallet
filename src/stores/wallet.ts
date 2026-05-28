@@ -146,6 +146,10 @@ function createFederationRecoveryStatusMap(): Record<string, FederationRecoveryS
   return {}
 }
 
+function createRestoredTransactionsCache(): Map<string, Transactions[]> | null {
+  return null
+}
+
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
     wallet: null as FedimintWallet | null,
@@ -164,6 +168,7 @@ export const useWalletStore = defineStore('wallet', {
     wasRestoredFromMnemonic:
       typeof localStorage !== 'undefined' &&
       localStorage.getItem(FEDIMINT_WALLET_RESTORED_KEY) === '1',
+    restoredTransactionsCache: createRestoredTransactionsCache(),
   }),
   actions: {
     async initClients() {
@@ -298,6 +303,7 @@ export const useWalletStore = defineStore('wallet', {
       } finally {
         this.wallet = null
         this.activeWalletName = null
+        this.restoredTransactionsCache = null
         this.cancelRecoveryMonitor()
       }
     },
@@ -317,6 +323,7 @@ export const useWalletStore = defineStore('wallet', {
       await fedimintClient.closeActiveWallet()
       this.wallet = null
       this.activeWalletName = null
+      this.restoredTransactionsCache = null
 
       this.wallet = await fedimintClient.ensureWalletOpen({
         walletName,
@@ -368,6 +375,7 @@ export const useWalletStore = defineStore('wallet', {
       this.wasRestoredFromMnemonic = false
       this.cancelRecoveryMonitor()
       this.recoveryStatusByFederationId = {}
+      this.restoredTransactionsCache = null
       this.transactionsRefreshVersion += 1
     },
 
@@ -398,6 +406,7 @@ export const useWalletStore = defineStore('wallet', {
       const words = await fedimintClient.generateMnemonic()
       this.mnemonicWords = words
       this.hasMnemonic = true
+      this.restoredTransactionsCache = null
       localStorage.setItem(FEDIMINT_WALLET_RESTORED_KEY, '0')
       this.wasRestoredFromMnemonic = false
       localStorage.setItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY, '0')
@@ -411,6 +420,7 @@ export const useWalletStore = defineStore('wallet', {
       this.wallet = null
       this.activeWalletName = null
       this.balance = 0
+      this.restoredTransactionsCache = null
       this.cancelRecoveryMonitor()
       this.recoveryStatusByFederationId = {}
       this.transactionsRefreshVersion += 1
@@ -1077,6 +1087,7 @@ export const useWalletStore = defineStore('wallet', {
           this.wallet,
           pageSize,
           cursor,
+          this.activeWalletName ?? '',
         )
 
         if (restoredPage.transactions.length === 0) {
@@ -1353,6 +1364,7 @@ async function fetchRestoredTransactionsFromEventLog(
   wallet: TransactionHistoryWallet,
   pageSize: number,
   cursor?: RestoredEventLogCursor,
+  cacheKey?: string,
 ): Promise<TransactionsPageResult> {
   if (typeof wallet.federation.getEventLog !== 'function') {
     return {
@@ -1362,19 +1374,42 @@ async function fetchRestoredTransactionsFromEventLog(
     }
   }
 
+  const store = useWalletStore()
+  const cacheKeyExists = cacheKey != null && cacheKey !== ''
+  const cached = cacheKeyExists ? store.restoredTransactionsCache?.get(cacheKey) : undefined
+
+  if (cached != null && cached.length > 0) {
+    return sliceRestoredTransactions(cached, pageSize, cursor)
+  }
+
   const eventLog = await fetchCompleteRestoredEventLog(wallet)
   const restoredTransactions = mapRestoredTransactionsFromEventLog(eventLog)
+
+  if (cacheKeyExists) {
+    if (store.restoredTransactionsCache == null) {
+      store.restoredTransactionsCache = new Map()
+    }
+    store.restoredTransactionsCache.set(cacheKey, restoredTransactions)
+  }
+
+  return sliceRestoredTransactions(restoredTransactions, pageSize, cursor)
+}
+
+function sliceRestoredTransactions(
+  transactions: Transactions[],
+  pageSize: number,
+  cursor?: RestoredEventLogCursor,
+): TransactionsPageResult {
   const startIndex =
     cursor == null
       ? 0
       : Math.max(
           0,
-          restoredTransactions.findIndex(
-            (transaction) => transaction.operationId === cursor.operationId,
-          ) + 1,
+          transactions.findIndex((transaction) => transaction.operationId === cursor.operationId) +
+            1,
         )
-  const pageTransactions = restoredTransactions.slice(startIndex, startIndex + pageSize)
-  const hasMore = startIndex + pageSize < restoredTransactions.length
+  const pageTransactions = transactions.slice(startIndex, startIndex + pageSize)
+  const hasMore = startIndex + pageSize < transactions.length
 
   return {
     transactions: pageTransactions,
