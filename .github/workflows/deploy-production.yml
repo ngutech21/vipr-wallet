@@ -9,7 +9,7 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: deploy-production
@@ -36,6 +36,7 @@ jobs:
         with:
           ref: master
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Validate target SHA
         env:
