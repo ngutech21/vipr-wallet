@@ -28,7 +28,7 @@ ENV APP_VERSION=${APP_VERSION}
 RUN pnpm build
 
 # Stage 2: Serve the app using Nginx
-FROM alpine:3.23
+FROM alpine:3.23 AS runtime
 
 RUN apk add --no-cache --upgrade nginx nginx-mod-http-brotli \
     && mkdir -p /usr/share/nginx/html /run/nginx /etc/nginx/http.d /var/lib/nginx/tmp \

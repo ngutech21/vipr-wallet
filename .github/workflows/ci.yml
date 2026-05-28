@@ -142,6 +142,8 @@ jobs:
           file: ./Dockerfile
           push: false
           load: true
+          pull: true
+          no-cache-filters: runtime
           tags: vipr-wallet:pr-check
           cache-from: type=gha,scope=vipr-wallet-pr
           cache-to: type=gha,mode=max,scope=vipr-wallet-pr
@@ -209,6 +211,8 @@ jobs:
           file: ./Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
+          pull: true
+          no-cache-filters: runtime
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: mode=max
