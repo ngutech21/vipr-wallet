@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "src": ["src"],
+      "src/*": ["src/*"],
+      "components": ["src/components"],
+      "components/*": ["src/components/*"],
+      "stores": ["src/stores"],
+      "stores/*": ["src/stores/*"],
+      "#q-app/wrappers": ["node_modules/@quasar/app-vite/types/app-wrappers.d.ts"],
+      "vue-router/auto-routes": ["src/route-map.d.ts"]
+    }
+  }
+}

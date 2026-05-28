@@ -27,7 +27,7 @@
     "test:e2e:headed": "playwright test --headed",
     "typecheck": "exec vue-tsc --noEmit",
     "typecheck:pwa": "exec tsc -p src-pwa/tsconfig.json --noEmit",
-    "check:circular": "madge src --extensions ts --circular",
+    "check:circular": "madge src --extensions ts --ts-config tsconfig.madge.json --circular",
     "final-check": "pnpm format:check && pnpm lint && pnpm peers check && pnpm typecheck && pnpm typecheck:pwa && pnpm audit --prod && pnpm audit signatures && pnpm check:circular && pnpm build && pnpm test:unit:ci"
   },
   "dependencies": {
