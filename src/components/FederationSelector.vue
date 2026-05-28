@@ -95,6 +95,7 @@ import { computed, ref } from 'vue'
 import ModalCard from 'src/components/ModalCard.vue'
 import { useFederationStore } from 'src/stores/federation'
 import { useWalletStore } from 'src/stores/wallet'
+import { useFederationSelection } from 'src/composables/useFederationSelection'
 import type { Federation } from 'src/types/federation'
 import { getErrorMessage } from 'src/utils/error'
 import { logger } from 'src/services/logger'
@@ -113,6 +114,7 @@ const props = withDefaults(
 
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
+const federationSelection = useFederationSelection()
 
 const showSheet = ref(false)
 const switchingFederationId = ref<string | null>(null)
@@ -158,7 +160,7 @@ async function selectFederation(federation: Federation) {
   switchingFederationId.value = federation.federationId
 
   try {
-    await federationStore.selectFederation(federation)
+    await federationSelection.selectFederation(federation)
     showSheet.value = false
   } catch (error) {
     logger.error('Failed to switch federation', error)

@@ -210,6 +210,7 @@ describe('StartupWizardPage', () => {
       federationStoreMock.federations = [...federationStoreMock.federations, federation]
     })
     federationStoreMock.selectFederation.mockResolvedValue()
+    walletStoreMock.openWallet.mockResolvedValue()
     federationStoreMock.deleteFederation.mockImplementation((federationId) => {
       federationStoreMock.federations = federationStoreMock.federations.filter(
         (federation) => federation.federationId !== federationId,
@@ -388,8 +389,11 @@ describe('StartupWizardPage', () => {
       expect.objectContaining({
         federationId: 'fed-restore',
       }),
-      { expectRecovery: true, recoverOnJoin: true },
     )
+    expect(walletStoreMock.openWallet).toHaveBeenCalledWith({
+      expectRecovery: true,
+      recoverOnJoin: true,
+    })
     expect(wrapper.find('[data-testid="startup-wizard-restore-federations-step"]').exists()).toBe(
       true,
     )
@@ -409,7 +413,8 @@ describe('StartupWizardPage', () => {
     onboardingStoreMock.flow = 'restore'
     onboardingStoreMock.step = 'restore-federations'
     onboardingStoreMock.status = 'in_progress'
-    federationStoreMock.selectFederation
+    federationStoreMock.selectFederation.mockResolvedValueOnce().mockResolvedValueOnce()
+    walletStoreMock.openWallet
       .mockRejectedValueOnce(new Error('temporary restore failure'))
       .mockResolvedValueOnce()
 
@@ -454,8 +459,11 @@ describe('StartupWizardPage', () => {
       expect.objectContaining({
         federationId: 'fed-restore',
       }),
-      { expectRecovery: true, recoverOnJoin: true },
     )
+    expect(walletStoreMock.openWallet).toHaveBeenLastCalledWith({
+      expectRecovery: true,
+      recoverOnJoin: true,
+    })
   })
 
   it('restore federation step prevents submitting another federation while recovery is running', async () => {
@@ -522,7 +530,7 @@ describe('StartupWizardPage', () => {
     onboardingStoreMock.flow = 'restore'
     onboardingStoreMock.step = 'restore-federations'
     onboardingStoreMock.status = 'in_progress'
-    federationStoreMock.selectFederation.mockImplementationOnce(() => {
+    walletStoreMock.openWallet.mockImplementationOnce(() => {
       walletStoreMock.recoveryStatusByFederationId = {
         'fed-restore': 'restored',
       }

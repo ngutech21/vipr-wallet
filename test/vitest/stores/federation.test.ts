@@ -1,15 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import type { Federation } from 'src/types/federation'
-
-const walletStoreMock = vi.hoisted(() => ({
-  openWallet: vi.fn<() => Promise<void>>(),
-  wallet: null as object | null,
-}))
-
-vi.mock('src/stores/wallet', () => ({
-  useWalletStore: () => walletStoreMock,
-}))
 
 import {
   deleteFederationById,
@@ -34,38 +25,18 @@ describe('federation store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     localStorage.clear()
-    walletStoreMock.openWallet.mockReset()
-    walletStoreMock.wallet = null
   })
 
-  it('keeps selected federation when wallet opens successfully', async () => {
+  it('selects a federation', () => {
     const federationStore = useFederationStore()
     const federation = createFederation()
     federationStore.federations = [federation]
     federationStore.selectedFederationId = null
-    walletStoreMock.openWallet.mockResolvedValue()
 
-    await federationStore.selectFederation(federation)
+    const selectedFederation = federationStore.selectFederation(federation)
 
-    expect(walletStoreMock.openWallet).toHaveBeenCalledTimes(1)
+    expect(selectedFederation).toEqual(federation)
     expect(federationStore.selectedFederationId).toBe(federation.federationId)
-  })
-
-  it('passes restore join options to the wallet store', async () => {
-    const federationStore = useFederationStore()
-    const federation = createFederation()
-    federationStore.federations = [federation]
-    walletStoreMock.openWallet.mockResolvedValue()
-
-    await federationStore.selectFederation(federation, {
-      expectRecovery: true,
-      recoverOnJoin: true,
-    })
-
-    expect(walletStoreMock.openWallet).toHaveBeenCalledWith({
-      expectRecovery: true,
-      recoverOnJoin: true,
-    })
   })
 
   it('selects the first federation when selection is missing', () => {
@@ -196,30 +167,27 @@ describe('federation store', () => {
     expect(federationStore.selectedFederationId).toBeNull()
   })
 
-  it('restores previous selected federation when wallet open fails', async () => {
+  it('selects the provided federation without opening a wallet', () => {
     const federationStore = useFederationStore()
     const first = createFederation({ federationId: 'fed-1' })
     const second = createFederation({ federationId: 'fed-2' })
     federationStore.federations = [first, second]
     federationStore.selectedFederationId = first.federationId
-    walletStoreMock.openWallet.mockRejectedValue(new Error('open failed'))
 
-    await expect(federationStore.selectFederation(second)).rejects.toThrow('open failed')
+    federationStore.selectFederation(second)
 
-    expect(walletStoreMock.openWallet).toHaveBeenCalledTimes(1)
-    expect(federationStore.selectedFederationId).toBe(first.federationId)
+    expect(federationStore.selectedFederationId).toBe(second.federationId)
   })
 
-  it('opens the wallet when the federation is already selected but no wallet is active', async () => {
+  it('repairs selection when selecting without a provided federation', () => {
     const federationStore = useFederationStore()
     const federation = createFederation()
     federationStore.addFederation(federation)
-    walletStoreMock.openWallet.mockResolvedValue()
-    walletStoreMock.wallet = null
+    federationStore.selectedFederationId = 'missing-fed'
 
-    await federationStore.selectFederation(federation)
+    const selectedFederation = federationStore.selectFederation(undefined)
 
-    expect(walletStoreMock.openWallet).toHaveBeenCalledTimes(1)
+    expect(selectedFederation).toEqual(federation)
     expect(federationStore.selectedFederationId).toBe(federation.federationId)
   })
 })

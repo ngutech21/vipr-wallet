@@ -4,6 +4,7 @@ import { useAppNotify } from 'src/composables/useAppNotify'
 import { useWalletStore } from 'src/stores/wallet'
 import { useOnboardingStore } from 'src/stores/onboarding'
 import { useFederationStore } from 'src/stores/federation'
+import { useFederationSelection } from 'src/composables/useFederationSelection'
 import { logger } from 'src/services/logger'
 import { getErrorMessage } from 'src/utils/error'
 import type { Federation } from 'src/types/federation'
@@ -26,6 +27,7 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
   const walletStore = useWalletStore()
   const onboardingStore = useOnboardingStore()
   const federationStore = useFederationStore()
+  const federationSelection = useFederationSelection()
   const notify = useAppNotify()
 
   const currentStep = ref<WizardStep>('welcome')
@@ -303,7 +305,7 @@ export function useStartupWizard({ showInstallStep }: { showInstallStep: Ref<boo
     try {
       federationStore.addFederation(federation)
       try {
-        await federationStore.selectFederation(federation, {
+        await federationSelection.selectFederation(federation, {
           expectRecovery: true,
           recoverOnJoin: true,
         })

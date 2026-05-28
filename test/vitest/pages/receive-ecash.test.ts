@@ -364,12 +364,13 @@ describe('ReceiveEcashPage', () => {
       }),
     )
     vi.spyOn(walletStore, 'previewFederation').mockResolvedValue(newFederation)
+    vi.spyOn(walletStore, 'openWallet').mockResolvedValue(undefined)
     const redeemEcashSpy = vi.spyOn(walletStore, 'redeemEcash').mockResolvedValue(21_000)
     const selectFederationSpy = vi
       .spyOn(federationStore, 'selectFederation')
       .mockImplementation((federation) => {
         federationStore.selectedFederationId = federation?.federationId ?? null
-        return Promise.resolve()
+        return federation
       })
 
     await setEcashToken('new-fed-notes')

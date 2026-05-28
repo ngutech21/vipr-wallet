@@ -83,6 +83,7 @@ import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFederationStore } from 'src/stores/federation'
 import { getWalletNameForFederationId, useWalletStore } from 'src/stores/wallet'
+import { useFederationSelection } from 'src/composables/useFederationSelection'
 import FederationGatewayList from 'src/components/federation/FederationGatewayList.vue'
 import FederationGuardians from 'src/components/FederationGuardians.vue'
 import FederationInviteCard from 'src/components/federation/FederationInviteCard.vue'
@@ -102,6 +103,7 @@ const route = useRoute('/federation/[id]')
 const router = useRouter()
 const federationStore = useFederationStore()
 const walletStore = useWalletStore()
+const federationSelection = useFederationSelection()
 const spendableUtxos = ref<FederationUtxo[]>([])
 const isLoadingUtxos = ref(false)
 const utxoError = ref<string | null>(null)
@@ -270,7 +272,7 @@ async function ensureFederationWalletOpen(currentFederation: NonNullable<typeof 
   const walletName = getWalletNameForFederationId(currentFederation.federationId)
 
   if (federationStore.selectedFederationId !== currentFederation.federationId) {
-    await federationStore.selectFederation(currentFederation)
+    await federationSelection.selectFederation(currentFederation)
     return
   }
 

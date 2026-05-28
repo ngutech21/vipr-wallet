@@ -278,9 +278,11 @@ describe('AddFederation.vue', () => {
     const previewFederationMock = walletStore.previewFederation as Mock
     const addFederationMock = federationStore.addFederation as Mock
     const selectFederationMock = federationStore.selectFederation as Mock
+    const openWalletMock = walletStore.openWallet as Mock
 
     previewFederationMock.mockResolvedValue(federation)
     selectFederationMock.mockResolvedValue(undefined)
+    openWalletMock.mockResolvedValue(undefined)
 
     wrapper = createWrapper()
     await enterInviteCode(federation.inviteCode)
@@ -300,10 +302,12 @@ describe('AddFederation.vue', () => {
     const previewFederationMock = walletStore.previewFederation as Mock
     const addFederationMock = federationStore.addFederation as Mock
     const selectFederationMock = federationStore.selectFederation as Mock
+    const openWalletMock = walletStore.openWallet as Mock
     const deleteFederationMock = federationStore.deleteFederation as Mock
 
     previewFederationMock.mockResolvedValue(federation)
-    selectFederationMock.mockRejectedValue(new Error('Selection failed'))
+    selectFederationMock.mockResolvedValue(undefined)
+    openWalletMock.mockRejectedValue(new Error('Selection failed'))
 
     wrapper = createWrapper()
     await enterInviteCode(federation.inviteCode)

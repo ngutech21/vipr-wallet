@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import type { Federation, FederationMeta } from 'src/types/federation'
-import { useWalletStore } from './wallet'
 import { useLocalStorage } from '@vueuse/core'
 import {
   getFederationTitleFallback,
@@ -118,28 +117,10 @@ export const useFederationStore = defineStore('federation', {
       this.federations = normalizeFederationsForStorage(this.federations)
     },
 
-    async selectFederation(
-      fedi: Federation | undefined,
-      options: { expectRecovery?: boolean; recoverOnJoin?: boolean } = {},
-    ) {
-      const previousSelectedFederationId = this.selectedFederationId
+    selectFederation(fedi: Federation | undefined) {
       const nextFederation = fedi ?? this.ensureValidSelection()
       this.selectedFederationId = nextFederation?.federationId ?? null
-      const walletStore = useWalletStore()
-
-      if (
-        previousSelectedFederationId === this.selectedFederationId &&
-        walletStore.wallet != null
-      ) {
-        return
-      }
-
-      try {
-        await walletStore.openWallet(options)
-      } catch (error) {
-        this.selectedFederationId = previousSelectedFederationId
-        throw error
-      }
+      return nextFederation
     },
   },
 })

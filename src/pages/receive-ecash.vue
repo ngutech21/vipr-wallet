@@ -178,6 +178,7 @@ defineOptions({
 import { computed, ref, watch } from 'vue'
 import { useWalletStore, type EcashInspection } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
+import { useFederationSelection } from 'src/composables/useFederationSelection'
 import { Loading } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppNotify } from 'src/composables/useAppNotify'
@@ -215,6 +216,7 @@ const route = useRoute('/receive-ecash')
 const router = useRouter()
 const walletStore = useWalletStore()
 const federationStore = useFederationStore()
+const federationSelection = useFederationSelection()
 const notify = useAppNotify()
 
 watch(
@@ -416,7 +418,7 @@ async function joinFederationAndRedeem() {
     federationStore.addFederation(importRequest.federation)
 
     try {
-      await federationStore.selectFederation(importRequest.federation)
+      await federationSelection.selectFederation(importRequest.federation)
     } catch (error) {
       federationStore.deleteFederation(importRequest.federation.federationId)
       throw error
@@ -437,7 +439,7 @@ async function joinFederationAndRedeem() {
 
 async function redeemInspectedEcash(token: string, federation: Federation) {
   if (federationStore.selectedFederationId !== federation.federationId) {
-    await federationStore.selectFederation(federation)
+    await federationSelection.selectFederation(federation)
   }
 
   Loading.show({ message: 'Redeeming ecash...' })

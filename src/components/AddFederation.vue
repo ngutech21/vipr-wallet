@@ -55,6 +55,7 @@
 import { computed, ref, watch } from 'vue'
 import { useWalletStore } from 'src/stores/wallet'
 import { useFederationStore } from 'src/stores/federation'
+import { useFederationSelection } from 'src/composables/useFederationSelection'
 import type { Federation } from 'src/types/federation'
 import ModalCard from 'src/components/ModalCard.vue'
 import JoinFederationInviteStep from 'src/components/JoinFederationInviteStep.vue'
@@ -79,6 +80,7 @@ import {
 
 const walletStore = useWalletStore()
 const federationStore = useFederationStore()
+const federationSelection = useFederationSelection()
 const notify = useAppNotify()
 
 const emit = defineEmits<{
@@ -224,7 +226,7 @@ async function addFederation() {
   try {
     federationStore.addFederation(federation)
     try {
-      await federationStore.selectFederation(federation)
+      await federationSelection.selectFederation(federation)
     } catch (error) {
       federationStore.deleteFederation(federation.federationId)
       throw error

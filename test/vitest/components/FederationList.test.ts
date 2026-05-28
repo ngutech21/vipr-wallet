@@ -4,6 +4,7 @@ import { Quasar, QCard, QItem, QItemSection, QAvatar, QIcon, QImg, QChip, QBtn }
 import { createTestingPinia, type TestingPinia } from '@pinia/testing'
 import FederationList from 'src/components/FederationList.vue'
 import { useFederationStore } from 'src/stores/federation'
+import { useWalletStore } from 'src/stores/wallet'
 import type { Federation } from 'src/types/federation'
 
 // Helper function to create mock federations
@@ -192,7 +193,9 @@ describe('FederationList.vue', () => {
       wrapper = createWrapper({ federations: [federation] })
 
       const store = useFederationStore()
+      const walletStore = useWalletStore()
       vi.spyOn(store, 'selectFederation')
+      vi.spyOn(walletStore, 'openWallet').mockResolvedValue(undefined)
 
       const card = wrapper.find('.federation-card')
       await card.trigger('click')
@@ -267,8 +270,10 @@ describe('FederationList.vue', () => {
       wrapper = createWrapper({ federations: [federation] })
 
       const store = useFederationStore()
+      const walletStore = useWalletStore()
       const mockError = new Error('Selection failed')
-      vi.spyOn(store, 'selectFederation').mockRejectedValueOnce(mockError)
+      vi.spyOn(store, 'selectFederation')
+      vi.spyOn(walletStore, 'openWallet').mockRejectedValueOnce(mockError)
 
       const card = wrapper.find('.federation-card')
       await card.trigger('click')
