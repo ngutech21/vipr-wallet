@@ -1,0 +1,65 @@
+name: Docker Smoke Test
+description: Validate that a built Docker image starts and serves the app.
+
+inputs:
+  image-ref:
+    description: Docker image reference to test.
+    required: true
+  host-port:
+    description: Localhost port to bind while testing.
+    default: '8080'
+    required: false
+  container-port:
+    description: Container HTTP port to test.
+    default: '8080'
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Validate nginx configuration
+      shell: bash
+      run: |
+        docker run --rm "${{ inputs.image-ref }}" nginx -t
+
+    - name: Start container and verify HTTP health
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        image_ref="${{ inputs.image-ref }}"
+        host_port="${{ inputs.host-port }}"
+        container_port="${{ inputs.container-port }}"
+        container_id=""
+
+        cleanup() {
+          if [ -n "${container_id}" ]; then
+            docker rm -f "${container_id}" >/dev/null 2>&1 || true
+          fi
+        }
+        trap cleanup EXIT
+
+        container_id="$(docker run -d \
+          -p "127.0.0.1:${host_port}:${container_port}" \
+          "${image_ref}")"
+
+        for attempt in $(seq 1 20); do
+          if curl -fsS "http://127.0.0.1:${host_port}/" >/dev/null; then
+            docker exec "${container_id}" \
+              wget -q -O /dev/null "http://127.0.0.1:${container_port}/"
+            exit 0
+          fi
+
+          if [ "$(docker inspect -f '{{.State.Running}}' "${container_id}")" != "true" ]; then
+            echo "Container exited before becoming healthy."
+            docker logs "${container_id}"
+            exit 1
+          fi
+
+          echo "Waiting for container HTTP health check (${attempt}/20)..."
+          sleep 1
+        done
+
+        echo "Container did not become healthy in time."
+        docker logs "${container_id}"
+        exit 1
