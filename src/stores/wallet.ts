@@ -1,6 +1,7 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import type {
   FedimintWallet,
+  EventLogParams,
   ParsedNoteDetails,
   JSONValue,
   JSONObject,
@@ -8,6 +9,7 @@ import type {
   MSats,
   OperationKey,
   OperationLog,
+  PersistedLogEntry,
   SpendNotesState,
   NoteCountByDenomination,
   Transactions,
@@ -35,12 +37,15 @@ import { federationHasModule } from 'src/utils/federationModules'
 
 const WALLET_NAME_PREFIX = 'wallet-'
 const RECOVERY_BALANCE_REFRESH_DELAYS_MS = [0, 1_000, 3_000] as const
+const RESTORED_EVENT_LOG_CURSOR_PREFIX = 'vipr-restored-eventlog:'
+const RESTORED_EVENT_LOG_PAGE_LIMIT = 10_000
 
 let walletOpenQueue: Promise<void> | null = null
 
 export const FEDIMINT_STORAGE_SCHEMA_KEY = 'vipr.fedimint.storage.schema'
 export const FEDIMINT_STORAGE_SCHEMA_VERSION = '2'
 export const FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY = 'vipr.fedimint.mnemonic.backup.confirmed'
+export const FEDIMINT_WALLET_RESTORED_KEY = 'vipr.fedimint.wallet.restored'
 
 export function getWalletNameForFederationId(federationId: string): string {
   return `${WALLET_NAME_PREFIX}${federationId}`
@@ -92,6 +97,10 @@ type TransactionsBatchResult = {
   hasMore: boolean
 }
 
+type RestoredEventLogCursor = {
+  operationId: string
+}
+
 type TransactionHistoryWallet = {
   federation: {
     listTransactions: (limit?: number, lastSeen?: OperationKey) => Promise<Transactions[]>
@@ -99,6 +108,7 @@ type TransactionHistoryWallet = {
       limit?: number,
       lastSeen?: OperationKey,
     ) => Promise<Array<[OperationKey, OperationLog]>>
+    getEventLog?: (params?: EventLogParams) => Promise<PersistedLogEntry[]>
   }
 }
 
@@ -136,6 +146,10 @@ function createFederationRecoveryStatusMap(): Record<string, FederationRecoveryS
   return {}
 }
 
+function createRestoredTransactionsCache(): Map<string, Transactions[]> | null {
+  return null
+}
+
 export const useWalletStore = defineStore('wallet', {
   state: () => ({
     wallet: null as FedimintWallet | null,
@@ -151,6 +165,10 @@ export const useWalletStore = defineStore('wallet', {
     recoveryStatusByFederationId: createFederationRecoveryStatusMap(),
     transactionsRefreshVersion: 0,
     recoveryMonitorId: 0,
+    wasRestoredFromMnemonic:
+      typeof localStorage !== 'undefined' &&
+      localStorage.getItem(FEDIMINT_WALLET_RESTORED_KEY) === '1',
+    restoredTransactionsCache: createRestoredTransactionsCache(),
   }),
   actions: {
     async initClients() {
@@ -176,6 +194,8 @@ export const useWalletStore = defineStore('wallet', {
       federationStore.federations = []
       federationStore.selectedFederationId = null
       localStorage.setItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY, '0')
+      localStorage.setItem(FEDIMINT_WALLET_RESTORED_KEY, '0')
+      this.wasRestoredFromMnemonic = false
 
       localStorage.setItem(FEDIMINT_STORAGE_SCHEMA_KEY, FEDIMINT_STORAGE_SCHEMA_VERSION)
       logger.logWalletOperation('Fedimint storage migration applied', {
@@ -283,6 +303,7 @@ export const useWalletStore = defineStore('wallet', {
       } finally {
         this.wallet = null
         this.activeWalletName = null
+        this.restoredTransactionsCache = null
         this.cancelRecoveryMonitor()
       }
     },
@@ -302,6 +323,7 @@ export const useWalletStore = defineStore('wallet', {
       await fedimintClient.closeActiveWallet()
       this.wallet = null
       this.activeWalletName = null
+      this.restoredTransactionsCache = null
 
       this.wallet = await fedimintClient.ensureWalletOpen({
         walletName,
@@ -349,8 +371,11 @@ export const useWalletStore = defineStore('wallet', {
       this.mnemonicWords = []
       this.hasMnemonic = false
       this.needsMnemonicBackup = false
+      localStorage.setItem(FEDIMINT_WALLET_RESTORED_KEY, '0')
+      this.wasRestoredFromMnemonic = false
       this.cancelRecoveryMonitor()
       this.recoveryStatusByFederationId = {}
+      this.restoredTransactionsCache = null
       this.transactionsRefreshVersion += 1
     },
 
@@ -381,6 +406,9 @@ export const useWalletStore = defineStore('wallet', {
       const words = await fedimintClient.generateMnemonic()
       this.mnemonicWords = words
       this.hasMnemonic = true
+      this.restoredTransactionsCache = null
+      localStorage.setItem(FEDIMINT_WALLET_RESTORED_KEY, '0')
+      this.wasRestoredFromMnemonic = false
       localStorage.setItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY, '0')
       this.needsMnemonicBackup = true
     },
@@ -392,6 +420,7 @@ export const useWalletStore = defineStore('wallet', {
       this.wallet = null
       this.activeWalletName = null
       this.balance = 0
+      this.restoredTransactionsCache = null
       this.cancelRecoveryMonitor()
       this.recoveryStatusByFederationId = {}
       this.transactionsRefreshVersion += 1
@@ -400,6 +429,8 @@ export const useWalletStore = defineStore('wallet', {
       if (!hasMnemonic) {
         throw new Error('Failed to verify restored mnemonic')
       }
+      localStorage.setItem(FEDIMINT_WALLET_RESTORED_KEY, '1')
+      this.wasRestoredFromMnemonic = true
       localStorage.setItem(FEDIMINT_MNEMONIC_BACKUP_CONFIRMED_KEY, '1')
       this.needsMnemonicBackup = false
     },
@@ -959,6 +990,17 @@ export const useWalletStore = defineStore('wallet', {
         }
       }
 
+      const eventLogCursor = readRestoredEventLogCursor(lastSeen)
+      if (eventLogCursor != null) {
+        return this.wasRestoredFromMnemonic
+          ? this.getRestoredEventLogPage(pageSize, eventLogCursor)
+          : {
+              transactions: [],
+              nextCursor: null,
+              hasMore: false,
+            }
+      }
+
       try {
         const collected: TransactionsBatchEntry[] = []
         const visibleLimit = pageSize + 1
@@ -980,11 +1022,15 @@ export const useWalletStore = defineStore('wallet', {
           if (batch.nextCursor == null || !batch.hasMore) {
             const visibleEntries = collected.slice(0, pageSize)
             const hasMore = collected.length > pageSize
-            return {
-              transactions: visibleEntries.map((entry) => entry.transaction),
-              nextCursor: hasMore ? (visibleEntries.at(-1)?.operationKey ?? null) : null,
-              hasMore,
-            }
+            return this.withRestoredEventLogFallback(
+              {
+                transactions: visibleEntries.map((entry) => entry.transaction),
+                nextCursor: hasMore ? (visibleEntries.at(-1)?.operationKey ?? null) : null,
+                hasMore,
+              },
+              pageSize,
+              lastSeen,
+            )
           }
 
           cursor = batch.nextCursor
@@ -992,14 +1038,82 @@ export const useWalletStore = defineStore('wallet', {
 
         const visibleEntries = collected.slice(0, pageSize)
 
-        return {
-          transactions: visibleEntries.map((entry) => entry.transaction),
-          nextCursor: visibleEntries.at(-1)?.operationKey ?? null,
-          hasMore: true,
-        }
+        return this.withRestoredEventLogFallback(
+          {
+            transactions: visibleEntries.map((entry) => entry.transaction),
+            nextCursor: visibleEntries.at(-1)?.operationKey ?? null,
+            hasMore: true,
+          },
+          pageSize,
+          lastSeen,
+        )
       } catch (error) {
         logger.error('Failed to fetch paged transactions', error)
         throw error
+      }
+    },
+
+    async withRestoredEventLogFallback(
+      page: TransactionsPageResult,
+      pageSize: number,
+      lastSeen?: OperationKey,
+    ): Promise<TransactionsPageResult> {
+      if (
+        page.transactions.length > 0 ||
+        lastSeen != null ||
+        !this.wasRestoredFromMnemonic ||
+        this.wallet == null
+      ) {
+        return page
+      }
+
+      return this.getRestoredEventLogPage(pageSize)
+    },
+
+    async getRestoredEventLogPage(
+      pageSize: number,
+      cursor?: RestoredEventLogCursor,
+    ): Promise<TransactionsPageResult> {
+      if (this.wallet == null) {
+        return {
+          transactions: [],
+          nextCursor: null,
+          hasMore: false,
+        }
+      }
+
+      try {
+        const restoredPage = await fetchRestoredTransactionsFromEventLog(
+          this.wallet,
+          pageSize,
+          cursor,
+          this.activeWalletName ?? '',
+        )
+
+        if (restoredPage.transactions.length === 0) {
+          return {
+            transactions: [],
+            nextCursor: null,
+            hasMore: false,
+          }
+        }
+
+        logger.logWalletOperation('Restored transaction history loaded from event log', {
+          restoredTransactionCount: restoredPage.transactions.length,
+          hasMore: restoredPage.hasMore,
+        })
+
+        return restoredPage
+      } catch (error) {
+        logger.warn('Failed to load restored transaction history from event log', {
+          reason: getErrorMessage(error),
+        })
+
+        return {
+          transactions: [],
+          nextCursor: null,
+          hasMore: false,
+        }
       }
     },
 
@@ -1244,6 +1358,491 @@ async function fetchTransactionsBatch(
     nextCursor,
     hasMore: operations.length === limit && nextCursor != null,
   }
+}
+
+async function fetchRestoredTransactionsFromEventLog(
+  wallet: TransactionHistoryWallet,
+  pageSize: number,
+  cursor?: RestoredEventLogCursor,
+  cacheKey?: string,
+): Promise<TransactionsPageResult> {
+  if (typeof wallet.federation.getEventLog !== 'function') {
+    return {
+      transactions: [],
+      nextCursor: null,
+      hasMore: false,
+    }
+  }
+
+  const store = useWalletStore()
+  const cacheKeyExists = cacheKey != null && cacheKey !== ''
+  const cached = cacheKeyExists ? store.restoredTransactionsCache?.get(cacheKey) : undefined
+
+  if (cached != null && cached.length > 0) {
+    return sliceRestoredTransactions(cached, pageSize, cursor)
+  }
+
+  const eventLog = await fetchCompleteRestoredEventLog(wallet)
+  const restoredTransactions = mapRestoredTransactionsFromEventLog(eventLog)
+
+  if (cacheKeyExists) {
+    if (store.restoredTransactionsCache == null) {
+      store.restoredTransactionsCache = new Map()
+    }
+    store.restoredTransactionsCache.set(cacheKey, restoredTransactions)
+  }
+
+  return sliceRestoredTransactions(restoredTransactions, pageSize, cursor)
+}
+
+function sliceRestoredTransactions(
+  transactions: Transactions[],
+  pageSize: number,
+  cursor?: RestoredEventLogCursor,
+): TransactionsPageResult {
+  const startIndex =
+    cursor == null
+      ? 0
+      : Math.max(
+          0,
+          transactions.findIndex((transaction) => transaction.operationId === cursor.operationId) +
+            1,
+        )
+  const pageTransactions = transactions.slice(startIndex, startIndex + pageSize)
+  const hasMore = startIndex + pageSize < transactions.length
+
+  return {
+    transactions: pageTransactions,
+    nextCursor: hasMore ? createRestoredEventLogCursor(pageTransactions.at(-1)) : null,
+    hasMore,
+  }
+}
+
+async function fetchCompleteRestoredEventLog(
+  wallet: TransactionHistoryWallet,
+): Promise<PersistedLogEntry[]> {
+  const eventLog: PersistedLogEntry[] = []
+  let pos = 0
+
+  while (true) {
+    // Event-log paging is sequential because the next offset depends on the previous window size.
+    // eslint-disable-next-line no-await-in-loop
+    const page = await wallet.federation.getEventLog?.({
+      pos,
+      limit: RESTORED_EVENT_LOG_PAGE_LIMIT,
+    })
+
+    if (page == null || page.length === 0) {
+      return eventLog
+    }
+
+    eventLog.push(...page)
+
+    if (page.length < RESTORED_EVENT_LOG_PAGE_LIMIT) {
+      return eventLog
+    }
+
+    pos += page.length
+  }
+}
+
+function createRestoredEventLogCursor(transaction: Transactions | undefined): OperationKey | null {
+  if (transaction == null) {
+    return null
+  }
+
+  const timestampMs = Number.isFinite(transaction.timestamp) ? transaction.timestamp : 0
+  const secsSinceEpoch = Math.floor(timestampMs / 1_000)
+  const nanosSinceEpoch = Math.max(0, Math.floor((timestampMs % 1_000) * 1_000_000))
+
+  return {
+    operation_id: `${RESTORED_EVENT_LOG_CURSOR_PREFIX}${transaction.operationId}`,
+    creation_time: {
+      secs_since_epoch: secsSinceEpoch,
+      nanos_since_epoch: nanosSinceEpoch,
+    },
+  }
+}
+
+function readRestoredEventLogCursor(
+  lastSeen: OperationKey | undefined,
+): RestoredEventLogCursor | null {
+  if (lastSeen == null || !lastSeen.operation_id.startsWith(RESTORED_EVENT_LOG_CURSOR_PREFIX)) {
+    return null
+  }
+
+  const operationId = lastSeen.operation_id.slice(RESTORED_EVENT_LOG_CURSOR_PREFIX.length)
+  if (operationId === '') {
+    return null
+  }
+
+  return { operationId }
+}
+
+function mapRestoredTransactionsFromEventLog(
+  eventLog: readonly PersistedLogEntry[],
+): Transactions[] {
+  const updatesByOperationId = new Map<string, RestoredPaymentUpdate>()
+  const transactionsByOperationId = new Map<string, Transactions>()
+
+  for (const event of eventLog) {
+    const update = mapRestoredPaymentUpdate(event)
+    if (update != null) {
+      updatesByOperationId.set(update.operationId, update)
+    }
+  }
+
+  for (const event of eventLog) {
+    const transaction = mapRestoredPaymentEvent(event, updatesByOperationId)
+    if (transaction != null && !transactionsByOperationId.has(transaction.operationId)) {
+      transactionsByOperationId.set(transaction.operationId, transaction)
+    }
+  }
+
+  return [...transactionsByOperationId.values()].sort((left, right) => {
+    if (right.timestamp !== left.timestamp) {
+      return right.timestamp - left.timestamp
+    }
+
+    return right.operationId.localeCompare(left.operationId)
+  })
+}
+
+type RestoredPaymentUpdate = {
+  operationId: string
+  status: string
+  preimage?: string | undefined
+  txId?: string | undefined
+}
+
+function mapRestoredPaymentUpdate(event: PersistedLogEntry): RestoredPaymentUpdate | null {
+  const moduleKind = readEventModuleKind(event)
+  if (moduleKind == null) {
+    return null
+  }
+
+  const isUpdateKind =
+    event.kind === 'payment-send-update' ||
+    event.kind === 'payment-send-status' ||
+    event.kind === 'payment-receive-update'
+  if (!isUpdateKind || !isPaymentEventModule(moduleKind)) {
+    return null
+  }
+
+  const payload = readJsonObject(event.payload)
+  const operationId = readNonEmptyString(payload?.operation_id)
+  const status = readPaymentStatus(payload?.status)
+
+  if (operationId == null || status == null) {
+    return null
+  }
+
+  return {
+    operationId,
+    status: status.status,
+    preimage: status.preimage,
+    txId: status.txId,
+  }
+}
+
+function mapRestoredPaymentEvent(
+  event: PersistedLogEntry,
+  updatesByOperationId: ReadonlyMap<string, RestoredPaymentUpdate>,
+): Transactions | null {
+  const moduleKind = readEventModuleKind(event)
+  const payload = readJsonObject(event.payload)
+  const operationId = readNonEmptyString(payload?.operation_id)
+
+  if (moduleKind == null || payload == null || operationId == null) {
+    return null
+  }
+
+  const update = updatesByOperationId.get(operationId)
+
+  if (moduleKind === 'ln' || moduleKind === 'lnv2') {
+    return mapRestoredLightningTransaction(event, payload, operationId, update)
+  }
+
+  if (moduleKind === 'mint' || moduleKind === 'mintv2') {
+    return mapRestoredEcashTransaction(event, payload, operationId, update, moduleKind)
+  }
+
+  if (moduleKind === 'wallet' || moduleKind === 'walletv2') {
+    return mapRestoredWalletTransaction(event, payload, operationId, update, moduleKind)
+  }
+
+  return null
+}
+
+function mapRestoredLightningTransaction(
+  event: PersistedLogEntry,
+  payload: JSONObject,
+  operationId: string,
+  update: RestoredPaymentUpdate | undefined,
+): Transactions | null {
+  const amountMsats = readFedimintAmountMsats(payload.amount)
+  if (amountMsats == null || amountMsats <= 0) {
+    return null
+  }
+
+  const timestamp = eventTimestampMs(event)
+
+  if (event.kind === 'payment-receive') {
+    return {
+      kind: 'ln',
+      operationId,
+      timestamp,
+      type: 'receive',
+      invoice: '',
+      outcome: 'claimed',
+      gateway: '',
+      txId: update?.txId ?? '',
+      amountMsats,
+    } as Transactions
+  }
+
+  if (event.kind !== 'payment-send') {
+    return null
+  }
+
+  const fee = readFedimintAmountMsats(payload.fee) ?? 0
+  const outcome =
+    update?.status === 'Success'
+      ? 'success'
+      : update?.status === 'Refunded'
+        ? 'canceled'
+        : 'pending'
+
+  return {
+    kind: 'ln',
+    operationId,
+    timestamp,
+    type: 'send',
+    invoice: '',
+    outcome,
+    gateway: '',
+    txId: update?.txId ?? '',
+    fee,
+    preimage: update?.preimage,
+    amountMsats,
+  } as Transactions
+}
+
+function mapRestoredEcashTransaction(
+  event: PersistedLogEntry,
+  payload: JSONObject,
+  operationId: string,
+  update: RestoredPaymentUpdate | undefined,
+  moduleKind: string,
+): Transactions | null {
+  const amountMsats = readFedimintAmountMsats(payload.amount)
+  if (amountMsats == null || amountMsats <= 0) {
+    return null
+  }
+
+  if (event.kind === 'payment-send') {
+    return {
+      kind: 'mint',
+      operationId,
+      timestamp: eventTimestampMs(event),
+      type: 'spend_oob',
+      amountMsats,
+      outcome: 'Success',
+      notes:
+        moduleKind === 'mintv2'
+          ? readNonEmptyString(payload.ecash)
+          : readNonEmptyString(payload.oob_notes),
+    } as Transactions
+  }
+
+  if (event.kind !== 'payment-receive' || update?.status === 'Rejected') {
+    return null
+  }
+
+  return {
+    kind: 'mint',
+    operationId,
+    timestamp: eventTimestampMs(event),
+    type: 'reissue',
+    amountMsats,
+    outcome: update?.status === 'Success' ? 'Done' : 'Created',
+  }
+}
+
+function mapRestoredWalletTransaction(
+  event: PersistedLogEntry,
+  payload: JSONObject,
+  operationId: string,
+  update: RestoredPaymentUpdate | undefined,
+  moduleKind: string,
+): Transactions | null {
+  if (event.kind === 'payment-send') {
+    const amountMsats =
+      moduleKind === 'walletv2'
+        ? readBitcoinAmountMsats(payload.value)
+        : readBitcoinAmountMsats(payload.amount)
+    if (amountMsats == null || amountMsats <= 0) {
+      return null
+    }
+
+    const fee = readBitcoinAmountMsats(payload.fee) ?? 0
+    const outcome =
+      update?.status === 'Success'
+        ? 'Confirmed'
+        : update?.status === 'Aborted'
+          ? 'Failed'
+          : 'pending'
+
+    return {
+      kind: 'wallet',
+      operationId,
+      timestamp: eventTimestampMs(event),
+      type: 'withdraw',
+      onchainAddress: readNonEmptyString(payload.address) ?? '',
+      amountMsats,
+      fee,
+      outcome,
+      txId: update?.txId ?? operationId,
+    } as Transactions
+  }
+
+  if (event.kind !== 'payment-receive') {
+    return null
+  }
+
+  const amountMsats =
+    moduleKind === 'walletv2'
+      ? readBitcoinAmountMsats(payload.value)
+      : readFedimintAmountMsats(payload.amount)
+  if (amountMsats == null || amountMsats <= 0 || update?.status === 'Aborted') {
+    return null
+  }
+
+  return {
+    kind: 'wallet',
+    operationId,
+    timestamp: eventTimestampMs(event),
+    type: 'deposit',
+    onchainAddress: readNonEmptyString(payload.address) ?? '',
+    amountMsats,
+    fee: readBitcoinAmountMsats(payload.fee) ?? 0,
+    outcome: update?.status === 'Success' || moduleKind === 'wallet' ? 'Claimed' : 'pending',
+    txId: readNonEmptyString(payload.txid) ?? update?.txId ?? operationId,
+  } as Transactions
+}
+
+function isPaymentEventModule(moduleKind: string): boolean {
+  return (
+    moduleKind === 'ln' ||
+    moduleKind === 'lnv2' ||
+    moduleKind === 'mint' ||
+    moduleKind === 'mintv2' ||
+    moduleKind === 'wallet' ||
+    moduleKind === 'walletv2'
+  )
+}
+
+function readEventModuleKind(event: PersistedLogEntry): string | null {
+  return Array.isArray(event.module) && typeof event.module[0] === 'string' ? event.module[0] : null
+}
+
+function eventTimestampMs(event: PersistedLogEntry): number {
+  return Number.isFinite(event.ts_usecs) ? Math.floor(event.ts_usecs / 1_000) : 0
+}
+
+function readJsonObject(value: JSONValue): JSONObject | null {
+  return value != null && typeof value === 'object' && !Array.isArray(value) ? value : null
+}
+
+function readNonEmptyString(value: JSONValue | undefined): string | undefined {
+  return typeof value === 'string' && value.trim() !== '' ? value : undefined
+}
+
+function readFedimintAmountMsats(value: JSONValue | undefined): number | undefined {
+  const directAmount = getFiniteNumber(value)
+  if (directAmount != null) {
+    return directAmount
+  }
+
+  const amountObject = readJsonObject(value ?? null)
+  if (amountObject == null) {
+    return undefined
+  }
+
+  return getFiniteNumber(amountObject.msats ?? amountObject.milli_sats ?? amountObject.amountMsats)
+}
+
+function readBitcoinAmountMsats(value: JSONValue | undefined): number | undefined {
+  const directAmountSats = getFiniteNumber(value)
+  if (directAmountSats != null) {
+    return directAmountSats * 1_000
+  }
+
+  const amountObject = readJsonObject(value ?? null)
+  if (amountObject == null) {
+    return undefined
+  }
+
+  const amountMsats = getFiniteNumber(
+    amountObject.msats ?? amountObject.milli_sats ?? amountObject.amountMsats,
+  )
+  if (amountMsats != null) {
+    return amountMsats
+  }
+
+  const amountSats = getFiniteNumber(
+    amountObject.sats ?? amountObject.sat ?? amountObject.amountSats ?? amountObject.amount,
+  )
+  return amountSats != null ? amountSats * 1_000 : undefined
+}
+
+function readPaymentStatus(
+  value: JSONValue | undefined,
+): { status: string; preimage?: string | undefined; txId?: string | undefined } | null {
+  if (typeof value === 'string' && value.trim() !== '') {
+    return { status: value }
+  }
+
+  const statusObject = readJsonObject(value ?? null)
+  if (statusObject == null) {
+    return null
+  }
+
+  if ('Success' in statusObject) {
+    const successValue = statusObject.Success
+    return {
+      status: 'Success',
+      preimage: readByteArrayHex(successValue),
+      txId: readNonEmptyString(successValue),
+    }
+  }
+
+  if ('success' in statusObject) {
+    const successValue = statusObject.success
+    return {
+      status: 'Success',
+      preimage: readByteArrayHex(successValue),
+      txId: readNonEmptyString(successValue),
+    }
+  }
+
+  return null
+}
+
+function readByteArrayHex(value: JSONValue | undefined): string | undefined {
+  if (!Array.isArray(value) || value.length === 0) {
+    return undefined
+  }
+
+  const bytes = value
+    .map((entry) => getFiniteNumber(entry))
+    .filter((entry): entry is number => entry != null && entry >= 0 && entry <= 255)
+
+  if (bytes.length !== value.length) {
+    return undefined
+  }
+
+  return bytes.map((byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
 function extractFederationGuardians(

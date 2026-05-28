@@ -45,6 +45,7 @@ import { useLightningStore } from 'src/stores/lightning'
 import type { LightningTransaction } from '@fedimint/core'
 import { logger } from 'src/services/logger'
 import { formatTransactionListTimestamp } from 'src/utils/formatter'
+import { getLightningTransactionAmountSats } from 'src/utils/lightningTransactionPresentation'
 import TransactionRailIcon from 'src/components/TransactionRailIcon.vue'
 
 interface Props {
@@ -65,6 +66,15 @@ const formattedTimestamp = computed(() => {
 })
 
 const amountInSats = computed(() => {
+  const restoredAmountSats = getLightningTransactionAmountSats(props.transaction)
+  if (restoredAmountSats != null) {
+    return restoredAmountSats.toLocaleString()
+  }
+
+  if (props.transaction.invoice.trim() === '') {
+    return '0'
+  }
+
   try {
     const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
     return invoice.amount.toLocaleString()
@@ -79,8 +89,15 @@ onMounted(async () => {
     invoice: `${props.transaction.invoice.substring(0, 20)}...`,
   })
   try {
-    const invoice = lightningStore.decodeInvoice(props.transaction.invoice)
-    const fiatValue = await lightningStore.satsToFiat(invoice.amount)
+    const restoredAmountSats = getLightningTransactionAmountSats(props.transaction)
+    if (restoredAmountSats == null && props.transaction.invoice.trim() === '') {
+      amountInFiat.value = '0.00'
+      return
+    }
+
+    const amountSats =
+      restoredAmountSats ?? lightningStore.decodeInvoice(props.transaction.invoice).amount
+    const fiatValue = await lightningStore.satsToFiat(amountSats)
     amountInFiat.value = fiatValue.toFixed(2)
   } catch (error) {
     logger.error('Failed to convert Lightning amount to fiat', error)
