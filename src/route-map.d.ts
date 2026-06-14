@@ -20,9 +20,9 @@ import type {
 
 declare module 'vue-router' {
   interface TypesConfig {
-    ParamParsers:
-      | never
+    _ParamParsers: {}
     RouteNamedMap: import('vue-router/auto-routes').RouteNamedMap
+    _RouteFileInfoMap: import('vue-router/auto-routes')._RouteFileInfoMap
   }
 }
 
@@ -210,17 +210,23 @@ declare module 'vue-router/auto-routes' {
         | '/'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/[...path].vue': {
       routes:
         | 'not-found'
       views:
         | never
+      pathParamNames:
+        | 'path'
     }
     'src/pages/ErrorNotFound.vue': {
       routes:
         | '/ErrorNotFound'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/federation/[id].vue': {
@@ -228,11 +234,15 @@ declare module 'vue-router/auto-routes' {
         | '/federation/[id]'
       views:
         | never
+      pathParamNames:
+        | 'id'
     }
     'src/pages/federations/index.vue': {
       routes:
         | '/federations/'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/lnurl.vue': {
@@ -240,11 +250,15 @@ declare module 'vue-router/auto-routes' {
         | '/lnurl'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/receive.vue': {
       routes:
         | '/receive'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/receive-ecash.vue': {
@@ -252,11 +266,15 @@ declare module 'vue-router/auto-routes' {
         | '/receive-ecash'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/receive-onchain.vue': {
       routes:
         | '/receive-onchain'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/received-lightning.vue': {
@@ -264,11 +282,15 @@ declare module 'vue-router/auto-routes' {
         | '/received-lightning'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/received-onchain.vue': {
       routes:
         | '/received-onchain'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/scan.vue': {
@@ -276,11 +298,15 @@ declare module 'vue-router/auto-routes' {
         | '/scan'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/send.vue': {
       routes:
         | '/send'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/send-ecash.vue': {
@@ -288,11 +314,15 @@ declare module 'vue-router/auto-routes' {
         | '/send-ecash'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/send-onchain.vue': {
       routes:
         | '/send-onchain'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/sent-lightning.vue': {
@@ -300,11 +330,15 @@ declare module 'vue-router/auto-routes' {
         | '/sent-lightning'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/sent-onchain.vue': {
       routes:
         | '/sent-onchain'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/settings/index.vue': {
@@ -312,11 +346,15 @@ declare module 'vue-router/auto-routes' {
         | '/settings/'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/settings/backup.vue': {
       routes:
         | '/settings/backup'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/settings/backup-words.vue': {
@@ -324,11 +362,15 @@ declare module 'vue-router/auto-routes' {
         | '/settings/backup-words'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/startup-wizard.vue': {
       routes:
         | '/startup-wizard'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/transaction/[id].vue': {
@@ -336,11 +378,15 @@ declare module 'vue-router/auto-routes' {
         | '/transaction/[id]'
       views:
         | never
+      pathParamNames:
+        | 'id'
     }
     'src/pages/transactions.vue': {
       routes:
         | '/transactions'
       views:
+        | never
+      pathParamNames:
         | never
     }
   }
