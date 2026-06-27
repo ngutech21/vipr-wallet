@@ -9,7 +9,7 @@ overrides:
   esbuild: 0.28.1
   http-proxy-middleware: ^3.0.5
   '@rollup/plugin-terser': 1.0.0
-  tmp: 0.2.5
+  tmp: 0.2.7
 peerDependencyRules:
   allowedVersions:
     madge>typescript: '6'
