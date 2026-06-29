@@ -72,7 +72,7 @@
     "happy-dom": "^20.10.6",
     "madge": "^8.0.0",
     "pinia": "^3.0.4",
-    "prettier": "^3.8.4",
+    "prettier": "^3.9.0",
     "tsx": "^4.22.4",
     "typescript": "~6.0.3",
     "vite": "^8.1.0",
