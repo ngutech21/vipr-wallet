@@ -14,17 +14,10 @@ export type ServiceWorkerRegistrationSnapshot = {
 }
 
 export type ForegroundUpdateCheckDecision =
-  | 'not-supported'
-  | 'checking'
-  | 'update-ready'
-  | 'up-to-date'
-  | 'run-check'
+  'not-supported' | 'checking' | 'update-ready' | 'up-to-date' | 'run-check'
 
 export type UpdateCheckReadinessDecision =
-  | 'not-registered'
-  | 'update-ready'
-  | 'checking'
-  | 'up-to-date'
+  'not-registered' | 'update-ready' | 'checking' | 'up-to-date'
 
 export type ApplyReadinessDecision = 'apply' | 'checking' | 'no-update'
 

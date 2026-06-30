@@ -35,9 +35,7 @@ type InvoiceDecodeErrorState = {
 }
 
 type InvoiceSettledState =
-  | InvoiceAmountRequiredState
-  | InvoiceDecodedState
-  | InvoiceDecodeErrorState
+  InvoiceAmountRequiredState | InvoiceDecodedState | InvoiceDecodeErrorState
 
 export type InvoiceDecodeState =
   | {

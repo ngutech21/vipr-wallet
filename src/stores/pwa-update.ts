@@ -27,20 +27,10 @@ function createInitialPwaUpdateState(): PwaUpdateState {
 }
 
 export type UpdateCheckResult =
-  | 'update-ready'
-  | 'up-to-date'
-  | 'checking'
-  | 'not-supported'
-  | 'not-registered'
-  | 'error'
+  'update-ready' | 'up-to-date' | 'checking' | 'not-supported' | 'not-registered' | 'error'
 
 export type ApplyUpdateResult =
-  | 'applied'
-  | 'blocked-route'
-  | 'checking'
-  | 'no-update'
-  | 'not-supported'
-  | 'error'
+  'applied' | 'blocked-route' | 'checking' | 'no-update' | 'not-supported' | 'error'
 
 function routeNameToString(routeName: unknown): string {
   if (typeof routeName === 'string') {

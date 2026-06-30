@@ -57,14 +57,12 @@ function buildNotifyPayload(options: QNotifyCreateOptions): QNotifyCreateOptions
 export function useAppNotify() {
   const vm = getCurrentInstance()
   const proxyNotify = vm?.proxy?.$q?.notify as
-    | ((options: QNotifyCreateOptions | string) => unknown)
-    | undefined
+    ((options: QNotifyCreateOptions | string) => unknown) | undefined
   let fallbackNotify: ((options: QNotifyCreateOptions | string) => unknown) | null = null
 
   try {
     const notifyPlugin = (Quasar as Record<string, unknown>).Notify as
-      | { create?: (options: QNotifyCreateOptions | string) => unknown }
-      | undefined
+      { create?: (options: QNotifyCreateOptions | string) => unknown } | undefined
 
     if (typeof notifyPlugin?.create === 'function') {
       fallbackNotify = notifyPlugin.create.bind(notifyPlugin)
@@ -77,8 +75,7 @@ export function useAppNotify() {
       ? (() => {
           try {
             return Quasar.useQuasar().notify as
-              | ((options: QNotifyCreateOptions | string) => unknown)
-              | undefined
+              ((options: QNotifyCreateOptions | string) => unknown) | undefined
           } catch {
             return undefined
           }
