@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.3.0](https://github.com/ngutech21/vipr-wallet/compare/v0.2.0...v0.3.0) (2026-07-01)
+
+
+### Features
+
+* add aria-labels for accessibility improvements across multiple components ([ffb75bb](https://github.com/ngutech21/vipr-wallet/commit/ffb75bbde385435e861a96e00b315bdd51f98e96))
+* add Docker Hub overview and update description in CI workflow ([fc4914c](https://github.com/ngutech21/vipr-wallet/commit/fc4914c4d35d50eec2edf89a578d9f34bd3fe56b))
+* add Docker smoke test action to CI workflow ([4ba3854](https://github.com/ngutech21/vipr-wallet/commit/4ba3854181dc1c28794de90afef3452ea2dad472))
+* add Trivy SARIF report generation and upload steps to CI workflow ([c196bc9](https://github.com/ngutech21/vipr-wallet/commit/c196bc99c4b3381bd8e0d966462b8c7d5f18900a))
+* restore transaction history from event log ([#438](https://github.com/ngutech21/vipr-wallet/issues/438)) ([145649a](https://github.com/ngutech21/vipr-wallet/commit/145649ab7e25cc71f244bb6342c2e87f21ee9c62))
+* update gateway fee estimation logic to use getAvailableGateway for improved accuracy ([f7f5f39](https://github.com/ngutech21/vipr-wallet/commit/f7f5f3980f7c90c05626102a7357f24752c21cdd))
+
+
+### Bug Fixes
+
+* conditionally upload coverage to Codecov on push to master ([02156f2](https://github.com/ngutech21/vipr-wallet/commit/02156f228cfe87d023c1796921615f32d3464ce8))
+* format ([87bc63e](https://github.com/ngutech21/vipr-wallet/commit/87bc63e8b57e09edd25851e30fb2a02d652aa890))
+* handle transaction ID as an array in navigateBack function ([2400ee4](https://github.com/ngutech21/vipr-wallet/commit/2400ee4789a3c3a8411c6dee7790ddab4fb8b0ce))
+* restore wallet ([#406](https://github.com/ngutech21/vipr-wallet/issues/406)) ([673381f](https://github.com/ngutech21/vipr-wallet/commit/673381f6b9c325ef0469588eb4defb89a934e713))
+* return to federation overview after leaving federation ([7c8aa83](https://github.com/ngutech21/vipr-wallet/commit/7c8aa83db437bd608c1741173b3aa8208affd5ac))
+* update deploy workflow to validate full commit SHA and checkout master ([18de1db](https://github.com/ngutech21/vipr-wallet/commit/18de1dbc403ea89439aaec62a9e9b406eb7aef02))
+* update development link from beta.vipr.cash to dev.vipr.cash in README.md ([6af694e](https://github.com/ngutech21/vipr-wallet/commit/6af694eedac569e75cc17c685f9a667060cbb80c))
+* update esbuild version to 0.28.1 in pnpm workspace overrides ([fba63fe](https://github.com/ngutech21/vipr-wallet/commit/fba63fe3395b43de3475dcf0e86579eb98630d03))
+* upgrade nginx package in Dockerfile for improved stability ([cb279bc](https://github.com/ngutech21/vipr-wallet/commit/cb279bcbb100b4d9e1c3b9d46286dc51eeb02654))
+
 ## [0.2.0](https://github.com/ngutech21/vipr-wallet/compare/v0.1.0...v0.2.0) (2026-05-08)
 
 
