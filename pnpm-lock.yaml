@@ -24,8 +24,8 @@ importers:
         specifier: ^3.12.3
         version: 3.12.3(typescript@6.0.3)
       '@getalby/lightning-tools':
-        specifier: ^8.1.1
-        version: 8.1.1
+        specifier: ^8.2.0
+        version: 8.2.0
       '@nostr-dev-kit/ndk':
         specifier: ^3.0.3
         version: 3.0.3(nostr-tools@2.23.8(typescript@6.0.3))
@@ -976,8 +976,8 @@ packages:
   '@getalby/bitcoin-connect@3.12.3':
     resolution: {integrity: sha512-2d+tNHBCZBoImKJgZwTUOyK9ypXaTg/hwvtQ8EHbgSKKkuycOrks7SzlUc0iJHthD3JGFVMWZEgOgw4AQVVE4w==}
 
-  '@getalby/lightning-tools@8.1.1':
-    resolution: {integrity: sha512-gB+3fvTGz9bbl31JNgKMWqG4dZWgCxSB51fYn+F4tZ3x2h5oI/yHjvb6W9GBo2Zscr5gMP64gs0LlzKYoETlvQ==}
+  '@getalby/lightning-tools@8.2.0':
+    resolution: {integrity: sha512-eL+cnHyzeUARKVzNRuFBRBppAU5RBJOLjhFVzSWt8hDibRzL5+e4hq8I79+RGHfrWWMUDv382Jx8ewOazrBj7w==}
     engines: {node: '>=14'}
 
   '@getalby/sdk@8.0.3':
@@ -7049,7 +7049,7 @@ snapshots:
 
   '@getalby/bitcoin-connect@3.12.3(typescript@6.0.3)':
     dependencies:
-      '@getalby/lightning-tools': 8.1.1
+      '@getalby/lightning-tools': 8.2.0
       '@getalby/sdk': 8.0.3(typescript@6.0.3)
       '@lightninglabs/lnc-web': 0.3.6-alpha
       qrcode-generator: 1.4.4
@@ -7061,11 +7061,11 @@ snapshots:
       - typescript
       - use-sync-external-store
 
-  '@getalby/lightning-tools@8.1.1': {}
+  '@getalby/lightning-tools@8.2.0': {}
 
   '@getalby/sdk@8.0.3(typescript@6.0.3)':
     dependencies:
-      '@getalby/lightning-tools': 8.1.1
+      '@getalby/lightning-tools': 8.2.0
       nostr-tools: 2.23.8(typescript@6.0.3)
     transitivePeerDependencies:
       - typescript

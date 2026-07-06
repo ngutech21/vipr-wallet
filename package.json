@@ -34,7 +34,7 @@
     "@fedimint/core": "0.0.0-canary-bdba63f3b69629f2b7bff73cf25589bd16332838",
     "@fedimint/transport-web": "0.0.0-canary-bdba63f3b69629f2b7bff73cf25589bd16332838",
     "@getalby/bitcoin-connect": "^3.12.3",
-    "@getalby/lightning-tools": "^8.1.1",
+    "@getalby/lightning-tools": "^8.2.0",
     "@nostr-dev-kit/ndk": "^3.0.3",
     "@quasar/extras": "^2.0.1",
     "@vueuse/core": "^14.3.0",
