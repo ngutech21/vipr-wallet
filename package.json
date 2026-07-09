@@ -36,7 +36,7 @@
     "@getalby/bitcoin-connect": "^3.12.3",
     "@getalby/lightning-tools": "^8.2.0",
     "@nostr-dev-kit/ndk": "^3.0.3",
-    "@quasar/extras": "^2.0.1",
+    "@quasar/extras": "^2.0.2",
     "@vueuse/core": "^14.3.0",
     "bech32": "^2.0.0",
     "consola": "^3.4.2",
