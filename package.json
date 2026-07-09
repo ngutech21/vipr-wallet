@@ -79,7 +79,7 @@
     "vite-plugin-checker": "^0.14.4",
     "vite-plugin-top-level-await": "^1.6.0",
     "vite-plugin-wasm": "^3.6.0",
-    "vitest": "^4.1.9",
+    "vitest": "^4.1.10",
     "vue-tsc": "^3.3.6",
     "workbox-build": "^7.4.1",
     "workbox-cacheable-response": "^7.4.1",
