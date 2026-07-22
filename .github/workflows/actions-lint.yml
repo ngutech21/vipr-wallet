@@ -25,7 +25,7 @@ jobs:
           persist-credentials: false
 
       - name: Lint GitHub Actions
-        uses: reviewdog/action-actionlint@v1.72.0
+        uses: reviewdog/action-actionlint@v1.72.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-check
