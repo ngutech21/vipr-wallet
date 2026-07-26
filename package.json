@@ -46,9 +46,9 @@
     "qrloop": "^1.4.1",
     "quasar": "^2.23.1",
     "uuid": "^14.0.1",
-    "vue": "^3.5.39",
+    "vue": "^3.5.40",
     "vue-qrcode-reader": "^5.7.3",
-    "vue-router": "^5.1.0"
+    "vue-router": "^5.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -58,7 +58,7 @@
     "@quasar/app-vite": "^3.2.0",
     "@quasar/cli": "^5.0.3",
     "@quasar/vite-plugin": "^1.12.0",
-    "@types/node": "^24.13.2",
+    "@types/node": "^24.13.3",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vitest/coverage-v8": "^4.1.10",
     "@vitest/ui": "^4.1.10",
