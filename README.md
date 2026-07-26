@@ -119,7 +119,7 @@ The wallet will be available at `http://localhost:8080`
 Make sure you have the following installed:
 
 - Node.js 24+
-- pnpm 10+
+- pnpm 11+
 - Nix with flakes enabled for running end-to-end tests locally
 
 ### Installation
@@ -134,7 +134,7 @@ cd vipr-wallet
 2. **Install pnpm**
 
 ```bash
-npm install -g pnpm@latest-10
+npm install -g pnpm@latest-11
 ```
 
 3. **Install the dependencies**
