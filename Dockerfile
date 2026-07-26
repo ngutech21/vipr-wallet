@@ -13,7 +13,7 @@ RUN corepack enable \
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc index.html quasar.config.ts tsconfig.json ./
-COPY src-pwa/tsconfig.json ./src-pwa/tsconfig.json
+COPY src-pwa/package.json src-pwa/pnpm-lock.yaml src-pwa/pnpm-workspace.yaml ./src-pwa/
 
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile --strict-peer-dependencies

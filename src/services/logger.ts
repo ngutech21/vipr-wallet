@@ -2,34 +2,13 @@
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import { consola, type ConsolaInstance } from 'consola'
 
-// Explicitly type the possible Vite env fields (works in Node + Vite)
-interface ViteEnv {
-  PROD?: boolean
-  DEV?: boolean
-  VITE_LOG_LEVEL?: string
-}
-
 type ConsolaRoot = Pick<typeof consola, 'create'>
 
-// Safe extraction without `any`
-const viteEnv: ViteEnv = (() => {
-  try {
-    if (typeof import.meta !== 'undefined' && 'env' in import.meta) {
-      return (import.meta as ImportMeta & { env: ViteEnv }).env ?? {}
-    }
-  } catch {
-    /* ignore */
-  }
-  return {}
-})()
-
-const NODE_ENV = process.env.NODE_ENV
-const IS_PROD: boolean =
-  typeof viteEnv.PROD === 'boolean' ? viteEnv.PROD : NODE_ENV === 'production'
-const IS_DEV: boolean = typeof viteEnv.DEV === 'boolean' ? viteEnv.DEV : IS_PROD === false
+const IS_PROD = import.meta.env.PROD
+const IS_DEV = import.meta.env.DEV
 
 function resolveLogLevel(): number {
-  const raw = String(viteEnv.VITE_LOG_LEVEL ?? process.env.VITE_LOG_LEVEL ?? '').trim()
+  const raw = String(import.meta.env.VITE_LOG_LEVEL ?? '').trim()
 
   if (raw.length > 0) {
     const levels: Record<string, number> = {

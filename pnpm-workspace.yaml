@@ -2,18 +2,22 @@ allowBuilds:
   '@parcel/watcher': true
   '@swc/core': true
   bufferutil: true
+  core-js: true
   es5-ext: true
   esbuild: true
+  lightningcss: true
+  rolldown: true
+  unrs-resolver: true
   utf-8-validate: true
 overrides:
   esbuild: 0.28.1
   http-proxy-middleware: ^3.0.5
   '@rollup/plugin-terser': 1.0.0
+  postcss: ^8.5.18
   tmp: 0.2.7
 peerDependencyRules:
   allowedVersions:
     madge>typescript: '6'
-shamefullyHoist: true
 strictPeerDependencies: false
 resolutionMode: highest
 minimumReleaseAgeExclude:

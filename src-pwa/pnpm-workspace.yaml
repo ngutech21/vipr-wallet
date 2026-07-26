@@ -1,0 +1,2 @@
+# This file exists to force pnpm to install dependencies here, regardless of upper workspaces.
+# https://pnpm.io/settings

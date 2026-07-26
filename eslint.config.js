@@ -187,7 +187,7 @@ export default [
   },
 
   {
-    files: ['src-pwa/custom-service-worker.ts'],
+    files: ['src-pwa/sw/**/*.ts'],
     languageOptions: {
       globals: {
         ...globals.serviceworker,

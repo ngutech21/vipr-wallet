@@ -74,6 +74,9 @@ jobs:
       - name: Verify dependency signatures
         run: pnpm audit signatures
 
+      - name: Audit PWA dependencies
+        run: pnpm audit:pwa
+
       - name: Check circular dependencies
         run: pnpm check:circular
 

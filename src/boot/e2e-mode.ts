@@ -1,4 +1,4 @@
-import { defineBoot } from '#q-app/wrappers'
+import { defineBoot } from '#q-app'
 
 function isE2EMode(): boolean {
   return import.meta.env.VITE_E2E_MODE === '1'

@@ -1,11 +1,12 @@
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file
 
-import { defineConfig } from '#q-app/wrappers'
+import { defineConfig } from '#q-app'
 import wasm from 'vite-plugin-wasm'
 import topLevelAwait from 'vite-plugin-top-level-await'
 import VueRouter from 'vue-router/vite'
 import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { loadEnv } from 'vite'
 
 export default defineConfig((ctx) => {
@@ -46,6 +47,11 @@ export default defineConfig((ctx) => {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#build
     build: {
+      alias: {
+        components: fileURLToPath(new URL('./src/components', import.meta.url)),
+        src: fileURLToPath(new URL('./src', import.meta.url)),
+      },
+
       extendViteConf(_viteConf, { isServer: _isServer, isClient: _isClient }) {
         // We return an Object which will get deeply merged into
         // the config, instead of directly tampering with viteConf
@@ -207,13 +213,10 @@ export default defineConfig((ctx) => {
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
       workboxMode: 'GenerateSW',
-      injectPwaMetaTags: true,
+      injectPWAMetaTags: true,
       manifestFilename: 'manifest.json',
       useCredentialsForManifestTag: true,
-      sourceFilesConfig: {
-        pwaServiceWorker: 'src-pwa/custom-service-worker',
-      },
-      extendGenerateSWOptions(cfg) {
+      extendPWAGenerateSWOptions(cfg) {
         cfg.skipWaiting = false
         cfg.clientsClaim = true
 

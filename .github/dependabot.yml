@@ -10,7 +10,9 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: 'npm'
-    directory: '/'
+    directories:
+      - '/'
+      - '/src-pwa'
     schedule:
       interval: 'daily'
     cooldown:

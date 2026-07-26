@@ -1,0 +1,20 @@
+{
+  "name": "vipr-pwa",
+  "version": "0.2.0",
+  "description": "Vipr Wallet PWA dependencies",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.9.0",
+  "dependencies": {
+    "register-service-worker": "^1.7.2"
+  },
+  "devDependencies": {
+    "workbox-build": "^7.4.1",
+    "workbox-cacheable-response": "^7.4.1",
+    "workbox-core": "^7.4.1",
+    "workbox-expiration": "^7.4.1",
+    "workbox-precaching": "^7.4.1",
+    "workbox-routing": "^7.4.1",
+    "workbox-strategies": "^7.4.1"
+  }
+}

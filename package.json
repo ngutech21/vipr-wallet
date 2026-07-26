@@ -17,7 +17,7 @@
     "dev:e2e": "unset HTTPS_KEY HTTPS_CERT; VITE_E2E_MODE=1 BROWSER=none quasar dev -m pwa --port 9303",
     "build": "quasar build -m pwa",
     "build:docker": "docker build -t vipr-wallet .",
-    "postinstall": "quasar prepare",
+    "postinstall": "quasar prepare && pnpm --dir src-pwa install --frozen-lockfile --strict-peer-dependencies",
     "coverage": "NODE_OPTIONS=--no-experimental-webstorage vitest run --coverage",
     "test:setup": "bash scripts/setup_test_shell.sh",
     "test:shell": "bash scripts/setup_test_shell.sh bash",
@@ -26,9 +26,10 @@
     "test:e2e": "pnpm run test:setup -- playwright test",
     "test:e2e:headed": "playwright test --headed",
     "typecheck": "exec vue-tsc --noEmit",
-    "typecheck:pwa": "exec tsc -p src-pwa/tsconfig.json --noEmit",
+    "typecheck:pwa": "exec tsc -p src-pwa/sw/tsconfig.json --noEmit",
+    "audit:pwa": "pnpm --dir src-pwa audit --prod && pnpm --dir src-pwa audit signatures",
     "check:circular": "madge src --extensions ts --ts-config tsconfig.madge.json --circular",
-    "final-check": "pnpm format:check && pnpm lint && pnpm peers check && pnpm typecheck && pnpm typecheck:pwa && pnpm audit --prod && pnpm audit signatures && pnpm check:circular && pnpm build && pnpm test:unit:ci"
+    "final-check": "pnpm format:check && pnpm lint && pnpm peers check && pnpm typecheck && pnpm typecheck:pwa && pnpm audit --prod && pnpm audit signatures && pnpm audit:pwa && pnpm check:circular && pnpm build && pnpm test:unit:ci"
   },
   "dependencies": {
     "@fedimint/core": "0.0.0-canary-bdba63f3b69629f2b7bff73cf25589bd16332838",
@@ -43,8 +44,7 @@
     "js-confetti": "^0.13.1",
     "qrcode.vue": "^3.10.0",
     "qrloop": "^1.4.1",
-    "quasar": "^2.21.0",
-    "register-service-worker": "^1.7.2",
+    "quasar": "^2.23.1",
     "uuid": "^14.0.1",
     "vue": "^3.5.39",
     "vue-qrcode-reader": "^5.7.3",
@@ -55,8 +55,8 @@
     "@lhci/cli": "^0.15.1",
     "@pinia/testing": "^1.0.3",
     "@playwright/test": "1.59.1",
-    "@quasar/app-vite": "^2.6.2",
-    "@quasar/cli": "^5.0.2",
+    "@quasar/app-vite": "^3.2.0",
+    "@quasar/cli": "^5.0.3",
     "@quasar/vite-plugin": "^1.12.0",
     "@types/node": "^24.13.2",
     "@vitejs/plugin-vue": "^6.0.7",
@@ -80,14 +80,7 @@
     "vite-plugin-top-level-await": "^1.6.0",
     "vite-plugin-wasm": "^3.6.0",
     "vitest": "^4.1.9",
-    "vue-tsc": "^3.3.6",
-    "workbox-build": "^7.4.1",
-    "workbox-cacheable-response": "^7.4.1",
-    "workbox-core": "^7.4.1",
-    "workbox-expiration": "^7.4.1",
-    "workbox-precaching": "^7.4.1",
-    "workbox-routing": "^7.4.1",
-    "workbox-strategies": "^7.4.1"
+    "vue-tsc": "^3.3.6"
   },
   "engines": {
     "node": ">=24.0.0",

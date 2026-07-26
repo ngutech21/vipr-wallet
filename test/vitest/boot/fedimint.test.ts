@@ -43,7 +43,7 @@ const pwaUpdateStoreMock = vi.hoisted(() => ({
   resumePendingApplyIfAny: vi.fn(),
 }))
 
-vi.mock('#q-app/wrappers', () => ({
+vi.mock('#q-app', () => ({
   defineBoot: <T>(fn: T) => fn,
 }))
 
