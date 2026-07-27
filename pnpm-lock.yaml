@@ -25,8 +25,8 @@ importers:
         specifier: ^3.12.3
         version: 3.12.3(typescript@6.0.3)
       '@getalby/lightning-tools':
-        specifier: ^8.2.0
-        version: 8.2.0
+        specifier: ^9.0.1
+        version: 9.0.1
       '@nostr-dev-kit/ndk':
         specifier: ^3.0.3
         version: 3.0.3(nostr-tools@2.24.1(typescript@6.0.3))
@@ -964,6 +964,10 @@ packages:
 
   '@getalby/lightning-tools@8.2.0':
     resolution: {integrity: sha512-eL+cnHyzeUARKVzNRuFBRBppAU5RBJOLjhFVzSWt8hDibRzL5+e4hq8I79+RGHfrWWMUDv382Jx8ewOazrBj7w==}
+    engines: {node: '>=14'}
+
+  '@getalby/lightning-tools@9.0.1':
+    resolution: {integrity: sha512-pTCuJB13V8qq5pDyDSCB5NVxUaT5DmLHLg2jGINYRbU06PM+KXmHoJ3zN9C6Jk31aFil28vsdO6z7OwFhEybLA==}
     engines: {node: '>=14'}
 
   '@getalby/sdk@8.0.3':
@@ -6907,6 +6911,8 @@ snapshots:
       - use-sync-external-store
 
   '@getalby/lightning-tools@8.2.0': {}
+
+  '@getalby/lightning-tools@9.0.1': {}
 
   '@getalby/sdk@8.0.3(typescript@6.0.3)':
     dependencies:
