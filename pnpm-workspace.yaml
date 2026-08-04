@@ -12,7 +12,6 @@ allowBuilds:
 overrides:
   esbuild: 0.28.1
   http-proxy-middleware: ^3.0.5
-  '@rolldown/binding-wasm32-wasi>@napi-rs/wasm-runtime': 1.1.6
   '@rollup/plugin-terser': 1.0.0
   postcss: ^8.5.18
   tmp: 0.2.7
