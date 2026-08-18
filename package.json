@@ -6,7 +6,7 @@
   "author": "ngutech21 <ngutech21@pm.me>",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@11.20.0",
+  "packageManager": "pnpm@11.22.0",
   "scripts": {
     "lint": "eslint -c ./eslint.config.js \"{src,test}/**/*.{ts,js,cjs,mjs,vue}\" --max-warnings 0",
     "lint:fix": "eslint -c ./eslint.config.js \"{src,test}/**/*.{ts,js,cjs,mjs,vue}\" --fix --max-warnings 0",
@@ -81,7 +81,7 @@
     "vite-plugin-top-level-await": "^1.6.0",
     "vite-plugin-wasm": "^3.6.0",
     "vitest": "^4.1.10",
-    "vue-tsc": "^3.3.9"
+    "vue-tsc": "^3.3.10"
   },
   "engines": {
     "node": ">=24.0.0",
