@@ -91,8 +91,8 @@ importers:
         specifier: ^3.5.0
         version: 3.5.0(@types/node@24.13.3)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(quasar@2.24.0)(sass@1.102.0)(supports-color@8.1.1)(terser@5.50.0)(tsx@4.23.12)(typescript@6.0.3)(vue-router@5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.4)(rollup@4.62.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3)))(vue@3.5.41(typescript@6.0.3))(workbox-build@7.4.1(supports-color@8.1.1))(yaml@2.9.0)
       '@quasar/cli':
-        specifier: ^5.0.6
-        version: 5.0.6
+        specifier: ^5.0.7
+        version: 5.0.7
       '@quasar/vite-plugin':
         specifier: ^2.0.0
         version: 2.0.0(@vitejs/plugin-vue@6.0.8(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3)))(quasar@2.24.0)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
@@ -1269,8 +1269,8 @@ packages:
   '@quasar/art@1.0.0':
     resolution: {integrity: sha512-IAV8Qg2QM3U2alywUcCELyOlHCUNbJYmiVDRTLgcgmyBlQwo3Wk33eHAyT9cpnV5CqlmuYXe6UZt0Ybi1m0lMA==}
 
-  '@quasar/cli@5.0.6':
-    resolution: {integrity: sha512-jSLORKZwxK6jc9FSPj4qyKxftmA+E0N8RaVAUrVzK5fPtwLT9QnLj8uJHeIyDARB1a317Ig20F1IbMceJhNRjA==}
+  '@quasar/cli@5.0.7':
+    resolution: {integrity: sha512-aN0Uy7NLiQ5I0bcCEqKyO+p7Ef480kdii0aewHb2qzDPAa4zk+LW2CQrmc9Sd5Ip3DPOb3wMO/Z8Z+MytjuIog==}
     engines: {node: '>= 20.20.0'}
     hasBin: true
 
@@ -7046,7 +7046,7 @@ snapshots:
 
   '@quasar/art@1.0.0': {}
 
-  '@quasar/cli@5.0.6':
+  '@quasar/cli@5.0.7':
     dependencies:
       '@clack/prompts': 1.7.0
       '@hono/node-server': 2.1.1(hono@4.13.2)
