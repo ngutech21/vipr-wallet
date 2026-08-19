@@ -88,8 +88,8 @@ importers:
         specifier: 1.61.1
         version: 1.61.1
       '@quasar/app-vite':
-        specifier: ^3.5.0
-        version: 3.5.0(@types/node@24.13.3)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(quasar@2.24.0)(sass@1.102.0)(supports-color@8.1.1)(terser@5.50.0)(tsx@4.23.12)(typescript@6.0.3)(vue-router@5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.4)(rollup@4.62.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3)))(vue@3.5.41(typescript@6.0.3))(workbox-build@7.4.1(supports-color@8.1.1))(yaml@2.9.0)
+        specifier: ^3.6.1
+        version: 3.6.1(@types/node@24.13.3)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(quasar@2.24.0)(sass@1.102.0)(supports-color@8.1.1)(terser@5.50.0)(tsx@4.23.12)(typescript@6.0.3)(vue-router@5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.4)(rollup@4.62.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3)))(vue@3.5.41(typescript@6.0.3))(workbox-build@7.4.1(supports-color@8.1.1))(yaml@2.9.0)
       '@quasar/cli':
         specifier: ^5.0.7
         version: 5.0.7
@@ -1232,8 +1232,8 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@quasar/app-vite@3.5.0':
-    resolution: {integrity: sha512-fpdI5YCSRnsR4I4aznHdBoYovyEB/KJn8hWUkwo87yCeD3yCVrxp/bcGMsmKdZ+cJzoPgsViZSRIpjaE97Ovyw==}
+  '@quasar/app-vite@3.6.1':
+    resolution: {integrity: sha512-I4sD9nqqDlfg0Tx2HfJ4Q6alE4E/tA3bkH6VWlTyE1JmbeBRl7GxtduCI4LGy9xR4qaLi2fUIl8COQ7pNe/qeA==}
     engines: {node: ^30 || ^28 || ^26 || ^24 || ^22.22.0}
     hasBin: true
     peerDependencies:
@@ -1277,8 +1277,8 @@ packages:
   '@quasar/extras@2.0.3':
     resolution: {integrity: sha512-tTw+5+2ZOugCpkagP20e/LJf7BgQyAQPlwyRwMYe2UpN1F4zYCZhvoAPio1hG2hr5FOlEiJVxSINJHhpdx5NZA==}
 
-  '@quasar/render-ssr-error@2.2.5':
-    resolution: {integrity: sha512-5vJC4kxokyvYdLgT82R7afCQNyMxrXC/0ndymUeDtn1HtU9oi4TILxPOanIxQfhKkWaP2xEQtzXtgc3XQdVB4A==}
+  '@quasar/render-ssr-error@2.2.6':
+    resolution: {integrity: sha512-v8Q/uxmPwlBbN6lC/fObFk564A7CGFTVnObmdchhDMj817t17P6RsIyFVA8BUwuW0MdG2AWrrjpbhnXIgzuzvA==}
     engines: {node: '>= 16'}
 
   '@quasar/ssl-certificate@2.1.0':
@@ -6990,11 +6990,11 @@ snapshots:
       - react-native-b4a
       - supports-color
 
-  '@quasar/app-vite@3.5.0(@types/node@24.13.3)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(quasar@2.24.0)(sass@1.102.0)(supports-color@8.1.1)(terser@5.50.0)(tsx@4.23.12)(typescript@6.0.3)(vue-router@5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.4)(rollup@4.62.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3)))(vue@3.5.41(typescript@6.0.3))(workbox-build@7.4.1(supports-color@8.1.1))(yaml@2.9.0)':
+  '@quasar/app-vite@3.6.1(@types/node@24.13.3)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(quasar@2.24.0)(sass@1.102.0)(supports-color@8.1.1)(terser@5.50.0)(tsx@4.23.12)(typescript@6.0.3)(vue-router@5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.4)(rollup@4.62.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3)))(vue@3.5.41(typescript@6.0.3))(workbox-build@7.4.1(supports-color@8.1.1))(yaml@2.9.0)':
     dependencies:
       '@clack/prompts': 1.7.0
       '@quasar/art': 1.0.0
-      '@quasar/render-ssr-error': 2.2.5
+      '@quasar/render-ssr-error': 2.2.6
       '@quasar/ssl-certificate': 2.1.0
       '@quasar/vite-plugin': 2.0.0(@vitejs/plugin-vue@6.0.8(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3)))(quasar@2.24.0)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       '@types/chrome': 0.2.6
@@ -7062,7 +7062,7 @@ snapshots:
 
   '@quasar/extras@2.0.3': {}
 
-  '@quasar/render-ssr-error@2.2.5':
+  '@quasar/render-ssr-error@2.2.6':
     dependencies:
       stack-trace: 1.0.0
 
