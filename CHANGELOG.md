@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/ngutech21/vipr-wallet/compare/v0.3.0...v0.3.1) (2026-08-20)
+
+
+### Bug Fixes
+
+* docker build ([c6256ef](https://github.com/ngutech21/vipr-wallet/commit/c6256ef3001d5aabb91ff9be23289764ac2fbaf1))
+
 ## [0.3.0](https://github.com/ngutech21/vipr-wallet/compare/v0.2.0...v0.3.0) (2026-08-07)
 
 
