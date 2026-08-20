@@ -36,8 +36,8 @@ importers:
         specifier: ^3.0.3
         version: 3.0.3(nostr-tools@2.24.2(typescript@6.0.3))(supports-color@8.1.1)
       '@quasar/extras':
-        specifier: ^2.0.3
-        version: 2.0.3
+        specifier: ^2.0.4
+        version: 2.0.4
       '@vue/devtools-api':
         specifier: ^8.2.1
         version: 8.2.1
@@ -1274,8 +1274,8 @@ packages:
     engines: {node: '>= 20.20.0'}
     hasBin: true
 
-  '@quasar/extras@2.0.3':
-    resolution: {integrity: sha512-tTw+5+2ZOugCpkagP20e/LJf7BgQyAQPlwyRwMYe2UpN1F4zYCZhvoAPio1hG2hr5FOlEiJVxSINJHhpdx5NZA==}
+  '@quasar/extras@2.0.4':
+    resolution: {integrity: sha512-JWls5J+xkgEn6u86NSBLRUXf92RSTlImmYNcF77JtbOwuZgQfQTg7RpLskqRTmzpU3Kkpd3TLDcVT0xwWwiphA==}
 
   '@quasar/render-ssr-error@2.2.6':
     resolution: {integrity: sha512-v8Q/uxmPwlBbN6lC/fObFk564A7CGFTVnObmdchhDMj817t17P6RsIyFVA8BUwuW0MdG2AWrrjpbhnXIgzuzvA==}
@@ -7060,7 +7060,7 @@ snapshots:
       kolorist: 1.8.0
       open: 11.0.1
 
-  '@quasar/extras@2.0.3': {}
+  '@quasar/extras@2.0.4': {}
 
   '@quasar/render-ssr-error@2.2.6':
     dependencies:
