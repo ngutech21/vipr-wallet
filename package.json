@@ -70,7 +70,7 @@
     "eslint": "^10.8.1",
     "eslint-plugin-vue": "^10.10.0",
     "globals": "^17.11.0",
-    "happy-dom": "^20.11.2",
+    "happy-dom": "^20.11.6",
     "madge": "^8.0.0",
     "pinia": "^4.0.3",
     "prettier": "^3.9.6",
