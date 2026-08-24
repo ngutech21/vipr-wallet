@@ -58,7 +58,7 @@
     "@playwright/test": "1.61.1",
     "@quasar/app-vite": "^3.8.0",
     "@quasar/cli": "^5.0.7",
-    "@quasar/vite-plugin": "^2.0.0",
+    "@quasar/vite-plugin": "^2.0.1",
     "@types/node": "^24.13.3",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vitest/coverage-v8": "^4.1.10",
