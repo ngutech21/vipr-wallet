@@ -4,7 +4,7 @@
   "description": "Vipr Wallet PWA dependencies",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@11.22.0",
+  "packageManager": "pnpm@11.25.0",
   "dependencies": {
     "register-service-worker": "^1.7.2"
   },
