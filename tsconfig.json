@@ -2,7 +2,8 @@
   "extends": "./.quasar/tsconfig.json",
   "compilerOptions": {
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "moduleResolution": "Bundler"
+    "moduleResolution": "Bundler",
+    "rootDir": "."
   },
   "include": ["src/**/*", "src/**/*.vue", "test/e2e", "test/vitest", "playwright.config.ts"]
 }

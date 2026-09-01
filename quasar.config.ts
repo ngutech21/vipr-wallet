@@ -4,7 +4,6 @@
 import { defineConfig } from '#q-app'
 import wasm from 'vite-plugin-wasm'
 import topLevelAwait from 'vite-plugin-top-level-await'
-import VueRouter from 'vue-router/vite'
 import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { loadEnv } from 'vite'
@@ -51,6 +50,12 @@ export default defineConfig((ctx) => {
         components: fileURLToPath(new URL('./src/components', import.meta.url)),
         src: fileURLToPath(new URL('./src', import.meta.url)),
       },
+      filenameBasedRouting: {
+        routesFolder: 'src/pages',
+        extensions: ['.vue'],
+        dts: 'src/route-map.d.ts',
+        watch: ctx.dev,
+      },
 
       extendViteConf(_viteConf, { isServer: _isServer, isClient: _isClient }) {
         // We return an Object which will get deeply merged into
@@ -58,16 +63,7 @@ export default defineConfig((ctx) => {
 
         return {
           define: envVars,
-          plugins: [
-            VueRouter({
-              routesFolder: 'src/pages',
-              extensions: ['.vue'],
-              dts: 'src/route-map.d.ts',
-              watch: ctx.dev,
-            }),
-            wasm(),
-            topLevelAwait(), // Optional
-          ],
+          plugins: [wasm(), topLevelAwait()],
           worker: {
             format: 'es',
 
