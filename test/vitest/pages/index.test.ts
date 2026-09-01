@@ -97,6 +97,7 @@ describe('IndexPage.vue', () => {
           SendEcashSelection: true,
           ReceiveEcashSelection: true,
           'q-page': PassthroughStub,
+          'q-dialog': PassthroughStub,
           'q-chip': PassthroughStub,
           'q-icon': { template: '<i />' },
           'q-page-sticky': PassthroughStub,

@@ -131,7 +131,7 @@ Located in `src/stores/`:
   - TypeScript strict mode enabled
   - Hash-based routing
 - **Vite Plugins**: WASM, top-level await, Vue TypeScript checking
-- **Target**: Modern browsers (ES2022, Firefox 115+, Chrome 115+, Safari 15+)
+- **Target**: Modern browsers (Chrome/Edge 121+, Firefox 123+, Safari/iOS 17.2+)
 
 ### Development Notes
 
