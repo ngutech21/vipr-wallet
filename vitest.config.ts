@@ -24,10 +24,10 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
     alias: {
-      '#q-app': path.resolve(__dirname, './test/vitest/mocks/q-app-wrappers.ts'),
-      '@': path.resolve(__dirname, './src'),
-      components: path.resolve(__dirname, './src/components'),
-      src: path.resolve(__dirname, './src'),
+      '#q-app': path.resolve(import.meta.dirname, './test/vitest/mocks/q-app-wrappers.ts'),
+      '@': path.resolve(import.meta.dirname, './src'),
+      components: path.resolve(import.meta.dirname, './src/components'),
+      src: path.resolve(import.meta.dirname, './src'),
     },
   },
   plugins: [
