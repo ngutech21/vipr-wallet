@@ -6,6 +6,7 @@ allowBuilds:
   es5-ext: true
   esbuild: true
   lightningcss: true
+  pnpm: true
   rolldown: true
   unrs-resolver: true
   utf-8-validate: true
