@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.1](https://github.com/ngutech21/vipr-wallet/compare/v0.3.0...v0.3.1) (2026-09-04)
+
+
+### Bug Fixes
+
+* docker build ([c6256ef](https://github.com/ngutech21/vipr-wallet/commit/c6256ef3001d5aabb91ff9be23289764ac2fbaf1))
+* update path resolution to use import.meta.dirname in vitest.config.ts ([7a1795c](https://github.com/ngutech21/vipr-wallet/commit/7a1795c5727546aa4808d1ee47466c4463b9d4f7))
+* update vue-router to version 5.3.0 and adjust related configurations ([521f7a8](https://github.com/ngutech21/vipr-wallet/commit/521f7a82c34f323a1aa128880ece4a66f644cd4f))
+
 ## [0.3.0](https://github.com/ngutech21/vipr-wallet/compare/v0.2.0...v0.3.0) (2026-08-07)
 
 
