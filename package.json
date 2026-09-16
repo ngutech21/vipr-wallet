@@ -69,7 +69,7 @@
     "autoprefixer": "^10.5.4",
     "eslint": "^10.9.1",
     "eslint-plugin-vue": "^10.10.0",
-    "globals": "^17.11.0",
+    "globals": "^17.12.0",
     "happy-dom": "^20.11.6",
     "madge": "^8.0.0",
     "pinia": "^4.0.3",
