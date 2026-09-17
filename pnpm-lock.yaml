@@ -192,8 +192,8 @@ importers:
         specifier: ^3.8.4
         version: 3.8.4(@types/node@24.13.3)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(quasar@2.32.2)(sass@1.102.0)(supports-color@8.1.1)(terser@5.50.0)(tsx@4.23.13)(typescript@6.0.3)(vue-router@5.3.1(@vue/compiler-sfc@3.5.42)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.42(typescript@6.0.3)))(rolldown@1.2.4)(rollup@4.62.2)(vite@8.3.0(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.104.1)(sass@1.102.0)(terser@5.50.0)(tsx@4.23.13)(yaml@2.9.0))(vue@3.5.42(typescript@6.0.3)))(vue@3.5.42(typescript@6.0.3))(workbox-build@7.4.1(supports-color@8.1.1))(yaml@2.9.0)
       '@quasar/cli':
-        specifier: ^5.0.7
-        version: 5.0.7
+        specifier: ^5.0.8
+        version: 5.0.8
       '@quasar/vite-plugin':
         specifier: ^2.0.2
         version: 2.0.2(@vitejs/plugin-vue@6.0.8(vite@8.3.0(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.104.1)(sass@1.102.0)(terser@5.50.0)(tsx@4.23.13)(yaml@2.9.0))(vue@3.5.42(typescript@6.0.3)))(quasar@2.32.2)(vite@8.3.0(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.104.1)(sass@1.102.0)(terser@5.50.0)(tsx@4.23.13)(yaml@2.9.0))(vue@3.5.42(typescript@6.0.3))
@@ -789,16 +789,8 @@ packages:
   '@cacheable/utils@2.5.0':
     resolution: {integrity: sha512-buipgOVDkkPXNR5+xBpDw7Zk2n1EvU7qBJCNUcL7rhQ//kfpOXPAvQ511Os0vpLYJ1pZnvudNytkQt2hst3wqA==}
 
-  '@clack/core@1.4.3':
-    resolution: {integrity: sha512-/kr3UWNtdJfxZtPgDqUOmG2pvwlmcLGheex5yiZKdwbzZJxhV+HMNR9QNmyY5cGwTNV6LrR7Jtp+KjhUAP1qBQ==}
-    engines: {node: '>= 20.12.0'}
-
   '@clack/core@1.5.1':
     resolution: {integrity: sha512-iHTrHA8MtVuLl2TfZySmcKv1qO2PoyC9Z7pfSDozEuV5vtY3/wcOPKJXlqJ5Oq2Cx5DDGQGAMVx6HZfRRoVEbQ==}
-    engines: {node: '>= 20.12.0'}
-
-  '@clack/prompts@1.7.0':
-    resolution: {integrity: sha512-y7/yvZ2TPAnR9+jnc00klvNNLkJiXFFrQA/hlLCcxA9a2A4zQIOimyFQ9XfwYKiGD1fb5GY8vbKIIgO8d5Tb2A==}
     engines: {node: '>= 20.12.0'}
 
   '@clack/prompts@1.8.1':
@@ -1367,8 +1359,8 @@ packages:
   '@quasar/art@1.0.0':
     resolution: {integrity: sha512-IAV8Qg2QM3U2alywUcCELyOlHCUNbJYmiVDRTLgcgmyBlQwo3Wk33eHAyT9cpnV5CqlmuYXe6UZt0Ybi1m0lMA==}
 
-  '@quasar/cli@5.0.7':
-    resolution: {integrity: sha512-aN0Uy7NLiQ5I0bcCEqKyO+p7Ef480kdii0aewHb2qzDPAa4zk+LW2CQrmc9Sd5Ip3DPOb3wMO/Z8Z+MytjuIog==}
+  '@quasar/cli@5.0.8':
+    resolution: {integrity: sha512-/ShglvEX2y48JeQQ+dN/v6e1SWBgfPMdZEzFChz7KqNrc4zfkBtXzBz0G2IVSW78gGUcb3KNnk977mv7HPF1bg==}
     engines: {node: '>= 20.20.0'}
     hasBin: true
 
@@ -3438,8 +3430,8 @@ packages:
   hast-util-whitespace@3.0.0:
     resolution: {integrity: sha512-88JUN06ipLwsnv+dVn+OIYOvAuvBMy/Qoi6O7mQHxdPXpjy+Cd6xRkWwux7DKO+4sYILtLBRIKgsdpS2gQc7qw==}
 
-  hono@4.13.2:
-    resolution: {integrity: sha512-JydRilDRkYBQMt9qR9U92mXxmbGqsqSn/IKOrh4e7/gEbn+0zSr8igTu0obwJoNGN4sez28DIql7FBHWydoJpA==}
+  hono@4.13.8:
+    resolution: {integrity: sha512-/Gng7NfoykZl2pjukW5Z6+8Yxm3BPRf86GTbQnt0SbySkvax4fyL4H3HhY1cCpBGmiW9XDRFzRV+CXK2W8QudQ==}
     engines: {node: '>=16.9.0'}
 
   hookable@5.5.3:
@@ -4244,10 +4236,6 @@ packages:
   oniguruma-to-es@4.3.6:
     resolution: {integrity: sha512-csuQ9x3Yr0cEIs/Zgx/OEt9iBw9vqIunAPQkx19R/fiMq2oGVTgcMqO/V3Ybqefr1TBvosI6jU539ksaBULJyA==}
 
-  open@11.0.1:
-    resolution: {integrity: sha512-NzwMUB6C1D0+Kd+9iMS/H4k+Ck3cTX6Ckyfr/gAGlmvSE1LUQZnEZvWBi4PYmMwH/S5SMeTXnE+9uAz8uF+pWw==}
-    engines: {node: '>=20'}
-
   open@11.0.4:
     resolution: {integrity: sha512-++Zlftm0kVLPmzC06t6epuWmcRMDbI4z5P3NNX979WA/k23+NtSOynEGzsVfZwguKw2mi5umVgnBlJQMwRz4Pg==}
     engines: {node: '>=20'}
@@ -4436,10 +4424,6 @@ packages:
 
   powershell-utils@0.1.0:
     resolution: {integrity: sha512-dM0jVuXJPsDN6DvRpea484tCUaMiXWjuCn++HGTqUWzGDjv5tZkEZldAJ/UMlqRYGFrD/etByo4/xOuC/snX2A==}
-    engines: {node: '>=20'}
-
-  powershell-utils@0.2.0:
-    resolution: {integrity: sha512-ZlsFlG7MtSFCoc5xreOvBAozCJ6Pf06opgJjh9ONEv418xpZSAzNjstD36C6+JwOnfSqOW/9uDkqKjezTdxZhw==}
     engines: {node: '>=20'}
 
   powershell-utils@0.2.1:
@@ -6632,20 +6616,8 @@ snapshots:
       hashery: 1.5.1
       keyv: 5.6.0
 
-  '@clack/core@1.4.3':
-    dependencies:
-      fast-wrap-ansi: 0.2.2
-      sisteransi: 1.0.5
-
   '@clack/core@1.5.1':
     dependencies:
-      fast-wrap-ansi: 0.2.2
-      sisteransi: 1.0.5
-
-  '@clack/prompts@1.7.0':
-    dependencies:
-      '@clack/core': 1.4.3
-      fast-string-width: 3.0.2
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
@@ -6854,9 +6826,9 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@hono/node-server@2.1.1(hono@4.13.2)':
+  '@hono/node-server@2.1.1(hono@4.13.8)':
     dependencies:
-      hono: 4.13.2
+      hono: 4.13.8
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -7253,19 +7225,19 @@ snapshots:
 
   '@quasar/art@1.0.0': {}
 
-  '@quasar/cli@5.0.7':
+  '@quasar/cli@5.0.8':
     dependencies:
-      '@clack/prompts': 1.7.0
-      '@hono/node-server': 2.1.1(hono@4.13.2)
+      '@clack/prompts': 1.8.1
+      '@hono/node-server': 2.1.1(hono@4.13.8)
       '@quasar/art': 1.0.0
       '@quasar/ssl-certificate': 2.1.0
       '@quasar/update-notifier': 1.0.0
       ci-info: 4.4.0
       cross-spawn: 7.0.6
       fs-extra: 11.4.0
-      hono: 4.13.2
+      hono: 4.13.8
       kolorist: 1.8.0
-      open: 11.0.1
+      open: 11.0.4
 
   '@quasar/extras@2.0.4': {}
 
@@ -9499,7 +9471,7 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.5
 
-  hono@4.13.2: {}
+  hono@4.13.8: {}
 
   hookable@5.5.3: {}
 
@@ -10323,15 +10295,6 @@ snapshots:
       regex: 6.1.0
       regex-recursion: 6.0.2
 
-  open@11.0.1:
-    dependencies:
-      default-browser: 5.5.1
-      define-lazy-prop: 3.0.0
-      is-in-ssh: 1.0.0
-      is-inside-container: 1.0.0
-      powershell-utils: 0.2.0
-      wsl-utils: 1.0.0
-
   open@11.0.4:
     dependencies:
       default-browser: 5.5.1
@@ -10536,8 +10499,6 @@ snapshots:
       source-map-js: 1.2.1
 
   powershell-utils@0.1.0: {}
-
-  powershell-utils@0.2.0: {}
 
   powershell-utils@0.2.1: {}
 
