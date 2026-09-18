@@ -194,8 +194,8 @@ importers:
         specifier: ^3.0.3
         version: 3.0.3(nostr-tools@2.24.2(typescript@6.0.3))(supports-color@8.1.1)
       '@quasar/extras':
-        specifier: ^2.0.4
-        version: 2.0.4
+        specifier: ^2.1.0
+        version: 2.1.0
       '@vue/devtools-api':
         specifier: ^8.2.1
         version: 8.2.1
@@ -1424,8 +1424,8 @@ packages:
     engines: {node: '>= 20.20.0'}
     hasBin: true
 
-  '@quasar/extras@2.0.4':
-    resolution: {integrity: sha512-JWls5J+xkgEn6u86NSBLRUXf92RSTlImmYNcF77JtbOwuZgQfQTg7RpLskqRTmzpU3Kkpd3TLDcVT0xwWwiphA==}
+  '@quasar/extras@2.1.0':
+    resolution: {integrity: sha512-WCqHXr3loA9bP1DUuzmCwuNXnHa9GKosAtjwJnr1DpngO68a0JoiyVuoXzc760tCBArdFLD/YAUHvItPbk6V2Q==}
 
   '@quasar/render-ssr-error@2.2.6':
     resolution: {integrity: sha512-v8Q/uxmPwlBbN6lC/fObFk564A7CGFTVnObmdchhDMj817t17P6RsIyFVA8BUwuW0MdG2AWrrjpbhnXIgzuzvA==}
@@ -6892,7 +6892,7 @@ snapshots:
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
-      '@jridgewell/sourcemap-codec': 1.5.5
+      '@jridgewell/sourcemap-codec': 1.6.0
       '@jridgewell/trace-mapping': 0.3.31
 
   '@jridgewell/remapping@2.3.5':
@@ -7282,7 +7282,7 @@ snapshots:
       kolorist: 1.8.0
       open: 11.0.4
 
-  '@quasar/extras@2.0.4': {}
+  '@quasar/extras@2.1.0': {}
 
   '@quasar/render-ssr-error@2.2.6':
     dependencies:
@@ -10065,7 +10065,7 @@ snapshots:
 
   magic-string@0.30.21:
     dependencies:
-      '@jridgewell/sourcemap-codec': 1.5.5
+      '@jridgewell/sourcemap-codec': 1.6.0
 
   magic-string@1.4.1:
     dependencies:
