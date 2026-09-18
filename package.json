@@ -40,7 +40,7 @@
     "@nostr-dev-kit/ndk": "^3.0.3",
     "@quasar/extras": "^2.1.0",
     "@vue/devtools-api": "^8.2.1",
-    "@vueuse/core": "^14.4.0",
+    "@vueuse/core": "^15.0.0",
     "bech32": "^2.0.0",
     "consola": "^3.4.2",
     "js-confetti": "^0.13.1",
