@@ -61,8 +61,8 @@
     "@quasar/vite-plugin": "^2.0.2",
     "@types/node": "^24.13.3",
     "@vitejs/plugin-vue": "^6.0.9",
-    "@vitest/coverage-v8": "^4.1.11",
-    "@vitest/ui": "^4.1.11",
+    "@vitest/coverage-v8": "^5.0.1",
+    "@vitest/ui": "^5.0.1",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.9.0",
     "@vue/test-utils": "^2.5.1",
@@ -80,7 +80,7 @@
     "vite-plugin-checker": "^0.14.5",
     "vite-plugin-top-level-await": "^1.6.0",
     "vite-plugin-wasm": "^3.6.0",
-    "vitest": "^4.1.11",
+    "vitest": "^5.0.1",
     "vue-tsc": "^3.3.11"
   },
   "engines": {
