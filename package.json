@@ -55,7 +55,7 @@
     "@eslint/js": "^10.0.1",
     "@lhci/cli": "^0.15.1",
     "@pinia/testing": "^2.0.1",
-    "@playwright/test": "1.61.1",
+    "@playwright/test": "1.63.0",
     "@quasar/app-vite": "^3.8.4",
     "@quasar/cli": "^5.0.8",
     "@quasar/vite-plugin": "^2.0.2",
