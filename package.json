@@ -60,7 +60,7 @@
     "@quasar/app-vite": "^3.8.4",
     "@quasar/cli": "^5.0.8",
     "@quasar/vite-plugin": "^2.0.2",
-    "@types/node": "^24.13.3",
+    "@types/node": "^24.13.5",
     "@vitejs/plugin-vue": "^6.0.9",
     "@vitest/coverage-v8": "^5.0.1",
     "@vitest/ui": "^5.0.1",
