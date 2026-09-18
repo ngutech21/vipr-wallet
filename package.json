@@ -45,7 +45,7 @@
     "js-confetti": "^0.13.1",
     "qrcode.vue": "^3.11.0",
     "qrloop": "^1.4.1",
-    "quasar": "^2.32.2",
+    "quasar": "^2.32.3",
     "uuid": "^14.0.2",
     "vue": "^3.5.42",
     "vue-qrcode-reader": "^5.7.3",
