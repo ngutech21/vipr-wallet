@@ -17,7 +17,13 @@ updates:
       interval: 'daily'
     cooldown:
       default-days: 2
+    ignore:
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: docker
     directory: "/"
     schedule:
       interval: daily
+    ignore:
+      - dependency-name: 'node'
+        update-types: ['version-update:semver-major']
