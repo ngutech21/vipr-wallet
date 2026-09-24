@@ -246,8 +246,8 @@ importers:
         specifier: 1.63.0
         version: 1.63.0
       '@quasar/app-vite':
-        specifier: ^3.9.0
-        version: 3.9.0(@types/node@24.13.6)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.43(typescript@6.0.3)))(quasar@2.33.1)(sass@1.104.1)(supports-color@8.1.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(vue-router@5.3.1(@vue/compiler-sfc@3.5.43)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.43(typescript@6.0.3)))(rolldown@1.2.9)(rollup@4.63.4)(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2)(tsx@4.23.15))(vue@3.5.43(typescript@6.0.3)))(vue@3.5.43(typescript@6.0.3))
+        specifier: ^3.10.0
+        version: 3.10.0(@types/node@24.13.6)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.43(typescript@6.0.3)))(quasar@2.33.1)(sass@1.104.1)(supports-color@8.1.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(vue-router@5.3.1(@vue/compiler-sfc@3.5.43)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.43(typescript@6.0.3)))(rolldown@1.2.9)(rollup@4.63.4)(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2)(tsx@4.23.15))(vue@3.5.43(typescript@6.0.3)))(vue@3.5.43(typescript@6.0.3))
       '@quasar/cli':
         specifier: ^5.0.8
         version: 5.0.8
@@ -902,8 +902,8 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@quasar/app-vite@3.9.0':
-    resolution: {integrity: sha512-/FL6Nsy8sH0RMX7Tsu6wo75EcZR0JFrSb2uL+cQYI3AZibLdM2mIP4855cgWH6Q7CIGIjPRQHMVhjk1EQU+06Q==}
+  '@quasar/app-vite@3.10.0':
+    resolution: {integrity: sha512-lmLY2z0/nP/LWCCDnRMEx8XGJt6VPn7y1a8fuW1msjfJr06cLZDFDI868XkO4iig4ywLdQFiK1kyojPTpYnOuw==}
     engines: {node: ^30 || ^28 || ^26 || ^24 || ^22.22.0}
     hasBin: true
     peerDependencies:
@@ -5261,7 +5261,7 @@ snapshots:
       - react-native-b4a
       - supports-color
 
-  '@quasar/app-vite@3.9.0(@types/node@24.13.6)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.43(typescript@6.0.3)))(quasar@2.33.1)(sass@1.104.1)(supports-color@8.1.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(vue-router@5.3.1(@vue/compiler-sfc@3.5.43)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.43(typescript@6.0.3)))(rolldown@1.2.9)(rollup@4.63.4)(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2)(tsx@4.23.15))(vue@3.5.43(typescript@6.0.3)))(vue@3.5.43(typescript@6.0.3))':
+  '@quasar/app-vite@3.10.0(@types/node@24.13.6)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.43(typescript@6.0.3)))(quasar@2.33.1)(sass@1.104.1)(supports-color@8.1.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(vue-router@5.3.1(@vue/compiler-sfc@3.5.43)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.43(typescript@6.0.3)))(rolldown@1.2.9)(rollup@4.63.4)(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2)(tsx@4.23.15))(vue@3.5.43(typescript@6.0.3)))(vue@3.5.43(typescript@6.0.3))':
     dependencies:
       '@clack/prompts': 1.8.1
       '@quasar/art': 1.0.0
