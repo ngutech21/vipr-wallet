@@ -58,7 +58,7 @@
     "@pinia/testing": "^2.0.1",
     "@playwright/test": "1.63.0",
     "@quasar/app-vite": "^3.10.0",
-    "@quasar/cli": "^5.0.8",
+    "@quasar/cli": "^5.0.9",
     "@quasar/vite-plugin": "^2.0.2",
     "@types/node": "^24.13.6",
     "@vitejs/plugin-vue": "^6.0.9",

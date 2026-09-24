@@ -249,8 +249,8 @@ importers:
         specifier: ^3.10.0
         version: 3.10.0(@types/node@24.13.6)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.43(typescript@6.0.3)))(quasar@2.33.1)(sass@1.104.1)(supports-color@8.1.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(vue-router@5.3.1(@vue/compiler-sfc@3.5.43)(esbuild@0.28.1)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.43(typescript@6.0.3)))(rolldown@1.2.9)(rollup@4.63.4)(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2)(tsx@4.23.15))(vue@3.5.43(typescript@6.0.3)))(vue@3.5.43(typescript@6.0.3))
       '@quasar/cli':
-        specifier: ^5.0.8
-        version: 5.0.8
+        specifier: ^5.0.9
+        version: 5.0.9
       '@quasar/vite-plugin':
         specifier: ^2.0.2
         version: 2.0.2(@vitejs/plugin-vue@6.0.9(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2)(tsx@4.23.15))(vue@3.5.43(typescript@6.0.3)))(quasar@2.33.1)(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.1)(jiti@2.7.0)(sass-embedded@1.104.1)(sass@1.104.1)(terser@5.51.2)(tsx@4.23.15))(vue@3.5.43(typescript@6.0.3))
@@ -939,8 +939,8 @@ packages:
   '@quasar/art@1.0.0':
     resolution: {integrity: sha512-IAV8Qg2QM3U2alywUcCELyOlHCUNbJYmiVDRTLgcgmyBlQwo3Wk33eHAyT9cpnV5CqlmuYXe6UZt0Ybi1m0lMA==}
 
-  '@quasar/cli@5.0.8':
-    resolution: {integrity: sha512-/ShglvEX2y48JeQQ+dN/v6e1SWBgfPMdZEzFChz7KqNrc4zfkBtXzBz0G2IVSW78gGUcb3KNnk977mv7HPF1bg==}
+  '@quasar/cli@5.0.9':
+    resolution: {integrity: sha512-q7Xcc4eFlgZ21qO5QZUZdK5MeHJtJDGGk1rnkAW8hQOUSu3zVEC5fEjrNaEixJc62V62gVELWlpXiqgluLEY7w==}
     engines: {node: '>= 20.20.0'}
     hasBin: true
 
@@ -5316,7 +5316,7 @@ snapshots:
 
   '@quasar/art@1.0.0': {}
 
-  '@quasar/cli@5.0.8':
+  '@quasar/cli@5.0.9':
     dependencies:
       '@clack/prompts': 1.8.1
       '@hono/node-server': 2.1.1(hono@4.13.8)
