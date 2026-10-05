@@ -6,6 +6,24 @@ import { Buffer } from 'buffer'
 // Make Buffer available globally for tests that need it
 globalThis.Buffer = Buffer
 
+// Quasar 2.34 reads window.screen.orientation on Platform plugin install,
+// which happy-dom does not implement. Shim it so Quasar can install.
+if (window.screen.orientation == null) {
+  Object.defineProperty(window.screen, 'orientation', {
+    configurable: true,
+    value: {
+      type: 'portrait-primary',
+      angle: 0,
+      lock: () => Promise.resolve(),
+      unlock: () => Promise.resolve(),
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => true,
+    },
+  })
+}
+
 // Prevent unit tests from making real requests through @getalby/lightning-tools.
 vi.mock('@getalby/lightning-tools', () => ({
   getFiatValue: vi.fn(() => Promise.resolve(0)),
