@@ -61,7 +61,7 @@
     "@quasar/cli": "^5.0.9",
     "@quasar/vite-plugin": "^2.0.2",
     "@types/node": "^24.19.1",
-    "@vitejs/plugin-vue": "^6.0.9",
+    "@vitejs/plugin-vue": "^6.0.10",
     "@vitest/coverage-v8": "^5.0.3",
     "@vitest/ui": "^5.0.3",
     "@vue/eslint-config-prettier": "^10.2.0",
