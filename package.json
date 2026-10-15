@@ -1,6 +1,6 @@
 {
   "name": "vipr",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Fedimint eCash Wallet",
   "productName": "Vipr Wallet",
   "author": "ngutech21 <ngutech21@pm.me>",
@@ -46,7 +46,7 @@
     "js-confetti": "^0.13.1",
     "qrcode.vue": "^3.11.0",
     "qrloop": "^1.4.1",
-    "quasar": "^2.35.1",
+    "quasar": "^2.35.0",
     "uuid": "^14.0.3",
     "vue": "^3.5.43",
     "vue-qrcode-reader": "^5.7.3",
