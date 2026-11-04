@@ -6,7 +6,7 @@
   "author": "ngutech21 <ngutech21@pm.me>",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@12.4.2",
+  "packageManager": "pnpm@12.16.1",
   "scripts": {
     "outdated": "pnpm outdated --compatible",
     "lint": "eslint -c ./eslint.config.js \"{src,test}/**/*.{ts,js,cjs,mjs,vue}\" --max-warnings 0",
