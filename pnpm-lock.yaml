@@ -183,8 +183,8 @@ importers:
         specifier: ^3.12.3
         version: 3.12.3(typescript@6.0.3)
       '@getalby/lightning-tools':
-        specifier: ^9.0.2
-        version: 9.0.2
+        specifier: ^10.0.0
+        version: 10.0.0
       '@nostr-dev-kit/ndk':
         specifier: ^3.0.3
         version: 3.0.3(nostr-tools@2.25.5(typescript@6.0.3))(supports-color@8.1.1)
@@ -608,6 +608,10 @@ packages:
 
   '@getalby/bitcoin-connect@3.12.3':
     resolution: {integrity: sha512-2d+tNHBCZBoImKJgZwTUOyK9ypXaTg/hwvtQ8EHbgSKKkuycOrks7SzlUc0iJHthD3JGFVMWZEgOgw4AQVVE4w==}
+
+  '@getalby/lightning-tools@10.0.0':
+    resolution: {integrity: sha512-SU4KXcASldsy4UUgDf04Qh2zLjFd0oXQUIbfdocVJy13MhzaudyanOVR+CYrRKzBJbSMgpZMdZIMM853gviuPg==}
+    engines: {node: '>=14'}
 
   '@getalby/lightning-tools@8.2.0':
     resolution: {integrity: sha512-eL+cnHyzeUARKVzNRuFBRBppAU5RBJOLjhFVzSWt8hDibRzL5+e4hq8I79+RGHfrWWMUDv382Jx8ewOazrBj7w==}
@@ -3985,6 +3989,8 @@ snapshots:
       - react
       - typescript
       - use-sync-external-store
+
+  '@getalby/lightning-tools@10.0.0': {}
 
   '@getalby/lightning-tools@8.2.0': {}
 
